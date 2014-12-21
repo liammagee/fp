@@ -320,9 +320,9 @@ define([
                     color: { type: "c", value: [] }
                 };
                 
-                var discTexture = THREE.ImageUtils.loadTexture( "textures/sprites/stickman_180.png" );
+                var discTexture = THREE.ImageUtils.loadTexture( "images/sprites/stickman_180.png" );
                 if ( !appConfig.agentController.useStickman )
-                    discTexture = THREE.ImageUtils.loadTexture( "textures/sprites/disc.png" );
+                    discTexture = THREE.ImageUtils.loadTexture( "images/sprites/disc.png" );
         
                 // uniforms
                 var agentParticleSystemUniforms = {
