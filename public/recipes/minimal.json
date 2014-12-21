@@ -1,0 +1,181 @@
+{
+  "preset": "Minimal",
+  "closed": true,
+  "remembered": {
+    "Minimal": {
+      "0": {},
+      "1": {
+        "buildingsShow": false,
+        "roadsShow": false,
+        "waterShow": false,
+        "networkShow": false,
+        "networkCurve": false,
+        "networkCurvePoints": 20,
+        "shaderPatches": true,
+        "showingPatches": false,
+        "showTrails": false,
+        "showTrailsAsLines": false,
+        "trailLength": 1,
+        "showCursor": false,
+        "showStats": false,
+        "showHUD": false,
+        "showWireframe": false,
+        "showDay": false,
+        "showChart": false,
+        "terrainMultiplier": 1
+      },
+      "2": {
+        "initialPopulation": 10,
+        "initialExtent": 1000,
+        "maxExtent": 8000,
+        "initialX": 0,
+        "initialY": 0,
+        "initialDistribution": 0.5,
+        "networkChance": 0.005,
+        "initialCircle": true,
+        "noWater": true,
+        "noUphill": false,
+        "useStickman": true
+      },
+      "3": {
+        "buildingForm": "rectangle",
+        "spread": 10,
+        "randomForm": false,
+        "rotateRandomly": false,
+        "rotateSetAngle": 0,
+        "minHeight": 10,
+        "maxHeight": 70,
+        "heightA": 2,
+        "heightB": 10,
+        "riseRate": 10,
+        "levelHeight": 40,
+        "minWidth": 40,
+        "maxWidth": 200,
+        "minLength": 40,
+        "maxLength": 200,
+        "roads": 0,
+        "water": 0.4,
+        "otherBuildings": 0.75,
+        "buildingHeight": 0.1,
+        "useShader": true,
+        "lod": true,
+        "lowResDistance": 2500,
+        "highResDistance": 100,
+        "opacity": 1,
+        "showFill": true,
+        "fillRooves": false,
+        "showLines": false,
+        "linewidth": 1,
+        "showWindows": false,
+        "windowWidth": 15,
+        "windowPercent": 60,
+        "windowsStartY": 40,
+        "windowsEndY": 80,
+        "stagger": true,
+        "staggerAmount": 40,
+        "taper": true,
+        "taperExponent": 2,
+        "taperDistribution": 1,
+        "destroyOnComplete": false,
+        "loopCreateDestroy": false,
+        "turning": false,
+        "falling": false
+      }
+    }
+  },
+  "folders": {
+    "More controls": {
+      "preset": "Minimal",
+      "closed": true,
+      "folders": {}
+    },
+    "Agent Options": {
+      "preset": "Minimal",
+      "closed": true,
+      "folders": {}
+    },
+    "Building Options": {
+      "preset": "Minimal",
+      "closed": true,
+      "folders": {
+        "Form": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        },
+        "Dimensions": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        },
+        "Influences": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        },
+        "Appearance": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {
+            "Fill": {
+              "preset": "Minimal",
+              "closed": true,
+              "folders": {}
+            },
+            "Line": {
+              "preset": "Minimal",
+              "closed": true,
+              "folders": {}
+            },
+            "Window": {
+              "preset": "Minimal",
+              "closed": true,
+              "folders": {}
+            }
+          }
+        },
+        "Stagger": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        },
+        "Taper": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        },
+        "Animation": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        }
+      }
+    },
+    "Road Options": {
+      "preset": "Minimal",
+      "closed": true,
+      "folders": {}
+    },
+    "Display Options": {
+      "preset": "Minimal",
+      "closed": false,
+      "folders": {}
+    },
+    "Color Options": {
+      "preset": "Minimal",
+      "closed": true,
+      "folders": {
+        "Building Colors": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        },
+        "Other Colors": {
+          "preset": "Minimal",
+          "closed": true,
+          "folders": {}
+        }
+      }
+    }
+  }
+}
