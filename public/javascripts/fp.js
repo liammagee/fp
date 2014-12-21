@@ -1983,7 +1983,7 @@ define([
                 visitHomeBuilding: 0.02,
                 visitOtherBuilding: 0.002,
                 size: 40,
-                terrainOffset: 10
+                terrainOffset: 20
             }
             this.displayController = {
                 buildingsShow: true,
@@ -3294,7 +3294,7 @@ define([
                 colorAgent = appConfig.colorController.colorDayAgent;
                 colorNetwork = appConfig.colorController.colorDayNetwork;
                 colorTrail = appConfig.colorController.colorDayTrail;
-                terrain.richTerrainMaterial.uniforms = fp.lambertUniforms( terrain.dayTerrainUniforms );
+                terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( terrain.dayTerrainUniforms );
                 scene.add( skyBox );
             }
             else {
