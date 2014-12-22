@@ -35,25 +35,34 @@
             ],
             function() {
                 var config = {
-                  "preset": "Default2",
+                  "preset": "Default",
                   "remembered": {
-                    "Default2": {
-                      "1": { "buildingsShow": false }
+                    "Default": {
+                      "1": { "buildingsShow": false },
+                      "4": {
+                            "dayShow": true,
+                            "skyboxShow": false
+                        },
+                      "5": {
+                            "colorDayTerrainSea": 10921638,
+                            "colorDayTerrainLowland1": 5077064,
+                            "colorDayTerrainLowland2": 9286011,
+                            "colorDayTerrainMidland": 11105582,
+                            "colorDayTerrainHighland": 11316396,
+                            "colorDayBuildingFill": 8485755,
+                            "colorDayBuildingLine": 2236962,
+                            "colorDayBuildingWindow": 9671447,
+                            "colorDayBackground": 5077064,
+                            "colorDayRoad": 4671303,
+                            "colorDayAgent": 4671411,
+                            "colorDayNetwork": 4671303,
+                            "colorDayTrail": 4671303,
+                        },
                     }
                   }
                 }
-                var sim =  {
-                    counter: 0,
-                    setup: function() {
-                        counter = 0;
-                        console.log("Custom set up")
-                    },
-                    tick: function() {
-                        console.log("Custom tick: " + (++ counter))
-                    }
-                }
 
-                fp.init( config, sim );
+                fp.init( config );
             }
         );
 
