@@ -2324,6 +2324,7 @@ define([
             gui.remember(appConfig.roadController);
             gui.remember(appConfig.displayController);
             gui.remember(appConfig.colorController);
+            gui.remember(appConfig.terrainController);
 
             gui.add(appConfig, 'Setup');
             gui.add(appConfig, 'Run');
