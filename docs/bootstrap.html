@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <!-- Pandoc Start -->
+  <meta name="generator" content="pandoc" />
+  $for(author-meta)$
+    <meta name="author" content="$author-meta$" />
+  $endfor$
+  $if(date-meta)$
+    <meta name="date" content="$date-meta$" />
+  $endif$
+  <title>$if(title-prefix)$$title-prefix$ - $endif$$pagetitle$</title>
+  <!-- Pandoc End -->
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Pandoc Start -->
+  <style type="text/css">code{white-space: pre;}</style>
+$if(quotes)$
+  <style type="text/css">q { quotes: "“" "”" "‘" "’"; }</style>
+$endif$
+$if(highlighting-css)$
+  <style type="text/css">
+$highlighting-css$
+  </style>
+$endif$
+$for(css)$
+  <link rel="stylesheet" href="$css$" $if(html5)$$else$type="text/css" $endif$/>
+$endfor$
+$if(math)$
+  $math$
+$endif$
+$for(header-includes)$
+  $header-includes$
+$endfor$
+    <!-- Pandoc End -->
+
+</head>
+<body>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        $if(title)$
+          <div id="$idprefix$header">
+          <h1 class="title">$title$</h1>
+          $for(author)$
+          <h2 class="author">$author$</h2>
+          $endfor$
+          $if(date)$
+          <h3 class="date">$date$</h3>
+          $endif$
+          </div>
+        $endif$
+      </div>
+    </div>
+
+  <div class="container">
+    <div class="row">
+       <div class="col-md-9" role="main">
+        $body$
+      </div>
+      <div class="col-md-3" >
+        <div class="fp-docs-sidebar" data-spy="affix" data-offset-top="200" data-offset-bottom="0">
+        $if(toc)$
+          <div id="$idprefix$TOC">
+          $toc$
+          </div>
+        $endif$
+        </div>
+      </div>
+    </div>
+  </div>
+
+   <!-- Pandoc inserts locally-referenced MathJax too early. Hence it is manually inserted here -->
+   <script src="js/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Convert links to target="_blank". Taken from: http://stackoverflow.com/questions/4425198/markdown-target-blank -->
+    <script type="text/javascript">
+      <!-- Double dollar sign because of Pandoc's processing template language -->
+      $$(document.links).filter(function() {
+        return this.hostname != window.location.hostname;
+      }).attr('target', '_blank');
+    </script>
+
+    
+
+</body>
+</html>
+

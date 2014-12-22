@@ -1,0 +1,11 @@
+#page-content-wrapper {
+	position: fixed;
+	height: 100%;
+}
+.container-fluid, .row, .col-lg-12, #content  {
+	height: 100%;
+}
+#content > iframe {
+	height: 80%;
+	width : 80%;
+}

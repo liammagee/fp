@@ -12,11 +12,11 @@ requirejs.config({
         	deps: ["three"],
         	exports: "TerrainLoader"
         },
-        "javascripts/controls/TrackballControls.js": { 
+        "js/controls/TrackballControls.js": { 
             deps: ["three"],
             exports: "TrackballControls"
         },
-        "javascripts/controls/PointerLockControls.js": { 
+        "js/controls/PointerLockControls.js": { 
         	deps: ["three"],
         	exports: "PointerLockControls"
         },
@@ -31,9 +31,9 @@ requirejs([
         "Mirror",
         "WaterShader",
         "TerrainLoader",
-        "javascripts/THREEx.KeyboardState.js",
-        "javascripts/controls/TrackballControls.js",
-        "javascripts/controls/PointerLockControls.js",
+        "js/THREEx.KeyboardState.js",
+        "js/controls/TrackballControls.js",
+        "js/controls/PointerLockControls.js",
 ]);
 requirejs([        
     "app/main"

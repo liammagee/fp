@@ -10,9 +10,9 @@ define([
     "Mirror",
     "WaterShader",
     "TerrainLoader",
-    "javascripts/THREEx.KeyboardState.js",
-    "javascripts/controls/TrackballControls.js",
-    "javascripts/controls/PointerLockControls.js",
+    "js/THREEx.KeyboardState.js",
+    "js/controls/TrackballControls.js",
+    "js/controls/PointerLockControls.js",
     ], function($, THREE, _, astar) {
 
     // Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/

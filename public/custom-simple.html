@@ -1,0 +1,65 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="css/fp.css">
+        <script src="js/require.js"></script>
+        <script>
+        requirejs.config({
+            baseUrl: 'js',
+            "shim": {
+                "underscore": { exports: "_" },
+                "dat.gui": { exports: "dat.gui" },
+                "smoothie": { exports: "SmoothieChart" },
+                "stats.min": { exports: "Stats" },
+                "jstat.min": { exports: "jStat" },
+                "three": { exports: "THREE" },
+                "Mirror": ["three"],
+                "WaterShader": ["three"],
+                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
+                "js/controls/TrackballControls.js": {  deps: ["three"], exports: "TrackballControls" },
+                "js/controls/PointerLockControls.js": {  deps: ["three"], exports: "PointerLockControls" },
+            }   
+        })
+        requirejs([
+                "fp",
+                "dat.gui",
+                "smoothie",
+                "stats.min",
+                "jstat.min",
+                "Mirror",
+                "WaterShader",
+                "TerrainLoader",
+                "js/THREEx.KeyboardState.js",
+                "js/controls/TrackballControls.js",
+                "js/controls/PointerLockControls.js",
+            ], 
+            function() {
+                var sim =  {
+                    counter: 0,
+                    setup: function() {
+                        counter = 0;
+                        console.log("Custom set up")
+                    },
+                    tick: function() {
+                        console.log("Custom tick: " + (++ counter))
+                    }
+                }
+                var config = {
+                  "preset": "Default2",
+                  "remembered": {
+                    "Default2": {
+                      "1": { "buildingsShow": false }
+                    }
+                  }
+                }
+
+                fp.init( sim, config );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
