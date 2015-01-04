@@ -35,10 +35,14 @@
             ],
             function() {
                 var config = {
-                  "preset": "Default2",
+                  "preset": "Default",
                   "remembered": {
-                    "Default2": {
-                      "1": { "buildingsShow": false }
+                    "Default": {
+                        "4": {
+                            "statsShow": false,
+                            "chartShow": false,
+                            "topDownView": true,
+                        }
                     }
                   }
                 }
@@ -46,14 +50,18 @@
                     counter: 0,
                     setup: function() {
                         counter = 0;
+                        var position = new THREE.Vector3(0, fp.getHeight(0, 0), 0);
+                        fp.buildingNetwork.createBuilding(position);
                         console.log("Custom set up")
                     },
                     tick: function() {
-                        console.log("Custom tick: " + (++ counter))
+                        //console.log("Custom tick: " + (++ counter))
                     }
                 }
 
-                fp.init( config, sim );
+                fp.init( config, sim, function() {
+                    fp.appConfig().Setup();  
+                } );
             }
         );
 

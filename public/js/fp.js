@@ -43,8 +43,6 @@ define([
         water = null,
         appConfig = null,             // Sim world variables
         agentNetwork = null,
-        buildingNetwork = null,
-        roadNetwork = null,
         pathNetwork = null,
         trailNetwork = null,
         patchNetwork = null,
@@ -461,8 +459,8 @@ define([
             this.updateBuildings = function() {
                 if ( !fp.AppState.runSimulation || !appConfig.displayController.buildingsShow )
                     return;
-                for (var i = 0; i < buildingNetwork.buildings.length; i ++ ) {
-                    var building = buildingNetwork.buildings[i];
+                for (var i = 0; i < fp.buildingNetwork.buildings.length; i ++ ) {
+                    var building = fp.buildingNetwork.buildings[i];
                     var likelihoodToGrow = Math.random();
                     if ( likelihoodToGrow > fp.likelihoodOfGrowth() )
                         building.update();
@@ -497,17 +495,17 @@ define([
                 building.addFloor();
 
                 // Before we add this, try to detect collision
-                var collisionDetected = buildingNetwork.collidesWithOtherBuildings(building);
+                var collisionDetected = fp.buildingNetwork.collidesWithOtherBuildings(building);
                 if (collisionDetected)
                     return undefined;
 
                 // Add the building to caches
-                buildingNetwork.buildings.push(building);
+                fp.buildingNetwork.buildings.push(building);
                 // Add all ground floor vertices to hash, as crude collision detection
-                var points = buildingNetwork.get2dIndexPoints(building);
+                var points = fp.buildingNetwork.get2dIndexPoints(building);
                 for (var i = 0; i < points.length; i++)
-                    buildingNetwork.buildingHash[points[i]] = building;
-                buildingNetwork.networkMesh.add( building.lod );
+                    fp.buildingNetwork.buildingHash[points[i]] = building;
+                fp.buildingNetwork.networkMesh.add( building.lod );
                 collidableMeshList.push( building.highResMeshContainer );
                 collidableMeshList.push( building.highResMeshContainer.children[0] );
                 return building;
@@ -935,7 +933,7 @@ define([
             this.maxTerrainHeight = 400;
             this.gridSize = 4;
 
-            this.loadTerrain = function() {
+            this.loadTerrain = function( callback ) {
                 var terrainLoader = new THREE.TerrainLoader();
                 // var terrain = this;
                 terrainLoader.load(fp.TERRAIN_MAPS[terrain.terrainMapIndex], function(data) {
@@ -1026,6 +1024,7 @@ define([
                     pathNetwork.setupAStarGraph();
 
                     fp.animate(); // Kick off the animation loop
+                    callback(); // Run the callback
                });
             };
 
@@ -1143,7 +1142,7 @@ define([
             };
             this.findBuilding = function() {
                 var xl = this.lastPosition.x, zl = this.lastPosition.z;
-                return buildingNetwork.buildingHash[fp.getIndex(xl, zl)];
+                return fp.buildingNetwork.buildingHash[fp.getIndex(xl, zl)];
             };
             this.goingUp = function(building) {
                 return ( building == this.home ) ?
@@ -1366,17 +1365,17 @@ define([
                     return false;
 
                 // Don't build in an existing position
-                if ( !_.isUndefined(buildingNetwork.buildingHash[index]) )
+                if ( !_.isUndefined(fp.buildingNetwork.buildingHash[index]) )
                     return false;
 
-                if ( buildingNetwork.buildings.length == 0 ) { // If there are no buildings, build an initial "seed"
-                    this.home = buildingNetwork.createBuilding(this.position);
+                if ( fp.buildingNetwork.buildings.length == 0 ) { // If there are no buildings, build an initial "seed"
+                    this.home = fp.buildingNetwork.createBuilding(this.position);
                     return ( !_.isUndefined(this.home) );
                 }
-                else if (buildingNetwork.networkMesh.children.length >= appConfig.buildingController.maxNumber)
+                else if (fp.buildingNetwork.networkMesh.children.length >= appConfig.buildingController.maxNumber)
                     return false;
 
-                if ( stats.fps <= 10 )
+                if ( !_.isNull(stats) && stats.fps <= 10 )
                     return false;
 
                 // Simple test of local roads, water, buildings and building height
@@ -1393,7 +1392,7 @@ define([
                     waterProximate > waterSig ||
                         buildingsProximate > buildingSig ||
                         buildingHeightProximate > buildingHeightSig) {
-                    this.home = buildingNetwork.createBuilding(this.position);
+                    this.home = fp.buildingNetwork.createBuilding(this.position);
                     return ( !_.isUndefined(this.home) );
                 }
                 return false;
@@ -1407,19 +1406,19 @@ define([
                     xd = (xOrig - xInit),
                     zd = (zOrig - zInit),
                     distanceFromInitialPoint = Math.sqrt(xd * xd + zd * zd),
-                    buildingIndex = _.map(buildingNetwork.buildings, function(building) { return fp.getIndex(building.lod.position.x, building.lod.position.z)} );
+                    buildingIndex = _.map(fp.buildingNetwork.buildings, function(building) { return fp.getIndex(building.lod.position.x, building.lod.position.z)} );
 
                 if (fp.roadNetwork.networkMesh.children.length >= appConfig.roadController.maxNumber)
                     return false;
 
-                if (stats.fps <= 10)
+                if ( !_.isNull(stats) && stats.fps <= 10 )
                     return false;
 
                 if (appConfig.displayController.buildingsShow) {
-                    if ( buildingNetwork.buildings.length == 0 ) {
+                    if ( fp.buildingNetwork.buildings.length == 0 ) {
                         return false;
                     }
-                    else if ( buildingNetwork.buildings.length == 1 ) {
+                    else if ( fp.buildingNetwork.buildings.length == 1 ) {
                         if ( buildingIndex.indexOf( index ) == -1 )
                             return false;
                     }
@@ -1806,7 +1805,7 @@ define([
                         wc = fp.buildColorVector(appConfig.colorController.colorNightBuildingWindow);
                     }
                     // Gets around a problem with rendering a single building with lines or windows
-                    var showLines = ( buildingNetwork.buildings.length > 1 && appConfig.buildingController.showLines );
+                    var showLines = ( fp.buildingNetwork.buildings.length > 1 && appConfig.buildingController.showLines );
                     var showWindows = appConfig.buildingController.showWindows;
                     this.uniforms = {
                         time: { type: "f", value: 1.0 },
@@ -2009,7 +2008,8 @@ define([
                 pathsShow: true,
                 terrainShow: true,
                 coloriseAgentsByHealth: true,
-                firstPersonView: false
+                firstPersonView: false,
+                topDownView: false
             }
             this.roadController = {
                 create: true,
@@ -2161,8 +2161,8 @@ define([
                 scene.remove(  agentNetwork.particles  );
                 agentNetwork.agents = [];
                 agentParticleSystemAttributes = undefined;
-                buildingNetwork.buildings = [];
-                buildingNetwork.buildingHash = {};
+                fp.buildingNetwork.buildings = [];
+                fp.buildingNetwork.buildingHash = {};
                 collidableMeshList = [];
                 fp.roadNetwork.roadPoints = [];
                 fp.roadNetwork.roads = {};
@@ -2187,7 +2187,7 @@ define([
 
                 trailNetwork.trails = {};
                 scene.remove(agentNetwork.networkMesh);
-                scene.remove(buildingNetwork.networkMesh);
+                scene.remove(fp.buildingNetwork.networkMesh);
                 scene.remove(fp.roadNetwork.networkMesh);
                 scene.remove(pathNetwork.networkMesh);
                 scene.remove(trailNetwork.globalTrailLine);
@@ -2212,9 +2212,9 @@ define([
                         trailNetwork.trails[ai] = 1;
                 }
 
-                buildingNetwork.networkMesh = new THREE.Object3D();
+                fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 if ( appConfig.displayController.buildingsShow )
-                    scene.add(buildingNetwork.networkMesh);
+                    scene.add(fp.buildingNetwork.networkMesh);
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
                 if ( appConfig.displayController.roadsShow )
@@ -2395,7 +2395,7 @@ define([
             var windows = view.addFolder('Window');
             var showWindowsController = windows.add(appConfig.buildingController, 'showWindows');
             showWindowsController.onChange(function(value) {
-                buildingNetwork.buildings.forEach(function(b) {
+                fp.buildingNetwork.buildings.forEach(function(b) {
                     b.uniforms.showWindows.value = value ? 1 : 0;
                 })
             });
@@ -2460,6 +2460,7 @@ define([
             displayFolder.add(appConfig.displayController, 'terrainShow').onFinishChange(terrain.updateTerrainPlane);
             displayFolder.add(appConfig.displayController, 'coloriseAgentsByHealth');
             displayFolder.add(appConfig.displayController, 'firstPersonView').onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayController, 'topDownView').onFinishChange(fp.resetControls);
 
             var colorFolder = gui.addFolder('Color Options');
 
@@ -2560,7 +2561,7 @@ define([
             // Set up root objects
             terrain = new fp.Terrain();
             agentNetwork = new fp.AgentNetwork();
-            buildingNetwork = new fp.BuildingNetwork();
+            fp.buildingNetwork = new fp.BuildingNetwork();
             fp.roadNetwork = new fp.RoadNetwork();
             pathNetwork = new fp.PathNetwork();
             trailNetwork = new fp.TrailNetwork();
@@ -2570,22 +2571,34 @@ define([
             appConfig = new fp.AppConfig();
         },
 
+        // Debug Objects
+        camera: function() { return camera; },
+        appConfig: function() { return appConfig; },
+
         setupCamera: function() {
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000000);
-            if ( !appConfig.displayController.firstPersonView ) {
+            camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
+            if ( appConfig.displayController.topDownView ) {
                 camera.position.x = 0;
-                camera.position.y = 200;
-                camera.position.z = 800;
+                camera.position.y = 2000;
+                camera.position.z = 1;
             }
-            else {
+            else if ( appConfig.displayController.firstPersonView ) {
                 camera.position.x = 0;
                 camera.position.y = 50;
                 camera.position.z = 0;
             }
+            else {
+                camera.position.x = 0;
+                camera.position.y = 200;
+                camera.position.z = 800;
+            }
         },
 
         setupControls: function() {
-            if ( appConfig.displayController.firstPersonView ) {
+            if ( appConfig.displayController.topDownView ) {
+                controls = new THREE.TrackballControls( camera, container );
+            }
+            else if ( appConfig.displayController.firstPersonView ) {
                 controls = new THREE.PointerLockControls( camera );
                 scene.add( controls.getObject() );
                 controls.enabled = true;
@@ -2777,7 +2790,7 @@ define([
         },
 
 
-        init: function(config, sim) {
+        init: function( config, sim, callback ) {
             container = $( '#container' )[0];
             scene = new THREE.Scene();
             fp.sim = sim || fp.simDefault();
@@ -2793,14 +2806,14 @@ define([
             fp.Chart.setupChart();
             fp.updateStatsState(); // Add stats
             window.addEventListener( 'resize', fp.onWindowResize, false );
-            terrain.loadTerrain(); // Load the terrain asynchronously
+            terrain.loadTerrain( callback ); // Load the terrain asynchronously
         },
 
         animate: function() {
             if ( fp.AppState.runSimulation )
                 fp.sim.tick.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
             agentNetwork.updateAgentNetwork();
-            buildingNetwork.updateBuildings();
+            fp.buildingNetwork.updateBuildings();
             patchNetwork.updatePatchValues();
             trailNetwork.updateTrails();
             fp.updateYear();
@@ -2942,7 +2955,7 @@ define([
         },
 
         likelihoodOfGrowth: function() {
-            return (1 - (buildingNetwork.speedOfConstruction * fp.speedOfSim()) );
+            return (1 - (fp.buildingNetwork.speedOfConstruction * fp.speedOfSim()) );
         },
 
         checkProximityOfRoads: function(index) {
@@ -2973,7 +2986,7 @@ define([
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
             fp.surroundingCells(index).forEach(function(cell) {
-                if (buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] != null)
+                if (fp.buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] != null)
                     buildingNeighbours++;
                 totalNeighbours++;
             })
@@ -2985,14 +2998,14 @@ define([
          We count in 8 directions, to maxDepth
          */
         checkProximiteBuildingHeight: function(index) {
-            if ( buildingNetwork.buildings.length == 0 )
+            if ( fp.buildingNetwork.buildings.length == 0 )
                 return 0;
 
             var surrounding = fp.surroundingCells(index);
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
 
-            var allHeights = jStat(_.map(buildingNetwork.buildings, function(building) {return building.maxHeight; } ));
+            var allHeights = jStat(_.map(fp.buildingNetwork.buildings, function(building) {return building.maxHeight; } ));
             var meanHeights = allHeights.mean();
             var stdevHeights = allHeights.stdev();
 
@@ -3005,7 +3018,7 @@ define([
                 if (cell != null) {
                     // Also zero?
                     var key = fp.getIndex(cell.x, cell.y);
-                    var building = buildingNetwork.buildingHash[key];
+                    var building = fp.buildingNetwork.buildingHash[key];
                     if (building != null) {
                         localBuildings.push(building);
                     }
@@ -3224,16 +3237,16 @@ define([
         // HUD control handlers
         updateBuildingState: function() {
             if ( !appConfig.displayController.buildingsShow )
-                scene.remove(buildingNetwork.networkMesh);
+                scene.remove(fp.buildingNetwork.networkMesh);
             else
-                scene.add(buildingNetwork.networkMesh);
+                scene.add(fp.buildingNetwork.networkMesh);
         },
 
         updateRoadState: function() {
             if ( !appConfig.displayController.roadsShow )
-                scene.remove(fp.roadNetwork.networkMesh);
+                scene.remove( fp.roadNetwork.networkMesh );
             else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
-                scene.add(fp.roadNetwork.networkMesh);
+                scene.add( fp.roadNetwork.networkMesh );
         },
 
         updateWaterState: function() {
@@ -3287,7 +3300,7 @@ define([
         updateWireframeState: function() {
             terrain.simpleTerrainMaterial.wireframe = appConfig.displayController.wireframeShow;
             terrain.richTerrainMaterial.wireframe = appConfig.displayController.wireframeShow;
-            buildingNetwork.buildings.forEach(function(building) {
+            fp.buildingNetwork.buildings.forEach(function(building) {
                 building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayController.wireframeShow; })
             })
         },
@@ -3317,7 +3330,7 @@ define([
             renderer.setClearColor( colorBackground, 1);
             // THIS IS WRONG BUT WE NEED TO UPDATE THE BUILDING APPEARANCE
             /*
-            buildingNetwork.buildings.forEach(function(building) {
+            fp.buildingNetwork.buildings.forEach(function(building) {
                 building.mesh.material.color = colorBuilding;
                 building.material.colorsNeedUpdate = true;
             })
