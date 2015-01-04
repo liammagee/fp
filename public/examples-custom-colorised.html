@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="css/fp.css">
+        <script src="js/require.js"></script>
+        <script>
+        requirejs.config({
+            baseUrl: 'js',
+            "shim": {
+                "underscore": { exports: "_" },
+                "dat.gui": { exports: "dat.gui" },
+                "smoothie": { exports: "SmoothieChart" },
+                "stats.min": { exports: "Stats" },
+                "jstat.min": { exports: "jStat" },
+                "three": { exports: "THREE" },
+                "Mirror": ["three"],
+                "WaterShader": ["three"],
+                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
+                "js/controls/TrackballControls.js": {  deps: ["three"], exports: "TrackballControls" },
+                "js/controls/PointerLockControls.js": {  deps: ["three"], exports: "PointerLockControls" },
+            }
+        })
+        requirejs([
+                "fp",
+                "dat.gui",
+                "smoothie",
+                "stats.min",
+                "jstat.min",
+                "Mirror",
+                "WaterShader",
+                "TerrainLoader",
+                "js/THREEx.KeyboardState.js",
+                "js/controls/TrackballControls.js",
+                "js/controls/PointerLockControls.js",
+            ],
+            function() {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                      "1": { "buildingsShow": false },
+                      "4": {
+                            "terrainShow": true,
+                            "dayShow": true,
+                            "skyboxShow": false
+                        },
+                      "5": {
+                            "colorDayTerrainSea": 10921638,
+                            "colorDayTerrainLowland1": 251 * 256 * 256 + 251 * 256 + 193,
+                            "colorDayTerrainLowland2": 251 * 256 * 256 + 251 * 256 + 193,
+                            "colorDayTerrainMidland": 251 * 256 * 256 + 251 * 256 + 193,
+                            "colorDayTerrainHighland": 251 * 256 * 256 + 251 * 256 + 193,
+                            "colorDayBuildingFill": 151 * 256 * 256 + 217 * 256 + 207,
+                            "colorDayBuildingLine": 151 * 256 * 256 + 217 * 256 + 207,
+                            "colorDayBuildingWindow": 194 * 256 * 256 + 103 * 256 + 92,
+                            "colorDayBackground": 194 * 256 * 256 + 103 * 256 + 92,
+                            "colorDayRoad": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorDayAgent": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorDayNetwork": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorDayTrail": 135 * 256 * 256 + 187 * 256 + 175,
+                        },
+                      "6": { "loadHeights": false, "multiplier": 2 },
+                    }
+                  }
+                }
+
+                fp.init( config );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
