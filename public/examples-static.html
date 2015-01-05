@@ -58,8 +58,8 @@
                         // Create 100 buildings
                         var counter = 0, minHeight = 30, maxHeight = 100;
                         while (counter < 100) {
-                            var x = Math.floor(Math.random() * 1000),
-                                z = Math.floor(Math.random() * 1000),
+                            var x = Math.floor(Math.random() * 4000),
+                                z = Math.floor(Math.random() * 4000),
                                 y = fp.getHeight(x, z)
                             var position = new THREE.Vector3(x, y, z);    
                             var building = fp.buildingNetwork.createBuilding(position);
@@ -67,13 +67,11 @@
                                 var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
                                 for (var i = 0; i < height; i++) 
                                     if (building.canAddFloor() )
-                                    building.addFloor();
+                                        building.addFloor();
+                                counter++;
                             }
-                            counter++;
                         }
-                        for (var i = 0; i < 100; i++) {
-                        };
-                        console.log("Buildings: " + fp.buildingNetwork.buildings.length)
+                        console.log( counter )
                     },
                     tick: function() {
                         //console.log("Custom tick: " + (++ counter))
