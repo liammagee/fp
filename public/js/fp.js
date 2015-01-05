@@ -1859,8 +1859,12 @@ define([
                 }
             };
 
+            this.canAddFloor = function() {
+                return ( !this.destroying && this.levels < this.localMaxLevels && this.localWidth > 0 && this.localLength > 0 )
+            };
+
             this.update = function() {
-                if (! this.destroying && this.levels < this.localMaxLevels && this.localWidth > 0 && this.localLength > 0) {
+                if ( this.canAddFloor() ) {
                     this.counter ++;
                     if (this.counter % appConfig.buildingController.riseRate == 0 )
                         this.addFloor()
@@ -2338,7 +2342,7 @@ define([
             controlPanel.add(appConfig, 'SwitchTerrain');
 
             var agentsFolder = gui.addFolder('Agent Options');
-            agentsFolder.add(appConfig.agentController, 'initialPopulation', 1, 10000).step(1);
+            agentsFolder.add(appConfig.agentController, 'initialPopulation', 0, 10000).step(1);
             agentsFolder.add(appConfig.agentController, 'initialExtent', 100, terrain.gridExtent).step(100);
             agentsFolder.add(appConfig.agentController, 'maxExtent', 1000, terrain.gridExtent).step(100);
             agentsFolder.add(appConfig.agentController, 'initialX',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
@@ -2579,18 +2583,18 @@ define([
             camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
             if ( appConfig.displayController.topDownView ) {
                 camera.position.x = 0;
-                camera.position.y = 2000;
+                camera.position.y = 1000 * appConfig.terrainController.multiplier;
                 camera.position.z = 1;
             }
             else if ( appConfig.displayController.firstPersonView ) {
                 camera.position.x = 0;
-                camera.position.y = 50;
+                camera.position.y = 50 * appConfig.terrainController.multiplier;
                 camera.position.z = 0;
             }
             else {
                 camera.position.x = 0;
-                camera.position.y = 200;
-                camera.position.z = 800;
+                camera.position.y = 200 * appConfig.terrainController.multiplier;
+                camera.position.z = 800 * appConfig.terrainController.multiplier;
             }
         },
 

@@ -38,10 +38,16 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
+                        "1": {
+                            "initialPopulation": 0
+                        },
                         "4": {
                             "statsShow": false,
                             "chartShow": false,
                             "topDownView": true,
+                        },
+                        "6": {
+                            "multiplier": 10
                         }
                     }
                   }
@@ -49,10 +55,25 @@
                 var sim =  {
                     counter: 0,
                     setup: function() {
-                        counter = 0;
-                        var position = new THREE.Vector3(0, fp.getHeight(0, 0), 0);
-                        fp.buildingNetwork.createBuilding(position);
-                        console.log("Custom set up")
+                        // Create 100 buildings
+                        var counter = 0, minHeight = 30, maxHeight = 100;
+                        while (counter < 100) {
+                            var x = Math.floor(Math.random() * 1000),
+                                z = Math.floor(Math.random() * 1000),
+                                y = fp.getHeight(x, z)
+                            var position = new THREE.Vector3(x, y, z);    
+                            var building = fp.buildingNetwork.createBuilding(position);
+                            if ( typeof( building ) !== "undefined" ) {
+                                var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
+                                for (var i = 0; i < height; i++) 
+                                    if (building.canAddFloor() )
+                                    building.addFloor();
+                            }
+                            counter++;
+                        }
+                        for (var i = 0; i < 100; i++) {
+                        };
+                        console.log("Buildings: " + fp.buildingNetwork.buildings.length)
                     },
                     tick: function() {
                         //console.log("Custom tick: " + (++ counter))
