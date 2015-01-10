@@ -76,7 +76,6 @@ define([
                 agent.setVertex(vertex);
                 agent.setRandomDirection();
 
-                var threshold = 2.0 * appConfig.agentController.initialDistribution;
                 agent.color = '#' + (appConfig.displayController.dayShow ?
                                     appConfig.colorController.colorDayAgent.toString(16) :
                                     appConfig.colorController.colorNightAgent.toString(16) );
@@ -585,6 +584,7 @@ define([
                 var adjust = appConfig.roadController.flattenAdjustment,
                     lift = appConfig.roadController.flattenLift;
                 var vertices = roadGeom.vertices;
+                /*
                 for (var i = 0; i <= vertices.length - appConfig.roadController.roadRadiusSegments; i += appConfig.roadController.roadRadiusSegments) {
                     var coil = vertices.slice(i, i + appConfig.roadController.roadRadiusSegments);
                     var mean = jStat.mean(_.map(coil, function(p) { return p.y; } ) );
@@ -595,6 +595,7 @@ define([
                         vertices[i+j].y = lift + mean + newDiff;
                     }
                 }
+                */
                 var roadMesh = new THREE.Mesh(roadGeom, roadMaterial);
                 fp.roadNetwork.networkMesh.add(roadMesh);
                 points2d = _.map(vertices, function(p) { return fp.getIndex(p.x,p.z); });
@@ -1024,7 +1025,8 @@ define([
                     pathNetwork.setupAStarGraph();
 
                     fp.animate(); // Kick off the animation loop
-                    callback(); // Run the callback
+                    if ( !_.isUndefined(callback) )
+                        callback(); // Run the callback
                });
             };
 
@@ -1974,7 +1976,6 @@ define([
                 // initialX: -500, initialY: -1500, // Melbourne
                 initialX: 0,
                 initialY: 0,
-                initialDistribution: 0.5,
                 chanceToJoinNetwork: 0.05,
                 chanceToFindPathToHome: 0.00,
                 initialCircle: true,
@@ -2347,7 +2348,6 @@ define([
             agentsFolder.add(appConfig.agentController, 'maxExtent', 1000, terrain.gridExtent).step(100);
             agentsFolder.add(appConfig.agentController, 'initialX',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
             agentsFolder.add(appConfig.agentController, 'initialY',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
-            agentsFolder.add(appConfig.agentController, 'initialDistribution',  0.0, 1.0).step(0.01);
             agentsFolder.add(appConfig.agentController, 'chanceToJoinNetwork', 0.0, 1.0).step(0.01);
             agentsFolder.add(appConfig.agentController, 'chanceToFindPathToHome', 0.0, 1.0).step(0.01);
             agentsFolder.add(appConfig.agentController, 'initialCircle');
@@ -2436,7 +2436,7 @@ define([
             roadsFolder.add(appConfig.roadController, 'lenMinimum', 0, 2000).step(100);
             roadsFolder.add(appConfig.roadController, 'lenMaximum', 100, 2000).step(100);
             roadsFolder.add(appConfig.roadController, 'lenDistributionFactor', 1, 10).step(1);
-            roadsFolder.add(appConfig.roadController, 'overlapThreshold', 1, 10).step(1);
+            roadsFolder.add(appConfig.roadController, 'overlapThreshold', 1, 100).step(1);
             roadsFolder.add(appConfig.roadController, 'flattenAdjustment', 0.025, 1.0).step(0.025);
             roadsFolder.add(appConfig.roadController, 'flattenLift', 0, 40).step(1);
 
@@ -2518,6 +2518,10 @@ define([
             }
             var vec = new THREE.Vector3(r / 255.0, g / 255.0, b / 255.0);
             return vec;
+        },
+
+        buildColorInteger: function(r, g, b) {
+            return r * 256 * 256 + g * 256 + b;
         },
 
         getOffset: function(currentLevel, len) {

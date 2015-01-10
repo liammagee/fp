@@ -34,6 +34,7 @@
                 "js/controls/PointerLockControls.js",
             ],
             function() {
+                var roadColor = fp.buildColorInteger(255, 255, 255);
                 var config = {
                   "preset": "Default",
                   "remembered": {
@@ -41,13 +42,22 @@
                         "1": {
                             "initialPopulation": 0
                         },
+                        "2": {},
+                        "3": {
+                            "overlapThreshold": 100,
+                            "roadRadiusSegments": 1
+                        },
                         "4": {
                             "statsShow": false,
                             "chartShow": false,
                             "topDownView": true,
                         },
+                        "5": {
+                            "colorNightRoad": roadColor //16777215
+                        },
                         "6": {
-                            "multiplier": 10
+                            "multiplier": 1,
+                            "loadHeights": false
                         }
                     }
                   }
@@ -55,6 +65,29 @@
                 var sim =  {
                     counter: 0,
                     setup: function() {
+                        // Create a grid road structure
+                        for (var i = 0; i < 10; i++) {
+                            var x = i * 200 - 1000, 
+                                z1 = -1000,
+                                z2 = 1000,
+                                y1 = fp.getHeight(x, z1),
+                                y2 = fp.getHeight(x, z2),
+                                p1 = new THREE.Vector3(x, y1, z1),
+                                p2 = new THREE.Vector3(x, y2, z2);
+                            fp.roadNetwork.addRoad(p1, p2, 10);
+                        }
+
+                        for (var i = 0; i < 10; i++) {
+                            var z = i * 200 - 1000, 
+                                x1 = -1000,
+                                x2 = 1000,
+                                y1 = fp.getHeight(x1, z),
+                                y2 = fp.getHeight(x2, z),
+                                p1 = new THREE.Vector3(x1, y1, z),
+                                p2 = new THREE.Vector3(x2, y2, z);
+                            fp.roadNetwork.addRoad(p1, p2, 10);
+                        }
+
                         // Create 100 buildings
                         var counter = 0, minHeight = 30, maxHeight = 100;
                         while (counter < 100) {
