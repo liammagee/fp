@@ -414,6 +414,13 @@ define([
             this.speedOfConstruction = 0.05;
             // Collision detection, based on the approach described here: http://stemkoski.github.io/Three.js/Collision-Detection.html
             // Simplified 2d alternative for collision detection
+            this.generateRandomDimensions = function() {
+                return {
+                    levels: appConfig.buildingController.minHeight + Math.floor( Math.random() * (appConfig.buildingController.maxHeight - appConfig.buildingController.minHeight) ) ,
+                    width: appConfig.buildingController.minWidth + Math.floor( Math.random() * (appConfig.buildingController.maxWidth - appConfig.buildingController.minWidth)) ,
+                    length: appConfig.buildingController.minLength + Math.floor( Math.random() * (appConfig.buildingController.maxLength - appConfig.buildingController.minLength))
+                };
+            };
             this.get2dIndexPoints = function(building) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
@@ -467,7 +474,7 @@ define([
             };
 
             //Some of the logic derived from: http://learningthreejs.com/blog/2013/08/02/how-to-do-a-procedural-city-in-100lines/
-            this.createBuilding = function(position) {
+            this.createBuilding = function(position, dimensions) {
                 var building = new fp.Building();
 
                 // Give the building a form
@@ -476,7 +483,7 @@ define([
                     building.buildingForm = fp.BUILDING_FORMS.names[Math.floor(Math.random() * fp.BUILDING_FORMS.names.length)];
 
                 // Determine a height and develop the geometry
-                building.setupBuilding();
+                building.setupBuilding(dimensions);
 
                 // Set rotation and position
                 var rotateY = (appConfig.buildingController.rotateSetAngle / 180) * Math.PI;
@@ -584,7 +591,7 @@ define([
                 var adjust = appConfig.roadController.flattenAdjustment,
                     lift = appConfig.roadController.flattenLift;
                 var vertices = roadGeom.vertices;
-                /*
+
                 for (var i = 0; i <= vertices.length - appConfig.roadController.roadRadiusSegments; i += appConfig.roadController.roadRadiusSegments) {
                     var coil = vertices.slice(i, i + appConfig.roadController.roadRadiusSegments);
                     var mean = jStat.mean(_.map(coil, function(p) { return p.y; } ) );
@@ -595,7 +602,7 @@ define([
                         vertices[i+j].y = lift + mean + newDiff;
                     }
                 }
-                */
+
                 var roadMesh = new THREE.Mesh(roadGeom, roadMaterial);
                 fp.roadNetwork.networkMesh.add(roadMesh);
                 points2d = _.map(vertices, function(p) { return fp.getIndex(p.x,p.z); });
@@ -1355,6 +1362,9 @@ define([
                      this.friends.indexOf(agent) == -1 )
                     this.friends.push(agent);
             };
+            this.generateDimensions = function() {
+
+            };
             this.buildHome = function() {
                 if (this.home != null)
                     return false;
@@ -1370,8 +1380,10 @@ define([
                 if ( !_.isUndefined(fp.buildingNetwork.buildingHash[index]) )
                     return false;
 
+                var dimensions = fp.buildingNetwork.generateRandomDimensions();
+
                 if ( fp.buildingNetwork.buildings.length == 0 ) { // If there are no buildings, build an initial "seed"
-                    this.home = fp.buildingNetwork.createBuilding(this.position);
+                    this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
                     return ( !_.isUndefined(this.home) );
                 }
                 else if (fp.buildingNetwork.networkMesh.children.length >= appConfig.buildingController.maxNumber)
@@ -1394,7 +1406,7 @@ define([
                     waterProximate > waterSig ||
                         buildingsProximate > buildingSig ||
                         buildingHeightProximate > buildingHeightSig) {
-                    this.home = fp.buildingNetwork.createBuilding(this.position);
+                    this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
                     return ( !_.isUndefined(this.home) );
                 }
                 return false;
@@ -1527,13 +1539,13 @@ define([
             this.maxDepth = Math.floor(d * 9) + 1;
             this.maxHeight = h + 1;
 
-            this.setupBuilding = function() {
+            this.setupBuilding = function(dimensions) {
                 this.lod = new THREE.LOD();
                 this.yOffset = 0;
                 this.levels = 0;
-                this.localMaxLevels = appConfig.buildingController.minHeight + Math.floor(Math.random() * (appConfig.buildingController.maxHeight - appConfig.buildingController.minHeight));
-                this.localWidth = appConfig.buildingController.minWidth + Math.floor(Math.random() * (appConfig.buildingController.maxWidth - appConfig.buildingController.minWidth))
-                this.localLength = appConfig.buildingController.minLength + Math.floor(Math.random() * (appConfig.buildingController.maxLength - appConfig.buildingController.minLength))
+                this.localMaxLevels = dimensions.levels;
+                this.localWidth = dimensions.width;
+                this.localLength = dimensions.length;
 
                 // Set up materials
                 var fc, lc, wc;
