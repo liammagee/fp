@@ -12,6 +12,8 @@
                 "smoothie": { exports: "SmoothieChart" },
                 "stats.min": { exports: "Stats" },
                 "jstat.min": { exports: "jStat" },
+                "javascript.util": { exports: "javascript.util" },
+                "jsts": { exports: "jsts" },
                 "three": { exports: "THREE" },
                 "Mirror": ["three"],
                 "WaterShader": ["three"],
@@ -26,6 +28,8 @@
                 "smoothie",
                 "stats.min",
                 "jstat.min",
+                "javascript.util",
+                "jsts",
                 "Mirror",
                 "WaterShader",
                 "TerrainLoader",
@@ -87,12 +91,16 @@
                             fp.roadNetwork.addRoad(p1, p2, 10);
                         }
 
+                        // Get city blocks
+                        var cityBlocks = fp.roadNetwork.cityBlocks();
+                        console.log(cityBlocks.length);
+                        console.log(fp.roadNetwork.getPolygonArea(cityBlocks[0]));
 
                         // Create 100 buildings
                         var counter = 0, minHeight = 30, maxHeight = 100;
-                        while (counter < 100) {
-                            var x = Math.floor(Math.random() * 4000) - 2000,
-                                z = Math.floor(Math.random() * 4000) - 2000,
+                        while (counter < 10) {
+                            var x = Math.floor(Math.random() * 2000) - 1000,
+                                z = Math.floor(Math.random() * 2000) - 1000,
                                 y = fp.getHeight(x, z)
                             var position = new THREE.Vector3(x, y, z);
                             var dimensions = fp.buildingNetwork.generateRandomDimensions();
@@ -100,7 +108,7 @@
                             if ( typeof( building ) !== "undefined" ) {
                                 var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
                                 for (var i = 0; i < height; i++)
-                                    if (building.canAddFloor() )
+                                    if ( building.canAddFloor() )
                                         building.addFloor();
                                 counter++;
                             }

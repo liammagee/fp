@@ -28,6 +28,8 @@ requirejs([
         "smoothie",
         "stats.min",
         "jstat.min",
+        "javascript.util",
+        "jsts",
         "Mirror",
         "WaterShader",
         "TerrainLoader",

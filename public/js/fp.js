@@ -421,7 +421,7 @@ define([
                     length: appConfig.buildingController.minLength + Math.floor( Math.random() * (appConfig.buildingController.maxLength - appConfig.buildingController.minLength))
                 };
             };
-            this.get2dIndexPoints = function(building) {
+            this.get2dPoints = function(building) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
                     position = building.highResMeshContainer.position,
@@ -440,15 +440,33 @@ define([
                         for (var k = 0; k < lXa; k += offset) {
                             for (var l = 0; l < lZa; l += offset) {
                                 var lXLocal = wXLocal + k * lXi, lZLocal = wZLocal + l * lZi;
-                                var indexLocal = fp.getIndex(lXLocal, lZLocal);
-                                if (indexLocal != indexPrev && points.indexOf(indexLocal) == -1) {
-                                    points.push(indexLocal);
+                                var coordinate = { x: lXLocal, y: lZLocal };
+                                if (points.indexOf(coordinate) == -1) {
+                                    points.push(coordinate);
                                 }
                             }
                         }
                     }
                 }
                 return points;
+            };
+            this.get2dPointsForBoundingBox = function(building) {
+                var points = [];
+                var firstFloor = building.highResMeshContainer.children[0],
+                    position = building.highResMeshContainer.position,
+                    vertices = firstFloor.geometry.vertices,
+                    ff0 = vertices[0].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position),
+                    ff1 = vertices[1].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position),
+                    ff2 = vertices[2].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position),
+                    ff3 = vertices[3].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position);
+                points.push({ x: ff0.x, y: ff0.z });
+                points.push({ x: ff1.x, y: ff1.z });
+                points.push({ x: ff2.x, y: ff2.z });
+                points.push({ x: ff3.x, y: ff3.z });
+                return points;
+            };
+            this.get2dIndexPoints = function(building) {
+                return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
             }
             this.collidesWithOtherBuildings = function(building) {
                 // Quick fix
@@ -460,6 +478,29 @@ define([
                         return true;
                 }
                 return false;
+            };
+            this.collidesWithRoads = function(building) {
+                var points = this.get2dPointsForBoundingBox( building );
+                var coords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.y); } );
+                var lineUnion;
+                var j = coords.length - 1;
+                for (var i = 0; i < coords.length; i++ ) {
+                    var line = new jsts.geom.LineString([coords[i], coords[j]]);
+                    j = i;
+                    if ( _.isUndefined(lineUnion) )
+                        lineUnion = line;
+                    else
+                        lineUnion = lineUnion.union(line);
+                }
+                var polygonizer = new jsts.operation.polygonize.Polygonizer();
+                polygonizer.add( lineUnion );
+                var buildingGeometry = polygonizer.getPolygons().toArray()[0];
+                try {
+                    var intersections = fp.roadNetwork.networkGeometry.intersection(buildingGeometry);
+                    return intersections.geometries.length > 0;
+                }
+                catch (e) {}
+                return true; // Be pessimistic
             };
 
             this.updateBuildings = function() {
@@ -505,6 +546,21 @@ define([
                 if (collisionDetected)
                     return undefined;
 
+                collisionDetected = fp.buildingNetwork.collidesWithRoads(building);
+                if (collisionDetected)
+                    return undefined;
+
+                // Add the building to caches
+                fp.buildingNetwork.buildings.push(building);
+                // Add all ground floor vertices to hash, as crude collision detection
+                var points = fp.buildingNetwork.get2dIndexPoints(building);
+                for (var i = 0; i < points.length; i++)
+                    fp.buildingNetwork.buildingHash[points[i]] = building;
+                fp.buildingNetwork.networkMesh.add( building.lod );
+                var colRoadd = fp.buildingNetwork.collidesWithOtherBuildings(building);
+                if (collisionDetected)
+                    return undefined;
+
                 // Add the building to caches
                 fp.buildingNetwork.buildings.push(building);
                 // Add all ground floor vertices to hash, as crude collision detection
@@ -521,7 +577,10 @@ define([
         RoadNetwork: function() {
             this.networkMesh;
             this.roads = {};
-            this.roadPoints = [];
+            this.indexValues = [];
+            this.points = [];
+            this.networkGeometry;
+            this.intersections = [];
 
             this.getRoadTerrainPoints = function(p1, p2) {
                 var points = [];
@@ -577,8 +636,8 @@ define([
                 var points = this.getRoadTerrainPoints(p1, p2);
 
                 // Use a cut-off of 5 intersecting points to prevent this road being built
-                var points2d = _.map(points, function(p) { return fp.getIndex(p.x,p.z); });
-                var overlap = _.intersection(fp.roadNetwork.roadPoints, points2d).length;
+                var thisIndexValues = _.map(points, function(p) { return fp.getIndex(p.x,p.z); });
+                var overlap = _.intersection(fp.roadNetwork.indexValues, thisIndexValues).length;
                 if (overlap > appConfig.roadController.overlapThreshold)
                     return false;
 
@@ -588,10 +647,10 @@ define([
                 var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor });
                 roadMaterial.side = THREE.DoubleSide;
                 var roadGeom = new THREE.TubeGeometry(extrudePath, points.length, roadWidth, appConfig.roadController.roadRadiusSegments, false);
+
                 var adjust = appConfig.roadController.flattenAdjustment,
                     lift = appConfig.roadController.flattenLift;
                 var vertices = roadGeom.vertices;
-
                 for (var i = 0; i <= vertices.length - appConfig.roadController.roadRadiusSegments; i += appConfig.roadController.roadRadiusSegments) {
                     var coil = vertices.slice(i, i + appConfig.roadController.roadRadiusSegments);
                     var mean = jStat.mean(_.map(coil, function(p) { return p.y; } ) );
@@ -605,10 +664,41 @@ define([
 
                 var roadMesh = new THREE.Mesh(roadGeom, roadMaterial);
                 fp.roadNetwork.networkMesh.add(roadMesh);
-                points2d = _.map(vertices, function(p) { return fp.getIndex(p.x,p.z); });
-                points2d.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; })
-                fp.roadNetwork.roadPoints = _.union(fp.roadNetwork.roadPoints, points2d);
+                thisIndexValues = _.uniq( _.map(points, function(p) { return fp.getIndex(p.x, p.z); }) );
+                //thisIndexValues = _.uniq( _.map(vertices, function(p) { return fp.getIndex(p.x, p.z); }) );
+                thisIndexValues.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; });
+                var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
+                if ( _.isUndefined(this.networkGeometry) )
+                    this.networkGeometry = new jsts.geom.LineString(jstsCoords);
+                else
+                    this.networkGeometry = this.networkGeometry.union( new jsts.geom.LineString(jstsCoords) );
+                fp.roadNetwork.points = _.union( fp.roadNetwork.points, points );
+                fp.roadNetwork.intersections = _.union( fp.roadNetwork.intersections, _.intersection(fp.roadNetwork.indexValues, thisIndexValues) );
+                fp.roadNetwork.indexValues = _.union(fp.roadNetwork.indexValues, thisIndexValues);
                 return true;
+            }
+
+            this.cityBlocks = function() {
+                var polygonizer = new jsts.operation.polygonize.Polygonizer();
+                polygonizer.add( this.networkGeometry );
+                console.log(this.networkGeometry)
+                return polygonizer.getPolygons().toArray();
+            }
+
+            // Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
+            this.getPolygonArea = function(polygon) {
+                var points = polygon.shell.points;
+                var area = 0;           // Accumulates area in the loop
+                var j = points.length - 1;  // The last vertex is the 'previous' one to the first
+                for ( var i = 0; i < points.length; i++ ) { 
+                    area = area + (points[j].x + points[i].x) * (points[j].y - points[i].y); 
+                    j = i;  //j is previous vertex to i
+                }
+                return area / 2;
+            }
+
+            this.subdivide = function(polygon, width) {
+
             }
         },
 
@@ -1198,7 +1288,7 @@ define([
                 // Check if we are in a building, and offer possibility of going up
                 var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
                     xd = this.direction.x, yd = this.direction.y, zd = this.direction.z,
-                    isAlreadyOnRoad = fp.roadNetwork.roadPoints.indexOf(fp.getIndex(xl, zl)) > -1;
+                    isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf(fp.getIndex(xl, zl)) > -1;
 
                 var directionCount = 10, directions = new Array(directionCount);
 
@@ -1238,7 +1328,7 @@ define([
 
                     // Calculate new position
                     var xn = xl + xd, yn = yl + yd, zn = zl + zd,
-                        isRoad = (fp.roadNetwork.roadPoints.indexOf(fp.getIndex(xn, zn)) > -1);
+                        isRoad = (fp.roadNetwork.indexValues.indexOf(fp.getIndex(xn, zn)) > -1);
 
                     // If we've had a horizontal shift, for now neutralise the vertical to the terrain height
                     if (yd == 0) {
@@ -1437,12 +1527,12 @@ define([
                             return false;
                     }
                 }
-                if (fp.roadNetwork.roadPoints.length == 0) {
+                if (fp.roadNetwork.indexValues.length == 0) {
                     if (distanceFromInitialPoint > appConfig.roadController.initialRadius)
                         return false;
                 }
                 else {
-                    if (fp.roadNetwork.roadPoints.indexOf(index) == -1)
+                    if (fp.roadNetwork.indexValues.indexOf(index) == -1)
                         return false;
                     if ( buildingIndex.indexOf( index ) == -1 ) {
                         var r = Math.random();
@@ -1607,7 +1697,7 @@ define([
                 // Pre-build the entire building
                 // for (var i = 0; i < this.localMaxLevels; i++)
                     // this.addFloor();
-
+0
                 this.lod.updateMatrix();
                 this.lod.matrixAutoUpdate = false;
             };
@@ -2181,7 +2271,7 @@ define([
                 fp.buildingNetwork.buildings = [];
                 fp.buildingNetwork.buildingHash = {};
                 collidableMeshList = [];
-                fp.roadNetwork.roadPoints = [];
+                fp.roadNetwork.indexValues = [];
                 fp.roadNetwork.roads = {};
 
                 timescale.currentYear = timescale.initialYear;
@@ -2982,7 +3072,7 @@ define([
             var cells = fp.surroundingCells(index);
             for (var i = 0; i < cells.length; i++) {
                 var cell = cells[i];
-                if (fp.roadNetwork.roadPoints.indexOf(fp.getIndex(cell.x, cell.y)) > -1)
+                if (fp.roadNetwork.indexValues.indexOf(fp.getIndex(cell.x, cell.y)) > -1)
                     return 1.0;
             }
             return 0.0;
@@ -3252,8 +3342,8 @@ define([
                     p1 = p2 = undefined;
                 }
             }
-        }
-    ,
+        },
+
         // HUD control handlers
         updateBuildingState: function() {
             if ( !appConfig.displayController.buildingsShow )
