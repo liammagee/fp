@@ -31,98 +31,117 @@
                 "javascript.util",
                 "jsts",
                 "Mirror",
-                "WaterShader",
                 "TerrainLoader",
                 "js/THREEx.KeyboardState.js",
                 "js/controls/TrackballControls.js",
                 "js/controls/PointerLockControls.js",
             ],
             function() {
-                var roadColor = fp.buildColorInteger(255, 255, 255);
-                var config = {
-                  "preset": "Default",
-                  "remembered": {
-                    "Default": {
-                        "1": {
-                            "initialPopulation": 0
-                        },
-                        "2": {},
-                        "3": {
-                            "overlapThreshold": 100,
-                            "roadRadiusSegments": 8
-                        },
-                        "4": {
-                            "statsShow": false,
-                            "chartShow": false,
-                            "topDownView": true,
-                        },
-                        "5": {
-                            "colorNightRoad": roadColor //16777215
-                        },
-                        "6": {
-                            "multiplier": 1,
-                            "loadHeights": false
-                        }
-                    }
-                  }
-                }
-                var sim =  {
-                    counter: 0,
-                    setup: function() {
-                        // Create a grid road structure
-                        for (var i = 0; i < 11; i++) {
-                            var x = i * 200 - 1000,
-                                z1 = -1000,
-                                z2 = 1000,
-                                y1 = fp.getHeight(x, z1),
-                                y2 = fp.getHeight(x, z2),
-                                p1 = new THREE.Vector3(x, y1, z1),
-                                p2 = new THREE.Vector3(x, y2, z2);
-                            fp.roadNetwork.addRoad(p1, p2, 10);
-                        }
-                        for (var i = 0; i < 11; i++) {
-                            var z = i * 200 - 1000,
-                                x1 = -1000,
-                                x2 = 1000,
-                                y1 = fp.getHeight(x1, z),
-                                y2 = fp.getHeight(x2, z),
-                                p1 = new THREE.Vector3(x1, y1, z),
-                                p2 = new THREE.Vector3(x2, y2, z);
-                            fp.roadNetwork.addRoad(p1, p2, 10);
-                        }
-
-                        // Get city blocks
-                        var cityBlocks = fp.roadNetwork.cityBlocks();
-                        console.log(cityBlocks.length);
-                        console.log(fp.roadNetwork.getPolygonArea(cityBlocks[0]));
-
-                        // Create 100 buildings
-                        var counter = 0, minHeight = 30, maxHeight = 100;
-                        while (counter < 10) {
-                            var x = Math.floor(Math.random() * 2000) - 1000,
-                                z = Math.floor(Math.random() * 2000) - 1000,
-                                y = fp.getHeight(x, z)
-                            var position = new THREE.Vector3(x, y, z);
-                            var dimensions = fp.buildingNetwork.generateRandomDimensions();
-                            var building = fp.buildingNetwork.createBuilding(position, dimensions);
-                            if ( typeof( building ) !== "undefined" ) {
-                                var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
-                                for (var i = 0; i < height; i++)
-                                    if ( building.canAddFloor() )
-                                        building.addFloor();
-                                counter++;
+                require(["WaterShader"], function() {
+                    var roadColor = fp.buildColorInteger(0, 0, 0);
+                    var config = {
+                      "preset": "Default",
+                      "remembered": {
+                        "Default": {
+                            "1": {
+                                "initialPopulation": 0
+                            },
+                            "2": {
+                                "detectBuildingCollisions": true,
+                                "detectRoadCollisions": true ,
+                                "windowsRandomise": true,
+                                "randomForm": true,
+                                "rotateRandomly": false,
+                            },
+                            "3": {
+                                "overlapThreshold": 100,
+                                "roadRadiusSegments": 8
+                            },
+                            "4": {
+                                //"statsShow": false,
+                                "chartShow": false,
+                                "topDownView": false,
+                            },
+                            "5": {
+                                "colorNightRoad": roadColor, //16777215
+                                "dayShow": true
+                            },
+                            "6": {
+                                "multiplier": 1,
+                                "loadHeights": false
                             }
                         }
-                        console.log( counter )
-                    },
-                    tick: function() {
-                        //console.log("Custom tick: " + (++ counter))
+                      }
                     }
-                }
+                    var sim =  {
+                        counter: 0,
+                        clashCounter: 0,
+                        dim: 1000,
+                        grid: 10,
+                        maxBuildings: 100,
+                        setup: function() {
+                            // Create a grid road structure
+                            for (var i = 0; i < this.grid + 1; i++) {
+                                var x = i * (this.dim / (this.grid / 2)) - this.dim,
+                                    z1 = -this.dim,
+                                    z2 = this.dim,
+                                    y1 = fp.getHeight(x, z1),
+                                    y2 = fp.getHeight(x, z2),
+                                    p1 = new THREE.Vector3(x, y1, z1),
+                                    p2 = new THREE.Vector3(x, y2, z2);
+                                fp.roadNetwork.addRoad(p1, p2, 10);
+                            }
+                            for (var i = 0; i < this.grid + 1; i++) {
+                                var z = i * (this.dim / (this.grid / 2)) - this.dim,
+                                    x1 = -this.dim,
+                                    x2 = this.dim,
+                                    y1 = fp.getHeight(x1, z),
+                                    y2 = fp.getHeight(x2, z),
+                                    p1 = new THREE.Vector3(x1, y1, z),
+                                    p2 = new THREE.Vector3(x2, y2, z);
+                                fp.roadNetwork.addRoad(p1, p2, 10);
+                            }
 
-                fp.init( config, sim, function() {
-                    fp.appConfig().Setup();
-                } );
+                            // Get city blocks
+                            var cityBlocks = fp.roadNetwork.cityBlocks();
+                            console.log(cityBlocks.length);
+                            console.log(fp.roadNetwork.getPolygonArea(cityBlocks[0]));
+                        },
+                        tick: function() {
+                            if ( fp.buildingNetwork.buildings.length < this.maxBuildings ) {
+                                var minHeight = 30, maxHeight = 100;
+                                var x = Math.floor(Math.random() * this.dim * 2) - this.dim,
+                                    z = Math.floor(Math.random() * this.dim * 2) - this.dim,
+                                    y = fp.getHeight(x, z)
+                                // var x = this.counter,
+                                //     z = this.counter,
+                                //     y = fp.getHeight(x, z)
+                                var position = new THREE.Vector3(x, y, z);
+                                var dimensions = fp.buildingNetwork.generateRandomDimensions();
+                                // var dimensions = {
+                                //     levels: fp.appConfig().buildingOptions.minHeight,
+                                //     width: fp.appConfig().buildingOptions.minWidth,
+                                //     length: fp.appConfig().buildingOptions.minLength
+                                // }
+                                var building = fp.buildingNetwork.createBuilding(position, dimensions);
+                                if ( typeof( building ) !== "undefined" ) {
+                                    var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
+                                    for (var i = 0; i < height; i++)
+                                        if ( building.canAddFloor() )
+                                            building.addFloor();
+                                }
+                                else
+                                    this.counter++
+                            }
+
+                        }
+                    }
+
+                    fp.init( config, sim, function() {
+                        fp.appConfig().Setup();
+                        fp.appConfig().Run();
+                    } );
+                })
             }
         );
 

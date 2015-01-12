@@ -1,4 +1,4 @@
-requirejs.config({
+require.config({
 	"shim": {
         "underscore": { exports: "_" },
         "dat.gui": { exports: "dat.gui" },
@@ -22,7 +22,7 @@ requirejs.config({
         },
     }
 })
-requirejs([
+require([
         "fp",
         "dat.gui",
         "smoothie",
@@ -31,12 +31,15 @@ requirejs([
         "javascript.util",
         "jsts",
         "Mirror",
-        "WaterShader",
         "TerrainLoader",
         "js/THREEx.KeyboardState.js",
         "js/controls/TrackballControls.js",
         "js/controls/PointerLockControls.js",
-]);
-requirejs([
-    "app/main"
-])
+], function() {
+    require(["WaterShader"], function() {
+        // Final call to app/main
+        require([
+            "app/main"
+        ])
+    });
+});

@@ -59,7 +59,7 @@ define([
             this.colorNetwork;
             this.particles;
             this.createAgents = function() {
-                for (var i = 0; i < appConfig.agentController.initialPopulation; i++)
+                for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++)
                     agentNetwork.agents.push( this.createAgent() );
                 this.buildAgentParticleSystem();
             }
@@ -69,47 +69,47 @@ define([
                 var point = this.randomPointForAgent();
                 var x = point.x;
                 var z = point.z;
-                var y = fp.getHeight(x, z) + appConfig.agentController.terrainOffset;
+                var y = fp.getHeight(x, z) + appConfig.agentOptions.terrainOffset;
                 vertex.x = x, vertex.y = y, vertex.z = z;
 
                 var agent = new fp.Agent();
                 agent.setVertex(vertex);
                 agent.setRandomDirection();
 
-                agent.color = '#' + (appConfig.displayController.dayShow ?
-                                    appConfig.colorController.colorDayAgent.toString(16) :
-                                    appConfig.colorController.colorNightAgent.toString(16) );
+                agent.color = '#' + (appConfig.displayOptions.dayShow ?
+                                    appConfig.colorOptions.colorDayAgent.toString(16) :
+                                    appConfig.colorOptions.colorNightAgent.toString(16) );
                 return agent;
             }
 
             this.randomPointForAgent = function() {
-                var x = Math.floor((Math.random() - 0.5) * appConfig.agentController.initialExtent)  + appConfig.agentController.initialX;
-                var z = Math.floor((Math.random() - 0.5) * appConfig.agentController.initialExtent) + appConfig.agentController.initialY;
+                var x = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent)  + appConfig.agentOptions.initialX;
+                var z = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent) + appConfig.agentOptions.initialY;
 
-                x *=  appConfig.terrainController.multiplier;
-                z *=  appConfig.terrainController.multiplier;
+                x *=  appConfig.terrainOptions.multiplier;
+                z *=  appConfig.terrainOptions.multiplier;
 
-                if (appConfig.agentController.initialCircle) {
-                    var normX = x - appConfig.agentController.initialX, normZ = z - appConfig.agentController.initialY;
+                if (appConfig.agentOptions.initialCircle) {
+                    var normX = x - appConfig.agentOptions.initialX, normZ = z - appConfig.agentOptions.initialY;
                     var radius = Math.sqrt(normX * normX + normZ * normZ);
 
-                    while (radius > appConfig.agentController.initialExtent / 2) {
+                    while (radius > appConfig.agentOptions.initialExtent / 2) {
                         var point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
-                        normX = x - appConfig.agentController.initialX, normZ = z - appConfig.agentController.initialY;
+                        normX = x - appConfig.agentOptions.initialX, normZ = z - appConfig.agentOptions.initialY;
                         radius = Math.sqrt(normX * normX + normZ * normZ);
                     }
                 }
 
-                var boundary = (terrain.gridExtent / 2) * appConfig.terrainController.multiplier;
+                var boundary = (terrain.gridExtent / 2) * appConfig.terrainOptions.multiplier;
                 while ( (x <  - boundary || x > boundary ) || (z <  - boundary || z > boundary ) ) {
                     var point = this.randomPointForAgent();
                     x = point.x;
                     z = point.z;
                 }
 
-                if (appConfig.agentController.noWater) {
+                if (appConfig.agentOptions.noWater) {
                     var y = fp.getHeight(x, z)
                     while (y <= 0) {
                         var point = this.randomPointForAgent();
@@ -135,14 +135,14 @@ define([
                        // continue;
                     }
                     else {
-                        var underConstruction = (appConfig.buildingController.create && agent.buildHome()) ||
-                                       (appConfig.roadController.create && agent.buildRoad());
+                        var underConstruction = (appConfig.buildingOptions.create && agent.buildHome()) ||
+                                       (appConfig.roadOptions.create && agent.buildRoad());
 
                         if ( underConstruction )
                             continue;
 
                         var r = Math.random();
-                        if ( r < appConfig.agentController.chanceToFindPathToHome ) {
+                        if ( r < appConfig.agentOptions.chanceToFindPathToHome ) {
                             agent.pathComputed = drawPathHome(agent);
                             agent.pathPosition = 0;
                         }
@@ -157,13 +157,13 @@ define([
                             trailNetwork.trails[ai] = (trailNetwork.trails[ai]) ? trailNetwork.trails[ai] + 1 : 1;
 
                         // Replace with shader for now
-                        if (appConfig.displayController.trailsShow && appConfig.displayController.trailsShowAsLines) {
+                        if (appConfig.displayOptions.trailsShow && appConfig.displayOptions.trailsShowAsLines) {
 
                             // Creates a cycle of 5000 trail 'pieces'
-                            if (agent.ticks * 2 > appConfig.displayController.trailLength)
+                            if (agent.ticks * 2 > appConfig.displayOptions.trailLength)
                                 agent.ticks = 0;
-                            trailNetwork.globalTrailLine.geometry.vertices[i * appConfig.displayController.trailLength + agent.ticks * 2] = agent.lastPosition;
-                            trailNetwork.globalTrailLine.geometry.vertices[i * appConfig.displayController.trailLength + agent.ticks * 2 + 1] = agent.position;
+                            trailNetwork.globalTrailLine.geometry.vertices[i * appConfig.displayOptions.trailLength + agent.ticks * 2] = agent.lastPosition;
+                            trailNetwork.globalTrailLine.geometry.vertices[i * appConfig.displayOptions.trailLength + agent.ticks * 2 + 1] = agent.position;
                             trailNetwork.globalTrailLine.geometry.verticesNeedUpdate = true;
                         }
 
@@ -185,8 +185,8 @@ define([
                     for (var j = 0; j < friends.length; j++) {
                         var friend = friends[j];
                         var p1 = friend.vertex.clone(), p2 = agent.vertex.clone();
-                        p1.y += appConfig.agentController.size / 8;
-                        p2.y += appConfig.agentController.size / 8;
+                        p1.y += appConfig.agentOptions.size / 8;
+                        p2.y += appConfig.agentOptions.size / 8;
                         vertices.push(p1);
                         vertices.push(p2);
                     }
@@ -197,7 +197,7 @@ define([
                 var networkGeometry = new THREE.Geometry();
                 var len = vertices.length;
                 var spline = new THREE.Spline(vertices);
-                var n_sub = appConfig.displayController.networkCurvePoints;
+                var n_sub = appConfig.displayOptions.networkCurvePoints;
                 var position, index;
                 for ( i = 0; i < len * n_sub; i ++ ) {
                     index = i / ( len * n_sub );
@@ -208,7 +208,7 @@ define([
             }
 
             this.friendNetworkGeometry = function(vertices) {
-                if ( !appConfig.displayController.networkCurve ) {
+                if ( !appConfig.displayOptions.networkCurve ) {
                     var networkGeometry = new THREE.Geometry();
                     networkGeometry.vertices = vertices;
                     return networkGeometry;
@@ -226,7 +226,7 @@ define([
                 });
             }
             this.renderFriendNetwork = function() {
-                if ( !fp.AppState.runSimulation || !appConfig.displayController.networkShow )
+                if ( !fp.AppState.runSimulation || !appConfig.displayOptions.networkShow )
                     return;
 
                 if ( !_.isUndefined( agentNetwork.networkMesh ) )
@@ -262,12 +262,12 @@ define([
                     typeof(agentParticleSystemAttributes.color) !== "undefined" &&
                     agentParticleSystemAttributes.color.value.length > 0) {
                     for( var i = 0; i < agentNetwork.agents.length; i ++ ) {
-                        if (appConfig.displayController.coloriseAgentsByHealth) {
+                        if (appConfig.displayOptions.coloriseAgentsByHealth) {
                             var agent = agentNetwork.agents[i];
                             var health = agentNetwork.agents[i].health;
                             var r = 0;
-                            var g = appConfig.displayController.dayShow ? 0.0 : 1.0;
-                            var b = appConfig.displayController.dayShow ? 1.0 : 0.0;
+                            var g = appConfig.displayOptions.dayShow ? 0.0 : 1.0;
+                            var b = appConfig.displayOptions.dayShow ? 1.0 : 0.0;
                             g *= (health / 100.0);
                             b *= (health / 100.0);
                             r = (100 - health) / 100.0;
@@ -318,13 +318,13 @@ define([
                 };
 
                 var discTexture = THREE.ImageUtils.loadTexture( "images/sprites/stickman_180.png" );
-                if ( !appConfig.agentController.useStickman )
+                if ( !appConfig.agentOptions.useStickman )
                     discTexture = THREE.ImageUtils.loadTexture( "images/sprites/disc.png" );
 
                 // uniforms
                 var agentParticleSystemUniforms = {
                     texture:   { type: "t", value: discTexture },
-                    size: { type: 'f', value: Math.floor( appConfig.agentController.size )}
+                    size: { type: 'f', value: Math.floor( appConfig.agentOptions.size )}
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
@@ -334,7 +334,7 @@ define([
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
-                    size: appConfig.agentController.size,
+                    size: appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
                     attributes: agentParticleSystemAttributes,
                     vertexShader:   fp.ShaderUtils.agentVertexShader(),
@@ -409,6 +409,7 @@ define([
 
         BuildingNetwork: function() {
             this.networkMesh;
+            this.networkJstsCache = [];
             this.buildings = [];
             this.buildingHash = {};
             this.speedOfConstruction = 0.05;
@@ -416,9 +417,9 @@ define([
             // Simplified 2d alternative for collision detection
             this.generateRandomDimensions = function() {
                 return {
-                    levels: appConfig.buildingController.minHeight + Math.floor( Math.random() * (appConfig.buildingController.maxHeight - appConfig.buildingController.minHeight) ) ,
-                    width: appConfig.buildingController.minWidth + Math.floor( Math.random() * (appConfig.buildingController.maxWidth - appConfig.buildingController.minWidth)) ,
-                    length: appConfig.buildingController.minLength + Math.floor( Math.random() * (appConfig.buildingController.maxLength - appConfig.buildingController.minLength))
+                    levels: appConfig.buildingOptions.minHeight + Math.floor( Math.random() * (appConfig.buildingOptions.maxHeight - appConfig.buildingOptions.minHeight) ) ,
+                    width: appConfig.buildingOptions.minWidth + Math.floor( Math.random() * (appConfig.buildingOptions.maxWidth - appConfig.buildingOptions.minWidth)) ,
+                    length: appConfig.buildingOptions.minLength + Math.floor( Math.random() * (appConfig.buildingOptions.maxLength - appConfig.buildingOptions.minLength))
                 };
             };
             this.get2dPoints = function(building) {
@@ -455,35 +456,20 @@ define([
                 var firstFloor = building.highResMeshContainer.children[0],
                     position = building.highResMeshContainer.position,
                     vertices = firstFloor.geometry.vertices,
-                    ff0 = vertices[0].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position),
-                    ff1 = vertices[1].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position),
-                    ff2 = vertices[2].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position),
-                    ff3 = vertices[3].clone().applyMatrix4(firstFloor.matrix).add(building.highResMeshContainer.position);
-                points.push({ x: ff0.x, y: ff0.z });
-                points.push({ x: ff1.x, y: ff1.z });
-                points.push({ x: ff2.x, y: ff2.z });
-                points.push({ x: ff3.x, y: ff3.z });
+                    verticesOnBase = vertices.length;
+                for (var i = 0; i < verticesOnBase / 2; i ++) {
+                    var point  = vertices[i].clone().applyMatrix4( firstFloor.matrix).add(building.highResMeshContainer.position);
+                    points.push({ x: point.x, y: point.z });
+                }
                 return points;
             };
             this.get2dIndexPoints = function(building) {
                 return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
             }
-            this.collidesWithOtherBuildings = function(building) {
-                // Quick fix
-                if (this.buildingHash[fp.getIndex(building.lod.position.x, building.lod.position.z)])
-                    return true;
-                var points = this.get2dIndexPoints(building);
-                for (var i = 0; i < points.length; i++) {
-                    if ( this.buildingHash[points[i]] )
-                        return true;
-                }
-                return false;
-            };
-            this.collidesWithRoads = function(building) {
+            this.createJstsGeomFromBoundingBox = function( building ) {
                 var points = this.get2dPointsForBoundingBox( building );
                 var coords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.y); } );
-                var lineUnion;
-                var j = coords.length - 1;
+                var lineUnion, j = coords.length - 1;
                 for (var i = 0; i < coords.length; i++ ) {
                     var line = new jsts.geom.LineString([coords[i], coords[j]]);
                     j = i;
@@ -494,17 +480,33 @@ define([
                 }
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( lineUnion );
-                var buildingGeometry = polygonizer.getPolygons().toArray()[0];
-                try {
-                    var intersections = fp.roadNetwork.networkGeometry.intersection(buildingGeometry);
-                    return intersections.geometries.length > 0;
+                var polygon = polygonizer.getPolygons().toArray()[0];
+                return polygon.buffer(0);
+            };
+            this.collidesWithOtherBuildings = function(building) {
+                // Quick fix
+                if (this.buildingHash[fp.getIndex(building.lod.position.x, building.lod.position.z)])
+                    return true;
+                var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
+                for (var i = 0; i < this.networkJstsCache.length; i ++) {
+                    var b = this.networkJstsCache[i];
+                    var localResult = false;
+                    if ( b.intersects(buildingGeometry) )
+                        localResult = true;
+                    if ( localResult )
+                        return true;
                 }
-                catch (e) {}
-                return true; // Be pessimistic
+                return false; // Be optimistic
+            };
+            this.collidesWithRoads = function(building) {
+                if ( _.isUndefined( fp.roadNetwork.networkGeometry ) )
+                    return false;
+                var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
+                return fp.roadNetwork.networkGeometry.crosses(buildingGeometry);
             };
 
             this.updateBuildings = function() {
-                if ( !fp.AppState.runSimulation || !appConfig.displayController.buildingsShow )
+                if ( !fp.AppState.runSimulation || !appConfig.displayOptions.buildingsShow )
                     return;
                 for (var i = 0; i < fp.buildingNetwork.buildings.length; i ++ ) {
                     var building = fp.buildingNetwork.buildings[i];
@@ -519,55 +521,48 @@ define([
                 var building = new fp.Building();
 
                 // Give the building a form
-                building.buildingForm = appConfig.buildingController.buildingForm;
-                if (appConfig.buildingController.randomForm)
+                building.buildingForm = appConfig.buildingOptions.buildingForm;
+                if (appConfig.buildingOptions.randomForm)
                     building.buildingForm = fp.BUILDING_FORMS.names[Math.floor(Math.random() * fp.BUILDING_FORMS.names.length)];
 
                 // Determine a height and develop the geometry
                 building.setupBuilding(dimensions);
 
                 // Set rotation and position
-                var rotateY = (appConfig.buildingController.rotateSetAngle / 180) * Math.PI;
-                if (appConfig.buildingController.rotateRandomly)
+                var rotateY = (appConfig.buildingOptions.rotateSetAngle / 180) * Math.PI;
+                if (appConfig.buildingOptions.rotateRandomly)
                     rotateY = Math.random() * Math.PI;
                 building.lod.rotation.set(0, rotateY, 0);
                 building.highResMeshContainer.rotation.set(0, rotateY, 0);
                 building.lowResMeshContainer.rotation.set(0, rotateY, 0);
 
-                var posY = fp.getHeight(position.x, position.z) + appConfig.buildingController.levelHeight;
+                var posY = fp.getHeight(position.x, position.z) + appConfig.buildingOptions.levelHeight;
                 building.lod.position.set(position.x, posY, position.z);
                 building.highResMeshContainer.position.set(position.x, posY, position.z);
                 building.lowResMeshContainer.position.set(position.x, posY, position.z);
-
                 building.addFloor();
 
                 // Before we add this, try to detect collision
-                var collisionDetected = fp.buildingNetwork.collidesWithOtherBuildings(building);
-                if (collisionDetected)
-                    return undefined;
+                if (appConfig.buildingOptions.detectBuildingCollisions) {
+                    if ( fp.buildingNetwork.collidesWithOtherBuildings(building) )
+                        return undefined;
+                }
 
-                collisionDetected = fp.buildingNetwork.collidesWithRoads(building);
-                if (collisionDetected)
-                    return undefined;
-
-                // Add the building to caches
-                fp.buildingNetwork.buildings.push(building);
-                // Add all ground floor vertices to hash, as crude collision detection
-                var points = fp.buildingNetwork.get2dIndexPoints(building);
-                for (var i = 0; i < points.length; i++)
-                    fp.buildingNetwork.buildingHash[points[i]] = building;
-                fp.buildingNetwork.networkMesh.add( building.lod );
-                var colRoadd = fp.buildingNetwork.collidesWithOtherBuildings(building);
-                if (collisionDetected)
-                    return undefined;
+                if (appConfig.buildingOptions.detectRoadCollisions) {
+                    if ( fp.buildingNetwork.collidesWithRoads( building ) )
+                        return undefined;
+                }
 
                 // Add the building to caches
                 fp.buildingNetwork.buildings.push(building);
                 // Add all ground floor vertices to hash, as crude collision detection
+                fp.buildingNetwork.networkMesh.add( building.lod );
+                /*
                 var points = fp.buildingNetwork.get2dIndexPoints(building);
                 for (var i = 0; i < points.length; i++)
                     fp.buildingNetwork.buildingHash[points[i]] = building;
-                fp.buildingNetwork.networkMesh.add( building.lod );
+                */
+                fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
                 collidableMeshList.push( building.highResMeshContainer );
                 collidableMeshList.push( building.highResMeshContainer.children[0] );
                 return building;
@@ -586,7 +581,7 @@ define([
                 var points = [];
                 var xLast = p1.x, yLast = 0, zLast = p1.z, lastChange = 0;
                 var xd = p2.x - xLast, zd = p2.z - zLast;
-                var distance = Math.sqrt(xd * xd + zd * zd) / appConfig.roadController.roadSegments,
+                var distance = Math.sqrt(xd * xd + zd * zd) / appConfig.roadOptions.roadSegments,
                     remaining = distance;
                 p1 = new THREE.Vector3(p1.x, fp.getHeight(p1.x, p1.z), p1.z);
                 p2 = new THREE.Vector3(p2.x, fp.getHeight(p2.x, p2.z), p2.z);
@@ -599,30 +594,34 @@ define([
                         z0 = zLast + zd * (1 / (remaining + 1)),
                         y0 = fp.getHeight(x0, z0);
                     var x = x0, y = y0, z = z0;
-                    for (var j = 1; j <= appConfig.roadController.roadDeviation; j++) {
+                    for (var j = 1; j <= appConfig.roadOptions.roadDeviation; j++) {
                         var x1 = x0 + Math.cos(angleLeft) * j,
                             z1 = z0 + Math.sin(angleLeft) * j,
                             y1 = fp.getHeight(x1, z1);
                         if (y1 < y && y1 > 0)
                             x = x1, y = y1, z = z1;
                     }
-                    for (var j = 1; j <= appConfig.roadController.roadDeviation; j++) {
+                    for (var j = 1; j <= appConfig.roadOptions.roadDeviation; j++) {
                         var x1 = x0 + Math.cos(angleRight) * j,
                             z1 = z0 + Math.sin(angleRight) * j,
                             y1 = fp.getHeight(x1, z1);
                         if (y1 < y && y1 > 0)
                             x = x1, y = y1, z = z1;
                     }
-                    x = Math.round(x), y = Math.round(y), z = Math.round(z);
-                    points.push(new THREE.Vector3(x, y, z))
-                    if (y != yLast) {
-                        var yDiff = y - yLast;
-                        var shift = i - lastChange + 1;
-                        for (var j = lastChange + 1; j < i; j ++) {
-                            var change = yDiff * ((j - lastChange) / shift);
-                            points[ j+1 ].y += change;
+                    // Only create a point if there's a deviation from a straight line
+                    if ( x != x0 || y != y0 || z != z0 ) {
+                        x = Math.round(x), y = Math.round(y), z = Math.round(z);
+                        var point = new THREE.Vector3(x, y, z);
+                        points.push(point);
+                        if (y != yLast) {
+                            var yDiff = y - yLast;
+                            var shift = i - lastChange + 1;
+                            for (var j = lastChange + 1; j < i; j ++) {
+                                var change = yDiff * ((j - lastChange) / shift);
+                                point.y += change;
+                            }
+                            lastChange = i;
                         }
-                        lastChange = i;
                     }
                     xLast = x, yLast = y, zLast = z, remaining--;
                     xd = p2.x - xLast, zd = p2.z - zLast;
@@ -638,21 +637,21 @@ define([
                 // Use a cut-off of 5 intersecting points to prevent this road being built
                 var thisIndexValues = _.map(points, function(p) { return fp.getIndex(p.x,p.z); });
                 var overlap = _.intersection(fp.roadNetwork.indexValues, thisIndexValues).length;
-                if (overlap > appConfig.roadController.overlapThreshold)
+                if (overlap > appConfig.roadOptions.overlapThreshold)
                     return false;
 
                 var extrudePath = new THREE.SplineCurve3( points );
-                var roadColor = (appConfig.displayController.dayShow) ? appConfig.colorController.colorDayRoad : appConfig.colorController.colorNightRoad;
+                var roadColor = (appConfig.displayOptions.dayShow) ? appConfig.colorOptions.colorDayRoad : appConfig.colorOptions.colorNightRoad;
                 //var roadMaterial = new THREE.MeshLambertMaterial({ color: roadColor });
                 var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor });
                 roadMaterial.side = THREE.DoubleSide;
-                var roadGeom = new THREE.TubeGeometry(extrudePath, points.length, roadWidth, appConfig.roadController.roadRadiusSegments, false);
+                var roadGeom = new THREE.TubeGeometry(extrudePath, points.length, roadWidth, appConfig.roadOptions.roadRadiusSegments, false);
 
-                var adjust = appConfig.roadController.flattenAdjustment,
-                    lift = appConfig.roadController.flattenLift;
+                var adjust = appConfig.roadOptions.flattenAdjustment,
+                    lift = appConfig.roadOptions.flattenLift;
                 var vertices = roadGeom.vertices;
-                for (var i = 0; i <= vertices.length - appConfig.roadController.roadRadiusSegments; i += appConfig.roadController.roadRadiusSegments) {
-                    var coil = vertices.slice(i, i + appConfig.roadController.roadRadiusSegments);
+                for (var i = 0; i <= vertices.length - appConfig.roadOptions.roadRadiusSegments; i += appConfig.roadOptions.roadRadiusSegments) {
+                    var coil = vertices.slice(i, i + appConfig.roadOptions.roadRadiusSegments);
                     var mean = jStat.mean(_.map(coil, function(p) { return p.y; } ) );
                     for (var j = 0; j < coil.length; j++) {
                         var y = coil[j].y;
@@ -664,24 +663,23 @@ define([
 
                 var roadMesh = new THREE.Mesh(roadGeom, roadMaterial);
                 fp.roadNetwork.networkMesh.add(roadMesh);
-                thisIndexValues = _.uniq( _.map(points, function(p) { return fp.getIndex(p.x, p.z); }) );
-                //thisIndexValues = _.uniq( _.map(vertices, function(p) { return fp.getIndex(p.x, p.z); }) );
                 thisIndexValues.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; });
                 var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
                 if ( _.isUndefined(this.networkGeometry) )
                     this.networkGeometry = new jsts.geom.LineString(jstsCoords);
-                else
-                    this.networkGeometry = this.networkGeometry.union( new jsts.geom.LineString(jstsCoords) );
-                fp.roadNetwork.points = _.union( fp.roadNetwork.points, points );
-                fp.roadNetwork.intersections = _.union( fp.roadNetwork.intersections, _.intersection(fp.roadNetwork.indexValues, thisIndexValues) );
-                fp.roadNetwork.indexValues = _.union(fp.roadNetwork.indexValues, thisIndexValues);
+                else {
+                    try {
+                        this.networkGeometry = this.networkGeometry.union( new jsts.geom.LineString(jstsCoords) );
+                    }
+                    catch (e) { console.log(e) } // Sometimes get a TopologyError
+                }
+                fp.roadNetwork.indexValues = _.uniq( _.flatten( fp.roadNetwork.indexValues.push( thisIndexValues ) ) );
                 return true;
             }
 
             this.cityBlocks = function() {
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( this.networkGeometry );
-                console.log(this.networkGeometry)
                 return polygonizer.getPolygons().toArray();
             }
 
@@ -739,11 +737,11 @@ define([
             };
 
             this.updatePatchValues = function() {
-                if ( appConfig.displayController.patchesUpdate && fp.AppState.runSimulation )
+                if ( appConfig.displayOptions.patchesUpdate && fp.AppState.runSimulation )
                     this.reviseMeanValue();
 
-                if ( appConfig.displayController.patchesShow ) {
-                    if (appConfig.displayController.patchesUseShader) {
+                if ( appConfig.displayOptions.patchesShow ) {
+                    if (appConfig.displayOptions.patchesUseShader) {
                         if (this.plane != null)
                             scene.remove(this.plane);
                         this.updateTerrainPatchAttributes();
@@ -809,7 +807,7 @@ define([
             };
 
             this.updatePatchesStateWithShader = function() {
-                if (! appConfig.displayController.patchesShow) {
+                if (! appConfig.displayOptions.patchesShow) {
                     for (var i = 0; i < terrain.plane.geometry.attributes.patch.array.length; i++)
                         terrain.plane.geometry.attributes.patch.array[i] = 0.0;
                     terrain.plane.geometry.attributes.patch.needsUpdate = true;
@@ -821,7 +819,7 @@ define([
             };
 
             this.updatePatchesStateWithoutShader = function() {
-                if ( appConfig.displayController.patchesShow ) {
+                if ( appConfig.displayOptions.patchesShow ) {
                     if ( this.plane == null )
                         this.buildPatchMesh();
                     else
@@ -840,8 +838,8 @@ define([
                 if ( !fp.AppState.runSimulation )
                     return;
 
-                if ( appConfig.displayController.trailsShow
-                    && !appConfig.displayController.trailsShowAsLines) {
+                if ( appConfig.displayOptions.trailsShow
+                    && !appConfig.displayOptions.trailsShowAsLines) {
                     var weightMax = _.chain(trailNetwork.trails).values().max().value();
                     for (var k in trailNetwork.trails) {
                         var weight = trailNetwork.trails[k];
@@ -895,7 +893,7 @@ define([
                     ccY -= Math.round(cellSize);
                     ccZ = fp.getHeight(ccX, ccY) + 1;
                 }
-                geometry.vertices.push(new THREE.Vector3(ccX, ccY, ccZ) + appConfig.agentController.size);
+                geometry.vertices.push(new THREE.Vector3(ccX, ccY, ccZ) + appConfig.agentOptions.size);
                 if (this.cell)
                     ne.remove(this.cell);
                 this.cell = new THREE.Line(geometry, material);
@@ -913,8 +911,8 @@ define([
 
                 var arrayDim = terrain.gridPoints;
                 var arraySize = terrain.gridExtent / arrayDim;
-                var arrayX = Math.floor((x / appConfig.terrainController.multiplier + halfGrid) / arraySize );
-                var arrayY = Math.floor((halfGrid + y / appConfig.terrainController.multiplier) / arraySize );
+                var arrayX = Math.floor((x / appConfig.terrainOptions.multiplier + halfGrid) / arraySize );
+                var arrayY = Math.floor((halfGrid + y / appConfig.terrainOptions.multiplier) / arraySize );
                 var vertices = terrain.plane.geometry.attributes.position.array;
                 var newVertices = [];
                 var cellFill, cellMaterial;
@@ -933,7 +931,7 @@ define([
                     for (var j = arrayX; j < arrayX + terrain.gridSize + 1; j ++, counter++) {
                         var index = 3 * (arrayDim * (i - halfCell) + (j - halfCell));
                         this.cell.geometry.vertices[counter] = new THREE.Vector3(
-                            vertices[index], vertices[index + 1], vertices[index + 2] + appConfig.agentController.terrainOffset
+                            vertices[index], vertices[index + 1], vertices[index + 2] + appConfig.agentOptions.terrainOffset
                         );
                     }
                 }
@@ -989,7 +987,7 @@ define([
                 path.forEach(function(point) {
                     var x = (  point.x ) * terrain.ratioExtentToPoint - terrain.halfExtent,
                         z = (  point.y ) * terrain.ratioExtentToPoint - terrain.halfExtent,
-                        y = fp.getHeight(x, z) + appConfig.agentController.terrainOffset,
+                        y = fp.getHeight(x, z) + appConfig.agentOptions.terrainOffset,
                         point3d = new THREE.Vector3(x, y, z);
                     pathGeom.vertices.push(point3d);
                 });
@@ -1009,7 +1007,7 @@ define([
                 })
             }
             this.updatePathsState = function() {
-                if ( !appConfig.displayController.pathsShow )
+                if ( !appConfig.displayOptions.pathsShow )
                     scene.remove( pathNetwork.networkMesh );
                 else
                     scene.add( pathNetwork.networkMesh );
@@ -1036,7 +1034,7 @@ define([
                 // var terrain = this;
                 terrainLoader.load(fp.TERRAIN_MAPS[terrain.terrainMapIndex], function(data) {
                     scene.remove(terrain.plane);
-                    var size = terrain.gridExtent * appConfig.terrainController.multiplier;
+                    var size = terrain.gridExtent * appConfig.terrainOptions.multiplier;
                     var geometry = new THREE.PlaneBufferGeometry( size, size, terrain.gridPoints - 1, terrain.gridPoints - 1 );
 
                     // Use logic from math.stackexchange.com
@@ -1044,9 +1042,9 @@ define([
                     var l = vertices.length,
                         n = Math.sqrt(l),
                         k = l + 1;
-                    if (appConfig.terrainController.loadHeights) {
+                    if (appConfig.terrainOptions.loadHeights) {
                         for (var i = 0, j = 0; i < l; i++, j += 3 ) {
-                            geometry.attributes.position.array[ j + 2 ] = data[ i ] / 65535 * terrain.maxTerrainHeight * appConfig.terrainController.multiplier;
+                            geometry.attributes.position.array[ j + 2 ] = data[ i ] / 65535 * terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier;
                         }
                     }
                     else {
@@ -1055,7 +1053,7 @@ define([
                         }
                     }
 
-                    terrain.simpleTerrainMaterial = new THREE.MeshBasicMaterial({ color: 0x666666, wireframe: appConfig.displayController.wireframeShow });
+                    terrain.simpleTerrainMaterial = new THREE.MeshBasicMaterial({ color: 0x666666, wireframe: appConfig.displayOptions.wireframeShow });
                     terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
                     terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
 
@@ -1078,22 +1076,22 @@ define([
                     geometry.addAttribute( 'patch', new THREE.BufferAttribute( patchPoints, 1 ) );
 
                     terrain.dayTerrainUniforms = {
-                        seaColor: { type: "c", value: new THREE.Color(appConfig.colorController.colorDayTerrainSea) },
-                        lowland1Color: { type: "c", value: new THREE.Color(appConfig.colorController.colorDayTerrainLowland1) },
-                        lowland2Color: { type: "c", value: new THREE.Color(appConfig.colorController.colorDayTerrainLowland2) },
-                        midlandColor: { type: "c", value: new THREE.Color(appConfig.colorController.colorDayTerrainMidland) },
-                        highlandColor: { type: "c", value: new THREE.Color(appConfig.colorController.colorDayTerrainHighland) },
-                        size: { type: 'f', value: Math.floor(appConfig.agentController.size / 2)},
-                        maxHeight: { type: 'f', value: terrain.maxTerrainHeight * appConfig.terrainController.multiplier }
+                        seaColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainSea) },
+                        lowland1Color: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainLowland1) },
+                        lowland2Color: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainLowland2) },
+                        midlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainMidland) },
+                        highlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainHighland) },
+                        size: { type: 'f', value: Math.floor(appConfig.agentOptions.size / 2)},
+                        maxHeight: { type: 'f', value: terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier }
                     };
                     terrain.nightTerrainUniforms = {
-                        seaColor: { type: "c", value: new THREE.Color(appConfig.colorController.colorNightTerrainSea) },
-                        lowland1Color: { type: "c", value: new THREE.Color(appConfig.colorController.colorNightTerrainLowland1) },
-                        lowland2Color: { type: "c", value: new THREE.Color(appConfig.colorController.colorNightTerrainLowland2) },
-                        midlandColor: { type: "c", value: new THREE.Color(appConfig.colorController.colorNightTerrainMidland) },
-                        highlandColor: { type: "c", value: new THREE.Color(appConfig.colorController.colorNightTerrainHighland) },
-                        size: { type: 'f', value: Math.floor(appConfig.agentController.size / 2)},
-                        maxHeight: { type: 'f', value: terrain.maxTerrainHeight * appConfig.terrainController.multiplier }
+                        seaColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainSea) },
+                        lowland1Color: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainLowland1) },
+                        lowland2Color: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainLowland2) },
+                        midlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainMidland) },
+                        highlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainHighland) },
+                        size: { type: 'f', value: Math.floor(appConfig.agentOptions.size / 2)},
+                        maxHeight: { type: 'f', value: terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier }
                     };
                     terrain.richTerrainMaterial = new THREE.ShaderMaterial({
                         uniforms: fp.ShaderUtils.lambertUniforms( terrain.nightTerrainUniforms ),
@@ -1112,10 +1110,10 @@ define([
                     terrain.plane.castShadow = true;
                     terrain.plane.receiveShadow = true;
                     terrain.plane.rotation.set( -Math.PI / 2, 0, 0);
-                    if ( appConfig.displayController.terrainShow )
+                    if ( appConfig.displayOptions.terrainShow )
                         scene.add( terrain.plane );
 
-                    if ( appConfig.displayController.patchesShow )
+                    if ( appConfig.displayOptions.patchesShow )
                         patchNetwork.buildPatchMesh();
                     terrain.createTerrainColors();
                     fp.updateDayOrNight();
@@ -1128,7 +1126,7 @@ define([
             };
 
             this.flattenTerrain = function() {
-                if ( !appConfig.displayController.cursorShow )
+                if ( !appConfig.displayOptions.cursorShow )
                     return;
 
                 var vertices = this.plane.geometry.attributes.position.array;
@@ -1171,7 +1169,7 @@ define([
             };
 
             this.updateTerrainPlane = function() {
-                if ( !appConfig.displayController.terrainShow )
+                if ( !appConfig.displayOptions.terrainShow )
                     scene.remove( terrain.plane );
                 else
                     scene.add( terrain.plane );
@@ -1202,14 +1200,14 @@ define([
                 };
             this.exercise = function() {
                 if (this.health > 0)
-                    this.health -= appConfig.agentController.healthReduce;
+                    this.health -= appConfig.agentOptions.healthReduce;
             };
             this.consume = function() {
                 var index = fp.getPatchIndex(this.position.x, this.position.z);
                 if ( !patchNetwork.patches[index] )
                     patchNetwork.patches[index] = [];
                 patchNetwork.patches[index].push(this);
-                this.health += appConfig.agentController.healthGain * ( patchNetwork.patchValues[index].value / patchNetwork.patches[index].length );
+                this.health += appConfig.agentOptions.healthGain * ( patchNetwork.patchValues[index].value / patchNetwork.patches[index].length );
                 this.health = (this.health > 100) ? 100 : this.health;
             };
             this.die = function() {
@@ -1245,15 +1243,15 @@ define([
             };
             this.goingUp = function(building) {
                 return ( building == this.home ) ?
-                    ( Math.random() < appConfig.agentController.visitHomeBuilding ) :
-                     ( Math.random() < appConfig.agentController.visitOtherBuilding );
+                    ( Math.random() < appConfig.agentOptions.visitHomeBuilding ) :
+                     ( Math.random() < appConfig.agentOptions.visitOtherBuilding );
             };
             this.updateGroundedState = function(building) {
                 var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
                     xd = this.direction.x, yd = this.direction.y, zd = this.direction.z;
 
                 if ( !this.grounded ) {
-                    var base = fp.getHeight(xl, zl) + appConfig.agentController.terrainOffset;
+                    var base = fp.getHeight(xl, zl) + appConfig.agentOptions.terrainOffset;
                     if (yl <= base && yd < 0)
                         this.grounded = true;
                 }
@@ -1334,7 +1332,7 @@ define([
                     if (yd == 0) {
                         yn = fp.getHeight(xn, zn);
                         // Smooth the transition between heights
-                        yd = ((appConfig.agentController.terrainOffset + yn) - yl) / terrain.ratioExtentToPoint;
+                        yd = ((appConfig.agentOptions.terrainOffset + yn) - yl) / terrain.ratioExtentToPoint;
                     }
                     if (yn == null)
                         continue; // Off the grid - don't return this option
@@ -1359,16 +1357,16 @@ define([
                     }
 
                     // If moving upward, decrease the preference
-                    if (yn > yl && this.grounded && appConfig.agentController.noUphill)
+                    if (yn > yl && this.grounded && appConfig.agentOptions.noUphill)
                         weight *= yl / yn;
 
                     // If currect direction is moving to water, set the preference low
-                    if (i == 0 && yn <= 0 && appConfig.agentController.noWater)
+                    if (i == 0 && yn <= 0 && appConfig.agentOptions.noWater)
                         weight = 0.0001;
 
                     // If inside a building, adjust weights
                     if ( !this.grounded && !_.isUndefined( building ) ) {
-                        var buildingHeight = building.levels * appConfig.buildingController.levelHeight + building.lod.position.y;
+                        var buildingHeight = building.levels * appConfig.buildingOptions.levelHeight + building.lod.position.y;
                         if (i == 8) {
                             if ( yl >= buildingHeight || this.direction.y < 0 )
                                 weight = 0.0;
@@ -1447,7 +1445,7 @@ define([
                 this.direction.z += this.perturbBy * (Math.random() - 0.5);
             };
             this.tryToBefriend = function(agent) {
-                if ( Math.random() < appConfig.agentController.chanceToJoinNetwork &&
+                if ( Math.random() < appConfig.agentOptions.chanceToJoinNetwork &&
                      agent.friends.indexOf(this) == -1 &&
                      this.friends.indexOf(agent) == -1 )
                     this.friends.push(agent);
@@ -1476,7 +1474,7 @@ define([
                     this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
                     return ( !_.isUndefined(this.home) );
                 }
-                else if (fp.buildingNetwork.networkMesh.children.length >= appConfig.buildingController.maxNumber)
+                else if (fp.buildingNetwork.networkMesh.children.length >= appConfig.buildingOptions.maxNumber)
                     return false;
 
                 if ( !_.isNull(stats) && stats.fps <= 10 )
@@ -1484,13 +1482,13 @@ define([
 
                 // Simple test of local roads, water, buildings and building height
                 var roadsProximate = fp.checkProximityOfRoads(index),
-                    roadsSig = (1 - appConfig.buildingController.roads);
+                    roadsSig = (1 - appConfig.buildingOptions.roads);
                 var waterProximate = fp.checkProximityOfWater(index),
-                    waterSig = (1 - appConfig.buildingController.water);
+                    waterSig = (1 - appConfig.buildingOptions.water);
                 var buildingsProximate = fp.checkProximityOfBuildings(index),
-                    buildingSig = (1 - appConfig.buildingController.otherBuildings);
+                    buildingSig = (1 - appConfig.buildingOptions.otherBuildings);
                 var buildingHeightProximate = fp.checkProximiteBuildingHeight(index),
-                    buildingHeightSig = (1 - appConfig.buildingController.buildingHeight);
+                    buildingHeightSig = (1 - appConfig.buildingOptions.buildingHeight);
 
                 if (roadsProximate > roadsSig ||
                     waterProximate > waterSig ||
@@ -1505,20 +1503,20 @@ define([
                 var xOrig = this.position.x,
                     zOrig = this.position.z,
                     index = fp.getIndex(xOrig, zOrig),
-                    xInit = appConfig.agentController.initialX,
-                    zInit = appConfig.agentController.initialY,
+                    xInit = appConfig.agentOptions.initialX,
+                    zInit = appConfig.agentOptions.initialY,
                     xd = (xOrig - xInit),
                     zd = (zOrig - zInit),
                     distanceFromInitialPoint = Math.sqrt(xd * xd + zd * zd),
                     buildingIndex = _.map(fp.buildingNetwork.buildings, function(building) { return fp.getIndex(building.lod.position.x, building.lod.position.z)} );
 
-                if (fp.roadNetwork.networkMesh.children.length >= appConfig.roadController.maxNumber)
+                if (fp.roadNetwork.networkMesh.children.length >= appConfig.roadOptions.maxNumber)
                     return false;
 
                 if ( !_.isNull(stats) && stats.fps <= 10 )
                     return false;
 
-                if (appConfig.displayController.buildingsShow) {
+                if (appConfig.displayOptions.buildingsShow) {
                     if ( fp.buildingNetwork.buildings.length == 0 ) {
                         return false;
                     }
@@ -1528,7 +1526,7 @@ define([
                     }
                 }
                 if (fp.roadNetwork.indexValues.length == 0) {
-                    if (distanceFromInitialPoint > appConfig.roadController.initialRadius)
+                    if (distanceFromInitialPoint > appConfig.roadOptions.initialRadius)
                         return false;
                 }
                 else {
@@ -1536,7 +1534,7 @@ define([
                         return false;
                     if ( buildingIndex.indexOf( index ) == -1 ) {
                         var r = Math.random();
-                        var chance = 1 / ( Math.log(distanceFromInitialPoint + 1) * appConfig.roadController.probability );
+                        var chance = 1 / ( Math.log(distanceFromInitialPoint + 1) * appConfig.roadOptions.probability );
                         if (chance < r)
                             return false;
                     }
@@ -1545,8 +1543,8 @@ define([
                 // Pick a random direction to create a road
                 var xr = Math.random() * 2 - 0.5,
                     zr = Math.random() * 2 - 0.5,
-                    lenMinimum = appConfig.roadController.lenMinimum,
-                    lenMaximum = appConfig.roadController.lenMaximum,
+                    lenMinimum = appConfig.roadOptions.lenMinimum,
+                    lenMaximum = appConfig.roadOptions.lenMaximum,
                     lenFactor = Math.random(),
                     angle, angle90;
                 var existingRoad = fp.roadNetwork.roads[index];
@@ -1561,7 +1559,7 @@ define([
                     xr = Math.cos(angle90),  zr = Math.sin(angle90);
                 }
                 var totalLen = lenMinimum + (lenMaximum - lenMinimum) *
-                                ( 1 - jStat.exponential.cdf(lenFactor, appConfig.roadController.lenDistributionFactor) ),
+                                ( 1 - jStat.exponential.cdf(lenFactor, appConfig.roadOptions.lenDistributionFactor) ),
                     xExtent = xr * totalLen,
                     zExtent = zr * totalLen,
                     xEnd = this.position.x + xExtent,
@@ -1571,7 +1569,7 @@ define([
                     xd = xOrig - xEnd,
                     zd = zOrig - zEnd,
                     distanceFromEnd = Math.sqrt(xd * xd + zd * zd),
-                    width = Math.ceil( ( ( ( 1 / Math.log(distanceFromInitialPoint + 10) ) ) * Math.log( distanceFromEnd ) ) * appConfig.roadController.roadWidth );
+                    width = Math.ceil( ( ( ( 1 / Math.log(distanceFromInitialPoint + 10) ) ) * Math.log( distanceFromEnd ) ) * appConfig.roadOptions.roadWidth );
                 return fp.roadNetwork.addRoad(this.position, endPoint, width);
             };
             this.vertex;
@@ -1624,10 +1622,35 @@ define([
             var w = 1 - jStat.exponential.cdf(Math.random() * 9, 1)
             var d = 1 - jStat.exponential.cdf(Math.random() * 9, 1)
             // var h =  Math.floor(jStat.exponential.pdf(Math.random(), 50))
-            var h = Math.floor(jStat.exponential.sample(appConfig.buildingController.heightA) * appConfig.buildingController.heightB);
-            this.maxWidth = Math.floor(w * 9) + appConfig.buildingController.heightB;
+            var h = Math.floor(jStat.exponential.sample(appConfig.buildingOptions.heightA) * appConfig.buildingOptions.heightB);
+            this.maxWidth = Math.floor(w * 9) + appConfig.buildingOptions.heightB;
             this.maxDepth = Math.floor(d * 9) + 1;
             this.maxHeight = h + 1;
+
+            this.bottomWindow = 1.0 - (appConfig.buildingOptions.windowsEndY / 100.0);
+            this.topWindow = 1.0 - (appConfig.buildingOptions.windowsStartY/ 100.0);
+            this.windowWidth = appConfig.buildingOptions.windowWidth;
+            this.windowPercent = appConfig.buildingOptions.windowPercent / 100.0;
+            if ( appConfig.buildingOptions.windowsRandomise ) {
+                // Randomise based on a normal distribution
+                var bottomWindowTmp = jStat.normal.inv(Math.random(), this.bottomWindow, 0.1);
+                var topWindowTmp = jStat.normal.inv(Math.random(), this.topWindow, 0.1);
+                var windowWidthTmp = jStat.normal.inv(Math.random(), this.windowWidth, 0.1);
+                var windowPercentTmp = jStat.normal.inv(Math.random(), this.windowPercent, 0.1);
+                // Coerce value between a min and max
+                var coerceValue = function(num, min, max) {
+                    if ( num < min )
+                        return min;
+                    if ( num > max )
+                        return max;
+                    return num;
+                }
+                this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
+                this.topWindow = coerceValue( topWindowTmp, 0, 100 );
+                this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
+                this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
+            }
+            
 
             this.setupBuilding = function(dimensions) {
                 this.lod = new THREE.LOD();
@@ -1639,20 +1662,20 @@ define([
 
                 // Set up materials
                 var fc, lc, wc;
-                if (appConfig.displayController.dayShow) {
-                    fc = fp.buildColorVector(appConfig.colorController.colorDayBuildingFill);
-                    lc = fp.buildColorVector(appConfig.colorController.colorDayBuildingLine);
-                    wc = fp.buildColorVector(appConfig.colorController.colorDayBuildingWindow);
+                if (appConfig.displayOptions.dayShow) {
+                    fc = fp.buildColorVector(appConfig.colorOptions.colorDayBuildingFill);
+                    lc = fp.buildColorVector(appConfig.colorOptions.colorDayBuildingLine);
+                    wc = fp.buildColorVector(appConfig.colorOptions.colorDayBuildingWindow);
                 }
                 else {
-                    fc = fp.buildColorVector(appConfig.colorController.colorNightBuildingFill);
-                    lc = fp.buildColorVector(appConfig.colorController.colorNightBuildingLine);
-                    wc = fp.buildColorVector(appConfig.colorController.colorNightBuildingWindow);
+                    fc = fp.buildColorVector(appConfig.colorOptions.colorNightBuildingFill);
+                    lc = fp.buildColorVector(appConfig.colorOptions.colorNightBuildingLine);
+                    wc = fp.buildColorVector(appConfig.colorOptions.colorNightBuildingWindow);
                 }
 
                 this.lineMaterial = new THREE.LineBasicMaterial({
                     color: lc,
-                    linewidth: appConfig.buildingController.linewidth
+                    linewidth: appConfig.buildingOptions.linewidth
                 });
                 this.windowMaterial = new THREE.MeshBasicMaterial( { color: wc } );
                 this.windowMaterial.side = THREE.DoubleSide;
@@ -1670,74 +1693,69 @@ define([
                 this.highResMeshContainer = new THREE.Object3D();
                 this.lowResMeshContainer = new THREE.Object3D();
 
-                if (! appConfig.buildingController.useShader) {
+                if (! appConfig.buildingOptions.useShader) {
                     this.mesh = new THREE.Line( this.geometry, this.lineMaterial, THREE.LinePieces );
                     this.highResMeshContainer.add( this.mesh );
 
                     this.windowsOutlineContainer = new THREE.Object3D();
-                    if (appConfig.buildingController.windowsLine)
+                    if (appConfig.buildingOptions.windowsLine)
                         this.highResMeshContainer.add( this.windowsOutlineContainer );
 
                     this.windowsFillContainer = new THREE.Object3D();
-                    if (appConfig.buildingController.windowsFill)
+                    if (appConfig.buildingOptions.windowsFill)
                         this.highResMeshContainer.add( this.windowsFillContainer );
                 }
 
-                if (appConfig.buildingController.useLevelOfDetail) {
-                    this.lod.addLevel(this.highResMeshContainer, appConfig.buildingController.highResDistance);
-                    this.lod.addLevel(this.lowResMeshContainer, appConfig.buildingController.lowResDistance);
-                    this.lowResGeometry = new THREE.BoxGeometry(appConfig.buildingController.width, (this.levels + 1) * appConfig.buildingController.levelHeight, appConfig.buildingController.length);
-                    this.lowResGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, (this.levels + 1) * appConfig.buildingController.levelHeight / 2, 0 ) );
+                if (appConfig.buildingOptions.useLevelOfDetail) {
+                    this.lod.addLevel(this.highResMeshContainer, appConfig.buildingOptions.highResDistance);
+                    this.lod.addLevel(this.lowResMeshContainer, appConfig.buildingOptions.lowResDistance);
+                    this.lowResGeometry = new THREE.BoxGeometry(appConfig.buildingOptions.width, (this.levels + 1) * appConfig.buildingOptions.levelHeight, appConfig.buildingOptions.length);
+                    this.lowResGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, (this.levels + 1) * appConfig.buildingOptions.levelHeight / 2, 0 ) );
                     this.lowResMesh = new THREE.Mesh(this.lowResGeometry, this.buildingMaterial);
                     this.lowResMeshContainer.add(this.lowResMesh)
                 }
                 else
                     this.lod.addLevel(this.highResMeshContainer, 1);
 
-                // Pre-build the entire building
-                // for (var i = 0; i < this.localMaxLevels; i++)
-                    // this.addFloor();
-0
                 this.lod.updateMatrix();
                 this.lod.matrixAutoUpdate = false;
             };
 
             this.addFloor = function () {
-                var base = this.levels * appConfig.buildingController.levelHeight;
+                var base = this.levels * appConfig.buildingOptions.levelHeight;
                 var points = fp.BUILDING_FORMS[this.buildingForm](this.localWidth, this.localLength, base);
-                if (appConfig.buildingController.useShader) {
-                    this.generateExtrudedShapeWithShader(points);
-                }
-                else {
-                    if (appConfig.buildingController.showLines) {
+                if ( !appConfig.buildingOptions.useShader ) {
+                    if (appConfig.buildingOptions.showLines) {
                         this.geometry.dynamic = true;
                         this.generateSkeleton(points)
                         this.geometry.verticesNeedUpdate = true;
                     }
-                    if (appConfig.buildingController.showFill)
+                    if (appConfig.buildingOptions.showFill)
                         this.generateExtrudedShape(points)
-                    if (appConfig.buildingController.showWindows)
+                    if (appConfig.buildingOptions.showWindows)
                         this.generateWindows(points)
                 }
+                else
+                    this.shadedShape(points);
 
                 this.levels++;
                 // Update a low res model once the rest is complete
                 this.updateSimpleBuilding();
 
                 // Do tapering and staggering here
-                if (appConfig.buildingController.stagger) {
-                    if (appConfig.buildingController.taper) {
+                if (appConfig.buildingOptions.stagger) {
+                    if (appConfig.buildingOptions.taper) {
                         var percentage = this.levels / this.localMaxLevels;
-                        var sq = Math.pow(percentage, appConfig.buildingController.taperExponent)
-                        var hurdle = jStat.exponential.cdf(sq, appConfig.buildingController.taperDistribution)
+                        var sq = Math.pow(percentage, appConfig.buildingOptions.taperExponent)
+                        var hurdle = jStat.exponential.cdf(sq, appConfig.buildingOptions.taperDistribution)
                         if (Math.random() < hurdle) {
-                            this.localWidth -= appConfig.buildingController.staggerAmount;
-                            this.localLength -= appConfig.buildingController.staggerAmount;
+                            this.localWidth -= appConfig.buildingOptions.staggerAmount;
+                            this.localLength -= appConfig.buildingOptions.staggerAmount;
                         }
                     }
                     else {
-                        this.localWidth -= appConfig.buildingController.staggerAmount
-                        this.localLength -= appConfig.buildingController.staggerAmount;
+                        this.localWidth -= appConfig.buildingOptions.staggerAmount
+                        this.localLength -= appConfig.buildingOptions.staggerAmount;
                     }
                 }
             };
@@ -1752,7 +1770,7 @@ define([
 
             this.generateSkeleton = function (points) {
                 var base = points[0].y;
-                var height = base + appConfig.buildingController.levelHeight;
+                var height = base + appConfig.buildingOptions.levelHeight;
                 var offset = fp.getOffset(this.levels, points.length);
 
                 if (this.levels == 0) {
@@ -1781,7 +1799,7 @@ define([
 
             this.generateExtrudedShape = function (points) {
                 var base = points[0].y;
-                var height = base + appConfig.buildingController.levelHeight;
+                var height = base + appConfig.buildingOptions.levelHeight;
                 var offset = fp.getOffset(this.levels, points.length)
 
                 // EXTRUDED SHAPE FOR NON-BOX SHAPED BUILDINGS
@@ -1791,7 +1809,7 @@ define([
                     shape.lineTo(points[i].x, points[i].z);
                 }
                 shape.lineTo(points[0].x, points[0].z);
-                var extrudeSettings = { amount: appConfig.buildingController.levelHeight * 1.0, bevelEnabled: false };
+                var extrudeSettings = { amount: appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
                 var shapeGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
                 shapeGeometry.faceVertexUvs[0][0][0].set( 0, 0 );
                 shapeGeometry.faceVertexUvs[0][0][1].set( 0, 0 );
@@ -1806,9 +1824,8 @@ define([
                 shapeGeometry.faceVertexUvs[0][3][1].set( 0, 0 );
                 shapeGeometry.faceVertexUvs[0][3][2].set( 0, 0 );
                 shapeGeometry.computeBoundingBox();
-
                 if (shapeGeometry.boundingBox) {
-                    var fc = (appConfig.displayController.dayShow) ? appConfig.colorController.colorDayBuildingFill : appConfig.colorController.colorNightBuildingFill;
+                    var fc = (appConfig.displayOptions.dayShow) ? appConfig.colorOptions.colorDayBuildingFill : appConfig.colorOptions.colorNightBuildingFill;
                     buildingMaterial = new THREE.MeshBasicMaterial({color: fc });
                     var box = new THREE.Mesh( shapeGeometry, buildingMaterial );
                     box.rotation.set(Math.PI / 2, 0, 0);
@@ -1823,8 +1840,8 @@ define([
                 var offset = fp.getOffset(this.levels, points.length);
 
                 // General calculable variables
-                var windowHeight = ((appConfig.buildingController.windowsEndY - appConfig.buildingController.windowsStartY) / 100) * appConfig.buildingController.levelHeight;
-                var winActualWidth = (appConfig.buildingController.windowPercent / 100) * appConfig.buildingController.windowWidth;
+                var windowHeight = ((appConfig.buildingOptions.windowsEndY - appConfig.buildingOptions.windowsStartY) / 100) * appConfig.buildingOptions.levelHeight;
+                var winActualWidth = (appConfig.buildingOptions.windowPercent / 100) * appConfig.buildingOptions.windowWidth;
 
                 // Create the window shape template
                 var shape = new THREE.Shape();
@@ -1852,10 +1869,10 @@ define([
                     var xDiff = currentPoint.x - previousPoint.x;
                     var zDiff = currentPoint.z - previousPoint.z;
                     var lineLength = Math.sqrt(xDiff * xDiff + zDiff * zDiff)
-                    var windowCount = Math.floor(lineLength / appConfig.buildingController.windowWidth)
-                    var winOffset = (appConfig.buildingController.windowWidth - winActualWidth) / 2;
-                    var windowStart = base + (appConfig.buildingController.levelHeight * (appConfig.buildingController.windowsStartY / 100));
-                    var windowEnd = base + (appConfig.buildingController.levelHeight * (appConfig.buildingController.windowsEndY / 100));
+                    var windowCount = Math.floor(lineLength / appConfig.buildingOptions.windowWidth)
+                    var winOffset = (appConfig.buildingOptions.windowWidth - winActualWidth) / 2;
+                    var windowStart = base + (appConfig.buildingOptions.levelHeight * (appConfig.buildingOptions.windowsStartY / 100));
+                    var windowEnd = base + (appConfig.buildingOptions.levelHeight * (appConfig.buildingOptions.windowsEndY / 100));
                     var winW = winActualWidth * (xDiff / lineLength)
                     var winL = winActualWidth * (zDiff / lineLength)
                     var winOffsetW = winOffset * (xDiff / lineLength)
@@ -1865,14 +1882,14 @@ define([
                         var winX = previousPoint.x + (j * xDiff / windowCount) + winOffsetW
                         var winZ = previousPoint.z + (j * zDiff / windowCount) + winOffsetL
 
-                        if (appConfig.buildingController.windowsFill) {
+                        if (appConfig.buildingOptions.windowsFill) {
                             var boxCopy = box.clone();
                             boxCopy.position.set(winX + winW, windowStart, winZ + winL)
                             boxCopy.rotation.set(0, angle, 0);
                             this.windowsFillContainer.add(boxCopy)
                         }
 
-                        if (appConfig.buildingController.windowsLine) {
+                        if (appConfig.buildingOptions.windowsLine) {
                             var windowOutlineCopy = windowOutline.clone();
                             windowOutlineCopy.position.set(winX + winW, windowStart, winZ + winL)
                             windowOutlineCopy.rotation.set(0, angle, 0);
@@ -1882,7 +1899,7 @@ define([
                 }
             };
 
-            this.generateExtrudedShapeWithShader = function (points) {
+            this.shadedShape = function (points) {
                 var base = points[0].y;
                 var height = base;// + this.lod.position.y;
                 var offset = fp.getOffset(this.levels, points.length);
@@ -1892,47 +1909,52 @@ define([
                 for (var i = 1; i < points.length; i ++)
                     shape.lineTo(points[i].x, points[i].z);
                 shape.lineTo(points[0].x, points[0].z);
-                var extrudeSettings = { amount: appConfig.buildingController.levelHeight * 1.0, bevelEnabled: false };
+                var extrudeSettings = { amount: appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
                 var shapeGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
                 shapeGeometry.computeBoundingBox();
 
                 if (shapeGeometry.boundingBox) {
                     var fc, lc, wc;
-                    if (appConfig.displayController.dayShow) {
-                        fc = fp.buildColorVector(appConfig.colorController.colorDayBuildingFill);
-                        lc = fp.buildColorVector(appConfig.colorController.colorDayBuildingLine);
-                        wc = fp.buildColorVector(appConfig.colorController.colorDayBuildingWindow);
+                    if (appConfig.displayOptions.dayShow) {
+                        fc = fp.buildColorVector(appConfig.colorOptions.colorDayBuildingFill);
+                        lc = fp.buildColorVector(appConfig.colorOptions.colorDayBuildingLine);
+                        wc = fp.buildColorVector(appConfig.colorOptions.colorDayBuildingWindow);
                     }
                     else {
-                        fc = fp.buildColorVector(appConfig.colorController.colorNightBuildingFill);
-                        lc = fp.buildColorVector(appConfig.colorController.colorNightBuildingLine);
-                        wc = fp.buildColorVector(appConfig.colorController.colorNightBuildingWindow);
+                        fc = fp.buildColorVector(appConfig.colorOptions.colorNightBuildingFill);
+                        lc = fp.buildColorVector(appConfig.colorOptions.colorNightBuildingLine);
+                        wc = fp.buildColorVector(appConfig.colorOptions.colorNightBuildingWindow);
                     }
                     // Gets around a problem with rendering a single building with lines or windows
-                    var showLines = ( fp.buildingNetwork.buildings.length > 1 && appConfig.buildingController.showLines );
-                    var showWindows = appConfig.buildingController.showWindows;
+                    var showLines = ( fp.buildingNetwork.buildings.length > 1 && appConfig.buildingOptions.showLines );
+                    var showWindows = appConfig.buildingOptions.showWindows;
                     this.uniforms = {
                         time: { type: "f", value: 1.0 },
                         location: { type: "v2", value: new THREE.Vector2(this.lod.position.x, this.lod.position.z) },
                         resolution: { type: "v2", value: new THREE.Vector2() },
-                        dimensions: { type: "v3", value: new THREE.Vector3(shapeGeometry.boundingBox.max.x - shapeGeometry.boundingBox.min.x, appConfig.buildingController.levelHeight, shapeGeometry.boundingBox.max.y - shapeGeometry.boundingBox.min.y) },
-                        bottomWindow: { type: "f", value: 1.0 - (appConfig.buildingController.windowsEndY / 100.0) },
-                        topWindow: { type: "f", value: 1.0 - (appConfig.buildingController.windowsStartY/ 100.0) },
-                        windowWidth: { type: "f", value: appConfig.buildingController.windowWidth },
-                        windowPercent: { type: "f", value: appConfig.buildingController.windowPercent / 100.0  },
+                        dimensions: { type: "v3", value: new THREE.Vector3(shapeGeometry.boundingBox.max.x - shapeGeometry.boundingBox.min.x, appConfig.buildingOptions.levelHeight, shapeGeometry.boundingBox.max.y - shapeGeometry.boundingBox.min.y) },
+                        bottomWindow: { type: "f", value: this.bottomWindow },
+                        topWindow: { type: "f", value: this.topWindow },
+                        windowWidth: { type: "f", value: this.windowWidth },
+                        windowPercent: { type: "f", value: this.windowPercent },
                         floorLevel: { type: "f", value: this.levels },
-                        //opacity: { type: "f", value: appConfig.buildingController.opacity },
+                        //opacity: { type: "f", value: appConfig.buildingOptions.opacity },
                         lineColor: { type: "v3", value: lc },
-                        lineWidth: { type: "f", value: appConfig.buildingController.linewidth },
+                        lineWidth: { type: "f", value: appConfig.buildingOptions.linewidth },
                         fillColor: { type: "v3", value: fc },
                         windowColor: { type: "v3", value: wc },
                         showLines: { type: "i", value: showLines ? 1 : 0 },
-                        showFill: { type: "i", value: appConfig.buildingController.showFill ? 1 : 0 },
+                        showFill: { type: "i", value: appConfig.buildingOptions.showFill ? 1 : 0 },
                         showWindows: { type: "i", value: showWindows ? 1 : 0 },
-                        fillRooves: { type: "i", value: appConfig.buildingController.fillRooves ? 1 : 0 }
+                        fillRooves: { type: "i", value: appConfig.buildingOptions.fillRooves ? 1 : 0 }
                     };
-                    shaderMaterial = new THREE.ShaderMaterial( {
+                    var attributes = { mixin: { type: 'f', value: [] } };
+                    for (var i = 0; i < shapeGeometry.vertices.length; i++)
+                        attributes.mixin.value[i] = Math.random() * 10;
+
+                    var shaderMaterial = new THREE.ShaderMaterial( {
                         uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
+                        attributes: attributes,
                         vertexShader: fp.ShaderUtils.lambertShaderVertex(
                             fp.ShaderUtils.buildingVertexShaderParams(),
                             fp.ShaderUtils.buildingVertexShaderMain()
@@ -1945,7 +1967,7 @@ define([
                     } );
 
                     shaderMaterial.side = THREE.DoubleSide;
-                    shaderMaterial.wireframe = appConfig.displayController.wireframeShow;
+                    shaderMaterial.wireframe = appConfig.displayOptions.wireframeShow;
 
                     var box = new THREE.Mesh( shapeGeometry, shaderMaterial );
                     box.matrixAutoUpdate = false;
@@ -1970,31 +1992,31 @@ define([
             this.update = function() {
                 if ( this.canAddFloor() ) {
                     this.counter ++;
-                    if (this.counter % appConfig.buildingController.riseRate == 0 )
+                    if (this.counter % appConfig.buildingOptions.riseRate == 0 )
                         this.addFloor()
 
-                    if (appConfig.buildingController.falling) {
-                        var y = - ( this.levelHeight /  (2 * appConfig.buildingController.riseRate));
+                    if (appConfig.buildingOptions.falling) {
+                        var y = - ( this.levelHeight /  (2 * appConfig.buildingOptions.riseRate));
                         this.yOffset += y;
                         this.highResMeshContainer.translateY(y);
                         this.lowResMeshContainer.translateY(y);
                     }
                 }
                 // NOT WORKING YET
-                else if (! this.destroying && appConfig.buildingController.destroyOnComplete) {
+                else if (! this.destroying && appConfig.buildingOptions.destroyOnComplete) {
                     this.destroying = true;
                 }
                 else if (this.destroying && this.levels > 0) {
                     this.counter ++;
-                    if (this.counter % appConfig.buildingController.riseRate == 0 ) {
+                    if (this.counter % appConfig.buildingOptions.riseRate == 0 ) {
                         this.removeFloor()
                     }
                 }
-                else if (this.destroying && this.levels == 0 && appConfig.buildingController.loopCreateDestroy) {
+                else if (this.destroying && this.levels == 0 && appConfig.buildingOptions.loopCreateDestroy) {
                     this.destroying = false;
                 }
 
-                if (appConfig.buildingController.turning) {
+                if (appConfig.buildingOptions.turning) {
                     this.highResMeshContainer.rotation.x += 0.001;
                     this.highResMeshContainer.rotation.y += 0.01;
                     this.lowResMeshContainer.rotation.x += 0.001;
@@ -2002,8 +2024,23 @@ define([
                     this.lowResMesh.rotation.x += 0.001;
                     this.lowResMesh.rotation.y += 0.01;
                 }
+                this.updateBuildingShader();
             };
 
+            // Function not yet working
+            this.updateBuildingShader = function() {
+                this.highResMeshContainer.children.forEach( function(floor) {
+                    var shaderMaterial = floor.material;
+                    var r = Math.random() * 10;
+                    var chance = 0.02;
+                    if ( Math.random() < chance ) {
+                        for (var i = 0; i < floor.geometry.vertices.length; i++) {
+                            shaderMaterial.attributes.mixin.value[i] = r;
+                        }
+                    }
+                    shaderMaterial.attributes.mixin.needsUpdate = true; // important!
+                } );
+            };
             this.updateSimpleBuilding = function () {
                 if (this.levels > 1) {
                     if (!this.destroying)
@@ -2044,7 +2081,7 @@ define([
                 y = _y || 0
                 z = _z || 0
             };
-            this.generateExtrudedShapeWithShader = function (points) {};
+            this.shadedShape = function (points) {};
             this.update = function() { }
         },
 
@@ -2068,10 +2105,10 @@ define([
         },
 
         AppConfig: function() {
-            this.worldController = {
+            this.worldOptions = {
                 maxLandSearchDepth: 1
             }
-            this.agentController = {
+            this.agentOptions = {
                 initialPopulation: 100,
                 initialExtent: 1000,
                 maxExtent: terrain.gridExtent,
@@ -2091,7 +2128,7 @@ define([
                 size: 40,
                 terrainOffset: 20
             }
-            this.displayController = {
+            this.displayOptions = {
                 buildingsShow: true,
                 roadsShow: true,
                 waterShow: true,
@@ -2118,7 +2155,7 @@ define([
                 firstPersonView: false,
                 topDownView: false
             }
-            this.roadController = {
+            this.roadOptions = {
                 create: true,
                 maxNumber: 200,  // Maximum number of roads - for performance reasons
                 roadWidth: 20,
@@ -2134,7 +2171,7 @@ define([
                 flattenAdjustment: 0.025,
                 flattenLift: 20
             }
-            this.buildingController = {
+            this.buildingOptions = {
                 create: true,
 
                 maxNumber: 250, // Maximum number of buildings - for performance reasons
@@ -2193,6 +2230,7 @@ define([
 
                 // Window parameters
                 showWindows: true,
+                windowsRandomise: false,
                 windowWidth: 15,
                 windowPercent: 60,
                 windowsStartY: 40,
@@ -2207,17 +2245,21 @@ define([
                 // Taper
                 taper: true,
                 taperExponent: 2,
-                taperDistribution: 1
+                taperDistribution: 1,
+
+                // Collision detection
+                detectBuildingCollisions: true,
+                detectRoadCollisions: true
             }
-            this.terrainController = {
+            this.terrainOptions = {
                 loadHeights: true,
                 multiplier: 1
             }
-            this.colorController = {
+            this.colorOptions = {
                 colorDayBackground: 0x000000,
                 colorNightBackground: 0x000000,
                 colorDayRoad: 0x474747,
-                colorNightRoad: 0x474747,
+                colorNightRoad: 0x000000,
                 colorDayAgent: 0x4747b3,
                 colorNightAgent: 0x47b347,
                 colorDayNetwork: 0x474747,
@@ -2225,12 +2267,12 @@ define([
                 colorDayTrail: 0x474747,
                 colorNightTrail: 0x47b347,
 
-                colorDayBuildingFill: 0x817b7b,
-                colorNightBuildingFill: 0x817b7b,
+                colorDayBuildingFill: 0xb1abab,
+                colorNightBuildingFill: 0x000000,
                 colorDayBuildingLine: 0x222222,
-                colorNightBuildingLine: 0x222222,
-                colorDayBuildingWindow: 0x939317,
-                colorNightBuildingWindow: 0x6d6d43,
+                colorNightBuildingLine: 0x000000,
+                colorDayBuildingWindow: 0x222222,
+                colorNightBuildingWindow: 0xffff8f,
 
                 colorDayTerrainSea: 0xa6a6a6,
                 colorNightTerrainSea: 0x060606,
@@ -2247,13 +2289,13 @@ define([
                 colorGraphHealth: 0xb34747,
                 colorGraphPatchValues: 0x47b347,
             }
-            this.buildingController.maxHeight = (this.buildingController.minHeight > this.buildingController.maxHeight) ? this.buildingController.minHeight : this.buildingController.maxHeight;
-            this.buildingController.maxWidth = (this.buildingController.minWidth > this.buildingController.maxWidth) ? this.buildingController.minWidth : this.buildingController.maxWidth;
-            this.buildingController.maxLength = (this.buildingController.minLength > this.buildingController.maxLength) ? this.buildingController.minLength : this.buildingController.maxLength;
-            this.buildingController.maxLevels = this.buildingController.minHeight + Math.floor(Math.random() * this.buildingController.maxHeight - this.buildingController.minHeight);
-            this.buildingController.width = this.buildingController.minWidth + Math.floor(Math.random() * this.buildingController.maxWidth - this.buildingController.minWidth);
-            this.buildingController.length = this.buildingController.minLength + Math.floor(Math.random() * this.buildingController.maxLength - this.buildingController.minLength);
-            this.sunController  = {
+            this.buildingOptions.maxHeight = (this.buildingOptions.minHeight > this.buildingOptions.maxHeight) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
+            this.buildingOptions.maxWidth = (this.buildingOptions.minWidth > this.buildingOptions.maxWidth) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
+            this.buildingOptions.maxLength = (this.buildingOptions.minLength > this.buildingOptions.maxLength) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
+            this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor(Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight);
+            this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor(Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth);
+            this.buildingOptions.length = this.buildingOptions.minLength + Math.floor(Math.random() * this.buildingOptions.maxLength - this.buildingOptions.minLength);
+            this.sunOptions  = {
                 turbidity: 10,
                 reileigh: 2,
                 mieCoefficient: 0.005,
@@ -2305,34 +2347,34 @@ define([
                 agentNetwork.createAgents();
                 trailNetwork.globalTrailGeometry = new THREE.Geometry();
                 var trailMaterial = new THREE.LineBasicMaterial({
-                    color: appConfig.colorController.colorNightTrail,
+                    color: appConfig.colorOptions.colorNightTrail,
                     opacity: 0.75,
                     linewidth: 0.25
                 });
-                for (var i = 0; i < appConfig.agentController.initialPopulation; i++) {
-                    var vertices = new Array(appConfig.displayController.trailLength);
-                    for (var j = 0; j < appConfig.displayController.trailLength ; j++) {
+                for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++) {
+                    var vertices = new Array(appConfig.displayOptions.trailLength);
+                    for (var j = 0; j < appConfig.displayOptions.trailLength ; j++) {
                         trailNetwork.globalTrailGeometry.vertices.push(agentNetwork.agents[i].lastPosition);
                     }
-                    var ai = fp.getIndex(agentNetwork.agents[i].lastPosition.x / appConfig.terrainController.multiplier, agentNetwork.agents[i].lastPosition.z / appConfig.terrainController.multiplier);
+                    var ai = fp.getIndex(agentNetwork.agents[i].lastPosition.x / appConfig.terrainOptions.multiplier, agentNetwork.agents[i].lastPosition.z / appConfig.terrainOptions.multiplier);
                     if (ai > -1)
                         trailNetwork.trails[ai] = 1;
                 }
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
-                if ( appConfig.displayController.buildingsShow )
+                if ( appConfig.displayOptions.buildingsShow )
                     scene.add(fp.buildingNetwork.networkMesh);
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
-                if ( appConfig.displayController.roadsShow )
+                if ( appConfig.displayOptions.roadsShow )
                     scene.add(fp.roadNetwork.networkMesh);
 
                 pathNetwork.networkMesh = new THREE.Object3D();
-                if ( appConfig.displayController.pathsShow )
+                if ( appConfig.displayOptions.pathsShow )
                     scene.add(pathNetwork.networkMesh);
 
                 trailNetwork.globalTrailLine = new THREE.Line(trailNetwork.globalTrailGeometry, trailMaterial, THREE.LinePieces);
-                if (appConfig.displayController.trailsShowAsLines)
+                if (appConfig.displayOptions.trailsShowAsLines)
                     scene.add(trailNetwork.globalTrailLine);
 
                 fp.sim.setup.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
@@ -2389,7 +2431,7 @@ define([
 
         Chart: {  // Singleton objects
             setupChart: function () {
-                var agentDiv = appConfig.agentController.initialPopulation * 2;
+                var agentDiv = appConfig.agentOptions.initialPopulation * 2;
                 chart = new SmoothieChart( { maxValue: agentDiv, minValue: 0.0  } );
                 var agentPopulationSeries = new TimeSeries();
                 var agentHealthSeries = new TimeSeries();
@@ -2407,7 +2449,7 @@ define([
                 chartCanvas.setAttribute("height", "100");
                 chartCanvas.setAttribute("style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  ");
                 container.insertBefore(chartCanvas, container.firstChild);
-                var colorNetwork = appConfig.colorController.colorNightNetwork;
+                var colorNetwork = appConfig.colorOptions.colorNightNetwork;
                 chart.addTimeSeries( agentPopulationSeries, { fillStyle: 'rgba(0, 0, 255, 0.2)', lineWidth: 4 } );
                 chart.addTimeSeries(agentHealthSeries, { lineWidth: 4 });
                 chart.addTimeSeries(patchValuesSeries, { lineWidth: 4 });
@@ -2417,7 +2459,7 @@ define([
             },
 
             updateGraph: function() {
-                $('#chartCanvas').toggle(appConfig.displayController.chartShow);
+                $('#chartCanvas').toggle(appConfig.displayOptions.chartShow);
             }
         },
 
@@ -2426,12 +2468,12 @@ define([
             gui = new dat.GUI( { load: config } );
 
             gui.remember(appConfig);
-            gui.remember(appConfig.agentController);
-            gui.remember(appConfig.buildingController);
-            gui.remember(appConfig.roadController);
-            gui.remember(appConfig.displayController);
-            gui.remember(appConfig.colorController);
-            gui.remember(appConfig.terrainController);
+            gui.remember(appConfig.agentOptions);
+            gui.remember(appConfig.buildingOptions);
+            gui.remember(appConfig.roadOptions);
+            gui.remember(appConfig.displayOptions);
+            gui.remember(appConfig.colorOptions);
+            gui.remember(appConfig.terrainOptions);
 
             gui.add(appConfig, 'Setup');
             gui.add(appConfig, 'Run');
@@ -2445,166 +2487,169 @@ define([
             controlPanel.add(appConfig, 'SwitchTerrain');
 
             var agentsFolder = gui.addFolder('Agent Options');
-            agentsFolder.add(appConfig.agentController, 'initialPopulation', 0, 10000).step(1);
-            agentsFolder.add(appConfig.agentController, 'initialExtent', 100, terrain.gridExtent).step(100);
-            agentsFolder.add(appConfig.agentController, 'maxExtent', 1000, terrain.gridExtent).step(100);
-            agentsFolder.add(appConfig.agentController, 'initialX',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
-            agentsFolder.add(appConfig.agentController, 'initialY',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
-            agentsFolder.add(appConfig.agentController, 'chanceToJoinNetwork', 0.0, 1.0).step(0.01);
-            agentsFolder.add(appConfig.agentController, 'chanceToFindPathToHome', 0.0, 1.0).step(0.01);
-            agentsFolder.add(appConfig.agentController, 'initialCircle');
-            agentsFolder.add(appConfig.agentController, 'noWater');
-            agentsFolder.add(appConfig.agentController, 'noUphill');
-            agentsFolder.add(appConfig.agentController, 'useStickman');
-            agentsFolder.add(appConfig.agentController, 'healthReduce', 0.0, 0.1).step(0.01);
-            agentsFolder.add(appConfig.agentController, 'healthGain', 0.0, 5.0).step(0.5);
-            agentsFolder.add(appConfig.agentController, 'visitHomeBuilding', 0.0, 1.0).step(0.001);
-            agentsFolder.add(appConfig.agentController, 'visitOtherBuilding', 0.0, 1.0).step(0.001);
+            agentsFolder.add(appConfig.agentOptions, 'initialPopulation', 0, 10000).step(1);
+            agentsFolder.add(appConfig.agentOptions, 'initialExtent', 100, terrain.gridExtent).step(100);
+            agentsFolder.add(appConfig.agentOptions, 'maxExtent', 1000, terrain.gridExtent).step(100);
+            agentsFolder.add(appConfig.agentOptions, 'initialX',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
+            agentsFolder.add(appConfig.agentOptions, 'initialY',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
+            agentsFolder.add(appConfig.agentOptions, 'chanceToJoinNetwork', 0.0, 1.0).step(0.01);
+            agentsFolder.add(appConfig.agentOptions, 'chanceToFindPathToHome', 0.0, 1.0).step(0.01);
+            agentsFolder.add(appConfig.agentOptions, 'initialCircle');
+            agentsFolder.add(appConfig.agentOptions, 'noWater');
+            agentsFolder.add(appConfig.agentOptions, 'noUphill');
+            agentsFolder.add(appConfig.agentOptions, 'useStickman');
+            agentsFolder.add(appConfig.agentOptions, 'healthReduce', 0.0, 0.1).step(0.01);
+            agentsFolder.add(appConfig.agentOptions, 'healthGain', 0.0, 5.0).step(0.5);
+            agentsFolder.add(appConfig.agentOptions, 'visitHomeBuilding', 0.0, 1.0).step(0.001);
+            agentsFolder.add(appConfig.agentOptions, 'visitOtherBuilding', 0.0, 1.0).step(0.001);
 
             var buildingsFolder = gui.addFolder('Building Options');
-            buildingsFolder.add(appConfig.buildingController, 'create');
-            buildingsFolder.add(appConfig.buildingController, 'maxNumber', 1, 100).step(1);
+            buildingsFolder.add(appConfig.buildingOptions, 'create');
+            buildingsFolder.add(appConfig.buildingOptions, 'maxNumber', 1, 100).step(1);
+            buildingsFolder.add(appConfig.buildingOptions, 'detectBuildingCollisions');
+            buildingsFolder.add(appConfig.buildingOptions, 'detectRoadCollisions');
             var forms = buildingsFolder.addFolder('Form');
-            forms.add(appConfig.buildingController, 'buildingForm', fp.BUILDING_FORMS.names);
-            forms.add(appConfig.buildingController, 'spread', 1, 100).step(1);
-            forms.add(appConfig.buildingController, 'randomForm');
-            forms.add(appConfig.buildingController, 'rotateRandomly');
-            forms.add(appConfig.buildingController, 'rotateSetAngle', 0, 360).step(1);
+            forms.add(appConfig.buildingOptions, 'buildingForm', fp.BUILDING_FORMS.names);
+            forms.add(appConfig.buildingOptions, 'spread', 1, 100).step(1);
+            forms.add(appConfig.buildingOptions, 'randomForm');
+            forms.add(appConfig.buildingOptions, 'rotateRandomly');
+            forms.add(appConfig.buildingOptions, 'rotateSetAngle', 0, 360).step(1);
             var dimensions = buildingsFolder.addFolder('Dimensions');
-            dimensions.add(appConfig.buildingController, 'minHeight', 1, 50).step(1);
-            dimensions.add(appConfig.buildingController, 'maxHeight', 2, 200).step(1);
-            dimensions.add(appConfig.buildingController, 'heightA', 0.1, 10.0).step(0.1);
-            dimensions.add(appConfig.buildingController, 'heightB', 1, 100).step(1);
-            dimensions.add(appConfig.buildingController, 'riseRate', 1, 100).step(1);
-            dimensions.add(appConfig.buildingController, 'levelHeight', 10, 100).step(1);
-            dimensions.add(appConfig.buildingController, 'minWidth', 1, 200).step(1);
-            dimensions.add(appConfig.buildingController, 'maxWidth', 41, 400).step(1);
-            dimensions.add(appConfig.buildingController, 'minLength', 1, 200).step(1);
-            dimensions.add(appConfig.buildingController, 'maxLength', 41, 400).step(1);
+            dimensions.add(appConfig.buildingOptions, 'minHeight', 1, 50).step(1);
+            dimensions.add(appConfig.buildingOptions, 'maxHeight', 2, 200).step(1);
+            dimensions.add(appConfig.buildingOptions, 'heightA', 0.1, 10.0).step(0.1);
+            dimensions.add(appConfig.buildingOptions, 'heightB', 1, 100).step(1);
+            dimensions.add(appConfig.buildingOptions, 'riseRate', 1, 100).step(1);
+            dimensions.add(appConfig.buildingOptions, 'levelHeight', 10, 100).step(1);
+            dimensions.add(appConfig.buildingOptions, 'minWidth', 1, 200).step(1);
+            dimensions.add(appConfig.buildingOptions, 'maxWidth', 41, 400).step(1);
+            dimensions.add(appConfig.buildingOptions, 'minLength', 1, 200).step(1);
+            dimensions.add(appConfig.buildingOptions, 'maxLength', 41, 400).step(1);
             var influences = buildingsFolder.addFolder('Influences');
-            influences.add(appConfig.buildingController, 'roads', 0.0, 1.0).step(0.1);
-            influences.add(appConfig.buildingController, 'water', 0.0, 1.0).step(0.1);
-            influences.add(appConfig.buildingController, 'otherBuildings', 0.0, 1.0).step(0.1);
-            influences.add(appConfig.buildingController, 'buildingHeight', 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, 'roads', 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, 'water', 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, 'otherBuildings', 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, 'buildingHeight', 0.0, 1.0).step(0.1);
             var view = buildingsFolder.addFolder('Appearance');
-            view.add(appConfig.buildingController, 'useShader');
-            view.add(appConfig.buildingController, 'useLevelOfDetail');
-            view.add(appConfig.buildingController, 'lowResDistance', 2000, 20000).step(1000);
-            view.add(appConfig.buildingController, 'highResDistance', 100, 2000).step(100);
-            view.add(appConfig.buildingController, 'opacity', 0.0, 1.0).step(.01);
+            view.add(appConfig.buildingOptions, 'useShader');
+            view.add(appConfig.buildingOptions, 'useLevelOfDetail');
+            view.add(appConfig.buildingOptions, 'lowResDistance', 2000, 20000).step(1000);
+            view.add(appConfig.buildingOptions, 'highResDistance', 100, 2000).step(100);
+            view.add(appConfig.buildingOptions, 'opacity', 0.0, 1.0).step(.01);
             var fill = view.addFolder('Fill');
-            fill.add(appConfig.buildingController, 'showFill');
-            fill.add(appConfig.buildingController, 'fillRooves');
+            fill.add(appConfig.buildingOptions, 'showFill');
+            fill.add(appConfig.buildingOptions, 'fillRooves');
             var line = view.addFolder('Line');
-            line.add(appConfig.buildingController, 'showLines');
-            line.add(appConfig.buildingController, 'linewidth', 0.1, 8).step(0.1);
+            line.add(appConfig.buildingOptions, 'showLines');
+            line.add(appConfig.buildingOptions, 'linewidth', 0.1, 8).step(0.1);
             var windows = view.addFolder('Window');
-            var showWindowsController = windows.add(appConfig.buildingController, 'showWindows');
-            showWindowsController.onChange(function(value) {
+            var showWindowsOptions = windows.add(appConfig.buildingOptions, 'showWindows');
+            showWindowsOptions.onChange(function(value) {
                 fp.buildingNetwork.buildings.forEach(function(b) {
                     b.uniforms.showWindows.value = value ? 1 : 0;
                 })
             });
-            windows.add(appConfig.buildingController, 'windowWidth', 1, 100).step(1);
-            windows.add(appConfig.buildingController, 'windowPercent', 1, 100).step(1);
-            windows.add(appConfig.buildingController, 'windowsStartY', 1, 100).step(1);
-            windows.add(appConfig.buildingController, 'windowsEndY', 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, 'windowsRandomise');
+            windows.add(appConfig.buildingOptions, 'windowWidth', 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, 'windowPercent', 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, 'windowsStartY', 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, 'windowsEndY', 1, 100).step(1);
             var stagger = buildingsFolder.addFolder('Stagger');
-            stagger.add(appConfig.buildingController, 'stagger');
-            stagger.add(appConfig.buildingController, 'staggerAmount', 1, 100);
+            stagger.add(appConfig.buildingOptions, 'stagger');
+            stagger.add(appConfig.buildingOptions, 'staggerAmount', 1, 100);
             var taper = buildingsFolder.addFolder('Taper');
-            taper.add(appConfig.buildingController, 'taper');
-            taper.add(appConfig.buildingController, 'taperExponent', 1, 10).step(1);
-            taper.add(appConfig.buildingController, 'taperDistribution', 0.1, 5);
+            taper.add(appConfig.buildingOptions, 'taper');
+            taper.add(appConfig.buildingOptions, 'taperExponent', 1, 10).step(1);
+            taper.add(appConfig.buildingOptions, 'taperDistribution', 0.1, 5);
             var animation = buildingsFolder.addFolder('Animation');
-            animation.add(appConfig.buildingController, 'destroyOnComplete');
-            animation.add(appConfig.buildingController, 'loopCreateDestroy');
-            animation.add(appConfig.buildingController, 'turning');
-            animation.add(appConfig.buildingController, 'falling');
+            animation.add(appConfig.buildingOptions, 'destroyOnComplete');
+            animation.add(appConfig.buildingOptions, 'loopCreateDestroy');
+            animation.add(appConfig.buildingOptions, 'turning');
+            animation.add(appConfig.buildingOptions, 'falling');
 
             var terrainFolder = gui.addFolder('Terrain Options');
-            terrainFolder.add(appConfig.terrainController, 'loadHeights').onFinishChange(terrain.loadTerrain);
-            terrainFolder.add(appConfig.terrainController, 'multiplier', 1, 10).step(1).onFinishChange(terrain.loadTerrain);
+            terrainFolder.add(appConfig.terrainOptions, 'loadHeights').onFinishChange(terrain.loadTerrain);
+            terrainFolder.add(appConfig.terrainOptions, 'multiplier', 1, 10).step(1).onFinishChange(terrain.loadTerrain);
 
             var roadsFolder = gui.addFolder('Road Options');
-            roadsFolder.add(appConfig.roadController, 'create');
-            roadsFolder.add(appConfig.roadController, 'maxNumber', 1, 100).step(1);
-            roadsFolder.add(appConfig.roadController, 'roadWidth', 5, 50).step(5);
-            roadsFolder.add(appConfig.roadController, 'roadDeviation', 0, 50).step(1);
-            roadsFolder.add(appConfig.roadController, 'roadRadiusSegments', 2, 20).step(1);
-            roadsFolder.add(appConfig.roadController, 'roadSegments', 1, 20).step(1);
-            roadsFolder.add(appConfig.roadController, 'initialRadius', 0, 1000).step(100);
-            roadsFolder.add(appConfig.roadController, 'probability', 50, 1000).step(50);
-            roadsFolder.add(appConfig.roadController, 'lenMinimum', 0, 2000).step(100);
-            roadsFolder.add(appConfig.roadController, 'lenMaximum', 100, 2000).step(100);
-            roadsFolder.add(appConfig.roadController, 'lenDistributionFactor', 1, 10).step(1);
-            roadsFolder.add(appConfig.roadController, 'overlapThreshold', 1, 100).step(1);
-            roadsFolder.add(appConfig.roadController, 'flattenAdjustment', 0.025, 1.0).step(0.025);
-            roadsFolder.add(appConfig.roadController, 'flattenLift', 0, 40).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'create');
+            roadsFolder.add(appConfig.roadOptions, 'maxNumber', 1, 100).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'roadWidth', 5, 50).step(5);
+            roadsFolder.add(appConfig.roadOptions, 'roadDeviation', 0, 50).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'roadRadiusSegments', 2, 20).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'roadSegments', 1, 20).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'initialRadius', 0, 1000).step(100);
+            roadsFolder.add(appConfig.roadOptions, 'probability', 50, 1000).step(50);
+            roadsFolder.add(appConfig.roadOptions, 'lenMinimum', 0, 2000).step(100);
+            roadsFolder.add(appConfig.roadOptions, 'lenMaximum', 100, 2000).step(100);
+            roadsFolder.add(appConfig.roadOptions, 'lenDistributionFactor', 1, 10).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'overlapThreshold', 1, 100).step(1);
+            roadsFolder.add(appConfig.roadOptions, 'flattenAdjustment', 0.025, 1.0).step(0.025);
+            roadsFolder.add(appConfig.roadOptions, 'flattenLift', 0, 40).step(1);
 
             var displayFolder = gui.addFolder('Display Options');
-            displayFolder.add(appConfig.displayController, 'buildingsShow').onFinishChange(fp.updateBuildingState);
-            displayFolder.add(appConfig.displayController, 'roadsShow').onFinishChange(fp.updateRoadState);
-            displayFolder.add(appConfig.displayController, 'waterShow').onFinishChange(fp.updateWaterState);
-            displayFolder.add(appConfig.displayController, 'networkShow').onFinishChange(fp.updateNetworkState);
-            displayFolder.add(appConfig.displayController, 'networkCurve');
-            displayFolder.add(appConfig.displayController, 'networkCurvePoints', 4, 20).step(1);
-            displayFolder.add(appConfig.displayController, 'patchesUpdate');
-            displayFolder.add(appConfig.displayController, 'patchesShow').onFinishChange(fp.updatePatchesState);
-            displayFolder.add(appConfig.displayController, 'patchesUseShader');
-            displayFolder.add(appConfig.displayController, 'trailsShow').onFinishChange(fp.updateTrailState);
-            displayFolder.add(appConfig.displayController, 'trailsShowAsLines').onFinishChange(fp.updateTrailState);
-            displayFolder.add(appConfig.displayController, 'trailLength', 1, 10000).step(1);
-            displayFolder.add(appConfig.displayController, 'cursorShow').onFinishChange(fp.updateCursorState);
-            displayFolder.add(appConfig.displayController, 'statsShow').onFinishChange(fp.updateStatsState);
-            displayFolder.add(appConfig.displayController, 'hudShow').onFinishChange(fp.updateHUDState);
-            displayFolder.add(appConfig.displayController, 'wireframeShow').onFinishChange(fp.updateWireframeState);
-            displayFolder.add(appConfig.displayController, 'dayShow').onFinishChange(fp.updateDayOrNight);
-            displayFolder.add(appConfig.displayController, 'skyboxShow').onFinishChange(fp.updateDayOrNight);
-            displayFolder.add(appConfig.displayController, 'chartShow').onFinishChange(fp.updateGraph);
-            displayFolder.add(appConfig.displayController, 'pathsShow').onFinishChange(pathNetwork.updatePathsState);
-            displayFolder.add(appConfig.displayController, 'terrainShow').onFinishChange(terrain.updateTerrainPlane);
-            displayFolder.add(appConfig.displayController, 'coloriseAgentsByHealth');
-            displayFolder.add(appConfig.displayController, 'firstPersonView').onFinishChange(fp.resetControls);
-            displayFolder.add(appConfig.displayController, 'topDownView').onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, 'buildingsShow').onFinishChange(fp.updateBuildingState);
+            displayFolder.add(appConfig.displayOptions, 'roadsShow').onFinishChange(fp.updateRoadState);
+            displayFolder.add(appConfig.displayOptions, 'waterShow').onFinishChange(fp.updateWaterState);
+            displayFolder.add(appConfig.displayOptions, 'networkShow').onFinishChange(fp.updateNetworkState);
+            displayFolder.add(appConfig.displayOptions, 'networkCurve');
+            displayFolder.add(appConfig.displayOptions, 'networkCurvePoints', 4, 20).step(1);
+            displayFolder.add(appConfig.displayOptions, 'patchesUpdate');
+            displayFolder.add(appConfig.displayOptions, 'patchesShow').onFinishChange(fp.updatePatchesState);
+            displayFolder.add(appConfig.displayOptions, 'patchesUseShader');
+            displayFolder.add(appConfig.displayOptions, 'trailsShow').onFinishChange(fp.updateTrailState);
+            displayFolder.add(appConfig.displayOptions, 'trailsShowAsLines').onFinishChange(fp.updateTrailState);
+            displayFolder.add(appConfig.displayOptions, 'trailLength', 1, 10000).step(1);
+            displayFolder.add(appConfig.displayOptions, 'cursorShow').onFinishChange(fp.updateCursorState);
+            displayFolder.add(appConfig.displayOptions, 'statsShow').onFinishChange(fp.updateStatsState);
+            displayFolder.add(appConfig.displayOptions, 'hudShow').onFinishChange(fp.updateHUDState);
+            displayFolder.add(appConfig.displayOptions, 'wireframeShow').onFinishChange(fp.updateWireframeState);
+            displayFolder.add(appConfig.displayOptions, 'dayShow').onFinishChange(fp.updateDayOrNight);
+            displayFolder.add(appConfig.displayOptions, 'skyboxShow').onFinishChange(fp.updateDayOrNight);
+            displayFolder.add(appConfig.displayOptions, 'chartShow').onFinishChange(fp.updateGraph);
+            displayFolder.add(appConfig.displayOptions, 'pathsShow').onFinishChange(pathNetwork.updatePathsState);
+            displayFolder.add(appConfig.displayOptions, 'terrainShow').onFinishChange(terrain.updateTerrainPlane);
+            displayFolder.add(appConfig.displayOptions, 'coloriseAgentsByHealth');
+            displayFolder.add(appConfig.displayOptions, 'firstPersonView').onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, 'topDownView').onFinishChange(fp.resetControls);
 
             var colorFolder = gui.addFolder('Color Options');
 
             var colorTerrainFolder = colorFolder.addFolder('Terrain Colors');
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorDayTerrainSea').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorNightTerrainSea').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorDayTerrainLowland1').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorNightTerrainLowland1').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorDayTerrainLowland2').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorNightTerrainLowland2').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorDayTerrainMidland').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorNightTerrainMidland').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorDayTerrainHighland').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorController, 'colorNightTerrainHighland').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainSea').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainSea').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainLowland1').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainLowland1').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainLowland2').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainLowland2').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainMidland').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainMidland').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainHighland').onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainHighland').onChange(terrain.loadTerrain);
             var colorBuildingFolder = colorFolder.addFolder('Building Colors');
-            colorBuildingFolder.addColor(appConfig.colorController, 'colorDayBuildingFill');
-            colorBuildingFolder.addColor(appConfig.colorController, 'colorNightBuildingFill');
-            colorBuildingFolder.addColor(appConfig.colorController, 'colorDayBuildingLine');
-            colorBuildingFolder.addColor(appConfig.colorController, 'colorNightBuildingLine');
-            colorBuildingFolder.addColor(appConfig.colorController, 'colorDayBuildingWindow');
-            colorBuildingFolder.addColor(appConfig.colorController, 'colorNightBuildingWindow');
+            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorDayBuildingFill');
+            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorNightBuildingFill');
+            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorDayBuildingLine');
+            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorNightBuildingLine');
+            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorDayBuildingWindow');
+            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorNightBuildingWindow');
             var colorGraphFolder = colorFolder.addFolder('Graph Colors');
-            colorGraphFolder.addColor(appConfig.colorController, 'colorGraphPopulation').onChange(fp.updateChartColors);
-            colorGraphFolder.addColor(appConfig.colorController, 'colorGraphHealth').onChange(fp.updateChartColors);
-            colorGraphFolder.addColor(appConfig.colorController, 'colorGraphPatchValues').onChange(fp.updateChartColors);
+            colorGraphFolder.addColor(appConfig.colorOptions, 'colorGraphPopulation').onChange(fp.updateChartColors);
+            colorGraphFolder.addColor(appConfig.colorOptions, 'colorGraphHealth').onChange(fp.updateChartColors);
+            colorGraphFolder.addColor(appConfig.colorOptions, 'colorGraphPatchValues').onChange(fp.updateChartColors);
             var colorOtherFolder = colorFolder.addFolder('Other Colors');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorDayBackground');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorNightBackground');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorDayRoad');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorNightRoad');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorDayAgent');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorNightAgent');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorDayNetwork');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorNightNetwork');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorDayNetwork');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorNightNetwork');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorDayTrail');
-            colorOtherFolder.addColor(appConfig.colorController, 'colorNightTrail');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayBackground');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightBackground');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayRoad');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightRoad');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayAgent');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightAgent');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayNetwork');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightNetwork');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayNetwork');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightNetwork');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayTrail');
+            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightTrail');
         },
 
         buildColorVector: function(color) {
@@ -2639,9 +2684,9 @@ define([
         },
 
         updateChartColors: function() {
-            var colorPop = '#' + new THREE.Color(appConfig.colorController.colorGraphPopulation).getHexString(),
-                colorHealth = '#' + new THREE.Color(appConfig.colorController.colorGraphHealth).getHexString(),
-                colorPatches = '#' + new THREE.Color(appConfig.colorController.colorGraphPatchValues).getHexString();
+            var colorPop = '#' + new THREE.Color(appConfig.colorOptions.colorGraphPopulation).getHexString(),
+                colorHealth = '#' + new THREE.Color(appConfig.colorOptions.colorGraphHealth).getHexString(),
+                colorPatches = '#' + new THREE.Color(appConfig.colorOptions.colorGraphPatchValues).getHexString();
             _.extend( chart.seriesSet[0].options, { strokeStyle: colorPop } );
             _.extend( chart.seriesSet[1].options, { strokeStyle: colorHealth } );
             _.extend( chart.seriesSet[2].options, { strokeStyle: colorPatches } );
@@ -2687,28 +2732,28 @@ define([
 
         setupCamera: function() {
             camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
-            if ( appConfig.displayController.topDownView ) {
+            if ( appConfig.displayOptions.topDownView ) {
                 camera.position.x = 0;
-                camera.position.y = 1000 * appConfig.terrainController.multiplier;
+                camera.position.y = 1000 * appConfig.terrainOptions.multiplier;
                 camera.position.z = 1;
             }
-            else if ( appConfig.displayController.firstPersonView ) {
+            else if ( appConfig.displayOptions.firstPersonView ) {
                 camera.position.x = 0;
-                camera.position.y = 50 * appConfig.terrainController.multiplier;
+                camera.position.y = 50 * appConfig.terrainOptions.multiplier;
                 camera.position.z = 0;
             }
             else {
                 camera.position.x = 0;
-                camera.position.y = 200 * appConfig.terrainController.multiplier;
-                camera.position.z = 800 * appConfig.terrainController.multiplier;
+                camera.position.y = 200 * appConfig.terrainOptions.multiplier;
+                camera.position.z = 800 * appConfig.terrainOptions.multiplier;
             }
         },
 
         setupControls: function() {
-            if ( appConfig.displayController.topDownView ) {
+            if ( appConfig.displayOptions.topDownView ) {
                 controls = new THREE.TrackballControls( camera, container );
             }
-            else if ( appConfig.displayController.firstPersonView ) {
+            else if ( appConfig.displayOptions.firstPersonView ) {
                 controls = new THREE.PointerLockControls( camera );
                 scene.add( controls.getObject() );
                 controls.enabled = true;
@@ -2750,7 +2795,7 @@ define([
             renderer.shadowMapType = THREE.PCFSoftShadowMap;
             renderer.shadowMapCullFace = THREE.CullFaceBack;
 
-            renderer.setClearColor( appConfig.colorController.colorNightBackground, 1);
+            renderer.setClearColor( appConfig.colorOptions.colorNightBackground, 1);
             renderer.setSize(window.innerWidth, window.innerHeight);
             container.appendChild(renderer.domElement);
             renderer.domElement.style.zIndex = 2;
@@ -2761,14 +2806,12 @@ define([
         },
 
         setupLighting: function() {
-            var hemiLight = new THREE.HemisphereLight( 0x8f8f8f, 0x8f8f8f, 0.6 );
-            // hemiLight.color.setHSL( 0.6, 1, 0.6 );
-            // hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
-            hemiLight.position.set( 0, 0, 5000 );
+            var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
+            hemiLight.position.set( 0, 1000, 0 );
             scene.add( hemiLight );
 
-            var dirLight = new THREE.DirectionalLight( 0xffffff, 0.8 );
-            dirLight.position.set( -40000, 20000, -40000 );
+            var dirLight = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
+            dirLight.position.set( 40000, 40000, 40000 );
             dirLight.shadowDarkness = 0.25;
             dirLight.castShadow = true;
             // these six values define the boundaries of the yellow box seen above
@@ -2782,8 +2825,8 @@ define([
             dirLight.shadowCameraTop = d;
             dirLight.shadowCameraBottom = -d;
             dirLight.shadowBias = -0.0001;
-            //dirLight.shadowCameraVisible = true;
-            scene.add( dirLight );
+            //dirLight.shadowCameraVisible = true; // for debugging
+            // scene.add( dirLight );
         },
 
         setupWater: function() {
@@ -2869,7 +2912,7 @@ define([
                 skyBoxMaterial
             );
             skyBox.position.set(0, skies[skyI][2], 0);
-            if ( appConfig.displayController.skyboxShow )
+            if ( appConfig.displayOptions.skyboxShow )
                 scene.add( skyBox );
         },
 
@@ -2966,7 +3009,7 @@ define([
         },
 
         updateControls: function() {
-            if ( !appConfig.displayController.cursorShow ) {
+            if ( !appConfig.displayOptions.cursorShow ) {
                 controls.update( clock.getDelta() );
 
                 if ( !_.isUndefined(controls.getObject) ) {
@@ -2993,7 +3036,7 @@ define([
         },
 
         updateStats: function() {
-            if (appConfig.displayController.statsShow)
+            if (appConfig.displayOptions.statsShow)
                 stats.update();
         },
 
@@ -3007,8 +3050,8 @@ define([
 
         endSim: function() {
             fp.AppState.runSimulation = false;
-            appConfig.displayController.buildingsShow = false;
-            appConfig.displayController.patchesUpdate = false;
+            appConfig.displayOptions.buildingsShow = false;
+            appConfig.displayOptions.patchesUpdate = false;
         },
 
         updateYear: function() {
@@ -3034,9 +3077,9 @@ define([
         },
 
         getIndex: function(x, y) {
-            x = Math.round(x / appConfig.terrainController.multiplier);
-            y = Math.round(y / appConfig.terrainController.multiplier);
-            var maxExtent = appConfig.agentController.maxExtent;
+            x = Math.round(x / appConfig.terrainOptions.multiplier);
+            y = Math.round(y / appConfig.terrainOptions.multiplier);
+            var maxExtent = appConfig.agentOptions.maxExtent;
             var xRel = Math.round(x) + terrain.halfExtent;
             var yRel = Math.round(y) + terrain.halfExtent;
             if (xRel < 0 || yRel < 0 || xRel > maxExtent || yRel > maxExtent)
@@ -3156,7 +3199,7 @@ define([
                 indexX = index % terrain.gridPoints,
                 indexMirroredOnY = (indexY) * terrain.gridPoints + indexX;
                 //indexMirroredOnY = (terrain.gridPoints - indexY) * terrain.gridPoints + indexX;
-            for (var j = 1; j <= appConfig.worldController.maxLandSearchDepth; j += 1) {
+            for (var j = 1; j <= appConfig.worldOptions.maxLandSearchDepth; j += 1) {
                 if (Math.floor((indexMirroredOnY - j) / terrain.gridPoints) == Math.floor(indexMirroredOnY / terrain.gridPoints)) {
                     surroundingCells.push( new THREE.Vector3(
                             positions[3 * (indexMirroredOnY - j - (terrain.gridPoints * j) ) + 0],
@@ -3208,10 +3251,10 @@ define([
 
         updateKeyboard: function() {
             if ( keyboard.pressed("V") ) {
-                appConfig.displayController.firstPersonView = !appConfig.displayController.firstPersonView;
+                appConfig.displayOptions.firstPersonView = !appConfig.displayOptions.firstPersonView;
                 fp.resetControls();
             }
-            if ( appConfig.displayController.firstPersonView )
+            if ( appConfig.displayOptions.firstPersonView )
                 return;
             if ( keyboard.pressed("S") ) {
                 appConfig.Setup();
@@ -3226,55 +3269,55 @@ define([
                 appConfig.SlowDown();
             }
             else if ( keyboard.pressed("B") ) {
-                appConfig.displayController.buildingsShow = !appConfig.displayController.buildingsShow;
+                appConfig.displayOptions.buildingsShow = !appConfig.displayOptions.buildingsShow;
                 fp.updateBuildingState();
             }
             else if ( keyboard.pressed("O") ) {
-                appConfig.displayController.roadsShow = !appConfig.displayController.roadsShow;
+                appConfig.displayOptions.roadsShow = !appConfig.displayOptions.roadsShow;
                 fp.updateRoadState();
             }
             else if ( keyboard.pressed("M") ) {
-                appConfig.displayController.waterShow = !appConfig.displayController.waterShow;
+                appConfig.displayOptions.waterShow = !appConfig.displayOptions.waterShow;
                 fp.updateWaterState();
             }
             else if ( keyboard.pressed("N") ) {
-                appConfig.displayController.networkShow = !appConfig.displayController.networkShow;
+                appConfig.displayOptions.networkShow = !appConfig.displayOptions.networkShow;
                 fp.updateNetworkState();
             }
             else if ( keyboard.pressed("P") ) {
-                appConfig.displayController.patchesShow = !appConfig.displayController.patchesShow;
+                appConfig.displayOptions.patchesShow = !appConfig.displayOptions.patchesShow;
                 fp.updatePatchesState();
             }
             else if ( keyboard.pressed("T") ) {
-                appConfig.displayController.trailNetwork.trailsShow = !appConfig.displayController.trailNetwork.trailsShow;
+                appConfig.displayOptions.trailNetwork.trailsShow = !appConfig.displayOptions.trailNetwork.trailsShow;
                 fp.updateTrailState();
             }
             else if ( keyboard.pressed("C") ) {
-                appConfig.displayController.cursorShow = !appConfig.displayController.cursorShow;
+                appConfig.displayOptions.cursorShow = !appConfig.displayOptions.cursorShow;
                 fp.updateCursorState();
             }
             else if ( keyboard.pressed("A") ) {
-                appConfig.displayController.statsShow = !appConfig.displayController.statsShow;
+                appConfig.displayOptions.statsShow = !appConfig.displayOptions.statsShow;
                 fp.updateStatsState();
             }
             else if ( keyboard.pressed("W") ) {
-                appConfig.displayController.wireframeShow = !appConfig.displayController.wireframeShow;
+                appConfig.displayOptions.wireframeShow = !appConfig.displayOptions.wireframeShow;
                 fp.updateWireframeState();
             }
             else if ( keyboard.pressed("Y") ) {
-                appConfig.displayController.dayShow = !appConfig.displayController.dayShow;
+                appConfig.displayOptions.dayShow = !appConfig.displayOptions.dayShow;
                 fp.updateDayOrNight();
             }
             else if ( keyboard.pressed("G") ) {
-                appConfig.displayController.chartShow = !appConfig.displayController.chartShow;
+                appConfig.displayOptions.chartShow = !appConfig.displayOptions.chartShow;
                 fp.updateGraph();
             }
             else if ( keyboard.pressed("X") ) {
-                appConfig.displayController.pathsShow = !appConfig.displayController.pathsShow;
+                appConfig.displayOptions.pathsShow = !appConfig.displayOptions.pathsShow;
                 pathNetwork.updatePathsState();
             }
             else if ( keyboard.pressed("E") ) {
-                appConfig.displayController.terrainShow = !appConfig.displayController.terrainShow;
+                appConfig.displayOptions.terrainShow = !appConfig.displayOptions.terrainShow;
                 terrain.updateTerrainPlane();
             }
         },
@@ -3312,11 +3355,11 @@ define([
             //stop any other event listener from recieving this event
             eventInfo.preventDefault();
 
-            if ( !appConfig.displayController.cursorShow )
+            if ( !appConfig.displayOptions.cursorShow )
                 return;
 
             var planePoint = this.mouseIntersects( eventInfo );
-            if ( appConfig.displayController.cursorShowCell )
+            if ( appConfig.displayOptions.cursorShowCell )
                 cursor.createCellFill( planePoint.x, planePoint.z );
             else
                 cursor.createCell( planePoint.x, planePoint.z );
@@ -3338,7 +3381,7 @@ define([
                     p1 = planePoint;
                 else if (_.isUndefined(p2)) {
                     p2 = planePoint;
-                    addRoad(p1, p2, appConfig.roadController.roadWidth);
+                    addRoad(p1, p2, appConfig.roadOptions.roadWidth);
                     p1 = p2 = undefined;
                 }
             }
@@ -3346,44 +3389,44 @@ define([
 
         // HUD control handlers
         updateBuildingState: function() {
-            if ( !appConfig.displayController.buildingsShow )
+            if ( !appConfig.displayOptions.buildingsShow )
                 scene.remove(fp.buildingNetwork.networkMesh);
             else
                 scene.add(fp.buildingNetwork.networkMesh);
         },
 
         updateRoadState: function() {
-            if ( !appConfig.displayController.roadsShow )
+            if ( !appConfig.displayOptions.roadsShow )
                 scene.remove( fp.roadNetwork.networkMesh );
             else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
                 scene.add( fp.roadNetwork.networkMesh );
         },
 
         updateWaterState: function() {
-            if ( !appConfig.displayController.waterShow )
+            if ( !appConfig.displayOptions.waterShow )
                 scene.remove( mirrorMesh );
             else
                 scene.add( mirrorMesh );
         },
 
         updateNetworkState: function() {
-            if (!appConfig.displayController.networkShow)
+            if (!appConfig.displayOptions.networkShow)
                 scene.remove(agentNetwork.networkMesh);
         },
 
         updatePatchesState: function() {
-            if ( appConfig.displayController.patchesUseShader )
+            if ( appConfig.displayOptions.patchesUseShader )
                 patchNetwork.updatePatchesStateWithShader();
             else
                 patchNetwork.updatePatchesStateWithoutShader();
         },
 
         updateTrailState: function() {
-            if (!appConfig.displayController.trailNetwork.trailsShow ||
-                !appConfig.displayController.trailNetwork.trailsShowAsLines) {
+            if (!appConfig.displayOptions.trailNetwork.trailsShow ||
+                !appConfig.displayOptions.trailNetwork.trailsShowAsLines) {
                 scene.remove(trailNetwork.globalTrailLine);
             }
-            else if (appConfig.displayController.trailNetwork.trailsShowAsLines) {
+            else if (appConfig.displayOptions.trailNetwork.trailsShowAsLines) {
                 scene.add(trailNetwork.globalTrailLine);
             }
         },
@@ -3394,57 +3437,68 @@ define([
         },
 
         updateStatsState: function() {
-            if (appConfig.displayController.statsShow && stats == null) {
+            if (appConfig.displayOptions.statsShow && stats == null) {
                 stats = new Stats();
                 stats.domElement.style.position = 'absolute';
                 stats.domElement.style.top = '0px';
                 container.appendChild( stats.domElement );
             }
-            $('#stats').toggle(appConfig.displayController.statsShow);
+            $('#stats').toggle(appConfig.displayOptions.statsShow);
         },
 
         updateHUDState: function() {
-            $('#hudDiv').toggle(appConfig.displayController.hudShow);
+            $('#hudDiv').toggle(appConfig.displayOptions.hudShow);
         },
 
         updateWireframeState: function() {
-            terrain.simpleTerrainMaterial.wireframe = appConfig.displayController.wireframeShow;
-            terrain.richTerrainMaterial.wireframe = appConfig.displayController.wireframeShow;
+            terrain.simpleTerrainMaterial.wireframe = appConfig.displayOptions.wireframeShow;
+            terrain.richTerrainMaterial.wireframe = appConfig.displayOptions.wireframeShow;
             fp.buildingNetwork.buildings.forEach(function(building) {
-                building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayController.wireframeShow; })
+                building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayOptions.wireframeShow; })
             })
         },
 
         updateDayOrNight: function() {
-            var colorBackground, colorBuilding, colorRoad, colorAgent, colorTrail;
-            if (appConfig.displayController.dayShow) {
-                colorBackground = appConfig.colorController.colorDayBackground;
-                colorRoad = appConfig.colorController.colorDayRoad;
-                colorAgent = appConfig.colorController.colorDayAgent;
-                colorNetwork = appConfig.colorController.colorDayNetwork;
-                colorTrail = appConfig.colorController.colorDayTrail;
+            var colorBackground, colorBuilding, colorRoad, colorAgent, colorTrail,
+                colorBuildingFill, colorBuildingLine, colorBuildingLine;
+            if (appConfig.displayOptions.dayShow) {
+                colorBackground = appConfig.colorOptions.colorDayBackground;
+                colorRoad = appConfig.colorOptions.colorDayRoad;
+                colorAgent = appConfig.colorOptions.colorDayAgent;
+                colorNetwork = appConfig.colorOptions.colorDayNetwork;
+                colorTrail = appConfig.colorOptions.colorDayTrail;
+                colorBuildingFill = appConfig.colorOptions.colorDayBuildingFill;
+                colorBuildingLine = appConfig.colorOptions.colorDayBuildingLine;
+                colorBuildingWindow = appConfig.colorOptions.colorDayBuildingWindow;
                 terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( terrain.dayTerrainUniforms );
-                if ( appConfig.displayController.skyboxShow )
+                if ( appConfig.displayOptions.skyboxShow )
                     scene.add( skyBox );
             }
             else {
-                colorBackground = appConfig.colorController.colorNightBackground;
-                colorRoad = appConfig.colorController.colorNightRoad;
-                colorAgent = appConfig.colorController.colorNightAgent;
-                colorNetwork = appConfig.colorController.colorNightNetwork;
-                colorTrail = appConfig.colorController.colorNightTrail;
+                colorBackground = appConfig.colorOptions.colorNightBackground;
+                colorRoad = appConfig.colorOptions.colorNightRoad;
+                colorAgent = appConfig.colorOptions.colorNightAgent;
+                colorNetwork = appConfig.colorOptions.colorNightNetwork;
+                colorTrail = appConfig.colorOptions.colorNightTrail;
+                colorBuildingFill = appConfig.colorOptions.colorNightBuildingFill;
+                colorBuildingLine = appConfig.colorOptions.colorNightBuildingLine;
+                colorBuildingWindow = appConfig.colorOptions.colorNightBuildingWindow;
                 terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( terrain.nightTerrainUniforms );
                 scene.remove( skyBox );
             }
             terrain.richTerrainMaterial.needsUpdate = true; // important!
             renderer.setClearColor( colorBackground, 1);
             // THIS IS WRONG BUT WE NEED TO UPDATE THE BUILDING APPEARANCE
-            /*
-            fp.buildingNetwork.buildings.forEach(function(building) {
-                building.mesh.material.color = colorBuilding;
-                building.material.colorsNeedUpdate = true;
-            })
-            */
+            if ( appConfig.buildingOptions.useShader ) {
+                fp.buildingNetwork.buildings.forEach(function(building) {
+                    building.highResMeshContainer.children.forEach( function(floor) {
+                        floor.material.uniforms.fillColor.value = fp.buildColorVector( colorBuildingFill );
+                        floor.material.uniforms.lineColor.value = fp.buildColorVector( colorBuildingLine );
+                        floor.material.uniforms.windowColor.value = fp.buildColorVector( colorBuildingWindow );
+                        floor.material.needsUpdate = true; // important!
+                    })
+                });
+            }
             if (!_.isUndefined(fp.roadNetwork.networkMesh)) {
                 fp.roadNetwork.networkMesh.children.forEach(function(road) {
                     road.material.color = new THREE.Color( colorRoad );
@@ -3467,12 +3521,15 @@ define([
             buildingVertexShaderParams: function() {
                 return [
                     "varying vec3 pos; ",
+                    "varying float vMixin; ",
+                    "attribute float mixin; ",
                     "uniform float time; ",
                 ].join("\n");
             },
             buildingVertexShaderMain: function() {
                 return [
                     "pos = position;",
+                    "vMixin = mixin;",
                     "gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );",
                 ].join("\n");
             },
@@ -3498,6 +3555,7 @@ define([
                     "uniform vec3 windowColor;",
                     "varying vec2 vUv;",
                     "varying vec3 pos;",
+                    "varying float vMixin;",
 
                     // Basic random generator, taken from http://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
                     // and http://stackoverflow.com/questions/12964279/whats-the-origin-of-this-glsl-rand-one-liner
@@ -3510,10 +3568,11 @@ define([
             },
             buildingFragmentShaderMain: function() {
                 return [
-                    "vec3 black = vec3(0.1,0.1,0.1);",
-                    "vec4 col = vec4(black, 1.);",
+                    "vec3 darkGrey = vec3(0.1,0.1,0.1);",
+                    "vec4 col = vec4(darkGrey, 1.);",
+                    "float opacity = 1.;",
                     "if (showFill == 1) {",
-                        "col = vec4( mix( fillColor, black, rand(location) ), opacity );",
+                        "col = vec4( mix( fillColor, darkGrey, rand(location) ), opacity );",
                     "}",
                     "bool colorise = false;",
                     "float dimX = dimensions.x;",
@@ -3532,7 +3591,7 @@ define([
                             "if (posX < (floor(dimX / 2.0) - 1.0) && posX > -(floor(dimX / 2.0) - 1.0)) {",
                                 "float width = (posX + dimX / 2.0);",
                                 "float m = mod(width, windowWidth);",
-                                "p = floor(width / windowWidth);",
+                                "p = abs( floor(width / windowWidth) );",
                                 "float offsetL = windowWidth * ((1.0 - windowPercent) / 2.0);",
                                 "float offsetR = windowWidth - offsetL;",
                                 "if (m > offsetL && m < offsetR)",
@@ -3541,14 +3600,14 @@ define([
                             "if (posZ < (floor(dimZ / 2.0) - 1.0) && posZ > -(floor(dimZ / 2.0) - 1.0)) {",
                                 "float width = (posZ + dimZ / 2.0);",
                                 "float m = mod(width, windowWidth);",
-                                "p = floor(width / windowWidth);",
+                                "p = abs( floor(width / windowWidth) );",
                                 "float offsetL = windowWidth * ((1.0 - windowPercent) / 2.0);",
                                 "float offsetR = windowWidth - offsetL;",
                                 "if (m > offsetL && m < offsetR)",
                                     "colorise = true;",
                             "}",
                             "if (colorise) {",
-                                "col = vec4(mix(windowColor, black, rand(vec2(p, floorLevel)) ), opacity);",
+                                "col = vec4(mix(darkGrey, windowColor, pow( rand( vec2( p, floorLevel ) ), vMixin ) ), opacity);",
                             "}",
                         "} ",
                     "}",
@@ -3556,7 +3615,7 @@ define([
                         "// Rules for horizontal lines",
                         "// IGNORE BOTTOM LINE FOR NOW:  || posY > dimY - lineWidth",
                         "if (posY == 0.0 && fillRooves == 1)  {",
-                            "col = vec4(mix(windowColor, black, 0.5), opacity);",
+                            "col = vec4(mix(windowColor, darkGrey, 0.5), opacity);",
                         "}",
                         "else if (posY < lineWidth) {",
                             "// This gives just lines",
