@@ -1,3 +1,4 @@
+"use strict";
 define([
     "jquery",
     "three",
@@ -17,12 +18,12 @@ define([
 
     // Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/
     $.urlParam = function(name){
-        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-        if ( results == null )
+        var results = new RegExp("[\?&]" + name + "=([^&#]*)").exec(window.location.href);
+        if ( results === null )
            return undefined;
         else
            return results[1] || 0;
-    }
+    };
 
     var scene = null,
         camera = null,
@@ -55,14 +56,14 @@ define([
 
         AgentNetwork: function() {
             this.agents = [];
-            this.networkMesh;
-            this.colorNetwork;
-            this.particles;
+            this.networkMesh = null;
+            this.colorNetwork = null;
+            this.particles = null;
             this.createAgents = function() {
                 for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++)
                     agentNetwork.agents.push( this.createAgent() );
                 this.buildAgentParticleSystem();
-            }
+            };
 
             this.createAgent = function() {
                 var vertex = new THREE.Vector3();
@@ -70,21 +71,24 @@ define([
                 var x = point.x;
                 var z = point.z;
                 var y = fp.getHeight(x, z) + appConfig.agentOptions.terrainOffset;
-                vertex.x = x, vertex.y = y, vertex.z = z;
+                vertex.x = x;
+                vertex.y = y;
+                vertex.z = z;
 
                 var agent = new fp.Agent();
                 agent.setVertex(vertex);
                 agent.setRandomDirection();
 
-                agent.color = '#' + (appConfig.displayOptions.dayShow ?
+                agent.color = "#" + (appConfig.displayOptions.dayShow ?
                                     appConfig.colorOptions.colorDayAgent.toString(16) :
                                     appConfig.colorOptions.colorNightAgent.toString(16) );
                 return agent;
-            }
+            };
 
             this.randomPointForAgent = function() {
                 var x = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent)  + appConfig.agentOptions.initialX;
                 var z = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent) + appConfig.agentOptions.initialY;
+                var point = null;
 
                 x *=  appConfig.terrainOptions.multiplier;
                 z *=  appConfig.terrainOptions.multiplier;
@@ -94,32 +98,33 @@ define([
                     var radius = Math.sqrt(normX * normX + normZ * normZ);
 
                     while (radius > appConfig.agentOptions.initialExtent / 2) {
-                        var point = this.randomPointForAgent();
+                        point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
-                        normX = x - appConfig.agentOptions.initialX, normZ = z - appConfig.agentOptions.initialY;
+                        normX = x - appConfig.agentOptions.initialX;
+                        normZ = z - appConfig.agentOptions.initialY;
                         radius = Math.sqrt(normX * normX + normZ * normZ);
                     }
                 }
 
                 var boundary = (terrain.gridExtent / 2) * appConfig.terrainOptions.multiplier;
                 while ( (x <  - boundary || x > boundary ) || (z <  - boundary || z > boundary ) ) {
-                    var point = this.randomPointForAgent();
+                    point = this.randomPointForAgent();
                     x = point.x;
                     z = point.z;
                 }
 
                 if (appConfig.agentOptions.noWater) {
-                    var y = fp.getHeight(x, z)
+                    var y = fp.getHeight(x, z);
                     while (y <= 0) {
-                        var point = this.randomPointForAgent();
+                        point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
-                        y = fp.getHeight(x, z)
+                        y = fp.getHeight(x, z);
                     }
                 }
                 return {x: x, z: z};
-            }
+            };
 
             this.updateAgents = function() {
                 if ( !fp.AppState.runSimulation || _.isUndefined( agentNetwork.particles ))
@@ -128,11 +133,10 @@ define([
                 for (var i = 0; i < agentNetwork.agents.length; i++) {
                     var agent =  agentNetwork.agents[i];
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    if ( !(Math.floor( (i / agentNetwork.agents.length) * timescale.framesToYear ) == timescale.frameCounter % timescale.framesToYear) )  {
+                    if ( (Math.floor( (i / agentNetwork.agents.length) * timescale.framesToYear ) != timescale.frameCounter % timescale.framesToYear) )  {
                         // Just interpollate the position
                         agent.lastPosition = agent.position;
-                        agent.shiftPosition()
-                       // continue;
+                        agent.shiftPosition();
                     }
                     else {
                         var underConstruction = (appConfig.buildingOptions.create && agent.buildHome()) ||
@@ -175,7 +179,7 @@ define([
                     agentNetwork.particles.geometry.vertices[i] = agent.vertex;
                 }
                 agentNetwork.particles.geometry.verticesNeedUpdate = true;
-            }
+            };
 
             this.generateFriendNetworkVertices = function() {
                 var vertices = [];
@@ -192,7 +196,8 @@ define([
                     }
                 }
                 return vertices;
-            }
+            };
+
             this.friendNetworkGeometryCurved = function(vertices) {
                 var networkGeometry = new THREE.Geometry();
                 var len = vertices.length;
@@ -205,7 +210,7 @@ define([
                     networkGeometry.vertices[ i ] = new THREE.Vector3( position.x, position.y, position.z );
                 }
                 return networkGeometry;
-            }
+            };
 
             this.friendNetworkGeometry = function(vertices) {
                 if ( !appConfig.displayOptions.networkCurve ) {
@@ -215,7 +220,8 @@ define([
                 }
                 else
                     return this.friendNetworkGeometryCurved( vertices );
-            }
+            };
+
             this.friendNetworkMaterial = function() {
                 return new THREE.LineBasicMaterial({
                     color: colorNetwork,
@@ -224,7 +230,8 @@ define([
                     blending: THREE.AdditiveBlending,
                     transparent: true
                 });
-            }
+            };
+
             this.renderFriendNetwork = function() {
                 if ( !fp.AppState.runSimulation || !appConfig.displayOptions.networkShow )
                     return;
@@ -237,9 +244,10 @@ define([
                     this.friendNetworkMaterial()
                 );
                 scene.add(agentNetwork.networkMesh);
-            }
+            };
+
             this.buildFriendNetwork = function() {
-                var multiAgentPatches = _.values(patchNetwork.patches).filter(function(a) { return a.length > 1; } )
+                var multiAgentPatches = _.values(patchNetwork.patches).filter(function(a) { return a.length > 1; } );
                 multiAgentPatches.forEach( function( agents ) {
                     for (var j = 0; j < agents.length; j++) {
                         for (var k = j + 1; k < agents.length; k++) {
@@ -249,7 +257,8 @@ define([
                         }
                     }
                 } );
-            }
+            };
+
             this.updateFriendNetwork = function() {
                 if ( !fp.AppState.runSimulation )
                     return;
@@ -283,13 +292,14 @@ define([
                     agentParticleSystemAttributes.color.needsUpdate = true; // important!
                 }
             };
+
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);})
+                agentNetwork.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 agentParticleSystemAttributes = {
-                    alpha: { type: 'f', value: [] },
+                    alpha: { type: "f", value: [] },
                     color: { type: "c", value: [] }
                 };
 
@@ -307,13 +317,14 @@ define([
                 agentNetwork.particles.sortParticles = true;
                 scene.add( agentNetwork.particles );
             };
+
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);})
+                agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 var agentParticleSystemAttributes = {
-                    alpha: { type: 'f', value: [] },
+                    alpha: { type: "f", value: [] },
                     color: { type: "c", value: [] }
                 };
 
@@ -324,7 +335,7 @@ define([
                 // uniforms
                 var agentParticleSystemUniforms = {
                     texture:   { type: "t", value: discTexture },
-                    size: { type: 'f', value: Math.floor( appConfig.agentOptions.size )}
+                    size: { type: "f", value: Math.floor( appConfig.agentOptions.size )}
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
@@ -357,58 +368,58 @@ define([
                 this.updateAgents();
                 this.updateFriendNetwork();
                 this.updateAgentShader();
-            }
+            };
         },
 
         BUILDING_FORMS: {
-            names: [ 'rectangle', 'octagon', 'fivesided', 'triangle', 'concave' ],
+            names: [ "rectangle", "octagon", "fivesided", "triangle", "concave" ],
             rectangle: function(w, l, h) {
-                var p1 = new THREE.Vector3(-w / 2, h, -l / 2)
-                var p2 = new THREE.Vector3(w / 2, h, -l / 2)
-                var p3 = new THREE.Vector3(w / 2, h, l / 2)
-                var p4 = new THREE.Vector3(-w / 2, h, l / 2)
-                return [p1, p2, p3, p4]
+                var p1 = new THREE.Vector3(-w / 2, h, -l / 2);
+                var p2 = new THREE.Vector3(w / 2, h, -l / 2);
+                var p3 = new THREE.Vector3(w / 2, h, l / 2);
+                var p4 = new THREE.Vector3(-w / 2, h, l / 2);
+                return [p1, p2, p3, p4];
             },
             octagon: function(w, l, h) {
-                var p1 = new THREE.Vector3(-w / 2, h, -l / 2)
-                var p1_5 = new THREE.Vector3(0, h, -l / 1.5)
-                var p2 = new THREE.Vector3(w / 2, h, -l / 2)
-                var p2_5 = new THREE.Vector3(w / 1.5, h, 0)
-                var p3 = new THREE.Vector3(w / 2, h, l / 2)
-                var p3_5 = new THREE.Vector3(0, h, l / 1.5)
-                var p4 = new THREE.Vector3(-w / 2, h, l / 2)
-                var p4_5 = new THREE.Vector3(-w / 1.5, h, 0)
-                return [p1,p1_5, p2,p2_5, p3,p3_5, p4,p4_5]
+                var p1 = new THREE.Vector3(-w / 2, h, -l / 2);
+                var p1_5 = new THREE.Vector3(0, h, -l / 1.5);
+                var p2 = new THREE.Vector3(w / 2, h, -l / 2);
+                var p2_5 = new THREE.Vector3(w / 1.5, h, 0);
+                var p3 = new THREE.Vector3(w / 2, h, l / 2);
+                var p3_5 = new THREE.Vector3(0, h, l / 1.5);
+                var p4 = new THREE.Vector3(-w / 2, h, l / 2);
+                var p4_5 = new THREE.Vector3(-w / 1.5, h, 0);
+                return [p1,p1_5, p2,p2_5, p3,p3_5, p4,p4_5];
             },
             fivesided: function(w, l, h) {
-                var p1 = new THREE.Vector3(-w / 2, h, -l / 2)
-                var p2 = new THREE.Vector3(w / 2, h, -l / 2)
-                var p3 = new THREE.Vector3(w / 2, h, l / 2)
-                var p4 = new THREE.Vector3(-w / 2, h, l / 2)
-                var p5 = new THREE.Vector3(-w, h, 0)
-                return [p1, p2, p3, p4, p5]
+                var p1 = new THREE.Vector3(-w / 2, h, -l / 2);
+                var p2 = new THREE.Vector3(w / 2, h, -l / 2);
+                var p3 = new THREE.Vector3(w / 2, h, l / 2);
+                var p4 = new THREE.Vector3(-w / 2, h, l / 2);
+                var p5 = new THREE.Vector3(-w, h, 0);
+                return [p1, p2, p3, p4, p5];
             },
             triangle: function(w, l, h) {
-                var p1 = new THREE.Vector3(-w / 2, h, -l / 2)
-                var p2 = new THREE.Vector3(w / 2, h, -l / 2)
-                var p3 = new THREE.Vector3(0, h, l / 2)
-                return [p1, p2, p3]
+                var p1 = new THREE.Vector3(-w / 2, h, -l / 2);
+                var p2 = new THREE.Vector3(w / 2, h, -l / 2);
+                var p3 = new THREE.Vector3(0, h, l / 2);
+                return [p1, p2, p3];
             },
             concave: function(w, l, h) {
-                var p1 = new THREE.Vector3(-w / 2, h, -l / 2)
-                var p1_1 = new THREE.Vector3(-w / 4, h, -l / 2)
-                var p1_2 = new THREE.Vector3(-w / 4, h, l / 4)
-                var p1_3 = new THREE.Vector3(w / 4, h, l / 4)
-                var p1_4 = new THREE.Vector3(w / 4, h, -l / 2)
-                var p2 = new THREE.Vector3(w / 2, h, -l / 2)
-                var p3 = new THREE.Vector3(w / 2, h, l / 2)
-                var p4 = new THREE.Vector3(-w / 2, h, l / 2)
-                return [p1, p1_1, p1_2, p1_3, p1_4, p2, p3, p4]
+                var p1 = new THREE.Vector3(-w / 2, h, -l / 2);
+                var p1_1 = new THREE.Vector3(-w / 4, h, -l / 2);
+                var p1_2 = new THREE.Vector3(-w / 4, h, l / 4);
+                var p1_3 = new THREE.Vector3(w / 4, h, l / 4);
+                var p1_4 = new THREE.Vector3(w / 4, h, -l / 2);
+                var p2 = new THREE.Vector3(w / 2, h, -l / 2);
+                var p3 = new THREE.Vector3(w / 2, h, l / 2);
+                var p4 = new THREE.Vector3(-w / 2, h, l / 2);
+                return [p1, p1_1, p1_2, p1_3, p1_4, p2, p3, p4];
             }
         },
 
         BuildingNetwork: function() {
-            this.networkMesh;
+            this.networkMesh = null;
             this.networkJstsCache = [];
             this.buildings = [];
             this.buildingHash = {};
@@ -451,6 +462,7 @@ define([
                 }
                 return points;
             };
+            
             this.get2dPointsForBoundingBox = function(building) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
@@ -463,9 +475,11 @@ define([
                 }
                 return points;
             };
+            
             this.get2dIndexPoints = function(building) {
                 return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
-            }
+            };
+
             this.createJstsGeomFromBoundingBox = function( building ) {
                 var points = this.get2dPointsForBoundingBox( building );
                 var coords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.y); } );
@@ -483,6 +497,7 @@ define([
                 var polygon = polygonizer.getPolygons().toArray()[0];
                 return polygon.buffer(0);
             };
+            
             this.collidesWithOtherBuildings = function(building) {
                 // Quick fix
                 if (this.buildingHash[fp.getIndex(building.lod.position.x, building.lod.position.z)])
@@ -498,6 +513,7 @@ define([
                 }
                 return false; // Be optimistic
             };
+            
             this.collidesWithRoads = function(building) {
                 if ( _.isUndefined( fp.roadNetwork.networkGeometry ) )
                     return false;
@@ -570,11 +586,11 @@ define([
         },
 
         RoadNetwork: function() {
-            this.networkMesh;
+            this.networkMesh = null;
             this.roads = {};
             this.indexValues = [];
             this.points = [];
-            this.networkGeometry;
+            this.networkGeometry = null;
             this.intersections = [];
 
             this.getRoadTerrainPoints = function(p1, p2) {
@@ -593,42 +609,54 @@ define([
                     var x0 = xLast + xd * (1 / (remaining + 1)),
                         z0 = zLast + zd * (1 / (remaining + 1)),
                         y0 = fp.getHeight(x0, z0);
-                    var x = x0, y = y0, z = z0;
+                    var x = x0, y = y0, z = z0, k;
                     for (var j = 1; j <= appConfig.roadOptions.roadDeviation; j++) {
-                        var x1 = x0 + Math.cos(angleLeft) * j,
-                            z1 = z0 + Math.sin(angleLeft) * j,
-                            y1 = fp.getHeight(x1, z1);
-                        if (y1 < y && y1 > 0)
-                            x = x1, y = y1, z = z1;
+                        var xL = x0 + Math.cos(angleLeft) * j,
+                            zL = z0 + Math.sin(angleLeft) * j,
+                            yL = fp.getHeight(xL, zL);
+                        if ( yL < y && yL > 0 ) {
+                            x = xL;
+                            y = yL;
+                            z = zL;
+                        }
                     }
-                    for (var j = 1; j <= appConfig.roadOptions.roadDeviation; j++) {
-                        var x1 = x0 + Math.cos(angleRight) * j,
-                            z1 = z0 + Math.sin(angleRight) * j,
-                            y1 = fp.getHeight(x1, z1);
-                        if (y1 < y && y1 > 0)
-                            x = x1, y = y1, z = z1;
+                    for (k = 1; k <= appConfig.roadOptions.roadDeviation; k++) {
+                        var xR = x0 + Math.cos(angleRight) * k,
+                            zR = z0 + Math.sin(angleRight) * k,
+                            yR = fp.getHeight(xR, zR);
+                        if ( yR < y && yR > 0 ) {
+                            x = xR;
+                            y = yR;
+                            z = zR;
+                        }
                     }
                     // Only create a point if there's a deviation from a straight line
                     if ( x != x0 || y != y0 || z != z0 ) {
-                        x = Math.round(x), y = Math.round(y), z = Math.round(z);
+                        x = Math.round(x);
+                        y = Math.round(y);
+                        z = Math.round(z);
                         var point = new THREE.Vector3(x, y, z);
                         points.push(point);
                         if (y != yLast) {
                             var yDiff = y - yLast;
                             var shift = i - lastChange + 1;
-                            for (var j = lastChange + 1; j < i; j ++) {
-                                var change = yDiff * ((j - lastChange) / shift);
+                            for (k = lastChange + 1; k < i; k ++) {
+                                var change = yDiff * ((k - lastChange) / shift);
                                 point.y += change;
                             }
                             lastChange = i;
                         }
                     }
-                    xLast = x, yLast = y, zLast = z, remaining--;
-                    xd = p2.x - xLast, zd = p2.z - zLast;
+                    xLast = x;
+                    yLast = y;
+                    zLast = z;
+                    remaining--;
+                    xd = p2.x - xLast;
+                    zd = p2.z - zLast;
                 }
                 points.push(p2);
                 return points;
-            }
+            };
 
             this.addRoad = function(p1, p2, roadWidth) {
                 // Taken from webgl_geometry_extrude_splines.html
@@ -671,17 +699,17 @@ define([
                     try {
                         this.networkGeometry = this.networkGeometry.union( new jsts.geom.LineString(jstsCoords) );
                     }
-                    catch (e) { console.log(e) } // Sometimes get a TopologyError
+                    catch (e) { console.log(e); } // Sometimes get a TopologyError
                 }
                 fp.roadNetwork.indexValues = _.uniq( _.flatten( fp.roadNetwork.indexValues.push( thisIndexValues ) ) );
                 return true;
-            }
+            };
 
             this.cityBlocks = function() {
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( this.networkGeometry );
                 return polygonizer.getPolygons().toArray();
-            }
+            };
 
             // Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
             this.getPolygonArea = function(polygon) {
@@ -693,15 +721,15 @@ define([
                     j = i;  //j is previous vertex to i
                 }
                 return area / 2;
-            }
+            };
 
             this.subdivide = function(polygon, width) {
-
-            }
+                // TODO
+            };
         },
 
         PatchNetwork: function() {
-            this.plane;
+            this.plane = null;
             this.patches = {};
             this.patchValues = [];
             this.patchMeanValue = 0;
@@ -712,7 +740,7 @@ define([
                 patchNetwork.patchValues = new Array(dim * dim);
                 for (var i = 0; i < patchNetwork.patchValues.length; i++)
                     patchNetwork.patchValues[i] = new fp.Patch(Math.random());
-            }
+            };
 
             this.buildPatchMesh = function() {
                 var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
@@ -742,7 +770,7 @@ define([
 
                 if ( appConfig.displayOptions.patchesShow ) {
                     if (appConfig.displayOptions.patchesUseShader) {
-                        if (this.plane != null)
+                        if (this.plane !== null)
                             scene.remove(this.plane);
                         this.updateTerrainPatchAttributes();
                     }
@@ -752,10 +780,10 @@ define([
             };
 
             this.updatePlaneGeometryColors = function() {
-                if (this.plane == null)
+                if (this.plane === null)
                     return;
                 var geometry = this.plane.geometry;
-                if ( _.isUndefined( geometry.faces ) && geometry.faces[0] == null )
+                if ( _.isUndefined( geometry.faces ) && geometry.faces[0] === null )
                     return;
 
                 if (scene.children.indexOf(this.plane) == -1)
@@ -768,7 +796,7 @@ define([
                         var arrayX = x * terrain.gridSize * 2;
                         var arrayY = y * terrain.gridSize * 2;
                         var geoIndex = ((terrain.gridPoints - 1) * arrayY) + arrayX;
-                        if (geometry.faces[geoIndex] == null)
+                        if (geometry.faces[geoIndex] === null)
                             return;
                         for (var i = arrayY; i < arrayY + (terrain.gridSize * 2); i += 2) {
                             for (var j = arrayX; j < arrayX + (terrain.gridSize * 2); j ++) {
@@ -820,7 +848,7 @@ define([
 
             this.updatePatchesStateWithoutShader = function() {
                 if ( appConfig.displayOptions.patchesShow ) {
-                    if ( this.plane == null )
+                    if ( this.plane === null )
                         this.buildPatchMesh();
                     else
                         scene.add(this.plane);
@@ -832,17 +860,17 @@ define([
 
         TrailNetwork: function() {
             this.trails = {};
-            this.trailMeshes;
-            this.globalTrailLine;
+            this.trailMeshes = null;
+            this.globalTrailLine = null;
             this.updateTrails = function() {
                 if ( !fp.AppState.runSimulation )
                     return;
 
-                if ( appConfig.displayOptions.trailsShow
-                    && !appConfig.displayOptions.trailsShowAsLines) {
+                if ( appConfig.displayOptions.trailsShow && 
+                    !appConfig.displayOptions.trailsShowAsLines) {
                     var weightMax = _.chain(trailNetwork.trails).values().max().value();
-                    for (var k in trailNetwork.trails) {
-                        var weight = trailNetwork.trails[k];
+                    for (var j in trailNetwork.trails) {
+                        var weight = trailNetwork.trails[j];
                         var weightNormed = weight / weightMax;
                         var weightAdjusted = Math.pow(weightNormed, 0.2);
                         terrain.plane.geometry.attributes.trail.array[k] = weightAdjusted;
@@ -853,11 +881,11 @@ define([
                         terrain.plane.geometry.attributes.trail.array[k] = 0.0;
                 }
                 terrain.plane.geometry.attributes.trail.needsUpdate = true;
-            }
+            };
         },
 
         Cursor: function() {
-            this.cell;
+            this.cell = null;
             this.createCell = function(x, y) {
                 var halfGrid = terrain.gridExtent / 2;
                 var cellSize = terrain.gridExtent / (terrain.gridPoints - 1);
@@ -872,23 +900,23 @@ define([
                     linewidth: 2
                 });
 
-                var geometry = new THREE.Geometry();
-                for (var i = 0; i < terrain.gridSize; i ++) {
+                var i, geometry = new THREE.Geometry();
+                for (i = 0; i < terrain.gridSize; i ++) {
                     geometry.vertices.push(new THREE.Vector3(ccX, ccY, ccZ) );
                     ccX += Math.round(cellSize);
                     ccZ = fp.getHeight(ccX, ccY) + 1;
                 }
-                for (var i = 0; i < terrain.gridSize; i ++) {
+                for (i = 0; i < terrain.gridSize; i ++) {
                     geometry.vertices.push(new THREE.Vector3(ccX, ccY, ccZ) );
                     ccY += Math.round(cellSize);
                     ccZ = fp.getHeight(ccX, ccY) + 1;
                 }
-                for (var i = 0; i < terrain.gridSize; i ++) {
+                for (i = 0; i < terrain.gridSize; i ++) {
                     geometry.vertices.push(new THREE.Vector3(ccX, ccY, ccZ) );
                     ccX -= Math.round(cellSize);
                     ccZ = fp.getHeight(ccX, ccY) + 1;
                 }
-                for (var i = 0; i < terrain.gridSize; i ++) {
+                for (i = 0; i < terrain.gridSize; i ++) {
                     geometry.vertices.push(new THREE.Vector3(ccX, ccY, ccZ) );
                     ccY -= Math.round(cellSize);
                     ccZ = fp.getHeight(ccX, ccY) + 1;
@@ -936,16 +964,16 @@ define([
                     }
                 }
                 this.cell.geometry.verticesNeedUpdate = true;
-            }
+            };
         },
 
         PathNetwork: function() {
-            this.networkMesh;
+            this.networkMesh = null;
             this.pathCache = {};
             this.stepsPerNode = terrain.ratioExtentToPoint;
-            this.graphAStar;
+            this.graphAStar = null;
             this.nodes = [];
-            this.opts;
+            this.opts = null;
             this.setupAStarGraph = function() {
                 this.opts = {
                     // wallFrequency: $selectWallFrequency.val(),
@@ -965,12 +993,14 @@ define([
                 }
                 this.graphAStar = new astar.Graph(this.nodes);
                 this.graphAStar.diagonal = true;
-            }
+            };
+
             this.nodeAt = function(position) {
                 var index = fp.getIndex(position.x, position.z);
                 var x = index % terrain.gridPoints, y = Math.floor(index / terrain.gridPoints);
                 return this.graphAStar.grid[x][y];
-            }
+            };
+            
             this.findPathHome = function(agent) {
                 if (! agent.home)
                     return [];
@@ -978,7 +1008,8 @@ define([
                 var end = this.nodeAt(agent.position);
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: opts.closest } );
                 return path;
-            }
+            };
+            
             this.drawPathHome = function(agent) {
                 var path = this.findPathHome(agent);
                 if ( path.length < 2 ) // Need 2 points for a line
@@ -996,33 +1027,35 @@ define([
                 this.networkMesh.add( pathLine );
                 this.pathCache[agent] = this.networkMesh.children.length - 1;
                 return path;
-            }
+            };
+            
             this.drawPathHomeForEveryone = function() {
-                this.children.forEach( function(child) { this.networkMesh.remove(child); } )
+                this.children.forEach( function(child) { this.networkMesh.remove(child); } );
                 var ahaway = _.select(agentNetwork.agents, function(agent) {
                     var v = this.drawPathHome(agent);
                     agent.pathComputed = v;
                     agent.pathPosition = 0;
-                    return v && v.length > 0 && agent.home != null && agent.position != agent.home.lod.position;
-                })
-            }
+                    return v && v.length > 0 && agent.home !== null && agent.position != agent.home.lod.position;
+                });
+            };
+            
             this.updatePathsState = function() {
                 if ( !appConfig.displayOptions.pathsShow )
                     scene.remove( pathNetwork.networkMesh );
                 else
                     scene.add( pathNetwork.networkMesh );
-            }
+            };
         },
 
-        TERRAIN_MAPS: [ 'assets/syd2.bin', 'assets/mel2.bin' ],
+        TERRAIN_MAPS: [ "assets/syd2.bin", "assets/mel2.bin" ],
         Terrain: function() {
-            this.plane;
-            this.richTerrainMaterial;
-            this.simpleTerrainMaterial;
-            this.dayTerrainUniforms;
-            this.nightTerrainUniforms;
+            this.plane = null;
+            this.richTerrainMaterial = null;
+            this.simpleTerrainMaterial = null;
+            this.dayTerrainUniforms = null;
+            this.nightTerrainUniforms = null;
             this.terrainMapIndex = 0;
-            this.gridExtent = 8000,
+            this.gridExtent = 8000;
             this.halfExtent = this.gridExtent / 2;
             this.gridPoints = 400;
             this.ratioExtentToPoint = this.gridExtent / this.gridPoints;
@@ -1039,16 +1072,16 @@ define([
 
                     // Use logic from math.stackexchange.com
                     var vertices = geometry.attributes.position.array;
-                    var l = vertices.length,
+                    var i, j, l = vertices.length,
                         n = Math.sqrt(l),
                         k = l + 1;
                     if (appConfig.terrainOptions.loadHeights) {
-                        for (var i = 0, j = 0; i < l; i++, j += 3 ) {
+                        for (i = 0, j = 0; i < l; i++, j += 3 ) {
                             geometry.attributes.position.array[ j + 2 ] = data[ i ] / 65535 * terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier;
                         }
                     }
                     else {
-                        for (var i = 0, j = 0; i < l; i++, j += 3 ) {
+                        for (i = 0, j = 0; i < l; i++, j += 3 ) {
                             geometry.attributes.position.array[ j + 2 ] = 10;
                         }
                     }
@@ -1061,19 +1094,19 @@ define([
                         heights = new Float32Array(len),
                         trailPoints = new Float32Array(len),
                         patchPoints = new Float32Array(len);
-                    for (var i = 0; i < len; i++) {
+                    for (i = 0; i < len; i++) {
                         heights[i] = vertices[ i * 3 + 2 ];
                         trailPoints[i] = 0;
                         patchPoints[i] = 0;
                     }
                     var terrainAttributes = {
-                        height: { type: 'f', value: null },
-                        trail: { type: 'f', value: null },
-                        patch: { type: 'f', value: null },
+                        height: { type: "f", value: null },
+                        trail: { type: "f", value: null },
+                        patch: { type: "f", value: null },
                     };
-                    geometry.addAttribute( 'height', new THREE.BufferAttribute( heights, 1 ) );
-                    geometry.addAttribute( 'trail', new THREE.BufferAttribute( trailPoints, 1 ) );
-                    geometry.addAttribute( 'patch', new THREE.BufferAttribute( patchPoints, 1 ) );
+                    geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                    geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                    geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
                     terrain.dayTerrainUniforms = {
                         seaColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainSea) },
@@ -1081,8 +1114,8 @@ define([
                         lowland2Color: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainLowland2) },
                         midlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainMidland) },
                         highlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorDayTerrainHighland) },
-                        size: { type: 'f', value: Math.floor(appConfig.agentOptions.size / 2)},
-                        maxHeight: { type: 'f', value: terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier }
+                        size: { type: "f", value: Math.floor(appConfig.agentOptions.size / 2)},
+                        maxHeight: { type: "f", value: terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier }
                     };
                     terrain.nightTerrainUniforms = {
                         seaColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainSea) },
@@ -1090,8 +1123,8 @@ define([
                         lowland2Color: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainLowland2) },
                         midlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainMidland) },
                         highlandColor: { type: "c", value: new THREE.Color(appConfig.colorOptions.colorNightTerrainHighland) },
-                        size: { type: 'f', value: Math.floor(appConfig.agentOptions.size / 2)},
-                        maxHeight: { type: 'f', value: terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier }
+                        size: { type: "f", value: Math.floor(appConfig.agentOptions.size / 2)},
+                        maxHeight: { type: "f", value: terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier }
                     };
                     terrain.richTerrainMaterial = new THREE.ShaderMaterial({
                         uniforms: fp.ShaderUtils.lambertUniforms( terrain.nightTerrainUniforms ),
@@ -1130,20 +1163,20 @@ define([
                     return;
 
                 var vertices = this.plane.geometry.attributes.position.array;
-                var meanHeight = 0;
-                for (var i = 0; i < cursor.cell.geometry.vertices.length; i++) {
-                    var point = cursor.cell.geometry.vertices[i];
+                var i, point, meanHeight = 0;
+                for (i = 0; i < cursor.cell.geometry.vertices.length; i++) {
+                    point = cursor.cell.geometry.vertices[i];
                     meanHeight += fp.getHeight(point.x, - point.y);
                 }
                 meanHeight /= cursor.cell.geometry.vertices.length;
-                for (var i = 0; i < cursor.cell.geometry.vertices.length; i++) {
-                    var point = cursor.cell.geometry.vertices[i];
+                for (i = 0; i < cursor.cell.geometry.vertices.length; i++) {
+                    point = cursor.cell.geometry.vertices[i];
                     var index = fp.getIndex(point.x, - point.y);
                     this.plane.geometry.attributes.position.array[3 * index + 2] = meanHeight;
                 }
                 this.plane.geometry.attributes.position.needsUpdate = true;
                 this.plane.geometry.verticesNeedUpdate = true;
-            }
+            };
 
             this.createTerrainColors = function () {
                 for (var y = 0; y < 99; y++) {
@@ -1184,7 +1217,7 @@ define([
             this.MAX_FRAMES_TO_YEAR = 480;
             this.MIN_FRAMES_TO_YEAR = 1;
             this.TOP_SPEED = 60 / this.MIN_FRAMES_TO_YEAR;
-            this.MIN_FRAMES_TO_YEAR;
+            this.MIN_FRAMES_TO_YEAR = null;
             this.framesToYear = 32;
             this.frameCounter = 0;
         },
@@ -1220,7 +1253,7 @@ define([
             this.reproduce = function() {
                 if ( Math.random() > 0.999 &&
                      this.children.length < 10 &&
-                     this.gender == 'f' &&
+                     this.gender == "f" &&
                      this.ticks > 1  * timescale.framesToYear )  {
                     scene.remove( agentNetwork.particles );
                     var agent = agentNetwork.createAgent();
@@ -1329,17 +1362,17 @@ define([
                         isRoad = (fp.roadNetwork.indexValues.indexOf(fp.getIndex(xn, zn)) > -1);
 
                     // If we've had a horizontal shift, for now neutralise the vertical to the terrain height
-                    if (yd == 0) {
+                    if (yd === 0) {
                         yn = fp.getHeight(xn, zn);
                         // Smooth the transition between heights
                         yd = ((appConfig.agentOptions.terrainOffset + yn) - yl) / terrain.ratioExtentToPoint;
                     }
-                    if (yn == null)
+                    if (yn === null)
                         continue; // Off the grid - don't return this option
 
                     // Work out weights
 
-                    if (i == 0) { // Current direction most preferred
+                    if (i === 0) { // Current direction most preferred
                         weight = 0.999;
                         if ( isRoad )
                             weightForRoadIsSet = true;
@@ -1361,7 +1394,7 @@ define([
                         weight *= yl / yn;
 
                     // If currect direction is moving to water, set the preference low
-                    if (i == 0 && yn <= 0 && appConfig.agentOptions.noWater)
+                    if (i === 0 && yn <= 0 && appConfig.agentOptions.noWater)
                         weight = 0.0001;
 
                     // If inside a building, adjust weights
@@ -1391,7 +1424,7 @@ define([
                 directions = _.chain(directions).compact().sort(function(a,b) { return (a[1] > b[1]) ? 1 : (a[1] < b [1]? -1 : 0); }).value();
 
                 // If no directions are found, select one randomly
-                if (directions.length == 0)
+                if (directions.length === 0)
                     directions.push([this.randomDirection(), 1.0]);
 
                 return directions;
@@ -1403,7 +1436,7 @@ define([
                 // var bestCandidate = _.chain(directions).sortBy(function(a) {return a[1];} ).last().value()[0];
 
                 // Alternative approach - a direction is pulled from a weighted list of possibilities
-                var total = _.chain(directions).map(function(d) { return d[1]; } ).reduce(function(memo, num) { return memo + num}, 0).value()
+                var total = _.chain(directions).map(function(d) { return d[1]; } ).reduce(function(memo, num) { return memo + num; }, 0).value();
                 var weightsNormed = _.chain(directions).map(function(d) { return d[1] / total; } ).sort().value();
                 // This convoluted expression simply generates a set of intervals from the normalised weights
                 // e.g. [0.25, 0.25, 0.25 ,0.25] => [0, 0.25, 0.5, 0.75, 1.0]
@@ -1411,7 +1444,7 @@ define([
                     function(a, b) {
                         var v = _.reduce(a, function(x, y) { return y;}, 1);
                         return a.concat(v + b);
-                    }, [0])
+                    }, [0]);
                 var r = Math.random();
                 var index = 0;
                 // Note the interval array is initialisaed with an addition zero
@@ -1454,10 +1487,10 @@ define([
 
             };
             this.buildHome = function() {
-                if (this.home != null)
+                if (this.home !== null)
                     return false;
 
-                if (this.position == null)
+                if (this.position === null)
                     return false;
 
                 var index = fp.getIndex(this.position.x, this.position.z);
@@ -1470,7 +1503,7 @@ define([
 
                 var dimensions = fp.buildingNetwork.generateRandomDimensions();
 
-                if ( fp.buildingNetwork.buildings.length == 0 ) { // If there are no buildings, build an initial "seed"
+                if ( fp.buildingNetwork.buildings.length === 0 ) { // If there are no buildings, build an initial "seed"
                     this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
                     return ( !_.isUndefined(this.home) );
                 }
@@ -1508,7 +1541,7 @@ define([
                     xd = (xOrig - xInit),
                     zd = (zOrig - zInit),
                     distanceFromInitialPoint = Math.sqrt(xd * xd + zd * zd),
-                    buildingIndex = _.map(fp.buildingNetwork.buildings, function(building) { return fp.getIndex(building.lod.position.x, building.lod.position.z)} );
+                    buildingIndex = _.map(fp.buildingNetwork.buildings, function(building) { return fp.getIndex(building.lod.position.x, building.lod.position.z); } );
 
                 if (fp.roadNetwork.networkMesh.children.length >= appConfig.roadOptions.maxNumber)
                     return false;
@@ -1517,7 +1550,7 @@ define([
                     return false;
 
                 if (appConfig.displayOptions.buildingsShow) {
-                    if ( fp.buildingNetwork.buildings.length == 0 ) {
+                    if ( fp.buildingNetwork.buildings.length === 0 ) {
                         return false;
                     }
                     else if ( fp.buildingNetwork.buildings.length == 1 ) {
@@ -1525,7 +1558,7 @@ define([
                             return false;
                     }
                 }
-                if (fp.roadNetwork.indexValues.length == 0) {
+                if (fp.roadNetwork.indexValues.length === 0) {
                     if (distanceFromInitialPoint > appConfig.roadOptions.initialRadius)
                         return false;
                 }
@@ -1545,8 +1578,7 @@ define([
                     zr = Math.random() * 2 - 0.5,
                     lenMinimum = appConfig.roadOptions.lenMinimum,
                     lenMaximum = appConfig.roadOptions.lenMaximum,
-                    lenFactor = Math.random(),
-                    angle, angle90;
+                    lenFactor = Math.random();
                 var existingRoad = fp.roadNetwork.roads[index];
                 if (existingRoad) {
                     var ps = _.first(existingRoad.geometry.vertices),
@@ -1556,7 +1588,8 @@ define([
                         angle = Math.atan2(zChange, xChange),
                         turn = Math.round(Math.random()),
                         angle90 = angle + Math.PI / 2 + Math.PI * turn;
-                    xr = Math.cos(angle90),  zr = Math.sin(angle90);
+                    xr = Math.cos(angle90);
+                    zr = Math.sin(angle90);
                 }
                 var totalLen = lenMinimum + (lenMaximum - lenMinimum) *
                                 ( 1 - jStat.exponential.cdf(lenFactor, appConfig.roadOptions.lenDistributionFactor) ),
@@ -1566,61 +1599,62 @@ define([
                     zEnd = this.position.z + zExtent,
                     yEnd = fp.getHeight(xEnd, zEnd),
                     endPoint = new THREE.Vector3(xEnd, yEnd, zEnd),
-                    xd = xOrig - xEnd,
-                    zd = zOrig - zEnd,
-                    distanceFromEnd = Math.sqrt(xd * xd + zd * zd),
+                    xe = xOrig - xEnd,
+                    ze = zOrig - zEnd,
+                    distanceFromEnd = Math.sqrt(xe * xe + ze * ze),
                     width = Math.ceil( ( ( ( 1 / Math.log(distanceFromInitialPoint + 10) ) ) * Math.log( distanceFromEnd ) ) * appConfig.roadOptions.roadWidth );
                 return fp.roadNetwork.addRoad(this.position, endPoint, width);
             };
-            this.vertex;
-            this.direction;
+            this.vertex = null;
+            this.direction = null;
             this.speed = 2.0;
             this.perturbBy = 0.05;
-            this.lastPosition;
-            this.position;
+            this.lastPosition = null;
+            this.position = null;
             this.grounded = true;
             this.alpha =  0.5 + (Math.random() / 2);
             this.color = "#ff0000"; // Red. Alternative for this model is blue: "#0000ff"
             this.ticks = 0;
 
-            this.home;
+            this.home = null;
             this.health = 100;
-            this.gender = Math.random() < 0.5 ? 'f': 'm';
+            this.gender = Math.random() < 0.5 ? "f": "m";
             this.children = [];
             this.children = [];
             this.friends = [];
-            this.pathComputed = undefined, pathPosition = 0;
+            this.pathComputed = undefined;
+            this.pathPosition = 0;
         },
 
         // Building class definition
         Building: function() {
-            this.mesh;
-            this.lineMaterial;
-            this.buildingMaterial;
-            this.windowMaterial;
-            this.lod;
-            this.geometry;
-            this.windowGeometry;
-            this.windowMesh;
-            this.windowsFillContainer;
-            this.windowsOutlineContainer;
-            this.lowResGeomtery;
-            this.lowResMesh;
-            this.highResMeshContainer;
-            this.lowResMeshContainer;
+            this.mesh = null;
+            this.lineMaterial = null;
+            this.buildingMaterial = null;
+            this.windowMaterial = null;
+            this.lod = null;
+            this.geometry = null;
+            this.windowGeometry = null;
+            this.windowMesh = null;
+            this.windowsFillContainer = null;
+            this.windowsOutlineContainer = null;
+            this.lowResGeomtery = null;
+            this.lowResMesh = null;
+            this.highResMeshContainer = null;
+            this.lowResMeshContainer = null;
             this.levels = 0;
             this.counter = 0;
-            this.localMaxLevels;
-            this.localWidth;
-            this.localLength;
+            this.localMaxLevels = null;
+            this.localWidth = null;
+            this.localLength = null;
             this.yOffset = 0;
-            this.uniforms;
-            this.buildingForm;
+            this.uniforms = null;
+            this.buildingForm = null;
             this.destroying = false;
 
             // Use Poisson distribution with lambda of 1 to contour building heights instead
-            var w = 1 - jStat.exponential.cdf(Math.random() * 9, 1)
-            var d = 1 - jStat.exponential.cdf(Math.random() * 9, 1)
+            var w = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
+            var d = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
             // var h =  Math.floor(jStat.exponential.pdf(Math.random(), 50))
             var h = Math.floor(jStat.exponential.sample(appConfig.buildingOptions.heightA) * appConfig.buildingOptions.heightB);
             this.maxWidth = Math.floor(w * 9) + appConfig.buildingOptions.heightB;
@@ -1644,7 +1678,7 @@ define([
                     if ( num > max )
                         return max;
                     return num;
-                }
+                };
                 this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
                 this.topWindow = coerceValue( topWindowTmp, 0, 100 );
                 this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
@@ -1686,7 +1720,7 @@ define([
                 this.geometry = new THREE.Geometry();
                 // Pre-fill with enough vertices
                 for (var i = 0; i < (appConfig.maxLevels * 16 + 8); i++)
-                    this.geometry.vertices.push(new THREE.Vector3(0,0,0))
+                    this.geometry.vertices.push(new THREE.Vector3(0,0,0));
                 this.geometry.verticesNeedUpdate = true;
 
                 // Set up containers
@@ -1712,7 +1746,7 @@ define([
                     this.lowResGeometry = new THREE.BoxGeometry(appConfig.buildingOptions.width, (this.levels + 1) * appConfig.buildingOptions.levelHeight, appConfig.buildingOptions.length);
                     this.lowResGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, (this.levels + 1) * appConfig.buildingOptions.levelHeight / 2, 0 ) );
                     this.lowResMesh = new THREE.Mesh(this.lowResGeometry, this.buildingMaterial);
-                    this.lowResMeshContainer.add(this.lowResMesh)
+                    this.lowResMeshContainer.add(this.lowResMesh);
                 }
                 else
                     this.lod.addLevel(this.highResMeshContainer, 1);
@@ -1727,13 +1761,13 @@ define([
                 if ( !appConfig.buildingOptions.useShader ) {
                     if (appConfig.buildingOptions.showLines) {
                         this.geometry.dynamic = true;
-                        this.generateSkeleton(points)
+                        this.generateSkeleton(points);
                         this.geometry.verticesNeedUpdate = true;
                     }
                     if (appConfig.buildingOptions.showFill)
-                        this.generateExtrudedShape(points)
+                        this.generateExtrudedShape(points);
                     if (appConfig.buildingOptions.showWindows)
-                        this.generateWindows(points)
+                        this.generateWindows(points);
                 }
                 else
                     this.shadedShape(points);
@@ -1746,15 +1780,15 @@ define([
                 if (appConfig.buildingOptions.stagger) {
                     if (appConfig.buildingOptions.taper) {
                         var percentage = this.levels / this.localMaxLevels;
-                        var sq = Math.pow(percentage, appConfig.buildingOptions.taperExponent)
-                        var hurdle = jStat.exponential.cdf(sq, appConfig.buildingOptions.taperDistribution)
+                        var sq = Math.pow(percentage, appConfig.buildingOptions.taperExponent);
+                        var hurdle = jStat.exponential.cdf(sq, appConfig.buildingOptions.taperDistribution);
                         if (Math.random() < hurdle) {
                             this.localWidth -= appConfig.buildingOptions.staggerAmount;
                             this.localLength -= appConfig.buildingOptions.staggerAmount;
                         }
                     }
                     else {
-                        this.localWidth -= appConfig.buildingOptions.staggerAmount
+                        this.localWidth -= appConfig.buildingOptions.staggerAmount;
                         this.localLength -= appConfig.buildingOptions.staggerAmount;
                     }
                 }
@@ -1765,34 +1799,34 @@ define([
                 this.highResMeshContainer.remove(topFloor);
                 this.levels--;
                 // Update a low res model once the rest is complete
-                this.updateSimpleBuilding()
+                this.updateSimpleBuilding();
             };
 
             this.generateSkeleton = function (points) {
-                var base = points[0].y;
+                var i, base = points[0].y;
                 var height = base + appConfig.buildingOptions.levelHeight;
                 var offset = fp.getOffset(this.levels, points.length);
 
-                if (this.levels == 0) {
+                if (this.levels === 0) {
                     this.geometry.vertices[offset] = points[0];
-                    for (var i = 1; i < points.length; i ++) {
-                        this.geometry.vertices[offset + i * 2 - 1] = points[i]
-                        this.geometry.vertices[offset + i * 2] = points[i]
+                    for (i = 1; i < points.length; i ++) {
+                        this.geometry.vertices[offset + i * 2 - 1] = points[i];
+                        this.geometry.vertices[offset + i * 2] = points[i];
                     }
                     this.geometry.vertices[offset + points.length * 2 - 1] = points[0];
                     offset += points.length * 2;
                 }
 
-                for (var i = 0; i < points.length; i ++) {
-                    this.geometry.vertices[offset + i * 2] = points[i]
-                    this.geometry.vertices[offset + i * 2 + 1] = new THREE.Vector3(points[i].x, height, points[i].z)
+                for (i = 0; i < points.length; i ++) {
+                    this.geometry.vertices[offset + i * 2] = points[i];
+                    this.geometry.vertices[offset + i * 2 + 1] = new THREE.Vector3(points[i].x, height, points[i].z);
                 }
                 offset += points.length * 2;
 
                 this.geometry.vertices[offset] = new THREE.Vector3(points[0].x, height, points[0].z);
-                for (var i = 1; i < points.length; i ++) {
-                    this.geometry.vertices[offset + i * 2 - 1] = new THREE.Vector3(points[i].x, height, points[i].z)
-                    this.geometry.vertices[offset + i * 2] = new THREE.Vector3(points[i].x, height, points[i].z)
+                for (i = 1; i < points.length; i ++) {
+                    this.geometry.vertices[offset + i * 2 - 1] = new THREE.Vector3(points[i].x, height, points[i].z);
+                    this.geometry.vertices[offset + i * 2] = new THREE.Vector3(points[i].x, height, points[i].z);
                 }
                 this.geometry.vertices[offset + points.length * 2 - 1] = new THREE.Vector3(points[0].x, height, points[0].z);
             };
@@ -1800,7 +1834,7 @@ define([
             this.generateExtrudedShape = function (points) {
                 var base = points[0].y;
                 var height = base + appConfig.buildingOptions.levelHeight;
-                var offset = fp.getOffset(this.levels, points.length)
+                var offset = fp.getOffset(this.levels, points.length);
 
                 // EXTRUDED SHAPE FOR NON-BOX SHAPED BUILDINGS
                 var shape = new THREE.Shape();
@@ -1831,7 +1865,7 @@ define([
                     box.rotation.set(Math.PI / 2, 0, 0);
                     box.position.set(0, height, 0);
                     box.geometry.verticesNeedUpdate = true;
-                    this.highResMeshContainer.add(box)
+                    this.highResMeshContainer.add(box);
                 }
             };
 
@@ -1861,39 +1895,39 @@ define([
 
                 for (var i = 0; i < points.length; i ++) {
                     var previousPoint;
-                    if (i == 0)
-                        previousPoint = points[points.length - 1]
+                    if (i === 0)
+                        previousPoint = points[points.length - 1];
                     else
-                        previousPoint = points[i - 1]
-                    var currentPoint = points[i]
+                        previousPoint = points[i - 1];
+                    var currentPoint = points[i];
                     var xDiff = currentPoint.x - previousPoint.x;
                     var zDiff = currentPoint.z - previousPoint.z;
-                    var lineLength = Math.sqrt(xDiff * xDiff + zDiff * zDiff)
-                    var windowCount = Math.floor(lineLength / appConfig.buildingOptions.windowWidth)
+                    var lineLength = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
+                    var windowCount = Math.floor(lineLength / appConfig.buildingOptions.windowWidth);
                     var winOffset = (appConfig.buildingOptions.windowWidth - winActualWidth) / 2;
                     var windowStart = base + (appConfig.buildingOptions.levelHeight * (appConfig.buildingOptions.windowsStartY / 100));
                     var windowEnd = base + (appConfig.buildingOptions.levelHeight * (appConfig.buildingOptions.windowsEndY / 100));
-                    var winW = winActualWidth * (xDiff / lineLength)
-                    var winL = winActualWidth * (zDiff / lineLength)
-                    var winOffsetW = winOffset * (xDiff / lineLength)
-                    var winOffsetL = winOffset * (zDiff / lineLength)
-                    var angle = Math.atan2(xDiff, zDiff) + Math.PI / 2
+                    var winW = winActualWidth * (xDiff / lineLength);
+                    var winL = winActualWidth * (zDiff / lineLength);
+                    var winOffsetW = winOffset * (xDiff / lineLength);
+                    var winOffsetL = winOffset * (zDiff / lineLength);
+                    var angle = Math.atan2(xDiff, zDiff) + Math.PI / 2;
                     for (var j = 0 ; j < windowCount; j++) {
-                        var winX = previousPoint.x + (j * xDiff / windowCount) + winOffsetW
-                        var winZ = previousPoint.z + (j * zDiff / windowCount) + winOffsetL
+                        var winX = previousPoint.x + (j * xDiff / windowCount) + winOffsetW;
+                        var winZ = previousPoint.z + (j * zDiff / windowCount) + winOffsetL;
 
                         if (appConfig.buildingOptions.windowsFill) {
                             var boxCopy = box.clone();
-                            boxCopy.position.set(winX + winW, windowStart, winZ + winL)
+                            boxCopy.position.set(winX + winW, windowStart, winZ + winL);
                             boxCopy.rotation.set(0, angle, 0);
-                            this.windowsFillContainer.add(boxCopy)
+                            this.windowsFillContainer.add(boxCopy);
                         }
 
                         if (appConfig.buildingOptions.windowsLine) {
                             var windowOutlineCopy = windowOutline.clone();
-                            windowOutlineCopy.position.set(winX + winW, windowStart, winZ + winL)
+                            windowOutlineCopy.position.set(winX + winW, windowStart, winZ + winL);
                             windowOutlineCopy.rotation.set(0, angle, 0);
-                            this.windowsOutlineContainer.add(windowOutlineCopy)
+                            this.windowsOutlineContainer.add(windowOutlineCopy);
                         }
                     }
                 }
@@ -1948,8 +1982,8 @@ define([
                         showWindows: { type: "i", value: showWindows ? 1 : 0 },
                         fillRooves: { type: "i", value: appConfig.buildingOptions.fillRooves ? 1 : 0 }
                     };
-                    var attributes = { mixin: { type: 'f', value: [] } };
-                    for (var i = 0; i < shapeGeometry.vertices.length; i++)
+                    var attributes = { mixin: { type: "f", value: [] } };
+                    for (i = 0; i < shapeGeometry.vertices.length; i++)
                         attributes.mixin.value[i] = Math.random() * 10;
 
                     var shaderMaterial = new THREE.ShaderMaterial( {
@@ -1980,20 +2014,20 @@ define([
                     box.children.forEach(function(b) {
                         b.castShadow = true;
                         b.receiveShadow = true;
-                    })
-                    this.highResMeshContainer.add(box)
+                    });
+                    this.highResMeshContainer.add(box);
                 }
             };
 
             this.canAddFloor = function() {
-                return ( !this.destroying && this.levels < this.localMaxLevels && this.localWidth > 0 && this.localLength > 0 )
+                return ( !this.destroying && this.levels < this.localMaxLevels && this.localWidth > 0 && this.localLength > 0 );
             };
 
             this.update = function() {
                 if ( this.canAddFloor() ) {
                     this.counter ++;
-                    if (this.counter % appConfig.buildingOptions.riseRate == 0 )
-                        this.addFloor()
+                    if (this.counter % appConfig.buildingOptions.riseRate === 0 )
+                        this.addFloor();
 
                     if (appConfig.buildingOptions.falling) {
                         var y = - ( this.levelHeight /  (2 * appConfig.buildingOptions.riseRate));
@@ -2008,11 +2042,11 @@ define([
                 }
                 else if (this.destroying && this.levels > 0) {
                     this.counter ++;
-                    if (this.counter % appConfig.buildingOptions.riseRate == 0 ) {
-                        this.removeFloor()
+                    if (this.counter % appConfig.buildingOptions.riseRate === 0 ) {
+                        this.removeFloor();
                     }
                 }
-                else if (this.destroying && this.levels == 0 && appConfig.buildingOptions.loopCreateDestroy) {
+                else if (this.destroying && this.levels === 0 && appConfig.buildingOptions.loopCreateDestroy) {
                     this.destroying = false;
                 }
 
@@ -2044,45 +2078,45 @@ define([
             this.updateSimpleBuilding = function () {
                 if (this.levels > 1) {
                     if (!this.destroying)
-                        this.lowResMesh.scale.set(1, this.lowResMesh.scale.y * this.levels / (this.levels - 1), 1)
+                        this.lowResMesh.scale.set(1, this.lowResMesh.scale.y * this.levels / (this.levels - 1), 1);
                     else
-                        this.lowResMesh.scale.set(1, this.lowResMesh.scale.y * (this.levels - 1) / (this.levels), 1)
+                        this.lowResMesh.scale.set(1, this.lowResMesh.scale.y * (this.levels - 1) / (this.levels), 1);
                 }
                 else if (this.destroying)
-                    this.lowResMesh.scale.set(1, 1, 1)
+                    this.lowResMesh.scale.set(1, 1, 1);
             };
 
             this.translatePosition = function(x, y, z) {
-                this.lod.position.set(x, y, z)
-                this.highResMeshContainer.position.set(x, y, z)
-                this.lowResMeshContainer.position.set(x, y, z)
+                this.lod.position.set(x, y, z);
+                this.highResMeshContainer.position.set(x, y, z);
+                this.lowResMeshContainer.position.set(x, y, z);
             };
 
             this.windowsOutline = function(value) {
                 if (value)
-                    this.highResMeshContainer.add(this.windowsOutlineContainer)
+                    this.highResMeshContainer.add(this.windowsOutlineContainer);
                 else
-                    this.highResMeshContainer.remove(this.windowsOutlineContainer)
+                    this.highResMeshContainer.remove(this.windowsOutlineContainer);
             };
 
             this.windowsFill = function(value) {
                 if (value)
-                    this.highResMeshContainer.add(this.windowsFillContainer)
+                    this.highResMeshContainer.add(this.windowsFillContainer);
                 else
-                    this.highResMeshContainer.remove(this.windowsFillContainer)
-            }
+                    this.highResMeshContainer.remove(this.windowsFillContainer);
+            };
         },
 
         Road: function() { // Road class definition
-            this.mesh;
-            this.position;
+            this.mesh = null;
+            this.position = null;
             this.setupRoad = function(_x, _y, _z) {
-                x = _x || 0
-                y = _y || 0
-                z = _z || 0
+                x = _x || 0;
+                y = _y || 0;
+                z = _z || 0;
             };
             this.shadedShape = function (points) {};
-            this.update = function() { }
+            this.update = function() { };
         },
 
         Patch: function(val) { // Patch class definition
@@ -2096,7 +2130,7 @@ define([
                 else
                     val += inc;
                 this.value = val;
-            }
+            };
         },
 
         AppState: {
@@ -2107,7 +2141,7 @@ define([
         AppConfig: function() {
             this.worldOptions = {
                 maxLandSearchDepth: 1
-            }
+            };
             this.agentOptions = {
                 initialPopulation: 100,
                 initialExtent: 1000,
@@ -2127,7 +2161,7 @@ define([
                 visitOtherBuilding: 0.002,
                 size: 40,
                 terrainOffset: 20
-            }
+            };
             this.displayOptions = {
                 buildingsShow: true,
                 roadsShow: true,
@@ -2154,7 +2188,7 @@ define([
                 coloriseAgentsByHealth: true,
                 firstPersonView: false,
                 topDownView: false
-            }
+            };
             this.roadOptions = {
                 create: true,
                 maxNumber: 200,  // Maximum number of roads - for performance reasons
@@ -2170,7 +2204,7 @@ define([
                 overlapThreshold: 3,
                 flattenAdjustment: 0.025,
                 flattenLift: 20
-            }
+            };
             this.buildingOptions = {
                 create: true,
 
@@ -2250,11 +2284,11 @@ define([
                 // Collision detection
                 detectBuildingCollisions: true,
                 detectRoadCollisions: true
-            }
+            };
             this.terrainOptions = {
                 loadHeights: true,
                 multiplier: 1
-            }
+            };
             this.colorOptions = {
                 colorDayBackground: 0x000000,
                 colorNightBackground: 0x000000,
@@ -2288,7 +2322,7 @@ define([
                 colorGraphPopulation: 0x4747b3,
                 colorGraphHealth: 0xb34747,
                 colorGraphPatchValues: 0x47b347,
-            }
+            };
             this.buildingOptions.maxHeight = (this.buildingOptions.minHeight > this.buildingOptions.maxHeight) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
             this.buildingOptions.maxWidth = (this.buildingOptions.minWidth > this.buildingOptions.maxWidth) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
             this.buildingOptions.maxLength = (this.buildingOptions.minLength > this.buildingOptions.maxLength) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
@@ -2304,7 +2338,7 @@ define([
                 inclination: 0.49, // elevation / inclination
                 azimuth: 0.25, // Facing front,
                 sun: !true
-            }
+            };
 
             this.Reset = function() {
                 scene.remove(  agentNetwork.particles  );
@@ -2320,7 +2354,7 @@ define([
                 fp.updateYear();
                 timescale.frameCounter = 0;
                 if (trailNetwork.trailMeshes)
-                    trailNetwork.trailMeshes.forEach(function(trail) { scene.remove(trail); })
+                    trailNetwork.trailMeshes.forEach(function(trail) { scene.remove(trail); });
 
                 var len = terrain.plane.geometry.attributes.position.array.length / 3,
                     trailPoints = new Float32Array(len),
@@ -2329,8 +2363,8 @@ define([
                     trailPoints[i] = 0;
                     patchPoints[i] = 0;
                 }
-                terrain.plane.geometry.addAttribute( 'trail', new THREE.BufferAttribute( trailPoints, 1 ) );
-                terrain.plane.geometry.addAttribute( 'patch', new THREE.BufferAttribute( patchPoints, 1 ) );
+                terrain.plane.geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                terrain.plane.geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
                 terrain.plane.geometry.attributes.trail.needsUpdate = true;
                 terrain.plane.geometry.attributes.patch.needsUpdate = true;
 
@@ -2378,7 +2412,7 @@ define([
                     scene.add(trailNetwork.globalTrailLine);
 
                 fp.sim.setup.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-            }
+            };
 
             this.Run = function() {
                 fp.AppState.runSimulation = !fp.AppState.runSimulation;
@@ -2389,24 +2423,24 @@ define([
                     else
                         chart.stop();
                 }
-            }
+            };
             this.Step = function() {
                 fp.AppState.runSimulation = fp.AppState.stepSimulation = true;
-            }
+            };
             this.SpeedUp = function() {
                 if (timescale.framesToYear > timescale.MIN_FRAMES_TO_YEAR)
                     timescale.framesToYear = Math.ceil(timescale.framesToYear / 2);
-                console.log("Speed: " + timescale.framesToYear)
-            }
+                console.log("Speed: " + timescale.framesToYear);
+            };
             this.SlowDown = function() {
                 if (timescale.framesToYear < timescale.MAX_FRAMES_TO_YEAR)
                     timescale.framesToYear *= 2;
-                console.log("Speed: " + timescale.framesToYear)
-            }
+                console.log("Speed: " + timescale.framesToYear);
+            };
             this.Snapshot = function() {
                 var mimetype = mimetype  || "image/png";
                 var url = renderer.domElement.toDataURL(mimetype);
-                window.open(url, "name-" + Math.random())
+                window.open(url, "name-" + Math.random());
             };
             this.FullScreen = function() {
                 if (document.documentElement.requestFullscreen) {
@@ -2450,7 +2484,7 @@ define([
                 chartCanvas.setAttribute("style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  ");
                 container.insertBefore(chartCanvas, container.firstChild);
                 var colorNetwork = appConfig.colorOptions.colorNightNetwork;
-                chart.addTimeSeries( agentPopulationSeries, { fillStyle: 'rgba(0, 0, 255, 0.2)', lineWidth: 4 } );
+                chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba(0, 0, 255, 0.2)", lineWidth: 4 } );
                 chart.addTimeSeries(agentHealthSeries, { lineWidth: 4 });
                 chart.addTimeSeries(patchValuesSeries, { lineWidth: 4 });
                 fp.updateChartColors();
@@ -2459,7 +2493,7 @@ define([
             },
 
             updateGraph: function() {
-                $('#chartCanvas').toggle(appConfig.displayOptions.chartShow);
+                $("#chartCanvas").toggle(appConfig.displayOptions.chartShow);
             }
         },
 
@@ -2475,181 +2509,181 @@ define([
             gui.remember(appConfig.colorOptions);
             gui.remember(appConfig.terrainOptions);
 
-            gui.add(appConfig, 'Setup');
-            gui.add(appConfig, 'Run');
-            gui.add(appConfig, 'Step');
+            gui.add(appConfig, "Setup");
+            gui.add(appConfig, "Run");
+            gui.add(appConfig, "Step");
 
-            var controlPanel = gui.addFolder('More controls');
-            controlPanel.add(appConfig, 'SpeedUp');
-            controlPanel.add(appConfig, 'SlowDown');
-            controlPanel.add(appConfig, 'Snapshot');
-            controlPanel.add(appConfig, 'FullScreen');
-            controlPanel.add(appConfig, 'SwitchTerrain');
+            var controlPanel = gui.addFolder("More controls");
+            controlPanel.add(appConfig, "SpeedUp");
+            controlPanel.add(appConfig, "SlowDown");
+            controlPanel.add(appConfig, "Snapshot");
+            controlPanel.add(appConfig, "FullScreen");
+            controlPanel.add(appConfig, "SwitchTerrain");
 
-            var agentsFolder = gui.addFolder('Agent Options');
-            agentsFolder.add(appConfig.agentOptions, 'initialPopulation', 0, 10000).step(1);
-            agentsFolder.add(appConfig.agentOptions, 'initialExtent', 100, terrain.gridExtent).step(100);
-            agentsFolder.add(appConfig.agentOptions, 'maxExtent', 1000, terrain.gridExtent).step(100);
-            agentsFolder.add(appConfig.agentOptions, 'initialX',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
-            agentsFolder.add(appConfig.agentOptions, 'initialY',  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
-            agentsFolder.add(appConfig.agentOptions, 'chanceToJoinNetwork', 0.0, 1.0).step(0.01);
-            agentsFolder.add(appConfig.agentOptions, 'chanceToFindPathToHome', 0.0, 1.0).step(0.01);
-            agentsFolder.add(appConfig.agentOptions, 'initialCircle');
-            agentsFolder.add(appConfig.agentOptions, 'noWater');
-            agentsFolder.add(appConfig.agentOptions, 'noUphill');
-            agentsFolder.add(appConfig.agentOptions, 'useStickman');
-            agentsFolder.add(appConfig.agentOptions, 'healthReduce', 0.0, 0.1).step(0.01);
-            agentsFolder.add(appConfig.agentOptions, 'healthGain', 0.0, 5.0).step(0.5);
-            agentsFolder.add(appConfig.agentOptions, 'visitHomeBuilding', 0.0, 1.0).step(0.001);
-            agentsFolder.add(appConfig.agentOptions, 'visitOtherBuilding', 0.0, 1.0).step(0.001);
+            var agentsFolder = gui.addFolder("Agent Options");
+            agentsFolder.add(appConfig.agentOptions, "initialPopulation", 0, 10000).step(1);
+            agentsFolder.add(appConfig.agentOptions, "initialExtent", 100, terrain.gridExtent).step(100);
+            agentsFolder.add(appConfig.agentOptions, "maxExtent", 1000, terrain.gridExtent).step(100);
+            agentsFolder.add(appConfig.agentOptions, "initialX",  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
+            agentsFolder.add(appConfig.agentOptions, "initialY",  - terrain.gridExtent / 2, terrain.gridExtent / 2).step(100);
+            agentsFolder.add(appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0).step(0.01);
+            agentsFolder.add(appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0).step(0.01);
+            agentsFolder.add(appConfig.agentOptions, "initialCircle");
+            agentsFolder.add(appConfig.agentOptions, "noWater");
+            agentsFolder.add(appConfig.agentOptions, "noUphill");
+            agentsFolder.add(appConfig.agentOptions, "useStickman");
+            agentsFolder.add(appConfig.agentOptions, "healthReduce", 0.0, 0.1).step(0.01);
+            agentsFolder.add(appConfig.agentOptions, "healthGain", 0.0, 5.0).step(0.5);
+            agentsFolder.add(appConfig.agentOptions, "visitHomeBuilding", 0.0, 1.0).step(0.001);
+            agentsFolder.add(appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0).step(0.001);
 
-            var buildingsFolder = gui.addFolder('Building Options');
-            buildingsFolder.add(appConfig.buildingOptions, 'create');
-            buildingsFolder.add(appConfig.buildingOptions, 'maxNumber', 1, 100).step(1);
-            buildingsFolder.add(appConfig.buildingOptions, 'detectBuildingCollisions');
-            buildingsFolder.add(appConfig.buildingOptions, 'detectRoadCollisions');
-            var forms = buildingsFolder.addFolder('Form');
-            forms.add(appConfig.buildingOptions, 'buildingForm', fp.BUILDING_FORMS.names);
-            forms.add(appConfig.buildingOptions, 'spread', 1, 100).step(1);
-            forms.add(appConfig.buildingOptions, 'randomForm');
-            forms.add(appConfig.buildingOptions, 'rotateRandomly');
-            forms.add(appConfig.buildingOptions, 'rotateSetAngle', 0, 360).step(1);
-            var dimensions = buildingsFolder.addFolder('Dimensions');
-            dimensions.add(appConfig.buildingOptions, 'minHeight', 1, 50).step(1);
-            dimensions.add(appConfig.buildingOptions, 'maxHeight', 2, 200).step(1);
-            dimensions.add(appConfig.buildingOptions, 'heightA', 0.1, 10.0).step(0.1);
-            dimensions.add(appConfig.buildingOptions, 'heightB', 1, 100).step(1);
-            dimensions.add(appConfig.buildingOptions, 'riseRate', 1, 100).step(1);
-            dimensions.add(appConfig.buildingOptions, 'levelHeight', 10, 100).step(1);
-            dimensions.add(appConfig.buildingOptions, 'minWidth', 1, 200).step(1);
-            dimensions.add(appConfig.buildingOptions, 'maxWidth', 41, 400).step(1);
-            dimensions.add(appConfig.buildingOptions, 'minLength', 1, 200).step(1);
-            dimensions.add(appConfig.buildingOptions, 'maxLength', 41, 400).step(1);
-            var influences = buildingsFolder.addFolder('Influences');
-            influences.add(appConfig.buildingOptions, 'roads', 0.0, 1.0).step(0.1);
-            influences.add(appConfig.buildingOptions, 'water', 0.0, 1.0).step(0.1);
-            influences.add(appConfig.buildingOptions, 'otherBuildings', 0.0, 1.0).step(0.1);
-            influences.add(appConfig.buildingOptions, 'buildingHeight', 0.0, 1.0).step(0.1);
-            var view = buildingsFolder.addFolder('Appearance');
-            view.add(appConfig.buildingOptions, 'useShader');
-            view.add(appConfig.buildingOptions, 'useLevelOfDetail');
-            view.add(appConfig.buildingOptions, 'lowResDistance', 2000, 20000).step(1000);
-            view.add(appConfig.buildingOptions, 'highResDistance', 100, 2000).step(100);
-            view.add(appConfig.buildingOptions, 'opacity', 0.0, 1.0).step(.01);
-            var fill = view.addFolder('Fill');
-            fill.add(appConfig.buildingOptions, 'showFill');
-            fill.add(appConfig.buildingOptions, 'fillRooves');
-            var line = view.addFolder('Line');
-            line.add(appConfig.buildingOptions, 'showLines');
-            line.add(appConfig.buildingOptions, 'linewidth', 0.1, 8).step(0.1);
-            var windows = view.addFolder('Window');
-            var showWindowsOptions = windows.add(appConfig.buildingOptions, 'showWindows');
+            var buildingsFolder = gui.addFolder("Building Options");
+            buildingsFolder.add(appConfig.buildingOptions, "create");
+            buildingsFolder.add(appConfig.buildingOptions, "maxNumber", 1, 100).step(1);
+            buildingsFolder.add(appConfig.buildingOptions, "detectBuildingCollisions");
+            buildingsFolder.add(appConfig.buildingOptions, "detectRoadCollisions");
+            var forms = buildingsFolder.addFolder("Form");
+            forms.add(appConfig.buildingOptions, "buildingForm", fp.BUILDING_FORMS.names);
+            forms.add(appConfig.buildingOptions, "spread", 1, 100).step(1);
+            forms.add(appConfig.buildingOptions, "randomForm");
+            forms.add(appConfig.buildingOptions, "rotateRandomly");
+            forms.add(appConfig.buildingOptions, "rotateSetAngle", 0, 360).step(1);
+            var dimensions = buildingsFolder.addFolder("Dimensions");
+            dimensions.add(appConfig.buildingOptions, "minHeight", 1, 50).step(1);
+            dimensions.add(appConfig.buildingOptions, "maxHeight", 2, 200).step(1);
+            dimensions.add(appConfig.buildingOptions, "heightA", 0.1, 10.0).step(0.1);
+            dimensions.add(appConfig.buildingOptions, "heightB", 1, 100).step(1);
+            dimensions.add(appConfig.buildingOptions, "riseRate", 1, 100).step(1);
+            dimensions.add(appConfig.buildingOptions, "levelHeight", 10, 100).step(1);
+            dimensions.add(appConfig.buildingOptions, "minWidth", 1, 200).step(1);
+            dimensions.add(appConfig.buildingOptions, "maxWidth", 41, 400).step(1);
+            dimensions.add(appConfig.buildingOptions, "minLength", 1, 200).step(1);
+            dimensions.add(appConfig.buildingOptions, "maxLength", 41, 400).step(1);
+            var influences = buildingsFolder.addFolder("Influences");
+            influences.add(appConfig.buildingOptions, "roads", 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, "water", 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, "otherBuildings", 0.0, 1.0).step(0.1);
+            influences.add(appConfig.buildingOptions, "buildingHeight", 0.0, 1.0).step(0.1);
+            var view = buildingsFolder.addFolder("Appearance");
+            view.add(appConfig.buildingOptions, "useShader");
+            view.add(appConfig.buildingOptions, "useLevelOfDetail");
+            view.add(appConfig.buildingOptions, "lowResDistance", 2000, 20000).step(1000);
+            view.add(appConfig.buildingOptions, "highResDistance", 100, 2000).step(100);
+            view.add(appConfig.buildingOptions, "opacity", 0.0, 1.0).step(0.01);
+            var fill = view.addFolder("Fill");
+            fill.add(appConfig.buildingOptions, "showFill");
+            fill.add(appConfig.buildingOptions, "fillRooves");
+            var line = view.addFolder("Line");
+            line.add(appConfig.buildingOptions, "showLines");
+            line.add(appConfig.buildingOptions, "linewidth", 0.1, 8).step(0.1);
+            var windows = view.addFolder("Window");
+            var showWindowsOptions = windows.add(appConfig.buildingOptions, "showWindows");
             showWindowsOptions.onChange(function(value) {
                 fp.buildingNetwork.buildings.forEach(function(b) {
                     b.uniforms.showWindows.value = value ? 1 : 0;
-                })
+                });
             });
-            windows.add(appConfig.buildingOptions, 'windowsRandomise');
-            windows.add(appConfig.buildingOptions, 'windowWidth', 1, 100).step(1);
-            windows.add(appConfig.buildingOptions, 'windowPercent', 1, 100).step(1);
-            windows.add(appConfig.buildingOptions, 'windowsStartY', 1, 100).step(1);
-            windows.add(appConfig.buildingOptions, 'windowsEndY', 1, 100).step(1);
-            var stagger = buildingsFolder.addFolder('Stagger');
-            stagger.add(appConfig.buildingOptions, 'stagger');
-            stagger.add(appConfig.buildingOptions, 'staggerAmount', 1, 100);
-            var taper = buildingsFolder.addFolder('Taper');
-            taper.add(appConfig.buildingOptions, 'taper');
-            taper.add(appConfig.buildingOptions, 'taperExponent', 1, 10).step(1);
-            taper.add(appConfig.buildingOptions, 'taperDistribution', 0.1, 5);
-            var animation = buildingsFolder.addFolder('Animation');
-            animation.add(appConfig.buildingOptions, 'destroyOnComplete');
-            animation.add(appConfig.buildingOptions, 'loopCreateDestroy');
-            animation.add(appConfig.buildingOptions, 'turning');
-            animation.add(appConfig.buildingOptions, 'falling');
+            windows.add(appConfig.buildingOptions, "windowsRandomise");
+            windows.add(appConfig.buildingOptions, "windowWidth", 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, "windowPercent", 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, "windowsStartY", 1, 100).step(1);
+            windows.add(appConfig.buildingOptions, "windowsEndY", 1, 100).step(1);
+            var stagger = buildingsFolder.addFolder("Stagger");
+            stagger.add(appConfig.buildingOptions, "stagger");
+            stagger.add(appConfig.buildingOptions, "staggerAmount", 1, 100);
+            var taper = buildingsFolder.addFolder("Taper");
+            taper.add(appConfig.buildingOptions, "taper");
+            taper.add(appConfig.buildingOptions, "taperExponent", 1, 10).step(1);
+            taper.add(appConfig.buildingOptions, "taperDistribution", 0.1, 5);
+            var animation = buildingsFolder.addFolder("Animation");
+            animation.add(appConfig.buildingOptions, "destroyOnComplete");
+            animation.add(appConfig.buildingOptions, "loopCreateDestroy");
+            animation.add(appConfig.buildingOptions, "turning");
+            animation.add(appConfig.buildingOptions, "falling");
 
-            var terrainFolder = gui.addFolder('Terrain Options');
-            terrainFolder.add(appConfig.terrainOptions, 'loadHeights').onFinishChange(terrain.loadTerrain);
-            terrainFolder.add(appConfig.terrainOptions, 'multiplier', 1, 10).step(1).onFinishChange(terrain.loadTerrain);
+            var terrainFolder = gui.addFolder("Terrain Options");
+            terrainFolder.add(appConfig.terrainOptions, "loadHeights").onFinishChange(terrain.loadTerrain);
+            terrainFolder.add(appConfig.terrainOptions, "multiplier", 1, 10).step(1).onFinishChange(terrain.loadTerrain);
 
-            var roadsFolder = gui.addFolder('Road Options');
-            roadsFolder.add(appConfig.roadOptions, 'create');
-            roadsFolder.add(appConfig.roadOptions, 'maxNumber', 1, 100).step(1);
-            roadsFolder.add(appConfig.roadOptions, 'roadWidth', 5, 50).step(5);
-            roadsFolder.add(appConfig.roadOptions, 'roadDeviation', 0, 50).step(1);
-            roadsFolder.add(appConfig.roadOptions, 'roadRadiusSegments', 2, 20).step(1);
-            roadsFolder.add(appConfig.roadOptions, 'roadSegments', 1, 20).step(1);
-            roadsFolder.add(appConfig.roadOptions, 'initialRadius', 0, 1000).step(100);
-            roadsFolder.add(appConfig.roadOptions, 'probability', 50, 1000).step(50);
-            roadsFolder.add(appConfig.roadOptions, 'lenMinimum', 0, 2000).step(100);
-            roadsFolder.add(appConfig.roadOptions, 'lenMaximum', 100, 2000).step(100);
-            roadsFolder.add(appConfig.roadOptions, 'lenDistributionFactor', 1, 10).step(1);
-            roadsFolder.add(appConfig.roadOptions, 'overlapThreshold', 1, 100).step(1);
-            roadsFolder.add(appConfig.roadOptions, 'flattenAdjustment', 0.025, 1.0).step(0.025);
-            roadsFolder.add(appConfig.roadOptions, 'flattenLift', 0, 40).step(1);
+            var roadsFolder = gui.addFolder("Road Options");
+            roadsFolder.add(appConfig.roadOptions, "create");
+            roadsFolder.add(appConfig.roadOptions, "maxNumber", 1, 100).step(1);
+            roadsFolder.add(appConfig.roadOptions, "roadWidth", 5, 50).step(5);
+            roadsFolder.add(appConfig.roadOptions, "roadDeviation", 0, 50).step(1);
+            roadsFolder.add(appConfig.roadOptions, "roadRadiusSegments", 2, 20).step(1);
+            roadsFolder.add(appConfig.roadOptions, "roadSegments", 1, 20).step(1);
+            roadsFolder.add(appConfig.roadOptions, "initialRadius", 0, 1000).step(100);
+            roadsFolder.add(appConfig.roadOptions, "probability", 50, 1000).step(50);
+            roadsFolder.add(appConfig.roadOptions, "lenMinimum", 0, 2000).step(100);
+            roadsFolder.add(appConfig.roadOptions, "lenMaximum", 100, 2000).step(100);
+            roadsFolder.add(appConfig.roadOptions, "lenDistributionFactor", 1, 10).step(1);
+            roadsFolder.add(appConfig.roadOptions, "overlapThreshold", 1, 100).step(1);
+            roadsFolder.add(appConfig.roadOptions, "flattenAdjustment", 0.025, 1.0).step(0.025);
+            roadsFolder.add(appConfig.roadOptions, "flattenLift", 0, 40).step(1);
 
-            var displayFolder = gui.addFolder('Display Options');
-            displayFolder.add(appConfig.displayOptions, 'buildingsShow').onFinishChange(fp.updateBuildingState);
-            displayFolder.add(appConfig.displayOptions, 'roadsShow').onFinishChange(fp.updateRoadState);
-            displayFolder.add(appConfig.displayOptions, 'waterShow').onFinishChange(fp.updateWaterState);
-            displayFolder.add(appConfig.displayOptions, 'networkShow').onFinishChange(fp.updateNetworkState);
-            displayFolder.add(appConfig.displayOptions, 'networkCurve');
-            displayFolder.add(appConfig.displayOptions, 'networkCurvePoints', 4, 20).step(1);
-            displayFolder.add(appConfig.displayOptions, 'patchesUpdate');
-            displayFolder.add(appConfig.displayOptions, 'patchesShow').onFinishChange(fp.updatePatchesState);
-            displayFolder.add(appConfig.displayOptions, 'patchesUseShader');
-            displayFolder.add(appConfig.displayOptions, 'trailsShow').onFinishChange(fp.updateTrailState);
-            displayFolder.add(appConfig.displayOptions, 'trailsShowAsLines').onFinishChange(fp.updateTrailState);
-            displayFolder.add(appConfig.displayOptions, 'trailLength', 1, 10000).step(1);
-            displayFolder.add(appConfig.displayOptions, 'cursorShow').onFinishChange(fp.updateCursorState);
-            displayFolder.add(appConfig.displayOptions, 'statsShow').onFinishChange(fp.updateStatsState);
-            displayFolder.add(appConfig.displayOptions, 'hudShow').onFinishChange(fp.updateHUDState);
-            displayFolder.add(appConfig.displayOptions, 'wireframeShow').onFinishChange(fp.updateWireframeState);
-            displayFolder.add(appConfig.displayOptions, 'dayShow').onFinishChange(fp.updateDayOrNight);
-            displayFolder.add(appConfig.displayOptions, 'skyboxShow').onFinishChange(fp.updateDayOrNight);
-            displayFolder.add(appConfig.displayOptions, 'chartShow').onFinishChange(fp.updateGraph);
-            displayFolder.add(appConfig.displayOptions, 'pathsShow').onFinishChange(pathNetwork.updatePathsState);
-            displayFolder.add(appConfig.displayOptions, 'terrainShow').onFinishChange(terrain.updateTerrainPlane);
-            displayFolder.add(appConfig.displayOptions, 'coloriseAgentsByHealth');
-            displayFolder.add(appConfig.displayOptions, 'firstPersonView').onFinishChange(fp.resetControls);
-            displayFolder.add(appConfig.displayOptions, 'topDownView').onFinishChange(fp.resetControls);
+            var displayFolder = gui.addFolder("Display Options");
+            displayFolder.add(appConfig.displayOptions, "buildingsShow").onFinishChange(fp.updateBuildingState);
+            displayFolder.add(appConfig.displayOptions, "roadsShow").onFinishChange(fp.updateRoadState);
+            displayFolder.add(appConfig.displayOptions, "waterShow").onFinishChange(fp.updateWaterState);
+            displayFolder.add(appConfig.displayOptions, "networkShow").onFinishChange(fp.updateNetworkState);
+            displayFolder.add(appConfig.displayOptions, "networkCurve");
+            displayFolder.add(appConfig.displayOptions, "networkCurvePoints", 4, 20).step(1);
+            displayFolder.add(appConfig.displayOptions, "patchesUpdate");
+            displayFolder.add(appConfig.displayOptions, "patchesShow").onFinishChange(fp.updatePatchesState);
+            displayFolder.add(appConfig.displayOptions, "patchesUseShader");
+            displayFolder.add(appConfig.displayOptions, "trailsShow").onFinishChange(fp.updateTrailState);
+            displayFolder.add(appConfig.displayOptions, "trailsShowAsLines").onFinishChange(fp.updateTrailState);
+            displayFolder.add(appConfig.displayOptions, "trailLength", 1, 10000).step(1);
+            displayFolder.add(appConfig.displayOptions, "cursorShow").onFinishChange(fp.updateCursorState);
+            displayFolder.add(appConfig.displayOptions, "statsShow").onFinishChange(fp.updateStatsState);
+            displayFolder.add(appConfig.displayOptions, "hudShow").onFinishChange(fp.updateHUDState);
+            displayFolder.add(appConfig.displayOptions, "wireframeShow").onFinishChange(fp.updateWireframeState);
+            displayFolder.add(appConfig.displayOptions, "dayShow").onFinishChange(fp.updateDayOrNight);
+            displayFolder.add(appConfig.displayOptions, "skyboxShow").onFinishChange(fp.updateDayOrNight);
+            displayFolder.add(appConfig.displayOptions, "chartShow").onFinishChange(fp.updateGraph);
+            displayFolder.add(appConfig.displayOptions, "pathsShow").onFinishChange(pathNetwork.updatePathsState);
+            displayFolder.add(appConfig.displayOptions, "terrainShow").onFinishChange(terrain.updateTerrainPlane);
+            displayFolder.add(appConfig.displayOptions, "coloriseAgentsByHealth");
+            displayFolder.add(appConfig.displayOptions, "firstPersonView").onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "topDownView").onFinishChange(fp.resetControls);
 
-            var colorFolder = gui.addFolder('Color Options');
+            var colorFolder = gui.addFolder("Color Options");
 
-            var colorTerrainFolder = colorFolder.addFolder('Terrain Colors');
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainSea').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainSea').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainLowland1').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainLowland1').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainLowland2').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainLowland2').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainMidland').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainMidland').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorDayTerrainHighland').onChange(terrain.loadTerrain);
-            colorTerrainFolder.addColor(appConfig.colorOptions, 'colorNightTerrainHighland').onChange(terrain.loadTerrain);
-            var colorBuildingFolder = colorFolder.addFolder('Building Colors');
-            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorDayBuildingFill');
-            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorNightBuildingFill');
-            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorDayBuildingLine');
-            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorNightBuildingLine');
-            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorDayBuildingWindow');
-            colorBuildingFolder.addColor(appConfig.colorOptions, 'colorNightBuildingWindow');
-            var colorGraphFolder = colorFolder.addFolder('Graph Colors');
-            colorGraphFolder.addColor(appConfig.colorOptions, 'colorGraphPopulation').onChange(fp.updateChartColors);
-            colorGraphFolder.addColor(appConfig.colorOptions, 'colorGraphHealth').onChange(fp.updateChartColors);
-            colorGraphFolder.addColor(appConfig.colorOptions, 'colorGraphPatchValues').onChange(fp.updateChartColors);
-            var colorOtherFolder = colorFolder.addFolder('Other Colors');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayBackground');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightBackground');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayRoad');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightRoad');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayAgent');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightAgent');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayNetwork');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightNetwork');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayNetwork');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightNetwork');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorDayTrail');
-            colorOtherFolder.addColor(appConfig.colorOptions, 'colorNightTrail');
+            var colorTerrainFolder = colorFolder.addFolder("Terrain Colors");
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorDayTerrainSea").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorNightTerrainSea").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorDayTerrainLowland1").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorNightTerrainLowland1").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorDayTerrainLowland2").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorNightTerrainLowland2").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorDayTerrainMidland").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorNightTerrainMidland").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorDayTerrainHighland").onChange(terrain.loadTerrain);
+            colorTerrainFolder.addColor(appConfig.colorOptions, "colorNightTerrainHighland").onChange(terrain.loadTerrain);
+            var colorBuildingFolder = colorFolder.addFolder("Building Colors");
+            colorBuildingFolder.addColor(appConfig.colorOptions, "colorDayBuildingFill");
+            colorBuildingFolder.addColor(appConfig.colorOptions, "colorNightBuildingFill");
+            colorBuildingFolder.addColor(appConfig.colorOptions, "colorDayBuildingLine");
+            colorBuildingFolder.addColor(appConfig.colorOptions, "colorNightBuildingLine");
+            colorBuildingFolder.addColor(appConfig.colorOptions, "colorDayBuildingWindow");
+            colorBuildingFolder.addColor(appConfig.colorOptions, "colorNightBuildingWindow");
+            var colorGraphFolder = colorFolder.addFolder("Graph Colors");
+            colorGraphFolder.addColor(appConfig.colorOptions, "colorGraphPopulation").onChange(fp.updateChartColors);
+            colorGraphFolder.addColor(appConfig.colorOptions, "colorGraphHealth").onChange(fp.updateChartColors);
+            colorGraphFolder.addColor(appConfig.colorOptions, "colorGraphPatchValues").onChange(fp.updateChartColors);
+            var colorOtherFolder = colorFolder.addFolder("Other Colors");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorDayBackground");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorNightBackground");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorDayRoad");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorNightRoad");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorDayAgent");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorNightAgent");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorDayNetwork");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorNightNetwork");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorDayNetwork");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorNightNetwork");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorDayTrail");
+            colorOtherFolder.addColor(appConfig.colorOptions, "colorNightTrail");
         },
 
         buildColorVector: function(color) {
@@ -2661,7 +2695,9 @@ define([
             }
             else {
                 bc = parseCSSColor(color);
-                r = bc[0], g = bc[1], b = bc[2];
+                r = bc[0];
+                g = bc[1];
+                b = bc[2];
             }
             var vec = new THREE.Vector3(r / 255.0, g / 255.0, b / 255.0);
             return vec;
@@ -2684,9 +2720,9 @@ define([
         },
 
         updateChartColors: function() {
-            var colorPop = '#' + new THREE.Color(appConfig.colorOptions.colorGraphPopulation).getHexString(),
-                colorHealth = '#' + new THREE.Color(appConfig.colorOptions.colorGraphHealth).getHexString(),
-                colorPatches = '#' + new THREE.Color(appConfig.colorOptions.colorGraphPatchValues).getHexString();
+            var colorPop = "#" + new THREE.Color(appConfig.colorOptions.colorGraphPopulation).getHexString(),
+                colorHealth = "#" + new THREE.Color(appConfig.colorOptions.colorGraphHealth).getHexString(),
+                colorPatches = "#" + new THREE.Color(appConfig.colorOptions.colorGraphPatchValues).getHexString();
             _.extend( chart.seriesSet[0].options, { strokeStyle: colorPop } );
             _.extend( chart.seriesSet[1].options, { strokeStyle: colorHealth } );
             _.extend( chart.seriesSet[2].options, { strokeStyle: colorPatches } );
@@ -2707,7 +2743,7 @@ define([
             if ( !_.isUndefined(obj.children) ) {
                 obj.children.forEach( function(child) {
                     count += this.vertexCount(child);
-                })
+                });
             }
             return count;
         },
@@ -2801,8 +2837,8 @@ define([
             renderer.domElement.style.zIndex = 2;
 
             // We add the event listener to: function the domElement
-            renderer.domElement.addEventListener( 'mousemove', fp.onMouseMove );
-            renderer.domElement.addEventListener( 'mouseup', fp.onMouseUp );
+            renderer.domElement.addEventListener( "mousemove", fp.onMouseMove );
+            renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
         },
 
         setupLighting: function() {
@@ -2839,8 +2875,8 @@ define([
                 depth: 1500,
                 param: 4,
                 filterparam: 1
-            }
-            var waterNormals = new THREE.ImageUtils.loadTexture( 'textures/waternormals.jpg' );
+            };
+            var waterNormals = new THREE.ImageUtils.loadTexture( "textures/waternormals.jpg" );
             waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
             water = new THREE.Water( renderer, camera, scene, {
                 textureWidth: 512,
@@ -2870,21 +2906,20 @@ define([
             cubeMap.format = THREE.RGBFormat;
             cubeMap.flipY = false;
             var loader = new THREE.ImageLoader();
-            var skies = [
-                ['textures/skyboxsun25degtest.png', 1024, 0]
-                ,['textures/skyboxsun5deg.png', 1024, 0]
-                ,['textures/skyboxsun5deg2.png', 1024, 0]
-                ,['textures/skyboxsun45deg.png', 1024, 0]
-            ] // Skies courtesy of http://reije081.home.xs4all.nl/skyboxes/
-            var skyI = Math.floor(Math.random() * skies.length)
+            var skies = [  ["textures/skyboxsun25degtest.png", 1024, 0],
+                            ["textures/skyboxsun5deg.png", 1024, 0],
+                            ["textures/skyboxsun5deg2.png", 1024, 0],
+                            ["textures/skyboxsun45deg.png", 1024, 0]
+            ]; // Skies courtesy of http://reije081.home.xs4all.nl/skyboxes/
+            var skyI = Math.floor(Math.random() * skies.length);
             loader.load( skies[skyI][0], function ( image ) {
                 var getSide = function ( x, y ) {
                     var size = skies[skyI][1];
-                    var canvas = document.createElement( 'canvas' );
+                    var canvas = document.createElement( "canvas" );
                     canvas.width = size;
                     canvas.height = size;
 
-                    var context = canvas.getContext( '2d' );
+                    var context = canvas.getContext( "2d" );
                     context.drawImage( image, - x * size, - y * size );
                     return canvas;
                 };
@@ -2897,8 +2932,8 @@ define([
                 cubeMap.needsUpdate = true;
             } );
 
-            var cubeShader = THREE.ShaderLib['cube'];
-            cubeShader.uniforms['tCube'].value = cubeMap;
+            var cubeShader = THREE.ShaderLib["cube"];
+            cubeShader.uniforms["tCube"].value = cubeMap;
 
             var skyBoxMaterial = new THREE.ShaderMaterial( {
                 fragmentShader: cubeShader.fragmentShader,
@@ -2926,7 +2961,7 @@ define([
                 fp.doGUI( config );
             }
             else if ( !_.isUndefined( $ ) && !_.isUndefined( $.urlParam ) ) {
-                var recipe = $.urlParam('recipe'), recipeData = $.urlParam('recipeData');
+                var recipe = $.urlParam("recipe"), recipeData = $.urlParam("recipeData");
                 if ( !_.isUndefined( recipeData ) ) {
                     fp.doGUI( $.parseJSON( decodeURIComponent( recipeData ) ) );
                 }
@@ -2944,7 +2979,7 @@ define([
 
 
         init: function( config, sim, callback ) {
-            container = $( '#container' )[0];
+            container = $( "#container" )[0];
             scene = new THREE.Scene();
             fp.sim = sim || fp.simDefault();
             fp.setupSimObjects();
@@ -2958,7 +2993,7 @@ define([
             fp.setOutputHUD();
             fp.Chart.setupChart();
             fp.updateStatsState(); // Add stats
-            window.addEventListener( 'resize', fp.onWindowResize, false );
+            window.addEventListener( "resize", fp.onWindowResize, false );
             terrain.loadTerrain( callback ); // Load the terrain asynchronously
         },
 
@@ -2982,7 +3017,7 @@ define([
         },
 
         simDefault: function() {
-            return new function() {
+            return function() {
                 return {
                     counter: 0,
                     setup: function() {
@@ -2991,7 +3026,7 @@ define([
                     tick: function() {
                         // console.log("Default sim tick: " + (++ this.counter));
                     }
-                }
+                };
             };
         },
 
@@ -3058,7 +3093,7 @@ define([
             if ( !fp.AppState.runSimulation )
                 return;
             timescale.frameCounter++;
-            if ( timescale.frameCounter % timescale.framesToYear == 0) {
+            if ( timescale.frameCounter % timescale.framesToYear === 0) {
                 if ( timescale.currentYear <  timescale.endYear ) {
                     timescale.currentYear++;
                     fp.setOutputHUD();
@@ -3130,7 +3165,7 @@ define([
                 if (cell.z <= 0)
                     seaLevelNeighbours++;
                 totalNeighbours++;
-            })
+            });
             return seaLevelNeighbours / totalNeighbours;
         },
 
@@ -3139,10 +3174,10 @@ define([
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
             fp.surroundingCells(index).forEach(function(cell) {
-                if (fp.buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] != null)
+                if (fp.buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] !== null)
                     buildingNeighbours++;
                 totalNeighbours++;
-            })
+            });
             return buildingNeighbours / totalNeighbours;
         },
 
@@ -3151,7 +3186,7 @@ define([
          We count in 8 directions, to maxDepth
          */
         checkProximiteBuildingHeight: function(index) {
-            if ( fp.buildingNetwork.buildings.length == 0 )
+            if ( fp.buildingNetwork.buildings.length === 0 )
                 return 0;
 
             var surrounding = fp.surroundingCells(index);
@@ -3168,11 +3203,11 @@ define([
             var localBuildings = [];
             for (var j = 0; j < surrounding.length; j++) {
                 var cell = surrounding[j];
-                if (cell != null) {
+                if (cell !== null) {
                     // Also zero?
                     var key = fp.getIndex(cell.x, cell.y);
                     var building = fp.buildingNetwork.buildingHash[key];
-                    if (building != null) {
+                    if (building !== null) {
                         localBuildings.push(building);
                     }
                 }
@@ -3437,30 +3472,30 @@ define([
         },
 
         updateStatsState: function() {
-            if (appConfig.displayOptions.statsShow && stats == null) {
+            if (appConfig.displayOptions.statsShow && stats === null) {
                 stats = new Stats();
-                stats.domElement.style.position = 'absolute';
-                stats.domElement.style.top = '0px';
+                stats.domElement.style.position = "absolute";
+                stats.domElement.style.top = "0px";
                 container.appendChild( stats.domElement );
             }
-            $('#stats').toggle(appConfig.displayOptions.statsShow);
+            $("#stats").toggle(appConfig.displayOptions.statsShow);
         },
 
         updateHUDState: function() {
-            $('#hudDiv').toggle(appConfig.displayOptions.hudShow);
+            $("#hudDiv").toggle(appConfig.displayOptions.hudShow);
         },
 
         updateWireframeState: function() {
             terrain.simpleTerrainMaterial.wireframe = appConfig.displayOptions.wireframeShow;
             terrain.richTerrainMaterial.wireframe = appConfig.displayOptions.wireframeShow;
             fp.buildingNetwork.buildings.forEach(function(building) {
-                building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayOptions.wireframeShow; })
-            })
+                building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayOptions.wireframeShow; });
+            });
         },
 
         updateDayOrNight: function() {
             var colorBackground, colorBuilding, colorRoad, colorAgent, colorTrail,
-                colorBuildingFill, colorBuildingLine, colorBuildingLine;
+                colorBuildingFill, colorBuildingLine, colorBuildingWindow;
             if (appConfig.displayOptions.dayShow) {
                 colorBackground = appConfig.colorOptions.colorDayBackground;
                 colorRoad = appConfig.colorOptions.colorDayRoad;
@@ -3496,14 +3531,14 @@ define([
                         floor.material.uniforms.lineColor.value = fp.buildColorVector( colorBuildingLine );
                         floor.material.uniforms.windowColor.value = fp.buildColorVector( colorBuildingWindow );
                         floor.material.needsUpdate = true; // important!
-                    })
+                    });
                 });
             }
             if (!_.isUndefined(fp.roadNetwork.networkMesh)) {
                 fp.roadNetwork.networkMesh.children.forEach(function(road) {
                     road.material.color = new THREE.Color( colorRoad );
                     road.material.colorsNeedUpdate = true;
-                })
+                });
             }
             if (!_.isUndefined(agentNetwork.networkMesh)) {
                 agentNetwork.networkMesh.material.color = new THREE.Color( colorNetwork );
@@ -3514,7 +3549,7 @@ define([
                 trailNetwork.globalTrailLine.material.colorsNeedUpdate = true;
             }
             if (!_.isUndefined( agentNetwork.particles ))
-                agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent })
+                agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent; });
         },
 
         ShaderUtils: {
@@ -3801,7 +3836,7 @@ define([
 
                 "}"
 
-                ].join("\n")
+                ].join("\n");
 
                 return vertexShader;
             },
@@ -3867,7 +3902,7 @@ define([
 
                 "}"
 
-                ].join("\n")
+                ].join("\n");
 
                 return fragmentShader;
             },
