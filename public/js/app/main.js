@@ -1,4 +1,4 @@
-define(["jquery", "fp"], function($, fp) {
+define(["fp"], function(fp) {
     fp.init( );
 });
 

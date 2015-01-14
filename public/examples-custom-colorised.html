@@ -16,8 +16,8 @@
                 "Mirror": ["three"],
                 "WaterShader": ["three"],
                 "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
-                "js/controls/TrackballControls.js": {  deps: ["three"], exports: "TrackballControls" },
-                "js/controls/PointerLockControls.js": {  deps: ["three"], exports: "PointerLockControls" },
+                "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
             }
         })
         requirejs([
@@ -31,9 +31,9 @@
                 "Mirror",
                 "WaterShader",
                 "TerrainLoader",
-                "js/THREEx.KeyboardState.js",
-                "js/controls/TrackballControls.js",
-                "js/controls/PointerLockControls.js",
+                "THREEx.KeyboardState",
+                "TrackballControls",
+                "PointerLockControls",
             ],
             function() {
                 var config = {
@@ -41,6 +41,11 @@
                   "remembered": {
                     "Default": {
                       "1": { "buildingsShow": false },
+                        "2": {
+                        },
+                        "3": {
+                            "create": false
+                        },
                       "4": {
                             "terrainShow": true,
                             "dayShow": true,

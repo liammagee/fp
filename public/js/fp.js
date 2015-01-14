@@ -11,12 +11,14 @@ define([
     "Mirror",
     "WaterShader",
     "TerrainLoader",
-    "js/THREEx.KeyboardState.js",
-    "js/controls/TrackballControls.js",
-    "js/controls/PointerLockControls.js",
+    "THREEx.KeyboardState",
+    "TrackballControls",
+    "PointerLockControls",
     ], function($, THREE, _, astar) {
 
-    /** Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/ */
+    /**
+     * Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/
+     */
     $.urlParam = function(name){
         var results = new RegExp("[\\?&]" + name + "=([^&#]*)").exec(window.location.href);
         if ( results === null )
@@ -25,7 +27,8 @@ define([
            return results[1] || 0;
     };
 
-    var scene = null,
+    var container = null,
+        scene = null,
         camera = null,
         renderer = null,    // Three.js
         controls = null,
@@ -34,7 +37,6 @@ define([
         stats = null,
         gui = null,
         chart = null,
-        projector = new THREE.Projector(), // Mouse event variables
         mouseVector = new THREE.Vector3(),
         mouse = { x: 0, y: 0, z: 1 },
         ray = new THREE.Raycaster( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) ),
@@ -52,14 +54,14 @@ define([
         cursor = null,
         sim = null;
 
-    /** 
-     * Overall Fierce Planet object. 
+    /**
+     * Overall Fierce Planet object.
      * @namespace fp
      */
     var fp = {
 
-        /** 
-         * Represents a network of agents. Also provides factory and utility methods. 
+        /**
+         * Represents a network of agents. Also provides factory and utility methods.
          * @constructor
          * @memeberof fp
          * @inner
@@ -67,8 +69,8 @@ define([
         AgentNetwork: function() {
             this.agents = [];
             this.networkMesh = null;
-            this.colorNetwork = null;
             this.particles = null;
+            this.agentParticleSystemAttributes = null;
 
             /** Creates an initial set of agents */
             this.createInitialAgentPopulation = function() {
@@ -237,7 +239,7 @@ define([
 
             this.friendNetworkMaterial = function() {
                 return new THREE.LineBasicMaterial({
-                    color: colorNetwork,
+                    color: appConfig.colorOptions.colorNightNetwork,
                     linewidth: 1,
                     opacity: 0.75,
                     blending: THREE.AdditiveBlending,
@@ -280,9 +282,9 @@ define([
             };
 
             this.updateAgentShader = function() {
-                if (typeof(agentParticleSystemAttributes) !== "undefined" &&
-                    typeof(agentParticleSystemAttributes.color) !== "undefined" &&
-                    agentParticleSystemAttributes.color.value.length > 0) {
+                if ( !_.isNull(this.agentParticleSystemAttributes) &&
+                    typeof(this.agentParticleSystemAttributes.color) !== "undefined" &&
+                    this.agentParticleSystemAttributes.color.value.length > 0) {
                     for( var i = 0; i < agentNetwork.agents.length; i ++ ) {
                         if (appConfig.displayOptions.coloriseAgentsByHealth) {
                             var agent = agentNetwork.agents[i];
@@ -294,15 +296,15 @@ define([
                             b *= (health / 100.0);
                             r = (100 - health) / 100.0;
                             var col = new THREE.Color(r, g, b);
-                            agentParticleSystemAttributes.alpha.value[ i ] = 0.75;
-                            agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(col);
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = 0.75;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(col);
                         }
                         else {
-                            agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
-                            agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(agentNetwork.agents[i].color);
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(agentNetwork.agents[i].color);
                         }
                     }
-                    agentParticleSystemAttributes.color.needsUpdate = true; // important!
+                    this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
                 }
             };
 
@@ -311,19 +313,19 @@ define([
                 agentNetwork.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
-                agentParticleSystemAttributes = {
+                this.agentParticleSystemAttributes = {
                     alpha: { type: "f", value: [] },
                     color: { type: "c", value: [] }
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
-                    agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
-                    agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agentNetwork.agents[i].color );
+                    this.agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
+                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agentNetwork.agents[i].color );
                 }
 
                 // point cloud material
                 var agentShaderMaterial = agentNetwork.particles.material;
-                agentShaderMaterial.attributes = agentParticleSystemAttributes;
+                agentShaderMaterial.attributes = this.agentParticleSystemAttributes;
                 scene.remove( agentNetwork.particles );
                 agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
                 agentNetwork.particles.dynamic = true;
@@ -336,7 +338,7 @@ define([
                 agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
-                var agentParticleSystemAttributes = {
+                this.agentParticleSystemAttributes = {
                     alpha: { type: "f", value: [] },
                     color: { type: "c", value: [] }
                 };
@@ -352,15 +354,15 @@ define([
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
-                    agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
-                    agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agentNetwork.agents[i].color );
+                    this.agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
+                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agentNetwork.agents[i].color );
                 }
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
                     size: appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
-                    attributes: agentParticleSystemAttributes,
+                    attributes: this.agentParticleSystemAttributes,
                     vertexShader:   fp.ShaderUtils.agentVertexShader(),
                     fragmentShader: fp.ShaderUtils.agentFragmentShader(),
                     sizeAttenuation: true,
@@ -431,8 +433,8 @@ define([
             }
         },
 
-        /** 
-         * Represents a network of buildings. Also provides factory and utility methods. 
+        /**
+         * Represents a network of buildings. Also provides factory and utility methods.
          * @constructor
          */
         BuildingNetwork: function() {
@@ -479,7 +481,7 @@ define([
                 }
                 return points;
             };
-            
+
             this.get2dPointsForBoundingBox = function(building) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
@@ -492,7 +494,7 @@ define([
                 }
                 return points;
             };
-            
+
             this.get2dIndexPoints = function(building) {
                 return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
             };
@@ -514,7 +516,7 @@ define([
                 var polygon = polygonizer.getPolygons().toArray()[0];
                 return polygon.buffer(0);
             };
-            
+
             this.collidesWithOtherBuildings = function(building) {
                 // Quick fix
                 if (this.buildingHash[fp.getIndex(building.lod.position.x, building.lod.position.z)])
@@ -530,9 +532,9 @@ define([
                 }
                 return false; // Be optimistic
             };
-            
+
             this.collidesWithRoads = function(building) {
-                if ( _.isUndefined( fp.roadNetwork.networkGeometry ) )
+                if ( _.isNull( fp.roadNetwork.networkGeometry ) )
                     return false;
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
                 return fp.roadNetwork.networkGeometry.crosses(buildingGeometry);
@@ -549,7 +551,10 @@ define([
                 }
             };
 
-            //Some of the logic derived from: http://learningthreejs.com/blog/2013/08/02/how-to-do-a-procedural-city-in-100lines/
+            /**
+             * Creates a new building, given a position and dimension
+             * Some of the logic derived from: http://learningthreejs.com/blog/2013/08/02/how-to-do-a-procedural-city-in-100lines/
+             */
             this.createBuilding = function(position, dimensions) {
                 var building = new fp.Building();
 
@@ -588,11 +593,10 @@ define([
 
                 // Add the building to caches
                 fp.buildingNetwork.buildings.push(building);
+                fp.buildingNetwork.buildingHash[fp.getIndex(position.x, position.z)] = building;
                 // Add all ground floor vertices to hash, as crude collision detection
                 fp.buildingNetwork.networkMesh.add( building.lod );
                 fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
-                collidableMeshList.push( building.highResMeshContainer );
-                collidableMeshList.push( building.highResMeshContainer.children[0] );
                 return building;
             };
         },
@@ -705,7 +709,7 @@ define([
                 fp.roadNetwork.networkMesh.add(roadMesh);
                 thisIndexValues.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; });
                 var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
-                if ( _.isUndefined(this.networkGeometry) )
+                if ( _.isNull(this.networkGeometry) )
                     this.networkGeometry = new jsts.geom.LineString(jstsCoords);
                 else {
                     try {
@@ -728,8 +732,8 @@ define([
                 var points = polygon.shell.points;
                 var area = 0;           // Accumulates area in the loop
                 var j = points.length - 1;  // The last vertex is the 'previous' one to the first
-                for ( var i = 0; i < points.length; i++ ) { 
-                    area = area + (points[j].x + points[i].x) * (points[j].y - points[i].y); 
+                for ( var i = 0; i < points.length; i++ ) {
+                    area = area + (points[j].x + points[i].x) * (points[j].y - points[i].y);
                     j = i;  //j is previous vertex to i
                 }
                 return area / 2;
@@ -740,8 +744,8 @@ define([
             };
         },
 
-        /** 
-         * Represents a network of patches. Also provides factory and utility methods. 
+        /**
+         * Represents a network of patches. Also provides factory and utility methods.
          * @constructor
          */
         PatchNetwork: function() {
@@ -874,8 +878,8 @@ define([
             };
         },
 
-        /** 
-         * Represents a network of trails. Also provides factory and utility methods. 
+        /**
+         * Represents a network of trails. Also provides factory and utility methods.
          * @constructor
          */
         TrailNetwork: function() {
@@ -886,7 +890,7 @@ define([
                 if ( !fp.AppState.runSimulation )
                     return;
 
-                if ( appConfig.displayOptions.trailsShow && 
+                if ( appConfig.displayOptions.trailsShow &&
                     !appConfig.displayOptions.trailsShowAsLines) {
                     var weightMax = _.chain(trailNetwork.trails).values().max().value();
                     for (var j in trailNetwork.trails) {
@@ -988,8 +992,8 @@ define([
         },
 
 
-        /** 
-         * Represents a network of paths. Also provides factory and utility methods. 
+        /**
+         * Represents a network of paths. Also provides factory and utility methods.
          * @constructor
          */
         PathNetwork: function() {
@@ -1025,7 +1029,7 @@ define([
                 var x = index % terrain.gridPoints, y = Math.floor(index / terrain.gridPoints);
                 return this.graphAStar.grid[x][y];
             };
-            
+
             this.findPathHome = function(agent) {
                 if (! agent.home)
                     return [];
@@ -1034,7 +1038,7 @@ define([
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: opts.closest } );
                 return path;
             };
-            
+
             this.drawPathHome = function(agent) {
                 var path = this.findPathHome(agent);
                 if ( path.length < 2 ) // Need 2 points for a line
@@ -1053,7 +1057,7 @@ define([
                 this.pathCache[agent] = this.networkMesh.children.length - 1;
                 return path;
             };
-            
+
             this.drawPathHomeForEveryone = function() {
                 this.children.forEach( function(child) { this.networkMesh.remove(child); } );
                 var ahaway = _.select(agentNetwork.agents, function(agent) {
@@ -1063,7 +1067,7 @@ define([
                     return v && v.length > 0 && agent.home !== null && agent.position != agent.home.lod.position;
                 });
             };
-            
+
             this.updatePathsState = function() {
                 if ( !appConfig.displayOptions.pathsShow )
                     scene.remove( pathNetwork.networkMesh );
@@ -1074,7 +1078,7 @@ define([
 
         TERRAIN_MAPS: [ "assets/syd2.bin", "assets/mel2.bin" ],
 
-        /** 
+        /**
          * Represents the terrain of the world.
          * @constructor
          */
@@ -1240,7 +1244,7 @@ define([
 
         },
 
-        /** 
+        /**
          * Represents the time scale used by the world.
          * @constructor
          */
@@ -1256,7 +1260,7 @@ define([
             this.frameCounter = 0;
         },
 
-        /** 
+        /**
          * Represents a mobile and alive agent
          * @constructor
          */
@@ -1524,6 +1528,8 @@ define([
             this.generateDimensions = function() {
 
             };
+
+
             this.buildHome = function() {
                 if (this.home !== null)
                     return false;
@@ -1561,15 +1567,19 @@ define([
                 var buildingHeightProximate = fp.checkProximiteBuildingHeight(index),
                     buildingHeightSig = (1 - appConfig.buildingOptions.buildingHeight);
 
-                if (roadsProximate > roadsSig ||
-                    waterProximate > waterSig ||
-                        buildingsProximate > buildingSig ||
-                        buildingHeightProximate > buildingHeightSig) {
+                if ( roadsProximate > roadsSig ||
+                     waterProximate > waterSig ||
+                     buildingsProximate > buildingSig ||
+                     buildingHeightProximate > buildingHeightSig ) {
                     this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
                     return ( !_.isUndefined(this.home) );
                 }
                 return false;
             };
+
+            /**
+             * Builds a road
+             */
             this.buildRoad = function() {
                 var xOrig = this.position.x,
                     zOrig = this.position.z,
@@ -1629,7 +1639,8 @@ define([
                     xr = Math.cos(angle90);
                     zr = Math.sin(angle90);
                 }
-                var totalLen = lenMinimum + (lenMaximum - lenMinimum) *
+                var totalLen = lenMinimum +
+                                (lenMaximum - lenMinimum) *
                                 ( 1 - jStat.exponential.cdf(lenFactor, appConfig.roadOptions.lenDistributionFactor) ),
                     xExtent = xr * totalLen,
                     zExtent = zr * totalLen,
@@ -1664,7 +1675,7 @@ define([
             this.pathPosition = 0;
         },
 
-        /** 
+        /**
          * Represents a building with a position, dimesions, and one or more floors.
          * @constructor
          */
@@ -1725,7 +1736,7 @@ define([
                 this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
                 this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
             }
-            
+
 
             this.setupBuilding = function(dimensions) {
                 this.lod = new THREE.LOD();
@@ -2148,11 +2159,11 @@ define([
             };
         },
 
-        /** 
+        /**
          * Represents a road or path between two points.
          * @constructor
          */
-        Road: function() { 
+        Road: function() {
             this.mesh = null;
             this.position = null;
             this.setupRoad = function(_x, _y, _z) {
@@ -2164,7 +2175,7 @@ define([
             this.update = function() { };
         },
 
-        /** 
+        /**
          * Represents a square block of the terrain. It has a value that can be used to represent some property of interest.
          * @constructor
          */
@@ -2202,7 +2213,7 @@ define([
             /**
              * World options.
              * @namespace fp~AppConfig~worldOptions
-             */ 
+             */
             this.worldOptions = {
                 /**
                  * Maximum depth to search for land.
@@ -2213,7 +2224,7 @@ define([
             };
             /**
              * Agent options.
-             */ 
+             */
             this.agentOptions = {
                 initialPopulation: 100,
                 initialExtent: 1000,
@@ -2259,7 +2270,10 @@ define([
                 terrainShow: true,
                 coloriseAgentsByHealth: true,
                 firstPersonView: false,
-                topDownView: false
+                cameraOverride: false,
+                cameraX: 0,
+                cameraY: 200,
+                cameraZ: 800,
             };
             this.roadOptions = {
                 create: true,
@@ -2269,7 +2283,7 @@ define([
                 roadRadiusSegments: 10,
                 roadSegments: 10,
                 initialRadius: 100,
-                probability: 100,
+                probability: 1,
                 lenMinimum: 100,
                 lenMaximum: 2000,
                 lenDistributionFactor: 3,
@@ -2289,7 +2303,7 @@ define([
                 // Influences
                 roads: 0.0,
                 water: 0.4,
-                otherBuildings: 0.75,
+                otherBuildings: 0.9,
                 buildingHeight: 0.1,
 
                 // Building form
@@ -2415,10 +2429,9 @@ define([
             this.Reset = function() {
                 scene.remove(  agentNetwork.particles  );
                 agentNetwork.agents = [];
-                agentParticleSystemAttributes = undefined;
+                agentNetwork.agentParticleSystemAttributes = null;
                 fp.buildingNetwork.buildings = [];
                 fp.buildingNetwork.buildingHash = {};
-                collidableMeshList = [];
                 fp.roadNetwork.indexValues = [];
                 fp.roadNetwork.roads = {};
 
@@ -2555,7 +2568,6 @@ define([
                 chartCanvas.setAttribute("height", "100");
                 chartCanvas.setAttribute("style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  ");
                 container.insertBefore(chartCanvas, container.firstChild);
-                var colorNetwork = appConfig.colorOptions.colorNightNetwork;
                 chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba(0, 0, 255, 0.2)", lineWidth: 4 } );
                 chart.addTimeSeries(agentHealthSeries, { lineWidth: 4 });
                 chart.addTimeSeries(patchValuesSeries, { lineWidth: 4 });
@@ -2717,7 +2729,10 @@ define([
             displayFolder.add(appConfig.displayOptions, "terrainShow").onFinishChange(terrain.updateTerrainPlane);
             displayFolder.add(appConfig.displayOptions, "coloriseAgentsByHealth");
             displayFolder.add(appConfig.displayOptions, "firstPersonView").onFinishChange(fp.resetControls);
-            displayFolder.add(appConfig.displayOptions, "topDownView").onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraOverride").onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraX").onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraY").onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraZ").onFinishChange(fp.resetControls);
 
             var colorFolder = gui.addFolder("Color Options");
 
@@ -2840,10 +2855,10 @@ define([
 
         setupCamera: function() {
             camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
-            if ( appConfig.displayOptions.topDownView ) {
-                camera.position.x = 0;
-                camera.position.y = 1000 * appConfig.terrainOptions.multiplier;
-                camera.position.z = 1;
+            if ( appConfig.displayOptions.cameraOverride ) {
+                camera.position.x = appConfig.displayOptions.cameraX;
+                camera.position.y = appConfig.displayOptions.cameraY * appConfig.terrainOptions.multiplier;
+                camera.position.z = appConfig.displayOptions.cameraZ;
             }
             else if ( appConfig.displayOptions.firstPersonView ) {
                 camera.position.x = 0;
@@ -2858,10 +2873,7 @@ define([
         },
 
         setupControls: function() {
-            if ( appConfig.displayOptions.topDownView ) {
-                controls = new THREE.TrackballControls( camera, container );
-            }
-            else if ( appConfig.displayOptions.firstPersonView ) {
+            if ( appConfig.displayOptions.firstPersonView ) {
                 controls = new THREE.PointerLockControls( camera );
                 scene.add( controls.getObject() );
                 controls.enabled = true;
@@ -2934,7 +2946,7 @@ define([
             dirLight.shadowCameraBottom = -d;
             dirLight.shadowBias = -0.0001;
             //dirLight.shadowCameraVisible = true; // for debugging
-            // scene.add( dirLight );
+            scene.add( dirLight );
         },
 
         setupWater: function() {
@@ -3089,16 +3101,14 @@ define([
         },
 
         simDefault: function() {
-            return function() {
-                return {
-                    counter: 0,
-                    setup: function() {
-                        // console.log("Default sim set up");
-                    },
-                    tick: function() {
-                        // console.log("Default sim tick: " + (++ this.counter));
-                    }
-                };
+            return {
+                counter: 0,
+                setup: function() {
+                    // console.log("Default sim set up");
+                },
+                tick: function() {
+                    // console.log("Default sim tick: " + (++ this.counter));
+                }
             };
         },
 
@@ -3246,7 +3256,7 @@ define([
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
             fp.surroundingCells(index).forEach(function(cell) {
-                if (fp.buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] !== null)
+                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] ) )
                     buildingNeighbours++;
                 totalNeighbours++;
             });
@@ -3279,7 +3289,7 @@ define([
                     // Also zero?
                     var key = fp.getIndex(cell.x, cell.y);
                     var building = fp.buildingNetwork.buildingHash[key];
-                    if (building !== null) {
+                    if ( !_.isUndefined( building ) ) {
                         localBuildings.push(building);
                     }
                 }
@@ -3566,7 +3576,8 @@ define([
         },
 
         updateDayOrNight: function() {
-            var colorBackground, colorBuilding, colorRoad, colorAgent, colorTrail,
+            var colorBackground, colorBuilding, colorRoad,
+                colorAgent, colorNetwork, colorTrail,
                 colorBuildingFill, colorBuildingLine, colorBuildingWindow;
             if (appConfig.displayOptions.dayShow) {
                 colorBackground = appConfig.colorOptions.colorDayBackground;
@@ -3606,21 +3617,21 @@ define([
                     });
                 });
             }
-            if (!_.isUndefined(fp.roadNetwork.networkMesh)) {
+            if (!_.isNull(fp.roadNetwork.networkMesh)) {
                 fp.roadNetwork.networkMesh.children.forEach(function(road) {
                     road.material.color = new THREE.Color( colorRoad );
                     road.material.colorsNeedUpdate = true;
                 });
             }
-            if (!_.isUndefined(agentNetwork.networkMesh)) {
+            if (!_.isNull(agentNetwork.networkMesh)) {
                 agentNetwork.networkMesh.material.color = new THREE.Color( colorNetwork );
                 agentNetwork.networkMesh.material.colorsNeedUpdate = true;
             }
-            if (!_.isUndefined(trailNetwork.globalTrailLine)) {
+            if (!_.isNull(trailNetwork.globalTrailLine)) {
                 trailNetwork.globalTrailLine.material.color = new THREE.Color( colorTrail );
                 trailNetwork.globalTrailLine.material.colorsNeedUpdate = true;
             }
-            if (!_.isUndefined( agentNetwork.particles ))
+            if (!_.isNull( agentNetwork.particles ))
                 agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent; });
         },
 
@@ -3637,7 +3648,7 @@ define([
                 return [
                     "pos = position;",
                     "vMixin = mixin;",
-                    "gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );",
+                    "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
                 ].join("\n");
             },
 
@@ -3660,7 +3671,6 @@ define([
                     "uniform vec3 lineColor;",
                     "uniform vec3 fillColor;",
                     "uniform vec3 windowColor;",
-                    "varying vec2 vUv;",
                     "varying vec3 pos;",
                     "varying float vMixin;",
 
@@ -3751,7 +3761,6 @@ define([
                 return [
                     "uniform float size;",
                     "uniform float maxHeight;",
-                    "varying vec2 vUv;",
                     "attribute float height;",
                     "attribute float trail;",
                     "attribute float patch;",
@@ -3762,7 +3771,6 @@ define([
             },
             terrainVertexShaderMain: function() {
                 return [
-                    "vUv = uv;",
                     "vHeight = height;",
                     "vTrail = trail;",
                     "vPatch = patch;",
@@ -3778,7 +3786,6 @@ define([
                     "varying float vHeight;",
                     "varying float vTrail;",
                     "varying float vPatch;",
-                    "varying vec2 vUv;",
                     "// Terrain colors",
                     "uniform vec3 seaColor;",
                     "uniform vec3 lowland1Color;",

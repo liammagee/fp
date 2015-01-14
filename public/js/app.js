@@ -12,11 +12,15 @@ require.config({
         	deps: ["three"],
         	exports: "TerrainLoader"
         },
-        "js/controls/TrackballControls.js": {
+        "THREEx.KeyboardState": {
+            deps: ["three"],
+            exports: "THREEx.KeyboardState"
+        },
+        "TrackballControls": {
             deps: ["three"],
             exports: "TrackballControls"
         },
-        "js/controls/PointerLockControls.js": {
+        "PointerLockControls": {
         	deps: ["three"],
         	exports: "PointerLockControls"
         },
@@ -24,6 +28,7 @@ require.config({
 })
 require([
         "fp",
+        "jquery",
         "dat.gui",
         "smoothie",
         "stats.min",
@@ -32,11 +37,11 @@ require([
         "jsts",
         "Mirror",
         "TerrainLoader",
-        "js/THREEx.KeyboardState.js",
-        "js/controls/TrackballControls.js",
-        "js/controls/PointerLockControls.js",
+        "THREEx.KeyboardState",
+        "TrackballControls",
+        "PointerLockControls",
 ], function() {
-    require(["WaterShader"], function() {
+    require(["THREEx.KeyboardState", "WaterShader"], function() {
         // Final call to app/main
         require([
             "app/main"
