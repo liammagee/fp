@@ -16,9 +16,9 @@ define([
     "js/controls/PointerLockControls.js",
     ], function($, THREE, _, astar) {
 
-    // Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/
+    /** Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/ */
     $.urlParam = function(name){
-        var results = new RegExp("[\?&]" + name + "=([^&#]*)").exec(window.location.href);
+        var results = new RegExp("[\\?&]" + name + "=([^&#]*)").exec(window.location.href);
         if ( results === null )
            return undefined;
         else
@@ -52,19 +52,32 @@ define([
         cursor = null,
         sim = null;
 
+    /** 
+     * Overall Fierce Planet object. 
+     * @namespace fp
+     */
     var fp = {
 
+        /** 
+         * Represents a network of agents. Also provides factory and utility methods. 
+         * @constructor
+         * @memeberof fp
+         * @inner
+         */
         AgentNetwork: function() {
             this.agents = [];
             this.networkMesh = null;
             this.colorNetwork = null;
             this.particles = null;
-            this.createAgents = function() {
+
+            /** Creates an initial set of agents */
+            this.createInitialAgentPopulation = function() {
                 for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++)
                     agentNetwork.agents.push( this.createAgent() );
                 this.buildAgentParticleSystem();
             };
 
+            /** Creates a single agent */
             this.createAgent = function() {
                 var vertex = new THREE.Vector3();
                 var point = this.randomPointForAgent();
@@ -418,6 +431,10 @@ define([
             }
         },
 
+        /** 
+         * Represents a network of buildings. Also provides factory and utility methods. 
+         * @constructor
+         */
         BuildingNetwork: function() {
             this.networkMesh = null;
             this.networkJstsCache = [];
@@ -573,11 +590,6 @@ define([
                 fp.buildingNetwork.buildings.push(building);
                 // Add all ground floor vertices to hash, as crude collision detection
                 fp.buildingNetwork.networkMesh.add( building.lod );
-                /*
-                var points = fp.buildingNetwork.get2dIndexPoints(building);
-                for (var i = 0; i < points.length; i++)
-                    fp.buildingNetwork.buildingHash[points[i]] = building;
-                */
                 fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
                 collidableMeshList.push( building.highResMeshContainer );
                 collidableMeshList.push( building.highResMeshContainer.children[0] );
@@ -728,6 +740,10 @@ define([
             };
         },
 
+        /** 
+         * Represents a network of patches. Also provides factory and utility methods. 
+         * @constructor
+         */
         PatchNetwork: function() {
             this.plane = null;
             this.patches = {};
@@ -858,6 +874,10 @@ define([
             };
         },
 
+        /** 
+         * Represents a network of trails. Also provides factory and utility methods. 
+         * @constructor
+         */
         TrailNetwork: function() {
             this.trails = {};
             this.trailMeshes = null;
@@ -967,6 +987,11 @@ define([
             };
         },
 
+
+        /** 
+         * Represents a network of paths. Also provides factory and utility methods. 
+         * @constructor
+         */
         PathNetwork: function() {
             this.networkMesh = null;
             this.pathCache = {};
@@ -1048,6 +1073,11 @@ define([
         },
 
         TERRAIN_MAPS: [ "assets/syd2.bin", "assets/mel2.bin" ],
+
+        /** 
+         * Represents the terrain of the world.
+         * @constructor
+         */
         Terrain: function() {
             this.plane = null;
             this.richTerrainMaterial = null;
@@ -1210,6 +1240,10 @@ define([
 
         },
 
+        /** 
+         * Represents the time scale used by the world.
+         * @constructor
+         */
         Timescale: function() {     // Time variables
             this.initialYear = 1800;
             this.endYear = 2200;
@@ -1222,6 +1256,10 @@ define([
             this.frameCounter = 0;
         },
 
+        /** 
+         * Represents a mobile and alive agent
+         * @constructor
+         */
         Agent: function() {
             this.updateTick = function() {
                     this.ticks++;
@@ -1626,7 +1664,10 @@ define([
             this.pathPosition = 0;
         },
 
-        // Building class definition
+        /** 
+         * Represents a building with a position, dimesions, and one or more floors.
+         * @constructor
+         */
         Building: function() {
             this.mesh = null;
             this.lineMaterial = null;
@@ -2107,7 +2148,11 @@ define([
             };
         },
 
-        Road: function() { // Road class definition
+        /** 
+         * Represents a road or path between two points.
+         * @constructor
+         */
+        Road: function() { 
             this.mesh = null;
             this.position = null;
             this.setupRoad = function(_x, _y, _z) {
@@ -2119,6 +2164,10 @@ define([
             this.update = function() { };
         },
 
+        /** 
+         * Represents a square block of the terrain. It has a value that can be used to represent some property of interest.
+         * @constructor
+         */
         Patch: function(val) { // Patch class definition
             this.value = val;
             this.updateValue = function(inc) {
@@ -2133,15 +2182,38 @@ define([
             };
         },
 
+        /**
+         * Represents relevant state about the application.
+         * @constructor
+         */
         AppState: {
             runSimulation: false,
             stepSimulation: false
         },
 
+        /**
+         * Represents configuration data about the application.
+         * @constructor
+         * @namespace AppConfig
+         * @memberof fp
+         * @inner
+         */
         AppConfig: function() {
+            /**
+             * World options.
+             * @namespace fp~AppConfig~worldOptions
+             */ 
             this.worldOptions = {
+                /**
+                 * Maximum depth to search for land.
+                 * @memberof fp~AppConfig~worldOptions
+                 * @inner
+                 */
                 maxLandSearchDepth: 1
             };
+            /**
+             * Agent options.
+             */ 
             this.agentOptions = {
                 initialPopulation: 100,
                 initialExtent: 1000,
@@ -2378,7 +2450,7 @@ define([
             };
             this.Setup = function() {
                 this.Reset();
-                agentNetwork.createAgents();
+                agentNetwork.createInitialAgentPopulation();
                 trailNetwork.globalTrailGeometry = new THREE.Geometry();
                 var trailMaterial = new THREE.LineBasicMaterial({
                     color: appConfig.colorOptions.colorNightTrail,
