@@ -28,7 +28,6 @@ require.config({
 })
 require([
         "fp",
-        "jquery",
         "dat.gui",
         "smoothie",
         "stats.min",

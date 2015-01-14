@@ -25,7 +25,7 @@ define([
            return undefined;
         else
            return results[1] || 0;
-    };
+    };  
 
     var container = null,
         scene = null,
@@ -56,6 +56,7 @@ define([
 
     /**
      * Overall Fierce Planet object.
+     * @module fp
      * @namespace fp
      */
     var fp = {
@@ -63,7 +64,7 @@ define([
         /**
          * Represents a network of agents. Also provides factory and utility methods.
          * @constructor
-         * @memeberof fp
+         * @memberof fp
          * @inner
          */
         AgentNetwork: function() {
@@ -72,14 +73,19 @@ define([
             this.particles = null;
             this.agentParticleSystemAttributes = null;
 
-            /** Creates an initial set of agents */
+            /** 
+             * Creates an initial set of agents.
+             */
             this.createInitialAgentPopulation = function() {
                 for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++)
                     agentNetwork.agents.push( this.createAgent() );
                 this.buildAgentParticleSystem();
             };
 
-            /** Creates a single agent */
+            /** 
+             * Creates a single agent
+             * @return {fp#Agent} 
+             */
             this.createAgent = function() {
                 var vertex = new THREE.Vector3();
                 var point = this.randomPointForAgent();
@@ -100,6 +106,11 @@ define([
                 return agent;
             };
 
+            /**
+             * Finds a random point on the terrain where the agent can be generated.
+             * 
+             * @return {coordinate}
+             */
             this.randomPointForAgent = function() {
                 var x = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent)  + appConfig.agentOptions.initialX;
                 var z = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent) + appConfig.agentOptions.initialY;
@@ -141,6 +152,9 @@ define([
                 return {x: x, z: z};
             };
 
+            /**
+             * Updates all agents belonging to this network.
+             */
             this.updateAgents = function() {
                 if ( !fp.AppState.runSimulation || _.isUndefined( agentNetwork.particles ))
                     return;
@@ -196,6 +210,10 @@ define([
                 agentNetwork.particles.geometry.verticesNeedUpdate = true;
             };
 
+            /**
+             * Generates a set of vertices for connected agents.
+             * @return {vertices}
+             */
             this.generateFriendNetworkVertices = function() {
                 var vertices = [];
                 for (var i = 0; i < agentNetwork.agents.length; i++) {
@@ -213,6 +231,11 @@ define([
                 return vertices;
             };
 
+            /**
+             * Generates a curved geometry to represent the agent network.
+             * @param  {Array} vertices
+             * @return {THREE.Geometry}
+             */
             this.friendNetworkGeometryCurved = function(vertices) {
                 var networkGeometry = new THREE.Geometry();
                 var len = vertices.length;
@@ -227,6 +250,11 @@ define([
                 return networkGeometry;
             };
 
+            /**
+             * Generates a geometry (curved or straight) to represent the agent network.
+             * @param  {Array} vertices
+             * @return {THREE.Geometry}
+             */
             this.friendNetworkGeometry = function(vertices) {
                 if ( !appConfig.displayOptions.networkCurve ) {
                     var networkGeometry = new THREE.Geometry();
@@ -237,6 +265,10 @@ define([
                     return this.friendNetworkGeometryCurved( vertices );
             };
 
+            /**
+             * Returns a material for the network.
+             * @return {THREE.LineBasicMaterial}
+             */
             this.friendNetworkMaterial = function() {
                 return new THREE.LineBasicMaterial({
                     color: appConfig.colorOptions.colorNightNetwork,
@@ -247,6 +279,10 @@ define([
                 });
             };
 
+            /**
+             * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
+             * @return {THREE.Line}
+             */
             this.renderFriendNetwork = function() {
                 if ( !fp.AppState.runSimulation || !appConfig.displayOptions.networkShow )
                     return;
@@ -261,6 +297,9 @@ define([
                 scene.add(agentNetwork.networkMesh);
             };
 
+            /**
+             * Creates a network of friends.
+             */
             this.buildFriendNetwork = function() {
                 var multiAgentPatches = _.values(patchNetwork.patches).filter(function(a) { return a.length > 1; } );
                 multiAgentPatches.forEach( function( agents ) {
@@ -274,6 +313,9 @@ define([
                 } );
             };
 
+            /**
+             * Updates the friend network at runtime, by building and rendering the network.
+             */
             this.updateFriendNetwork = function() {
                 if ( !fp.AppState.runSimulation )
                     return;
@@ -281,6 +323,9 @@ define([
                 this.renderFriendNetwork();
             };
 
+            /**
+             * Updates the agent network shader at runtime.
+             */
             this.updateAgentShader = function() {
                 if ( !_.isNull(this.agentParticleSystemAttributes) &&
                     typeof(this.agentParticleSystemAttributes.color) !== "undefined" &&
@@ -308,6 +353,9 @@ define([
                 }
             };
 
+            /**
+             * Updates the particle system representing this agent network.
+             */
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
                 agentNetwork.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
@@ -333,6 +381,9 @@ define([
                 scene.add( agentNetwork.particles );
             };
 
+            /**
+             * Creates a set of attributes to represent each agent in the network. 
+             */
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
                 agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
@@ -379,6 +430,9 @@ define([
                 scene.add( agentNetwork.particles );
             };
 
+            /**
+             * Wrapper method for updating individual agents, their network and the shader.
+             */
             this.updateAgentNetwork = function() {
                 this.updateAgents();
                 this.updateFriendNetwork();
@@ -436,6 +490,8 @@ define([
         /**
          * Represents a network of buildings. Also provides factory and utility methods.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         BuildingNetwork: function() {
             this.networkMesh = null;
@@ -443,8 +499,7 @@ define([
             this.buildings = [];
             this.buildingHash = {};
             this.speedOfConstruction = 0.05;
-            // Collision detection, based on the approach described here: http://stemkoski.github.io/Three.js/Collision-Detection.html
-            // Simplified 2d alternative for collision detection
+
             this.generateRandomDimensions = function() {
                 return {
                     levels: appConfig.buildingOptions.minHeight + Math.floor( Math.random() * (appConfig.buildingOptions.maxHeight - appConfig.buildingOptions.minHeight) ) ,
@@ -452,6 +507,11 @@ define([
                     length: appConfig.buildingOptions.minLength + Math.floor( Math.random() * (appConfig.buildingOptions.maxLength - appConfig.buildingOptions.minLength))
                 };
             };
+
+            /**
+             * Collision detection, based on the approach described here: http://stemkoski.github.io/Three.js/Collision-Detection.html.
+             * // Simplified 2d alternative for collision detection
+             */
             this.get2dPoints = function(building) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
@@ -727,7 +787,12 @@ define([
                 return polygonizer.getPolygons().toArray();
             };
 
-            // Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
+            // 
+            /**
+             * Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
+             * @param  {jsts.geom.Polygon} polygon
+             * @return {number}
+             */
             this.getPolygonArea = function(polygon) {
                 var points = polygon.shell.points;
                 var area = 0;           // Accumulates area in the loop
@@ -747,6 +812,8 @@ define([
         /**
          * Represents a network of patches. Also provides factory and utility methods.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         PatchNetwork: function() {
             this.plane = null;
@@ -881,6 +948,8 @@ define([
         /**
          * Represents a network of trails. Also provides factory and utility methods.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         TrailNetwork: function() {
             this.trails = {};
@@ -995,6 +1064,8 @@ define([
         /**
          * Represents a network of paths. Also provides factory and utility methods.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         PathNetwork: function() {
             this.networkMesh = null;
@@ -1010,7 +1081,7 @@ define([
                     // debug: $checkDebug.is("checked"),
                     diagonal: true,
                     closest: true
-                        };
+                };
                 for (var i = 0; i < terrain.gridPoints; i++) {
                     var nodeRow = [];
                     for (var j = 0; j < terrain.gridPoints; j++) {
@@ -1081,6 +1152,8 @@ define([
         /**
          * Represents the terrain of the world.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         Terrain: function() {
             this.plane = null;
@@ -1247,6 +1320,8 @@ define([
         /**
          * Represents the time scale used by the world.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         Timescale: function() {     // Time variables
             this.initialYear = 1800;
@@ -1263,6 +1338,8 @@ define([
         /**
          * Represents a mobile and alive agent
          * @constructor
+         * @memberof fp
+         * @inner
          */
         Agent: function() {
             this.updateTick = function() {
@@ -1678,6 +1755,8 @@ define([
         /**
          * Represents a building with a position, dimesions, and one or more floors.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         Building: function() {
             this.mesh = null;
@@ -2113,7 +2192,6 @@ define([
                 this.updateBuildingShader();
             };
 
-            // Function not yet working
             this.updateBuildingShader = function() {
                 this.highResMeshContainer.children.forEach( function(floor) {
                     var shaderMaterial = floor.material;
@@ -2127,6 +2205,7 @@ define([
                     shaderMaterial.attributes.mixin.needsUpdate = true; // important!
                 } );
             };
+
             this.updateSimpleBuilding = function () {
                 if (this.levels > 1) {
                     if (!this.destroying)
@@ -2162,6 +2241,8 @@ define([
         /**
          * Represents a road or path between two points.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         Road: function() {
             this.mesh = null;
@@ -2178,8 +2259,10 @@ define([
         /**
          * Represents a square block of the terrain. It has a value that can be used to represent some property of interest.
          * @constructor
+         * @memberof fp
+         * @inner
          */
-        Patch: function(val) { // Patch class definition
+        Patch: function(val) {
             this.value = val;
             this.updateValue = function(inc) {
                 var val = this.value;
@@ -2196,6 +2279,8 @@ define([
         /**
          * Represents relevant state about the application.
          * @constructor
+         * @memberof fp
+         * @inner
          */
         AppState: {
             runSimulation: false,
@@ -2217,20 +2302,53 @@ define([
             this.worldOptions = {
                 /**
                  * Maximum depth to search for land.
-                 * @memberof fp~AppConfig~worldOptions
+                 * @memberOf fp~AppConfig~worldOptions
                  * @inner
                  */
                 maxLandSearchDepth: 1
             };
             /**
              * Agent options.
+             * @namespace fp~AppConfig~agentOptions
              */
             this.agentOptions = {
+                /**
+                 * Initial population of agents.
+                 * @type {Number}
+                 * @memberOf fp~AppConfig~agentOptions
+                 * @inner
+                 */
                 initialPopulation: 100,
+                /**
+                 * The <em>initial</em> extent, or diameter, around the point of origin, where agents can be 
+                spawed.
+                 * @type {Number}
+                 * @memberOf fp~AppConfig~agentOptions
+                 * @inner
+                 */
                 initialExtent: 1000,
+                /**
+                 * The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be 
+                spawed.
+                 * @type {Number}
+                 * @memberOf fp~AppConfig~agentOptions
+                 * @inner
+                 */
                 maxExtent: terrain.gridExtent,
                 // initialX: -500, initialY: -1500, // Melbourne
+                /**
+                 * The <em>x</em> co-ordinate of the point of origin.
+                 * @type {Number}
+                 * @memberOf fp~AppConfig~agentOptions
+                 * @inner
+                 */
                 initialX: 0,
+                /**
+                 * The <em>y</em> co-ordinate of the point of origin.
+                 * @type {Number}
+                 * @memberOf fp~AppConfig~agentOptions
+                 * @inner
+                 */
                 initialY: 0,
                 chanceToJoinNetwork: 0.05,
                 chanceToFindPathToHome: 0.00,
@@ -2582,7 +2700,6 @@ define([
         },
 
         doGUI: function( config ) {
-
             gui = new dat.GUI( { load: config } );
 
             gui.remember(appConfig);
@@ -3103,12 +3220,8 @@ define([
         simDefault: function() {
             return {
                 counter: 0,
-                setup: function() {
-                    // console.log("Default sim set up");
-                },
-                tick: function() {
-                    // console.log("Default sim tick: " + (++ this.counter));
-                }
+                setup: function() { /* console.log("Default sim set up"); */ },
+                tick: function()  { /* console.log("Default sim tick: " + (++ this.counter)); */ }
             };
         },
 
@@ -3141,7 +3254,6 @@ define([
                     if (height != obj.position.y) {
                         obj.position.y = height;
                     }
-                    //console.log(fp.getHeight(obj.position.x, obj.position.z));
                     //obj.translateY( fp.getHeight(obj.position.x, obj.position.z) );
                 }
             }
@@ -3238,7 +3350,11 @@ define([
             return 0.0;
         },
 
-        // Count how many surrounding cells are also sea level
+        /**
+         * Count how many surrounding cells are also sea level
+         * @param  {Number} index
+         * @return {Number}
+         */
         checkProximityOfWater: function(index) {
             // Now count how many surrounding are also sea level
             // We count in 8 directions, to maxDepth
@@ -3251,7 +3367,11 @@ define([
             return seaLevelNeighbours / totalNeighbours;
         },
 
-        // Count how many surrounding cells are also buildings
+        /**
+         * Count how many surrounding cells are also buildings
+         * @param  {Number} index
+         * @return {Number}
+         */
         checkProximityOfBuildings: function(index) {
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
@@ -3362,7 +3482,6 @@ define([
                         positions[3 * ( indexMirroredOnY + (terrain.gridPoints * j) ) + 2]
                 ) );
             }
-            //return _.filter(surroundingCells, function(val) { return !_.isUndefined(val)})
             return _.compact(surroundingCells);
         },
 
@@ -3606,7 +3725,6 @@ define([
             }
             terrain.richTerrainMaterial.needsUpdate = true; // important!
             renderer.setClearColor( colorBackground, 1);
-            // THIS IS WRONG BUT WE NEED TO UPDATE THE BUILDING APPEARANCE
             if ( appConfig.buildingOptions.useShader ) {
                 fp.buildingNetwork.buildings.forEach(function(building) {
                     building.highResMeshContainer.children.forEach( function(floor) {
