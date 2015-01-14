@@ -13,6 +13,7 @@ define([
     "TerrainLoader",
     "THREEx.KeyboardState",
     "TrackballControls",
+    "OrbitControls",
     "PointerLockControls",
     ], function($, THREE, _, astar) {
 
@@ -42,7 +43,7 @@ define([
         ray = new THREE.Raycaster( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) ),
         intersects = [],
         skyBox = null,
-        mirrorMesh = null,    // Landscape variables
+        waterMesh = null,    // Landscape variables
         water = null,
         appConfig = null,             // Sim world variables
         agentNetwork = null,
@@ -2847,9 +2848,9 @@ define([
             displayFolder.add(appConfig.displayOptions, "coloriseAgentsByHealth");
             displayFolder.add(appConfig.displayOptions, "firstPersonView").onFinishChange(fp.resetControls);
             displayFolder.add(appConfig.displayOptions, "cameraOverride").onFinishChange(fp.resetControls);
-            displayFolder.add(appConfig.displayOptions, "cameraX").onFinishChange(fp.resetControls);
-            displayFolder.add(appConfig.displayOptions, "cameraY").onFinishChange(fp.resetControls);
-            displayFolder.add(appConfig.displayOptions, "cameraZ").onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraX", 0, 5000).onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraY", 0, 5000).onFinishChange(fp.resetControls);
+            displayFolder.add(appConfig.displayOptions, "cameraZ", 0, 5000).onFinishChange(fp.resetControls);
 
             var colorFolder = gui.addFolder("Color Options");
 
@@ -2999,7 +3000,7 @@ define([
             else {
                 controls = new THREE.TrackballControls( camera, container );
                 // Works better - but has no rotation?
-                //controls = new THREE.OrbitControls( camera, container );
+                // controls = new THREE.OrbitControls( camera, container );
                 controls.rotateSpeed = 0.15;
                 controls.zoomSpeed = 0.6;
                 controls.panSpeed = 0.3;
@@ -3089,16 +3090,17 @@ define([
                 waterColor: 0x001e0f,
                 distortionScale: 50.0,
             } );
-            if ( !_.isUndefined(mirrorMesh) )
-                scene.remove( mirrorMesh );
-            mirrorMesh = new THREE.Mesh(
+            if ( !_.isUndefined(waterMesh) )
+                scene.remove( waterMesh );
+            waterMesh = new THREE.Mesh(
                 new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
                 water.material
             );
-            mirrorMesh.add( water );
-            mirrorMesh.rotation.x = - Math.PI * 0.5;
-            mirrorMesh.position.y = 2;
-            scene.add( mirrorMesh );
+            waterMesh.add( water );
+            waterMesh.rotation.x = - Math.PI * 0.5;
+            waterMesh.position.y = 2;
+            if ( appConfig.displayOptions.waterShow )
+                scene.add( waterMesh );
         },
 
         setupSky: function() {
@@ -3640,9 +3642,9 @@ define([
 
         updateWaterState: function() {
             if ( !appConfig.displayOptions.waterShow )
-                scene.remove( mirrorMesh );
+                scene.remove( waterMesh );
             else
-                scene.add( mirrorMesh );
+                scene.add( waterMesh );
         },
 
         updateNetworkState: function() {
