@@ -20,6 +20,10 @@ require.config({
             deps: ["three"],
             exports: "TrackballControls"
         },
+        "OrbitControls": {
+            deps: ["three"],
+            exports: "OrbitControls"
+        },
         "PointerLockControls": {
         	deps: ["three"],
         	exports: "PointerLockControls"
@@ -37,6 +41,7 @@ require([
         "Mirror",
         "TerrainLoader",
         "THREEx.KeyboardState",
+        "OrbitControls",
         "TrackballControls",
         "PointerLockControls",
 ], function() {

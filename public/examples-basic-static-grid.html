@@ -19,9 +19,10 @@
                 "WaterShader": ["three"],
                 "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
                 "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
                 "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
             }
-        })
+        });
         requirejs([
                 "fp",
                 "dat.gui",
@@ -75,7 +76,7 @@
                             }
                         }
                       }
-                    }
+                    };
                     var sim =  {
                         counter: 0,
                         clashCounter: 0,
@@ -84,7 +85,8 @@
                         maxBuildings: 100,
                         setup: function() {
                             // Create a grid road structure
-                            for (var i = 0; i < this.grid + 1; i++) {
+                            var i;
+                            for (i = 0; i < this.grid + 1; i++) {
                                 var x = i * (this.dim / (this.grid / 2)) - this.dim,
                                     z1 = -this.dim,
                                     z2 = this.dim,
@@ -94,7 +96,7 @@
                                     p2 = new THREE.Vector3(x, y2, z2);
                                 fp.roadNetwork.addRoad(p1, p2, 10);
                             }
-                            for (var i = 0; i < this.grid + 1; i++) {
+                            for (i = 0; i < this.grid + 1; i++) {
                                 var z = i * (this.dim / (this.grid / 2)) - this.dim,
                                     x1 = -this.dim,
                                     x2 = this.dim,
@@ -115,7 +117,7 @@
                                 var minHeight = 30, maxHeight = 100;
                                 var x = Math.floor(Math.random() * this.dim * 2) - this.dim,
                                     z = Math.floor(Math.random() * this.dim * 2) - this.dim,
-                                    y = fp.getHeight(x, z)
+                                    y = fp.getHeight(x, z);
                                 // var x = this.counter,
                                 //     z = this.counter,
                                 //     y = fp.getHeight(x, z)
@@ -134,17 +136,17 @@
                                             building.addFloor();
                                 }
                                 else
-                                    this.counter++
+                                    this.counter++;
                             }
 
                         }
-                    }
+                    };
 
                     fp.init( config, sim, function() {
                         fp.appConfig().Setup();
                         fp.appConfig().Run();
                     } );
-                })
+                });
             }
         );
 

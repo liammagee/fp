@@ -26,7 +26,7 @@ define([
            return undefined;
         else
            return results[1] || 0;
-    };  
+    };
 
     var container = null,
         scene = null,
@@ -74,7 +74,7 @@ define([
             this.particles = null;
             this.agentParticleSystemAttributes = null;
 
-            /** 
+            /**
              * Creates an initial set of agents.
              */
             this.createInitialAgentPopulation = function() {
@@ -83,9 +83,9 @@ define([
                 this.buildAgentParticleSystem();
             };
 
-            /** 
+            /**
              * Creates a single agent
-             * @return {fp#Agent} 
+             * @return {fp#Agent}
              */
             this.createAgent = function() {
                 var vertex = new THREE.Vector3();
@@ -109,7 +109,7 @@ define([
 
             /**
              * Finds a random point on the terrain where the agent can be generated.
-             * 
+             *
              * @return {coordinate}
              */
             this.randomPointForAgent = function() {
@@ -383,7 +383,7 @@ define([
             };
 
             /**
-             * Creates a set of attributes to represent each agent in the network. 
+             * Creates a set of attributes to represent each agent in the network.
              */
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
@@ -501,6 +501,10 @@ define([
             this.buildingHash = {};
             this.speedOfConstruction = 0.05;
 
+            /**
+             * Generates a random number of levels, width and length for a building
+             * @return {object} contains levels, width, length properties
+             */
             this.generateRandomDimensions = function() {
                 return {
                     levels: appConfig.buildingOptions.minHeight + Math.floor( Math.random() * (appConfig.buildingOptions.maxHeight - appConfig.buildingOptions.minHeight) ) ,
@@ -543,6 +547,22 @@ define([
                 return points;
             };
 
+            /**
+             * Get a 2-dimensional array of points representing <em>all</em>
+             * the points covered by the building.
+             * @param  {fp~Building} building
+             * @return {Array} points
+             */
+            this.get2dIndexPoints = function(building) {
+                return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
+            };
+
+            /**
+             * Get a 2-dimensional array of points representing the bounding box
+             * of the building.
+             * @param  {fp~Building} building
+             * @return {Array} points
+             */
             this.get2dPointsForBoundingBox = function(building) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
@@ -556,10 +576,11 @@ define([
                 return points;
             };
 
-            this.get2dIndexPoints = function(building) {
-                return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
-            };
-
+            /**
+             * Creates a JSTS geometry from the bounding box of the building.
+             * @param  {fp~Building} building
+             * @return {jsts.geom.Polygon}
+             */
             this.createJstsGeomFromBoundingBox = function( building ) {
                 var points = this.get2dPointsForBoundingBox( building );
                 var coords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.y); } );
@@ -578,8 +599,13 @@ define([
                 return polygon.buffer(0);
             };
 
+            /**
+             * Checks whether this building collides with any existing buildings.
+             * @param  {fp~Building} building
+             * @return {Boolean}
+             */
             this.collidesWithOtherBuildings = function(building) {
-                // Quick fix
+                // Quick check
                 if (this.buildingHash[fp.getIndex(building.lod.position.x, building.lod.position.z)])
                     return true;
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
@@ -594,13 +620,22 @@ define([
                 return false; // Be optimistic
             };
 
-            this.collidesWithRoads = function(building) {
+            /**
+             * Checks whether this building collides with any parts of the road
+             * network.
+             * @param  {fp~Building} building
+             * @return {Boolean}
+             */
+            this.collidesWithRoads = function( building ) {
                 if ( _.isNull( fp.roadNetwork.networkGeometry ) )
                     return false;
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
                 return fp.roadNetwork.networkGeometry.crosses(buildingGeometry);
             };
 
+            /**
+             * Updates each building.
+             */
             this.updateBuildings = function() {
                 if ( !fp.AppState.runSimulation || !appConfig.displayOptions.buildingsShow )
                     return;
@@ -662,14 +697,31 @@ define([
             };
         },
 
+        /**
+         * Represents a network of roads. Also provides factory and utility methods.
+         * @constructor
+         * @memberof fp
+         * @inner
+         */
         RoadNetwork: function() {
             this.networkMesh = null;
+            this.networkJstsCache = [];
             this.roads = {};
             this.indexValues = [];
             this.points = [];
             this.networkGeometry = null;
             this.intersections = [];
 
+            /**
+             * Creates a series of points from a start to end points.
+             * The "road" will try to follow the path of least resistance
+             * if the terrain has variable height, effectively "curving"
+             * around increases in height.
+             * Taken from webgl_geometry_extrude_splines.html
+             * @param  {THREE.Vector3} p1
+             * @param  {THREE.Vector3} p2
+             * @return {Array} points
+             */
             this.getRoadTerrainPoints = function(p1, p2) {
                 var points = [];
                 var xLast = p1.x, yLast = 0, zLast = p1.z, lastChange = 0;
@@ -735,20 +787,53 @@ define([
                 return points;
             };
 
+            /**
+             * Creates a JSTS geometry from the points of the road.
+             * @param  {fp~Road} road
+             * @return {jsts.geom.Polygon}
+             */
+            this.createJstsGeomFromRoadPoints = function( points ) {
+                var coords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.y); } );
+                var lineUnion, j = coords.length - 1;
+                for (var i = 0; i < coords.length; i++ ) {
+                    var line = new jsts.geom.LineString([coords[i], coords[j]]);
+                    j = i;
+                    if ( _.isUndefined(lineUnion) )
+                        lineUnion = line;
+                    else
+                        lineUnion = lineUnion.union(line);
+                }
+                var polygonizer = new jsts.operation.polygonize.Polygonizer();
+                polygonizer.add( lineUnion );
+                var polygon = polygonizer.getPolygons().toArray()[0];
+                return polygon.buffer(0);
+            };
+
+            /**
+             * Adds a road between two points, with a given width.
+             * @param {THREE.Vector3} p1
+             * @param {THREE.Vector3} p2
+             * @param {Number} roadWidth
+             */
             this.addRoad = function(p1, p2, roadWidth) {
-                // Taken from webgl_geometry_extrude_splines.html
                 var points = this.getRoadTerrainPoints(p1, p2);
 
                 // Use a cut-off of 5 intersecting points to prevent this road being built
+                var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
+                var jstsGeom = new jsts.geom.LineString(jstsCoords);
+                var overlap = fp.roadNetwork.countCollisions( jstsGeom );
+                if (overlap > appConfig.roadOptions.overlapThreshold)
+                    return false;
+
+                // The above code probably should supercede this
                 var thisIndexValues = _.map(points, function(p) { return fp.getIndex(p.x,p.z); });
-                var overlap = _.intersection(fp.roadNetwork.indexValues, thisIndexValues).length;
+                overlap = _.intersection(fp.roadNetwork.indexValues, thisIndexValues).length;
                 if (overlap > appConfig.roadOptions.overlapThreshold)
                     return false;
 
                 var extrudePath = new THREE.SplineCurve3( points );
                 var roadColor = (appConfig.displayOptions.dayShow) ? appConfig.colorOptions.colorDayRoad : appConfig.colorOptions.colorNightRoad;
-                //var roadMaterial = new THREE.MeshLambertMaterial({ color: roadColor });
-                var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor });
+                var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor }); // new THREE.MeshLambertMaterial({ color: roadColor });
                 roadMaterial.side = THREE.DoubleSide;
                 var roadGeom = new THREE.TubeGeometry(extrudePath, points.length, roadWidth, appConfig.roadOptions.roadRadiusSegments, false);
 
@@ -769,12 +854,11 @@ define([
                 var roadMesh = new THREE.Mesh(roadGeom, roadMaterial);
                 fp.roadNetwork.networkMesh.add(roadMesh);
                 thisIndexValues.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; });
-                var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
                 if ( _.isNull(this.networkGeometry) )
                     this.networkGeometry = new jsts.geom.LineString(jstsCoords);
                 else {
                     try {
-                        this.networkGeometry = this.networkGeometry.union( new jsts.geom.LineString(jstsCoords) );
+                        this.networkGeometry = this.networkGeometry.union( jstsGeom );
                     }
                     catch (e) { console.log(e); } // Sometimes get a TopologyError
                 }
@@ -782,13 +866,35 @@ define([
                 return true;
             };
 
+            /**
+             * Counts the number of intersections this road has with the
+             * existing network of roads.
+             * @param  {fp~Road} road
+             * @return {Number}
+             */
+            this.countCollisions = function( jstsGeom ) {
+                if ( _.isNull( fp.roadNetwork.networkGeometry ) )
+                    return 0;
+                var intersections = fp.roadNetwork.networkGeometry.intersection( jstsGeom );
+                if ( !_.isUndefined( intersections.geometries ) )
+                    return intersections.geometries.length;
+                else // most likely an instance of jsts.geom.Point
+                    return 1;
+            };
+
+            /**
+             * Returns an array of polygons representing the city "blocks",
+             * where a block is an area completely and minimally contained by
+             * roads.
+             * @return {array} polygons
+             */
             this.cityBlocks = function() {
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( this.networkGeometry );
                 return polygonizer.getPolygons().toArray();
             };
 
-            // 
+            //
             /**
              * Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
              * @param  {jsts.geom.Polygon} polygon
@@ -803,10 +909,6 @@ define([
                     j = i;  //j is previous vertex to i
                 }
                 return area / 2;
-            };
-
-            this.subdivide = function(polygon, width) {
-                // TODO
             };
         },
 
@@ -2321,7 +2423,7 @@ define([
                  */
                 initialPopulation: 100,
                 /**
-                 * The <em>initial</em> extent, or diameter, around the point of origin, where agents can be 
+                 * The <em>initial</em> extent, or diameter, around the point of origin, where agents can be
                 spawed.
                  * @type {Number}
                  * @memberOf fp~AppConfig~agentOptions
@@ -2329,7 +2431,7 @@ define([
                  */
                 initialExtent: 1000,
                 /**
-                 * The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be 
+                 * The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be
                 spawed.
                  * @type {Number}
                  * @memberOf fp~AppConfig~agentOptions
