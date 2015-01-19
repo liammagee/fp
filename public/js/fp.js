@@ -79,7 +79,7 @@ define([
              */
             this.createInitialAgentPopulation = function() {
                 for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++)
-                    agentNetwork.agents.push( this.createAgent() );
+                    fp.agentNetwork.agents.push( this.createAgent() );
                 this.buildAgentParticleSystem();
             };
 
@@ -157,13 +157,13 @@ define([
              * Updates all agents belonging to this network.
              */
             this.updateAgents = function() {
-                if ( !fp.AppState.runSimulation || _.isUndefined( agentNetwork.particles ))
+                if ( !fp.AppState.runSimulation || _.isUndefined( fp.agentNetwork.particles ))
                     return;
                 patchNetwork.patches = {};
-                for (var i = 0; i < agentNetwork.agents.length; i++) {
-                    var agent =  agentNetwork.agents[i];
+                for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
+                    var agent =  fp.agentNetwork.agents[i];
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    if ( (Math.floor( (i / agentNetwork.agents.length) * timescale.framesToYear ) != timescale.frameCounter % timescale.framesToYear) )  {
+                    if ( (Math.floor( (i / fp.agentNetwork.agents.length) * timescale.framesToYear ) != timescale.frameCounter % timescale.framesToYear) )  {
                         // Just interpollate the position
                         agent.lastPosition = agent.position;
                         agent.shiftPosition();
@@ -186,7 +186,7 @@ define([
 
 
                         // Then add the vertex
-                        var ai = fp.getIndex(agentNetwork.agents[i].lastPosition.x, agentNetwork.agents[i].lastPosition.z);
+                        var ai = fp.getIndex(fp.agentNetwork.agents[i].lastPosition.x, fp.agentNetwork.agents[i].lastPosition.z);
                         if (ai > -1)
                             trailNetwork.trails[ai] = (trailNetwork.trails[ai]) ? trailNetwork.trails[ai] + 1 : 1;
 
@@ -206,9 +206,9 @@ define([
 
                         agent.updateTick();
                     }
-                    agentNetwork.particles.geometry.vertices[i] = agent.vertex;
+                    fp.agentNetwork.particles.geometry.vertices[i] = agent.vertex;
                 }
-                agentNetwork.particles.geometry.verticesNeedUpdate = true;
+                fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
             };
 
             /**
@@ -217,8 +217,8 @@ define([
              */
             this.generateFriendNetworkVertices = function() {
                 var vertices = [];
-                for (var i = 0; i < agentNetwork.agents.length; i++) {
-                    var agent =  agentNetwork.agents[i];
+                for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
+                    var agent =  fp.agentNetwork.agents[i];
                     var friends = agent.friends;
                     for (var j = 0; j < friends.length; j++) {
                         var friend = friends[j];
@@ -288,14 +288,14 @@ define([
                 if ( !fp.AppState.runSimulation || !appConfig.displayOptions.networkShow )
                     return;
 
-                if ( !_.isUndefined( agentNetwork.networkMesh ) )
-                    scene.remove( agentNetwork.networkMesh );
+                if ( !_.isUndefined( fp.agentNetwork.networkMesh ) )
+                    scene.remove( fp.agentNetwork.networkMesh );
                 var vertices = this.generateFriendNetworkVertices();
-                agentNetwork.networkMesh = new THREE.Line(
+                fp.agentNetwork.networkMesh = new THREE.Line(
                     this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
                     this.friendNetworkMaterial()
                 );
-                scene.add(agentNetwork.networkMesh);
+                scene.add(fp.agentNetwork.networkMesh);
             };
 
             /**
@@ -331,10 +331,10 @@ define([
                 if ( !_.isNull(this.agentParticleSystemAttributes) &&
                     typeof(this.agentParticleSystemAttributes.color) !== "undefined" &&
                     this.agentParticleSystemAttributes.color.value.length > 0) {
-                    for( var i = 0; i < agentNetwork.agents.length; i ++ ) {
+                    for( var i = 0; i < fp.agentNetwork.agents.length; i ++ ) {
                         if (appConfig.displayOptions.coloriseAgentsByHealth) {
-                            var agent = agentNetwork.agents[i];
-                            var health = agentNetwork.agents[i].health;
+                            var agent = fp.agentNetwork.agents[i];
+                            var health = fp.agentNetwork.agents[i].health;
                             var r = 0;
                             var g = appConfig.displayOptions.dayShow ? 0.0 : 1.0;
                             var b = appConfig.displayOptions.dayShow ? 1.0 : 0.0;
@@ -346,8 +346,8 @@ define([
                             this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(col);
                         }
                         else {
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(agentNetwork.agents[i].color);
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = (fp.agentNetwork.agents[i].health * 0.0075) + 0.025;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[i].color );
                         }
                     }
                     this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
@@ -359,7 +359,7 @@ define([
              */
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                agentNetwork.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
+                fp.agentNetwork.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -368,18 +368,18 @@ define([
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
-                    this.agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
-                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agentNetwork.agents[i].color );
+                    this.agentParticleSystemAttributes.alpha.value[ i ] = (fp.agentNetwork.agents[i].health * 0.0075) + 0.025;
+                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[i].color );
                 }
 
                 // point cloud material
-                var agentShaderMaterial = agentNetwork.particles.material;
+                var agentShaderMaterial = fp.agentNetwork.particles.material;
                 agentShaderMaterial.attributes = this.agentParticleSystemAttributes;
-                scene.remove( agentNetwork.particles );
-                agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
-                agentNetwork.particles.dynamic = true;
-                agentNetwork.particles.sortParticles = true;
-                scene.add( agentNetwork.particles );
+                scene.remove( fp.agentNetwork.particles );
+                fp.agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
+                fp.agentNetwork.particles.dynamic = true;
+                fp.agentNetwork.particles.sortParticles = true;
+                scene.add( fp.agentNetwork.particles );
             };
 
             /**
@@ -387,7 +387,7 @@ define([
              */
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
+                fp.agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -406,9 +406,10 @@ define([
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
-                    this.agentParticleSystemAttributes.alpha.value[ i ] = (agentNetwork.agents[i].health * 0.0075) + 0.025;
-                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agentNetwork.agents[i].color );
+                    this.agentParticleSystemAttributes.alpha.value[ i ] = (fp.agentNetwork.agents[i].health * 0.0075) + 0.025;
+                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[i].color );
                 }
+
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
@@ -424,11 +425,11 @@ define([
                     alphaTest: 0.5
                 });
 
-                scene.remove( agentNetwork.particles );
-                agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
-                agentNetwork.particles.dynamic = true;
-                agentNetwork.particles.sortParticles = true;
-                scene.add( agentNetwork.particles );
+                scene.remove( fp.agentNetwork.particles );
+                fp.agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
+                fp.agentNetwork.particles.dynamic = true;
+                fp.agentNetwork.particles.sortParticles = true;
+                scene.add( fp.agentNetwork.particles );
             };
 
             /**
@@ -1234,7 +1235,7 @@ define([
 
             this.drawPathHomeForEveryone = function() {
                 this.children.forEach( function(child) { this.networkMesh.remove(child); } );
-                var ahaway = _.select(agentNetwork.agents, function(agent) {
+                var ahaway = _.select(fp.agentNetwork.agents, function(agent) {
                     var v = this.drawPathHome(agent);
                     agent.pathComputed = v;
                     agent.pathPosition = 0;
@@ -1466,24 +1467,24 @@ define([
                 this.health = (this.health > 100) ? 100 : this.health;
             };
             this.die = function() {
-                scene.remove( agentNetwork.particles );
-                var index = agentNetwork.agents.indexOf(this);
-                agentNetwork.agents.splice(index, 1);
-                agentNetwork.updateAgentParticleSystem();
-                scene.add( agentNetwork.particles );
+                scene.remove( fp.agentNetwork.particles );
+                var index = fp.agentNetwork.agents.indexOf(this);
+                fp.agentNetwork.agents.splice(index, 1);
+                fp.agentNetwork.updateAgentParticleSystem();
+                scene.add( fp.agentNetwork.particles );
             };
             this.reproduce = function() {
                 if ( Math.random() > 0.999 &&
                      this.children.length < 10 &&
                      this.gender == "f" &&
                      this.ticks > 1  * timescale.framesToYear )  {
-                    scene.remove( agentNetwork.particles );
-                    var agent = agentNetwork.createAgent();
+                    scene.remove( fp.agentNetwork.particles );
+                    var agent = fp.agentNetwork.createAgent();
                     agent.mother = this;
                     agent.color = this.color;
                     this.children.push(agent);
-                    agentNetwork.agents.push(agent);
-                    agentNetwork.updateAgentParticleSystem();
+                    fp.agentNetwork.agents.push(agent);
+                    fp.agentNetwork.updateAgentParticleSystem();
                 }
             };
             this.setDirection = function(dir) {
@@ -2489,7 +2490,7 @@ define([
                 chartShow: true,
                 pathsShow: true,
                 terrainShow: true,
-                coloriseAgentsByHealth: true,
+                coloriseAgentsByHealth: false,
                 firstPersonView: false,
                 cameraOverride: false,
                 cameraX: 0,
@@ -2648,9 +2649,9 @@ define([
             };
 
             this.Reset = function() {
-                scene.remove(  agentNetwork.particles  );
-                agentNetwork.agents = [];
-                agentNetwork.agentParticleSystemAttributes = null;
+                scene.remove(  fp.agentNetwork.particles  );
+                fp.agentNetwork.agents = [];
+                fp.agentNetwork.agentParticleSystemAttributes = null;
                 fp.buildingNetwork.buildings = [];
                 fp.buildingNetwork.buildingHash = {};
                 fp.roadNetwork.indexValues = [];
@@ -2675,7 +2676,7 @@ define([
                 terrain.plane.geometry.attributes.patch.needsUpdate = true;
 
                 trailNetwork.trails = {};
-                scene.remove(agentNetwork.networkMesh);
+                scene.remove(fp.agentNetwork.networkMesh);
                 scene.remove(fp.buildingNetwork.networkMesh);
                 scene.remove(fp.roadNetwork.networkMesh);
                 scene.remove(pathNetwork.networkMesh);
@@ -2684,7 +2685,7 @@ define([
             };
             this.Setup = function() {
                 this.Reset();
-                agentNetwork.createInitialAgentPopulation();
+                fp.agentNetwork.createInitialAgentPopulation();
                 trailNetwork.globalTrailGeometry = new THREE.Geometry();
                 var trailMaterial = new THREE.LineBasicMaterial({
                     color: appConfig.colorOptions.colorNightTrail,
@@ -2694,9 +2695,9 @@ define([
                 for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++) {
                     var vertices = new Array(appConfig.displayOptions.trailLength);
                     for (var j = 0; j < appConfig.displayOptions.trailLength ; j++) {
-                        trailNetwork.globalTrailGeometry.vertices.push(agentNetwork.agents[i].lastPosition);
+                        trailNetwork.globalTrailGeometry.vertices.push(fp.agentNetwork.agents[i].lastPosition);
                     }
-                    var ai = fp.getIndex(agentNetwork.agents[i].lastPosition.x / appConfig.terrainOptions.multiplier, agentNetwork.agents[i].lastPosition.z / appConfig.terrainOptions.multiplier);
+                    var ai = fp.getIndex(fp.agentNetwork.agents[i].lastPosition.x / appConfig.terrainOptions.multiplier, fp.agentNetwork.agents[i].lastPosition.z / appConfig.terrainOptions.multiplier);
                     if (ai > -1)
                         trailNetwork.trails[ai] = 1;
                 }
@@ -2778,8 +2779,8 @@ define([
                 var patchValuesSeries = new TimeSeries();
                 setInterval(function() {
                     if (fp.AppState.runSimulation) {
-                        agentPopulationSeries.append( new Date().getTime(), agentNetwork.agents.length );
-                        agentHealthSeries.append( new Date().getTime(), agentDiv * jStat( _.map(agentNetwork.agents, function(agent) { return agent.health; } ) ).mean() / 100 );
+                        agentPopulationSeries.append( new Date().getTime(), fp.agentNetwork.agents.length );
+                        agentHealthSeries.append( new Date().getTime(), agentDiv * jStat( _.map(fp.agentNetwork.agents, function(agent) { return agent.health; } ) ).mean() / 100 );
                         patchValuesSeries.append( new Date().getTime(), agentDiv * patchNetwork.patchMeanValue );
                     }
                 }, 500);
@@ -3006,8 +3007,7 @@ define([
                 g = bc[1];
                 b = bc[2];
             }
-            var vec = new THREE.Vector3(r / 255.0, g / 255.0, b / 255.0);
-            return vec;
+            return new THREE.Vector3( r / 255.0, g / 255.0, b / 255.0 );
         },
 
         buildColorInteger: function(r, g, b) {
@@ -3058,7 +3058,7 @@ define([
         setupSimObjects: function() {
             // Set up root objects
             terrain = new fp.Terrain();
-            agentNetwork = new fp.AgentNetwork();
+            fp.agentNetwork = new fp.AgentNetwork();
             fp.buildingNetwork = new fp.BuildingNetwork();
             fp.roadNetwork = new fp.RoadNetwork();
             pathNetwork = new fp.PathNetwork();
@@ -3258,7 +3258,7 @@ define([
 
         setOutputHUD: function() {
             $("#yearValue").html( timescale.currentYear );
-            $("#populationValue").html( agentNetwork.agents.length );
+            $("#populationValue").html( fp.agentNetwork.agents.length );
         },
 
         setupGUI: function(config) {
@@ -3305,7 +3305,7 @@ define([
         animate: function() {
             if ( fp.AppState.runSimulation )
                 fp.sim.tick.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-            agentNetwork.updateAgentNetwork();
+            fp.agentNetwork.updateAgentNetwork();
             fp.buildingNetwork.updateBuildings();
             patchNetwork.updatePatchValues();
             trailNetwork.updateTrails();
@@ -3364,7 +3364,7 @@ define([
         },
 
         updateGraph: function() {
-            if (chart.options.maxValue <= agentNetwork.agents.length)
+            if (chart.options.maxValue <= fp.agentNetwork.agents.length)
                 chart.options.maxValue *= 2;
         },
 
@@ -3845,16 +3845,16 @@ define([
                     road.material.colorsNeedUpdate = true;
                 });
             }
-            if (!_.isNull(agentNetwork.networkMesh)) {
-                agentNetwork.networkMesh.material.color = new THREE.Color( colorNetwork );
-                agentNetwork.networkMesh.material.colorsNeedUpdate = true;
+            if ( !_.isNull( fp.agentNetwork.networkMesh ) ) {
+                fp.agentNetwork.networkMesh.material.color = new THREE.Color( colorNetwork );
+                fp.agentNetwork.networkMesh.material.colorsNeedUpdate = true;
             }
             if (!_.isNull(trailNetwork.globalTrailLine)) {
                 trailNetwork.globalTrailLine.material.color = new THREE.Color( colorTrail );
                 trailNetwork.globalTrailLine.material.colorsNeedUpdate = true;
             }
-            if (!_.isNull( agentNetwork.particles ))
-                agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent; });
+            if (!_.isNull( fp.agentNetwork.particles ))
+                fp.agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent; });
         },
 
         ShaderUtils: {

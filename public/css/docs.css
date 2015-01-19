@@ -1,6 +1,41 @@
+/*
+@font-face {
+    font-family: 'inconsolata';
+    src: url('/fonts/inconsolata.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+*/
+
+*{
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    background-color: #ffffff;
+    margin: 0px;
+    height: 100%;
+    color: #555;
+    font-family: 'Open Sans', sans-serif;
+    /*font-family: 'inconsolata', 'Courier';*/
+    font-size: 15px;
+    line-height: 18px;
+    overflow: hidden;
+}
+#sidebar-wrapper {
+    background-color: #404040;
+}
 #page-content-wrapper {
-	position: fixed;
+	/*position: fixed;*/
 	height: 100%;
+}
+#page-content-wrapper div {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }
 .container-fluid, .row, .col-lg-12, #content  {
 	height: 100%;
@@ -11,4 +46,7 @@
 }
 .about {
 	display: none;
+}
+iframe {
+    position: fixed;
 }

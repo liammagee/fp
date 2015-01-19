@@ -17,6 +17,7 @@
                 "WaterShader": ["three"],
                 "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
                 "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
                 "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
             }
         })
@@ -24,6 +25,7 @@
                 "fp",
                 "dat.gui",
                 "smoothie",
+                "csscolorparser",
                 "stats.min",
                 "jstat.min",
                 "javascript.util",
@@ -62,9 +64,10 @@
                             "colorDayBuildingWindow": 194 * 256 * 256 + 103 * 256 + 92,
                             "colorDayBackground": 194 * 256 * 256 + 103 * 256 + 92,
                             "colorDayRoad": 135 * 256 * 256 + 187 * 256 + 175,
-                            "colorDayAgent": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorDayAgent": 194 * 256 * 256 + 103 * 256 + 92,
                             "colorDayNetwork": 135 * 256 * 256 + 187 * 256 + 175,
                             "colorDayTrail": 135 * 256 * 256 + 187 * 256 + 175,
+                            "coloriseAgentsByHealth": false,
                         },
                       "6": { "loadHeights": false, "multiplier": 2 },
                     }

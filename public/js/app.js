@@ -33,6 +33,7 @@ require.config({
 require([
         "fp",
         "dat.gui",
+        "csscolorparser",
         "smoothie",
         "stats.min",
         "jstat.min",

@@ -42,12 +42,13 @@
                     </a>
                 </li>
                 <li>
-                    <a class="links" id="overview" href="#">Overview</a>
+                    <a class="links" href="/">Overview</a>
                 </li>
                 <li>
                     <a class="links" id="examples" href="#">Examples</a>
                     <ul>
                         <li>
+                            <a class="links" id="examples-usage" href="#">Usage</a>
                             <a class="links" id="examples-basic" href="#">Basic</a>
                             <a class="links" id="examples-custom-day" href="#">Daytime</a>
                             <a class="links" id="examples-custom-colorised" href="#">Colorised</a>
@@ -80,19 +81,85 @@
                         <h1>Fierce Planet</h1>
 
                         <div id="about">
+                            <div class="about" id="about-examples-usage">
+                                <h3>Usage</h3>
+                                <div>
+                                Once the scene below has loaded, click on the <em>Setup</em> button to populate it with agents. Then click <em>Run</em> to begin the simulation.
+                                </div>
+                                <div>
+                                As the simulation runs, the agents will "build" buildings and roads.
+                                Over time, the buildings will grow and a city scape should emerge.
+                                </div>
+                                <div>
+                                    There are a series of options in the control panel on the right-hand site.
+                                    These configure how the simulation develops and appears.
+
+                                </div>
+                                <div>
+                                    Some changes will happen in real-time, as the simulation runs.
+                                    Others will require the simulation to be set up again.
+                                </div>
+                                <div>
+                                The graph at bottom left shows a few basic statistics:
+                                <ul>
+                                    <li>The blue line shows the agent population</li>
+                                    <li>The red line shows the average health of agent population</li>
+                                    <li>The green line shows the health of landscape</li>
+                                </ul>
+                                </div>
+                            </div>
                             <div class="about" id="about-examples-basic">
-                                Basic
+                                <h3>Basic Configuration</h3>
+                                <div>Shows <em>Fierce Planet</em> in its default configuration.</div>
                             </div>
-                            <div class="about" id="about-examples-custom-simple">Custom
+                            <div class="about" id="about-examples-custom-day">
+                                <h3>Customisation - Daytime</h3>
+                                <div>The same configuration as the default, but with the day time option turned on.</div>
                             </div>
-                            <div class="about" id="about-examples-custom-colorised">Colorised
+                            <div class="about" id="about-examples-custom-colorised">
+                                <h3>Customisation - Colorised</h3>
+                                <div>
+                                    Demonstrates a stylised color scheme, loosely modelled on the work of
+                                    <a href="http://www.gappenap.com/">Remko Heemskerk</a>.
+                                </div>
                             </div>
-                            <div class="about" id="about-examples-static">Static
+                            <div class="about" id="about-examples-static">
+                                <h3>Streetscape</h3>
+                                <div>
+                                    Demonstrates a procedural city builder (no agents!).
+                                </div>
+                                <div>
+                                    The model builds a city grid of roads, then adds buildings.
+                                    It demonstrates the allocation of buildings without overlapping
+                                    either roads or other buildings.
+                                </div>
+                            </div>
+                            <div class="about" id="about-examples-malthus-sustainability-model">
+                                <h3>Sustainability Model</h3>
+                                <div>
+                                    Demonstrates a scene where individual "patches" of the terrain
+                                    have a randomly distributed health property.
+                                </div>
+                                <div>As agents move over the terrain, patches lose health.</div>
+                                <div>Patches regain health once the agent has moved.</div>
                             </div>
                         </div>
 
                         <div id="content">
-
+                            <div>
+                                <em>Fierce Planet</em> is an platform for developing
+                                agent-based models of cities and other social systems.
+                            </div>
+                            <div>
+                                It has been developed as a teaching tool. However it can be adapted for other
+                                purposes: more sophisticated simulations, games and demonstrations.
+                            </div>
+                            <div>
+                                <em>Fierce Planet</em> is also highly configurable.
+                                The examples show some of the "out-of-the-box" options.
+                                It is also possible to add functional hooks to "setup" and "run"
+                                actions, to customise agent, terrain, building and road behaviour.
+                            </div>
                         </div>
                     </div>
                 </div>
