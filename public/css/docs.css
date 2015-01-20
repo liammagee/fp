@@ -1,11 +1,9 @@
-/*
 @font-face {
     font-family: 'inconsolata';
     src: url('/fonts/inconsolata.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
-*/
 
 *{
     box-sizing: border-box;
@@ -21,7 +19,7 @@ body {
     height: 100%;
     color: #555;
     font-family: 'Open Sans', sans-serif;
-    /*font-family: 'inconsolata', 'Courier';*/
+    font-family: 'inconsolata', 'Courier';
     font-size: 15px;
     line-height: 18px;
     overflow: hidden;
@@ -29,6 +27,9 @@ body {
 #sidebar-wrapper {
     background-color: #404040;
 }
+    .sidebar-nav li a {
+        line-height: 30px;
+    }
 #page-content-wrapper {
 	/*position: fixed;*/
 	height: 100%;
