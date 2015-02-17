@@ -60,15 +60,18 @@
                             },
                             "4": {
                                 //"statsShow": false,
+                                "terrainShow": true,
                                 "chartShow": false,
+                                "dayShow": false,
                                 "cameraOverride": true,
                                 "cameraX": 1600,
                                 "cameraY": 1600,
                                 "cameraZ": 1600,
+
                             },
                             "5": {
                                 "colorNightRoad": roadColor, //16777215
-                                "dayShow": true
+                                "colorNightTerrainLowland1": 100 * 256 * 256 + 100 * 256 + 100
                             },
                             "6": {
                                 "multiplier": 1,
@@ -143,8 +146,8 @@
                     };
 
                     fp.init( config, sim, function() {
-                        fp.appConfig().Setup();
-                        fp.appConfig().Run();
+                        fp.appConfig.Setup();
+                        fp.appConfig.Run();
                     } );
                 });
             }
