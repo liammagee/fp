@@ -149,7 +149,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 				} else {
 
 					mouseOnBall.z = .5 / length;
-					
+
 				}
 
 			} else if ( length > 1.0 ) {
@@ -192,22 +192,25 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 				quaternion.setFromAxisAngle( axis, -angle );
 
-				_eye.applyQuaternion( quaternion );
-				_this.object.up.applyQuaternion( quaternion );
+				var testEye = _eye.clone();
+				testEye.applyQuaternion( quaternion )
+				if ( testEye.y > 10 ) {
+					_eye.applyQuaternion( quaternion );
+					_this.object.up.applyQuaternion( quaternion );
 
-				_rotateEnd.applyQuaternion( quaternion );
+					_rotateEnd.applyQuaternion( quaternion );
 
-				if ( _this.staticMoving ) {
+					if ( _this.staticMoving ) {
 
-					_rotateStart.copy( _rotateEnd );
+						_rotateStart.copy( _rotateEnd );
 
-				} else {
+					} else {
 
-					quaternion.setFromAxisAngle( axis, angle * ( _this.dynamicDampingFactor - 1.0 ) );
-					_rotateStart.applyQuaternion( quaternion );
+						quaternion.setFromAxisAngle( axis, angle * ( _this.dynamicDampingFactor - 1.0 ) );
+						_rotateStart.applyQuaternion( quaternion );
 
+					}
 				}
-
 			}
 		}
 
