@@ -3102,7 +3102,7 @@ define([
             camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
             if ( appConfig.displayOptions.cameraOverride ) {
                 camera.position.x = appConfig.displayOptions.cameraX;
-                camera.position.y = appConfig.displayOptions.cameraY * appConfig.terrainOptions.multiplier;
+                camera.position.y = appConfig.displayOptions.cameraY;
                 camera.position.z = appConfig.displayOptions.cameraZ;
             }
             else if ( appConfig.displayOptions.firstPersonView ) {
