@@ -41,8 +41,13 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                      "1": { "buildingsShow": false },
+                        "1": {
+                            "initialPopulation": 100
+                        },
                         "2": {
+                            "maxNumber": 100,
+                            "rotateRandomly": true,
+                            "showLines": false
                         },
                         "3": {
                             "create": false
@@ -50,11 +55,12 @@
                       "4": {
                             "terrainShow": true,
                             "dayShow": true,
+                            "waterShow": false,
                             "skyboxShow": false
                         },
                       "5": {
                             "colorDayTerrainSea": 239 * 256 * 256 + 238 * 256 + 192,
-                            "colorDayTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
+                            "colorDayTerrainLowland1": 239 * 256 * 256 + 238 * 256 + 192,
                             // "colorDayTerrainLowland1": 239 * 256 * 256 + 238 * 256 + 192,
                             // "colorDayTerrainLowland1": 251 * 256 * 256 + 251 * 256 + 193,
                             "colorDayTerrainLowland2": 239 * 256 * 256 + 238 * 256 + 192,
@@ -72,7 +78,7 @@
                             "colorDayTrail": 135 * 256 * 256 + 187 * 256 + 175,
                             "coloriseAgentsByHealth": false,
                         },
-                      "6": { "loadHeights": false, "multiplier": 2 },
+                      "6": { "loadHeights": false, "multiplier": 10 },
                     }
                   }
                 }

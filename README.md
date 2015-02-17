@@ -11,3 +11,4 @@ For more information, visit:
 
 ## Generating JavaDocs
 
+    jsdoc -d public/api -R README.md public/js/fp.js

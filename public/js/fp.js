@@ -1031,7 +1031,7 @@ define([
                 terrain.plane.geometry.attributes.patch.needsUpdate = true;
             };
 
-            this.updatePatchesStateWithShader = function() {
+            this.togglePatchesStateWithShader = function() {
                 if (! appConfig.displayOptions.patchesShow) {
                     for (var i = 0; i < terrain.plane.geometry.attributes.patch.array.length; i++)
                         terrain.plane.geometry.attributes.patch.array[i] = 0.0;
@@ -1043,7 +1043,7 @@ define([
                     this.updateTerrainPatchAttributes();
             };
 
-            this.updatePatchesStateWithoutShader = function() {
+            this.togglePatchesStateWithoutShader = function() {
                 if ( appConfig.displayOptions.patchesShow ) {
                     if ( this.plane === null )
                         this.buildPatchMesh();
@@ -1292,7 +1292,7 @@ define([
                     var i, j, l = vertices.length,
                         n = Math.sqrt(l),
                         k = l + 1;
-                    if (appConfig.terrainOptions.loadHeights) {
+                    if ( appConfig.terrainOptions.loadHeights ) {
                         for (i = 0, j = 0; i < l; i++, j += 3 ) {
                             geometry.attributes.position.array[ j + 2 ] = data[ i ] / 65535 * terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier;
                         }
@@ -1303,7 +1303,7 @@ define([
                         }
                     }
 
-                    terrain.simpleTerrainMaterial = new THREE.MeshBasicMaterial({ color: 0x666666, wireframe: appConfig.displayOptions.wireframeShow });
+                    terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial({ color: 0x666666, wireframe: appConfig.displayOptions.wireframeShow });
                     terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
                     terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
 
@@ -1356,7 +1356,14 @@ define([
                         ),
                         lights: true
                     });
-                    terrain.plane = new THREE.Mesh( geometry, terrain.richTerrainMaterial );
+
+                    // Only use the shader material if we have variable heights
+                    if ( appConfig.terrainOptions.loadHeights ) {
+                        terrain.plane = new THREE.Mesh( geometry, terrain.richTerrainMaterial );
+                    }
+                    else {
+                        terrain.plane = new THREE.Mesh( geometry, terrain.simpleTerrainMaterial );
+                    }
                     terrain.plane.castShadow = true;
                     terrain.plane.receiveShadow = true;
                     terrain.plane.rotation.set( -Math.PI / 2, 0, 0);
@@ -1366,7 +1373,7 @@ define([
                     if ( appConfig.displayOptions.patchesShow )
                         patchNetwork.buildPatchMesh();
                     terrain.createTerrainColors();
-                    fp.updateDayOrNight();
+                    fp.toggleDayNight();
                     pathNetwork.setupAStarGraph();
 
                     fp.animate(); // Kick off the animation loop
@@ -1415,7 +1422,7 @@ define([
 
                     }
                 }
-                terrain.plane.geometry.colorsNeedUpdate = true;
+                terrain.plane.geometry.color
             };
 
             this.updateTerrainPlane = function() {
@@ -2422,7 +2429,7 @@ define([
                  * @memberOf fp~AppConfig~worldOptions
                  * @inner
                  */
-                searchIncrement: 5
+                searchIncrement: 1
             };
             /**
              * Agent options.
@@ -2659,6 +2666,9 @@ define([
                 sun: !true
             };
 
+            /**
+             * Resets the state of the fp object.
+             */
             this.Reset = function() {
                 scene.remove(  fp.agentNetwork.particles  );
                 fp.agentNetwork.agents = [];
@@ -2938,24 +2948,24 @@ define([
             roadsFolder.add(appConfig.roadOptions, "flattenLift", 0, 40).step(1);
 
             var displayFolder = gui.addFolder("Display Options");
-            displayFolder.add(appConfig.displayOptions, "buildingsShow").onFinishChange(fp.updateBuildingState);
-            displayFolder.add(appConfig.displayOptions, "roadsShow").onFinishChange(fp.updateRoadState);
-            displayFolder.add(appConfig.displayOptions, "waterShow").onFinishChange(fp.updateWaterState);
-            displayFolder.add(appConfig.displayOptions, "networkShow").onFinishChange(fp.updateNetworkState);
+            displayFolder.add(appConfig.displayOptions, "buildingsShow").onFinishChange(fp.toggleBuildingState);
+            displayFolder.add(appConfig.displayOptions, "roadsShow").onFinishChange(fp.toggleRoadState);
+            displayFolder.add(appConfig.displayOptions, "waterShow").onFinishChange(fp.toggleWaterState);
+            displayFolder.add(appConfig.displayOptions, "networkShow").onFinishChange(fp.toggleAgentNetwork);
             displayFolder.add(appConfig.displayOptions, "networkCurve");
             displayFolder.add(appConfig.displayOptions, "networkCurvePoints", 4, 20).step(1);
             displayFolder.add(appConfig.displayOptions, "patchesUpdate");
-            displayFolder.add(appConfig.displayOptions, "patchesShow").onFinishChange(fp.updatePatchesState);
+            displayFolder.add(appConfig.displayOptions, "patchesShow").onFinishChange(fp.togglePatchesState);
             displayFolder.add(appConfig.displayOptions, "patchesUseShader");
             displayFolder.add(appConfig.displayOptions, "trailsShow").onFinishChange(fp.toggleTrailState);
             displayFolder.add(appConfig.displayOptions, "trailsShowAsLines").onFinishChange(fp.toggleTrailState);
             displayFolder.add(appConfig.displayOptions, "trailLength", 1, 10000).step(1);
-            displayFolder.add(appConfig.displayOptions, "cursorShow").onFinishChange(fp.updateCursorState);
-            displayFolder.add(appConfig.displayOptions, "statsShow").onFinishChange(fp.updateStatsState);
-            displayFolder.add(appConfig.displayOptions, "hudShow").onFinishChange(fp.updateHUDState);
-            displayFolder.add(appConfig.displayOptions, "wireframeShow").onFinishChange(fp.updateWireframeState);
-            displayFolder.add(appConfig.displayOptions, "dayShow").onFinishChange(fp.updateDayOrNight);
-            displayFolder.add(appConfig.displayOptions, "skyboxShow").onFinishChange(fp.updateDayOrNight);
+            displayFolder.add(appConfig.displayOptions, "cursorShow").onFinishChange(fp.removeCursor);
+            displayFolder.add(appConfig.displayOptions, "statsShow").onFinishChange(fp.toggleStatsState);
+            displayFolder.add(appConfig.displayOptions, "hudShow").onFinishChange(fp.toggleHUDState);
+            displayFolder.add(appConfig.displayOptions, "wireframeShow").onFinishChange(fp.toggleWireframeState);
+            displayFolder.add(appConfig.displayOptions, "dayShow").onFinishChange(fp.toggleDayNight);
+            displayFolder.add(appConfig.displayOptions, "skyboxShow").onFinishChange(fp.toggleDayNight);
             displayFolder.add(appConfig.displayOptions, "chartShow").onFinishChange(fp.updateGraph);
             displayFolder.add(appConfig.displayOptions, "pathsShow").onFinishChange(pathNetwork.updatePathsState);
             displayFolder.add(appConfig.displayOptions, "terrainShow").onFinishChange(terrain.updateTerrainPlane);
@@ -2967,7 +2977,6 @@ define([
             displayFolder.add(appConfig.displayOptions, "cameraZ", 0, 5000).onFinishChange(fp.resetControls);
 
             var colorFolder = gui.addFolder("Color Options");
-
             var colorTerrainFolder = colorFolder.addFolder("Terrain Colors");
             colorTerrainFolder.addColor(appConfig.colorOptions, "colorDayTerrainSea").onChange(terrain.loadTerrain);
             colorTerrainFolder.addColor(appConfig.colorOptions, "colorNightTerrainSea").onChange(terrain.loadTerrain);
@@ -3132,6 +3141,9 @@ define([
             }
         },
 
+        /**
+         * @memberof fp
+         */
         resetControls: function() {
             fp.setupCamera();
             fp.setupControls();
@@ -3161,6 +3173,9 @@ define([
             renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
         },
 
+        /**
+         * @memberof fp
+         */
         setupLighting: function() {
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
@@ -3188,6 +3203,9 @@ define([
             scene.add( dirLight );
         },
 
+        /**
+         * @memberof fp
+         */
         setupWater: function() {
             // Taken from Three.js examples, webgl_shaders_ocean.html
             var parameters = {
@@ -3224,6 +3242,9 @@ define([
                 scene.add( waterMesh );
         },
 
+        /**
+         * @memberof fp
+         */
         setupSky: function() {
             // load skybox
             var cubeMap = new THREE.CubeTexture( [] );
@@ -3275,11 +3296,17 @@ define([
                 scene.add( skyBox );
         },
 
+        /**
+         * @memberof fp
+         */
         setOutputHUD: function() {
             $("#yearValue").html( timescale.currentYear );
             $("#populationValue").html( fp.agentNetwork.agents.length );
         },
 
+        /**
+         * @memberof fp
+         */
         setupGUI: function(config) {
             if ( !_.isUndefined( config ) ) {
                 fp.doGUI( config );
@@ -3301,7 +3328,13 @@ define([
                 fp.doGUI();
         },
 
-
+        /**
+         * Initialises the simulation.
+         * @memberof fp
+         * @param  {Object}   config   An object containing overriden config parameters.
+         * @param  {Object}   sim      An Object containing a setup() and a tick() function.
+         * @param  {Function} callback Callback function to call at the end of initialisation.
+         */
         init: function( config, sim, callback ) {
             container = $( "#container" )[0];
             scene = new THREE.Scene();
@@ -3316,7 +3349,7 @@ define([
             fp.setupSky();
             fp.setOutputHUD();
             fp.Chart.setupChart();
-            fp.updateStatsState(); // Add stats
+            fp.toggleStatsState(); // Add stats
             window.addEventListener( "resize", fp.onWindowResize, false );
             terrain.loadTerrain( callback ); // Load the terrain asynchronously
             // For debugging - make these objects accessible
@@ -3324,6 +3357,10 @@ define([
             this.appConfig = appConfig;
         },
 
+        /**
+         * The core simulation animation method.
+         * @memberof fp
+         */
         animate: function() {
             if ( fp.AppState.runSimulation )
                 fp.sim.tick.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
@@ -3343,6 +3380,10 @@ define([
             renderer.render( scene, camera );
         },
 
+        /**
+         * Factory method to generate a default sim object.
+         * @memberof fp
+         */
         simDefault: function() {
             return {
                 counter: 0,
@@ -3351,11 +3392,19 @@ define([
             };
         },
 
+        /**
+         * Updates the simulation state.
+         * @memberof fp
+         */
         updateSimState: function() {
             if (fp.AppState.stepSimulation)
                 fp.AppState.runSimulation = false;
         },
 
+        /**
+         * Updates the water object, if it exists.
+         * @memberof fp
+         */
         updateWater: function() {
             if (typeof(water) !== "undefined" && typeof(water.material.uniforms.time) !==
                 "undefined") {
@@ -3364,6 +3413,10 @@ define([
             }
         },
 
+        /**
+         * Updates the controls.
+         * @memberof fp
+         */
         updateControls: function() {
             if ( !appConfig.displayOptions.cursorShow ) {
                 controls.update( clock.getDelta() );
@@ -3385,16 +3438,28 @@ define([
             }
         },
 
+        /**
+         * Adjusts the graph size if needed.
+         * @memberof fp
+         */
         updateGraph: function() {
             if (chart.options.maxValue <= fp.agentNetwork.agents.length)
                 chart.options.maxValue *= 2;
         },
 
+        /**
+         * Updates the stats widget.
+         * @memberof fp
+         */
         updateStats: function() {
             if (appConfig.displayOptions.statsShow)
                 stats.update();
         },
 
+        /**
+         * Updates the camera for the scene and its objects.
+         * @memberof fp
+         */
         updateCamera: function() {
             scene.traverse(function(object) {
                 if (object instanceof THREE.LOD)
@@ -3403,12 +3468,20 @@ define([
             scene.updateMatrixWorld();
         },
 
+        /**
+         * Ends the simulation.
+         * @memberof fp
+         */
         endSim: function() {
             fp.AppState.runSimulation = false;
             appConfig.displayOptions.buildingsShow = false;
             appConfig.displayOptions.patchesUpdate = false;
         },
 
+        /**
+         * Updates the year of the simulation.
+         * @memberof fp
+         */
         updateYear: function() {
             if ( !fp.AppState.runSimulation )
                 return;
@@ -3423,6 +3496,9 @@ define([
             }
         },
 
+        /**
+         * @memberof fp
+         */
         getPatchIndex: function(x, y) {
             var dim = terrain.gridPoints / patchNetwork.patchSize;
             var halfGrid = terrain.gridExtent / 2;
@@ -3431,6 +3507,9 @@ define([
             return pY * dim + pX;
         },
 
+        /**
+         * @memberof fp
+         */
         getIndex: function(x, y) {
             x = Math.round(x / appConfig.terrainOptions.multiplier);
             y = Math.round(y / appConfig.terrainOptions.multiplier);
@@ -3448,24 +3527,39 @@ define([
             return Math.floor(terrain.gridPoints * yLoc + xLoc);
         },
 
+        /**
+         * @memberof fp
+         */
         getHeightForIndex: function(index) {
             if (index >= 0 && !_.isUndefined( terrain.plane.geometry.attributes.position.array[index * 3 + 2] ) )
                 return terrain.plane.geometry.attributes.position.array[index * 3 + 2];
             return null;
         },
 
+        /**
+         * @memberof fp
+         */
         getHeight: function(x, y) {
             return fp.getHeightForIndex( fp.getIndex(x, y) );
         },
 
+        /**
+         * @memberof fp
+         */
         speedOfSim: function() {
             return true;
         },
 
+        /**
+         * @memberof fp
+         */
         likelihoodOfGrowth: function() {
             return (1 - (fp.buildingNetwork.speedOfConstruction * fp.speedOfSim()) );
         },
 
+        /**
+         * @memberof fp
+         */
         checkProximityOfRoads: function(index) {
             var cells = fp.surroundingCells(index);
             for (var i = 0; i < cells.length; i++) {
@@ -3478,6 +3572,7 @@ define([
 
         /**
          * Count how many surrounding cells are also sea level
+         * @memberof fp
          * @param  {Number} index
          * @return {Number}
          */
@@ -3495,6 +3590,7 @@ define([
 
         /**
          * Count how many surrounding cells are also buildings
+         * @memberof fp
          * @param  {Number} index
          * @return {Number}
          */
@@ -3510,8 +3606,9 @@ define([
         },
 
         /**
-         Now count how many surrounding are also sea level
-         We count in 8 directions, to maxDepth
+         * Now count how many surrounding are also sea level.
+         * We count in 8 directions, to maxDepth
+         * @memberof fp
          */
         checkProximiteBuildingHeight: function(index) {
             if ( fp.buildingNetwork.buildings.length === 0 )
@@ -3551,6 +3648,9 @@ define([
                 return 0;
         },
 
+        /**
+         * @memberof fp
+         */
         surroundingCells: function(index) {
             // Now count how many surrounding are also sea level
             // We count in 8 directions, to maxDepth
@@ -3613,6 +3713,9 @@ define([
             return _.compact(surroundingCells);
         },
 
+        /**
+         * @memberof fp
+         */
         updateKeyboard: function() {
             if ( keyboard.pressed("V") ) {
                 appConfig.displayOptions.firstPersonView = !appConfig.displayOptions.firstPersonView;
@@ -3634,43 +3737,43 @@ define([
             }
             else if ( keyboard.pressed("B") ) {
                 appConfig.displayOptions.buildingsShow = !appConfig.displayOptions.buildingsShow;
-                fp.updateBuildingState();
+                fp.toggleBuildingState();
             }
             else if ( keyboard.pressed("O") ) {
                 appConfig.displayOptions.roadsShow = !appConfig.displayOptions.roadsShow;
-                fp.updateRoadState();
+                fp.toggleRoadState();
             }
             else if ( keyboard.pressed("M") ) {
                 appConfig.displayOptions.waterShow = !appConfig.displayOptions.waterShow;
-                fp.updateWaterState();
+                fp.toggleWaterState();
             }
             else if ( keyboard.pressed("N") ) {
                 appConfig.displayOptions.networkShow = !appConfig.displayOptions.networkShow;
-                fp.updateNetworkState();
+                fp.toggleAgentNetwork();
             }
             else if ( keyboard.pressed("P") ) {
                 appConfig.displayOptions.patchesShow = !appConfig.displayOptions.patchesShow;
-                fp.updatePatchesState();
+                fp.togglePatchesState();
             }
             else if ( keyboard.pressed("T") ) {
-                appConfig.displayOptions.trailNetwork.trailsShow = !appConfig.displayOptions.trailNetwork.trailsShow;
+                appConfig.displayOptions.trailsShow = !appConfig.displayOptions.trailsShow;
                 fp.toggleTrailState();
             }
             else if ( keyboard.pressed("C") ) {
                 appConfig.displayOptions.cursorShow = !appConfig.displayOptions.cursorShow;
-                fp.updateCursorState();
+                fp.removeCursor();
             }
             else if ( keyboard.pressed("A") ) {
                 appConfig.displayOptions.statsShow = !appConfig.displayOptions.statsShow;
-                fp.updateStatsState();
+                fp.toggleStatsState();
             }
             else if ( keyboard.pressed("W") ) {
                 appConfig.displayOptions.wireframeShow = !appConfig.displayOptions.wireframeShow;
-                fp.updateWireframeState();
+                fp.toggleWireframeState();
             }
             else if ( keyboard.pressed("Y") ) {
                 appConfig.displayOptions.dayShow = !appConfig.displayOptions.dayShow;
-                fp.updateDayOrNight();
+                fp.toggleDayNight();
             }
             else if ( keyboard.pressed("G") ) {
                 appConfig.displayOptions.chartShow = !appConfig.displayOptions.chartShow;
@@ -3686,6 +3789,9 @@ define([
             }
         },
 
+        /**
+         * @memberof fp
+         */
         mouseIntersects: function( eventInfo ) {
             //this where begin to transform the mouse cordinates to three,js cordinates
             mouse.x = ( eventInfo.clientX / window.innerWidth ) * 2 - 1;
@@ -3714,7 +3820,9 @@ define([
             return point;
         },
 
-        // Event listener
+        /**
+         * @memberof fp
+         */
         onMouseMove: function( eventInfo ) {
             //stop any other event listener from recieving this event
             eventInfo.preventDefault();
@@ -3722,7 +3830,7 @@ define([
             if ( !appConfig.displayOptions.cursorShow )
                 return;
 
-            var planePoint = this.mouseIntersects( eventInfo );
+            var planePoint = fp.mouseIntersects( eventInfo );
             if ( appConfig.displayOptions.cursorShowCell )
                 cursor.createCellFill( planePoint.x, planePoint.z );
             else
@@ -3732,6 +3840,9 @@ define([
                 terrain.flattenTerrain();
         },
 
+        /**
+         * @memberof fp
+         */
         onMouseUp: function(eventInfo) {
             //stop any other event listener from recieving this event
             eventInfo.preventDefault();
@@ -3751,60 +3862,87 @@ define([
             }
         },
 
-        // HUD control handlers
-        updateBuildingState: function() {
+        /**
+         * Toggles the visibility of the building network.
+         * @memberof fp
+         */
+        toggleBuildingState: function() {
             if ( !appConfig.displayOptions.buildingsShow )
                 scene.remove(fp.buildingNetwork.networkMesh);
             else
                 scene.add(fp.buildingNetwork.networkMesh);
         },
 
-        updateRoadState: function() {
+        /**
+         * Toggles the visibility of the raod network.
+         * @memberof fp
+         */
+        toggleRoadState: function() {
             if ( !appConfig.displayOptions.roadsShow )
                 scene.remove( fp.roadNetwork.networkMesh );
             else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
                 scene.add( fp.roadNetwork.networkMesh );
         },
 
-        updateWaterState: function() {
+        /**
+         * Toggles the visibility of water.
+         * @memberof fp
+         */
+        toggleWaterState: function() {
             if ( !appConfig.displayOptions.waterShow )
                 scene.remove( waterMesh );
             else
                 scene.add( waterMesh );
         },
 
-        updateNetworkState: function() {
+        /**
+         * Toggles the visibility of the agent network.
+         * @memberof fp
+         */
+        toggleAgentNetwork: function() {
             if ( !appConfig.displayOptions.networkShow )
                 scene.remove(fp.agentNetwork.networkMesh);
         },
 
-        updatePatchesState: function() {
+        /**
+         * Toggles the visibility of terrain patches.
+         * @memberof fp
+         */
+        togglePatchesState: function() {
             if ( appConfig.displayOptions.patchesUseShader )
-                patchNetwork.updatePatchesStateWithShader();
+                patchNetwork.togglePatchesStateWithShader();
             else
-                patchNetwork.updatePatchesStateWithoutShader();
+                patchNetwork.togglePatchesStateWithoutShader();
         },
 
         /**
-         * Toggles the visibility of the trail
-         * @return {[type]} [description]
+         * Toggles the visibility of the trail.
+         * @memberof fp
          */
         toggleTrailState: function() {
-            if ( !appConfig.displayOptions.trailNetwork.trailsShow ||
-                !appConfig.displayOptions.trailNetwork.trailsShowAsLines ) {
-                scene.remove(trailNetwork.globalTrailLine);
+            if ( !appConfig.displayOptions.trailsShow ||
+                !appConfig.displayOptions.trailsShowAsLines ) {
+                scene.remove( trailNetwork.globalTrailLine );
             }
-            else if ( appConfig.displayOptions.trailNetwork.trailsShowAsLines ) {
+            else if ( appConfig.displayOptions.trailsShowAsLines ) {
                 scene.add( trailNetwork.globalTrailLine );
             }
         },
 
-        updateCursorState: function()  {
+        /**
+         * Removes cursor.
+         * @memberof fp
+         */
+        removeCursor: function()  {
             scene.remove(cursor.cell);
             cursor.cell = undefined;
         },
 
-        updateStatsState: function() {
+        /**
+         * Toggles the visibility of the stats widget.
+         * @memberof fp
+         */
+        toggleStatsState: function() {
             if (appConfig.displayOptions.statsShow && stats === null) {
                 stats = new Stats();
                 stats.domElement.style.position = "absolute";
@@ -3814,11 +3952,19 @@ define([
             $("#stats").toggle(appConfig.displayOptions.statsShow);
         },
 
-        updateHUDState: function() {
+        /**
+         * Toggles the visibility of the heads-up display.
+         * @memberof fp
+         */
+        toggleHUDState: function() {
             $("#hudDiv").toggle(appConfig.displayOptions.hudShow);
         },
 
-        updateWireframeState: function() {
+        /**
+         * Toggles the visibility of the wireframe.
+         * @memberof fp
+         */
+        toggleWireframeState: function() {
             terrain.simpleTerrainMaterial.wireframe = appConfig.displayOptions.wireframeShow;
             terrain.richTerrainMaterial.wireframe = appConfig.displayOptions.wireframeShow;
             fp.buildingNetwork.buildings.forEach(function(building) {
@@ -3826,7 +3972,11 @@ define([
             });
         },
 
-        updateDayOrNight: function() {
+        /**
+         * Toggles day or night visibility.
+         * @memberof fp
+         */
+        toggleDayNight: function() {
             var colorBackground, colorBuilding, colorRoad,
                 colorAgent, colorNetwork, colorTrail,
                 colorBuildingFill, colorBuildingLine, colorBuildingWindow;
@@ -3840,6 +3990,7 @@ define([
                 colorBuildingLine = appConfig.colorOptions.colorDayBuildingLine;
                 colorBuildingWindow = appConfig.colorOptions.colorDayBuildingWindow;
                 terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( terrain.dayTerrainUniforms );
+                terrain.simpleTerrainMaterial.color = new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland1 );
                 if ( appConfig.displayOptions.skyboxShow )
                     scene.add( skyBox );
             }
@@ -3853,9 +4004,12 @@ define([
                 colorBuildingLine = appConfig.colorOptions.colorNightBuildingLine;
                 colorBuildingWindow = appConfig.colorOptions.colorNightBuildingWindow;
                 terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( terrain.nightTerrainUniforms );
+                terrain.simpleTerrainMaterial.color = new THREE.Color( appConfig.colorOptions.colorNightTerrainLowland1 );
                 scene.remove( skyBox );
             }
             terrain.richTerrainMaterial.needsUpdate = true; // important!
+            terrain.simpleTerrainMaterial.needsUpdate = true; // important!
+            terrain.plane.material.needsUpdate = true; // important!
             renderer.setClearColor( colorBackground, 1);
             if ( appConfig.buildingOptions.useShader ) {
                 fp.buildingNetwork.buildings.forEach(function(building) {
@@ -4253,6 +4407,10 @@ define([
                 return _.extend(uniforms, otherUniforms);
             },
 
+            /**
+             * Generates a list of shaders for debugging.
+             * @return {string} all the shaders
+             */
             allShaders: function() {
                 return [
                     fp.ShaderUtils.lambertShaderVertex(
