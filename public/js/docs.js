@@ -8,7 +8,7 @@ $(document).ready(function() {
         $('#content-' + id).show();
 
         console.log(id)
-        if (id.indexOf('examples') > -1) {
+        if ( id.indexOf('examples') > -1 ) {
             $('#model').empty();
             $('#model').append('<iframe frameborder="0" src="' + id + '.html"/>');
         }

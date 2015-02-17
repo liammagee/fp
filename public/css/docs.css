@@ -1,11 +1,9 @@
-/*
 @font-face {
     font-family: 'inconsolata';
     src: url('/fonts/inconsolata.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
-*/
 
 *{
     box-sizing: border-box;
@@ -42,6 +40,9 @@ body {
 .sidebar-nav li a:hover {
     color: rgba(87,87,87,0.2);
 }
+    .sidebar-nav li a {
+        line-height: 30px;
+    }
 #page-content-wrapper {
 	/*position: fixed;*/
 	height: 100%;

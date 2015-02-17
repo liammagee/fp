@@ -247,7 +247,7 @@ define([
                 var spline = new THREE.Spline(vertices);
                 var n_sub = appConfig.displayOptions.networkCurvePoints;
                 var position, index;
-                for ( i = 0; i < len * n_sub; i ++ ) {
+                for (var i = 0; i < len * n_sub; i ++ ) {
                     index = i / ( len * n_sub );
                     position = spline.getPoint( index );
                     networkGeometry.vertices[ i ] = new THREE.Vector3( position.x, position.y, position.z );
@@ -2947,8 +2947,8 @@ define([
             displayFolder.add(appConfig.displayOptions, "patchesUpdate");
             displayFolder.add(appConfig.displayOptions, "patchesShow").onFinishChange(fp.updatePatchesState);
             displayFolder.add(appConfig.displayOptions, "patchesUseShader");
-            displayFolder.add(appConfig.displayOptions, "trailsShow").onFinishChange(fp.updateTrailState);
-            displayFolder.add(appConfig.displayOptions, "trailsShowAsLines").onFinishChange(fp.updateTrailState);
+            displayFolder.add(appConfig.displayOptions, "trailsShow").onFinishChange(fp.toggleTrailState);
+            displayFolder.add(appConfig.displayOptions, "trailsShowAsLines").onFinishChange(fp.toggleTrailState);
             displayFolder.add(appConfig.displayOptions, "trailLength", 1, 10000).step(1);
             displayFolder.add(appConfig.displayOptions, "cursorShow").onFinishChange(fp.updateCursorState);
             displayFolder.add(appConfig.displayOptions, "statsShow").onFinishChange(fp.updateStatsState);
@@ -3005,6 +3005,12 @@ define([
             colorOtherFolder.addColor(appConfig.colorOptions, "colorNightTrail");
         },
 
+        /**
+         * Generates a THREE.Vector3 object containing RGB values from either
+         * a number or string color representation
+         * @param  {string/number} color the color to convert
+         * @return {THREE.Vector3}       [description]
+         */
         buildColorVector: function(color) {
             var bc, r, g, b;
             if (!isNaN(parseInt(color))) {
@@ -3648,7 +3654,7 @@ define([
             }
             else if ( keyboard.pressed("T") ) {
                 appConfig.displayOptions.trailNetwork.trailsShow = !appConfig.displayOptions.trailNetwork.trailsShow;
-                fp.updateTrailState();
+                fp.toggleTrailState();
             }
             else if ( keyboard.pressed("C") ) {
                 appConfig.displayOptions.cursorShow = !appConfig.displayOptions.cursorShow;
@@ -3768,8 +3774,8 @@ define([
         },
 
         updateNetworkState: function() {
-            if (!appConfig.displayOptions.networkShow)
-                scene.remove(agentNetwork.networkMesh);
+            if ( !appConfig.displayOptions.networkShow )
+                scene.remove(fp.agentNetwork.networkMesh);
         },
 
         updatePatchesState: function() {
@@ -3779,13 +3785,17 @@ define([
                 patchNetwork.updatePatchesStateWithoutShader();
         },
 
-        updateTrailState: function() {
-            if (!appConfig.displayOptions.trailNetwork.trailsShow ||
-                !appConfig.displayOptions.trailNetwork.trailsShowAsLines) {
+        /**
+         * Toggles the visibility of the trail
+         * @return {[type]} [description]
+         */
+        toggleTrailState: function() {
+            if ( !appConfig.displayOptions.trailNetwork.trailsShow ||
+                !appConfig.displayOptions.trailNetwork.trailsShowAsLines ) {
                 scene.remove(trailNetwork.globalTrailLine);
             }
-            else if (appConfig.displayOptions.trailNetwork.trailsShowAsLines) {
-                scene.add(trailNetwork.globalTrailLine);
+            else if ( appConfig.displayOptions.trailNetwork.trailsShowAsLines ) {
+                scene.add( trailNetwork.globalTrailLine );
             }
         },
 
