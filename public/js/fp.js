@@ -28,6 +28,7 @@ define([
            return results[1] || 0;
     };
 
+
     var container = null,
         scene = null,
         camera = null,
@@ -61,6 +62,9 @@ define([
      * @namespace fp
      */
     var fp = {
+
+        scene: null,
+        appConfig: null,
 
         /**
          * Represents a network of agents. Also provides factory and utility methods.
@@ -732,18 +736,19 @@ define([
                 p1 = new THREE.Vector3(p1.x, fp.getHeight(p1.x, p1.z), p1.z);
                 p2 = new THREE.Vector3(p2.x, fp.getHeight(p2.x, p2.z), p2.z);
                 points.push(p1);
+                var yOffset = -10;
                 for (var i = 0; i < distance; i++) {
                     var angle = Math.atan2(zd, xd),
                         angleLeft = angle - Math.PI / 2,
                         angleRight = angle + Math.PI / 2;
                     var x0 = xLast + xd * (1 / (remaining + 1)),
                         z0 = zLast + zd * (1 / (remaining + 1)),
-                        y0 = fp.getHeight(x0, z0);
+                        y0 = fp.getHeight(x0, z0) + yOffset;
                     var x = x0, y = y0, z = z0, k;
                     for (var j = 1; j <= appConfig.roadOptions.roadDeviation; j++) {
                         var xL = x0 + Math.cos(angleLeft) * j,
                             zL = z0 + Math.sin(angleLeft) * j,
-                            yL = fp.getHeight(xL, zL);
+                            yL = fp.getHeight(xL, zL) + yOffset;
                         if ( yL < y && yL > 0 ) {
                             x = xL;
                             y = yL;
@@ -753,7 +758,7 @@ define([
                     for (k = 1; k <= appConfig.roadOptions.roadDeviation; k++) {
                         var xR = x0 + Math.cos(angleRight) * k,
                             zR = z0 + Math.sin(angleRight) * k,
-                            yR = fp.getHeight(xR, zR);
+                            yR = fp.getHeight(xR, zR) + yOffset;
                         if ( yR < y && yR > 0 ) {
                             x = xR;
                             y = yR;
@@ -834,7 +839,8 @@ define([
 
                 var extrudePath = new THREE.SplineCurve3( points );
                 var roadColor = (appConfig.displayOptions.dayShow) ? appConfig.colorOptions.colorDayRoad : appConfig.colorOptions.colorNightRoad;
-                var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor }); // new THREE.MeshLambertMaterial({ color: roadColor });
+                // var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor });
+                var roadMaterial = new THREE.MeshLambertMaterial({ color: roadColor });
                 roadMaterial.side = THREE.DoubleSide;
                 var roadGeom = new THREE.TubeGeometry(extrudePath, points.length, roadWidth, appConfig.roadOptions.roadRadiusSegments, false);
 
@@ -2409,7 +2415,14 @@ define([
                  * @memberOf fp~AppConfig~worldOptions
                  * @inner
                  */
-                maxLandSearchDepth: 1
+                maxLandSearchDepth: 1,
+
+                /**
+                 * Number of index points to use in search (depends on building size)
+                 * @memberOf fp~AppConfig~worldOptions
+                 * @inner
+                 */
+                searchIncrement: 5
             };
             /**
              * Agent options.
@@ -2599,34 +2612,32 @@ define([
             };
             this.colorOptions = {
                 colorDayBackground: 0x000000,
-                colorNightBackground: 0x000000,
                 colorDayRoad: 0x474747,
-                colorNightRoad: 0x000000,
                 colorDayAgent: 0x4747b3,
-                colorNightAgent: 0x47b347,
                 colorDayNetwork: 0x474747,
-                colorNightNetwork: 0x47b347,
                 colorDayTrail: 0x474747,
-                colorNightTrail: 0x47b347,
-
                 colorDayBuildingFill: 0xb1abab,
-                colorNightBuildingFill: 0x000000,
                 colorDayBuildingLine: 0x222222,
-                colorNightBuildingLine: 0x000000,
                 colorDayBuildingWindow: 0x222222,
-                colorNightBuildingWindow: 0xffff8f,
-
                 colorDayTerrainSea: 0xa6a6a6,
-                colorNightTerrainSea: 0x060606,
                 colorDayTerrainLowland1: 0x4d7848,
-                colorNightTerrainLowland1: 0x000000,
                 colorDayTerrainLowland2: 0x8db17b,
-                colorNightTerrainLowland2: 0x080808,
                 colorDayTerrainMidland: 0xa9752e,
-                colorNightTerrainMidland: 0x181818,
                 colorDayTerrainHighland: 0xacacac,
-                colorNightTerrainHighland: 0x2c2c2c,
 
+                colorNightBackground: 0x636363,
+                colorNightRoad: 0x474747,
+                colorNightAgent: 0x47b347,
+                colorNightNetwork: 0x47b347,
+                colorNightTrail: 0x47b347,
+                colorNightBuildingFill: 0x838383,
+                colorNightBuildingLine: 0x838383,
+                colorNightBuildingWindow: 0xffff8f,
+                colorNightTerrainSea: 0x000000,
+                colorNightTerrainLowland1: 0x000000,
+                colorNightTerrainLowland2: 0x181818,
+                colorNightTerrainMidland: 0x282828,
+                colorNightTerrainHighland: 0x4c4c4c,
                 colorGraphPopulation: 0x4747b3,
                 colorGraphHealth: 0xb34747,
                 colorGraphPatchValues: 0x47b347,
@@ -3071,7 +3082,6 @@ define([
 
         // Debug Objects
         camera: function() { return camera; },
-        appConfig: function() { return appConfig; },
 
         setupCamera: function() {
             camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
@@ -3146,7 +3156,10 @@ define([
         },
 
         setupLighting: function() {
-            var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
+            // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
+            // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
+            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.0 );
+            // var hemiLight = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
             hemiLight.position.set( 0, 1000, 0 );
             scene.add( hemiLight );
 
@@ -3300,6 +3313,9 @@ define([
             fp.updateStatsState(); // Add stats
             window.addEventListener( "resize", fp.onWindowResize, false );
             terrain.loadTerrain( callback ); // Load the terrain asynchronously
+            // For debugging - make these objects accessible
+            this.scene = scene;
+            this.appConfig = appConfig;
         },
 
         animate: function() {
@@ -3538,9 +3554,11 @@ define([
                 positions = terrain.plane.geometry.attributes.position.array;
             var indexY = Math.floor(index / terrain.gridPoints),
                 indexX = index % terrain.gridPoints,
-                indexMirroredOnY = (indexY) * terrain.gridPoints + indexX;
+                indexMirroredOnY = (indexY) * terrain.gridPoints + indexX,
+                inc = appConfig.worldOptions.searchIncrement,
+                threshold = appConfig.worldOptions.maxLandSearchDepth * inc;
                 //indexMirroredOnY = (terrain.gridPoints - indexY) * terrain.gridPoints + indexX;
-            for (var j = 1; j <= appConfig.worldOptions.maxLandSearchDepth; j += 1) {
+            for (var j = inc; j <= threshold; j += inc) {
                 if (Math.floor((indexMirroredOnY - j) / terrain.gridPoints) == Math.floor(indexMirroredOnY / terrain.gridPoints)) {
                     surroundingCells.push( new THREE.Vector3(
                             positions[3 * (indexMirroredOnY - j - (terrain.gridPoints * j) ) + 0],

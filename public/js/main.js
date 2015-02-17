@@ -12,15 +12,15 @@ requirejs.config({
         	deps: ["three"],
         	exports: "TerrainLoader"
         },
-        "javascripts/controls/TrackballControls.js": { 
+        "javascripts/controls/TrackballControls.js": {
             deps: ["three"],
             exports: "TrackballControls"
         },
-        "javascripts/controls/PointerLockControls.js": { 
+        "javascripts/controls/PointerLockControls.js": {
         	deps: ["three"],
         	exports: "PointerLockControls"
         },
-    }	
+    }
 })
 requirejs([
         "dat.gui",
@@ -34,6 +34,6 @@ requirejs([
         "javascripts/controls/TrackballControls.js",
         "javascripts/controls/PointerLockControls.js",
 ]);
-requirejs([        
+requirejs([
     "app/main"
 ])

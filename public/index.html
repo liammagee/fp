@@ -36,23 +36,25 @@
         <!-- Sidebar -->
         <div id="sidebar-wrapper">
             <ul class="sidebar-nav">
-                <li class="sidebar-brand">
-                    <a href="#">
-                        Fierce Planet
-                    </a>
+                <li>
+                    <a class="links" id="examples-overview" href="/">Overview</a>
                 </li>
                 <li>
-                    <a class="links" href="/">Overview</a>
-                </li>
-                <li>
-                    <a class="links" id="examples" href="#">Examples</a>
+                    <a class="links" id="examples-basic" href="#">Examples</a>
                     <ul>
                         <li>
-                            <a class="links" id="examples-usage" href="#">Usage</a>
-                            <a class="links" id="examples-basic" href="#">Basic</a>
+                            <a class="links" id="examples-basic" href="#">Basic Usage</a>
+                        </li>
+                        <li>
                             <a class="links" id="examples-custom-day" href="#">Daytime</a>
+                        </li>
+                        <li>
                             <a class="links" id="examples-custom-colorised" href="#">Colorised</a>
+                        </li>
+                        <li>
                             <a class="links" id="examples-basic-static-grid" href="#">Streetscape</a>
+                        </li>
+                        <li>
                             <a class="links" id="examples-malthus-sustainability-model" href="#">Malthusian model</a>
                         </li>
                     </ul>
@@ -61,13 +63,10 @@
                     <a href="api/index.html" target="_blank">Javascript Docs</a>
                 </li>
                 <li>
-                    <a class="links" id="about" href="#">About</a>
-                </li>
-                <li>
                     <a href="https://github.com/liammagee/fp.git" target="_blank">Github</a>
                 </li>
                 <li>
-                    <a class="links" id="overview" href="#">Contact</a>
+                    <a class="links" id="contact" href="#">Contact</a>
                 </li>
             </ul>
         </div>
@@ -78,12 +77,36 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                        <h1>Fierce Planet</h1>
+                        <div id="heading">
+                            <h1 class="heading" id="heading-overview">Fierce Planet</h1>
+                            <h1 class="heading" id="heading-examples-basic">Basic Usage</h1>
+                            <h1 class="heading" id="heading-examples-custom-day">Custom - Daytime</h1>
+                            <h1 class="heading" id="heading-examples-custom-colorised">Custom - Colorised</h1>
+                            <h1 class="heading" id="heading-examples-basic-static-grid">Grid Streetscape</h1>
+                            <h1 class="heading" id="heading-examples-custom-malthus-sustainability-model">Sustainability Model</h1>
+                            <h1 class="heading" id="heading-contact">Contact</h1>
+                        </div>
 
-                        <div id="about">
-                            <div class="about" id="about-examples-usage">
-                                <h3>Usage</h3>
+                        <div id="content-block">
+                            <div class="content" id="content-overview">
                                 <div>
+                                    <a href="http://www.fierce-planet.com" target="_blank">Fierce Planet</a> is an platform for developing
+                                    agent-based models of cities and other social systems.
+                                </div>
+                                <div>
+                                    It has been developed as a teaching tool. However it can be adapted for other
+                                    purposes: more sophisticated simulations, games and demonstrations.
+                                </div>
+                                <div>
+                                    <em>Fierce Planet</em> is also highly configurable.
+                                    The examples show some of the "out-of-the-box" options.
+                                    It is also possible to add functional hooks to "setup" and "run"
+                                    actions, to customise agent, terrain, building and road behaviour.
+                                </div>
+                            </div>
+
+                            <div class="content" id="content-examples-basic">
+                                <div>The scene below shows the default configuration of <em>Fierce Planet</em>.
                                 Once the scene below has loaded, click on the <em>Setup</em> button to populate it with agents. Then click <em>Run</em> to begin the simulation.
                                 </div>
                                 <div>
@@ -107,24 +130,26 @@
                                     <li>The green line shows the health of landscape</li>
                                 </ul>
                                 </div>
+                                <div>
+                                    <a href="examples-basic.html" target="_blank">Open in a new window</a>
+                                </div>
                             </div>
-                            <div class="about" id="about-examples-basic">
-                                <h3>Basic Configuration</h3>
-                                <div>Shows <em>Fierce Planet</em> in its default configuration.</div>
-                            </div>
-                            <div class="about" id="about-examples-custom-day">
-                                <h3>Customisation - Daytime</h3>
+                            <div class="content" id="content-examples-custom-day">
                                 <div>The same configuration as the default, but with the day time option turned on.</div>
+                                <div>
+                                    <a href="examples-custom-day.html" target="_blank">Open in a new window</a>
+                                </div>
                             </div>
-                            <div class="about" id="about-examples-custom-colorised">
-                                <h3>Customisation - Colorised</h3>
+                            <div class="content" id="content-examples-custom-colorised">
                                 <div>
                                     Demonstrates a stylised color scheme, loosely modelled on the work of
                                     <a href="http://www.gappenap.com/">Remko Heemskerk</a>.
                                 </div>
+                                <div>
+                                    <a href="examples-custom-colorised.html" target="_blank">Open in a new window</a>
+                                </div>
                             </div>
-                            <div class="about" id="about-examples-static">
-                                <h3>Streetscape</h3>
+                            <div class="content" id="content-examples-basic-static-grid">
                                 <div>
                                     Demonstrates a procedural city builder (no agents!).
                                 </div>
@@ -133,34 +158,29 @@
                                     It demonstrates the allocation of buildings without overlapping
                                     either roads or other buildings.
                                 </div>
+                                <div>
+                                    <a href="examples-basic-static-grid.html" target="_blank">Open in a new window</a>
+                                </div>
                             </div>
-                            <div class="about" id="about-examples-malthus-sustainability-model">
-                                <h3>Sustainability Model</h3>
+                            <div class="content" id="content-examples-malthus-sustainability-model">
                                 <div>
                                     Demonstrates a scene where individual "patches" of the terrain
                                     have a randomly distributed health property.
                                 </div>
                                 <div>As agents move over the terrain, patches lose health.</div>
                                 <div>Patches regain health once the agent has moved.</div>
+                                <div>
+                                    <a href="examples-malthus-sustainability-model.html" target="_blank">Open in a new window</a>
+                                </div>
+                            </div>
+                            <div class="content" id="content-contact">
+                                <div>
+                                    <strong>Fierce Planet</strong> is a collaborative project jointly developed by
+                                    <a href="http://www.rmit.edu.au">RMIT University</a> and <a href="http://www.uws.edu.au">University of Western Sydney</a>
+                                </div>
                             </div>
                         </div>
-
-                        <div id="content">
-                            <div>
-                                <em>Fierce Planet</em> is an platform for developing
-                                agent-based models of cities and other social systems.
-                            </div>
-                            <div>
-                                It has been developed as a teaching tool. However it can be adapted for other
-                                purposes: more sophisticated simulations, games and demonstrations.
-                            </div>
-                            <div>
-                                <em>Fierce Planet</em> is also highly configurable.
-                                The examples show some of the "out-of-the-box" options.
-                                It is also possible to add functional hooks to "setup" and "run"
-                                actions, to customise agent, terrain, building and road behaviour.
-                            </div>
-                        </div>
+                        <div id="model"></div>
                     </div>
                 </div>
             </div>
