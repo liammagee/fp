@@ -65,14 +65,31 @@
                         },
                       "5": {
                             "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
+                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
                             "coloriseAgentsByHealth": false,
                         },
                       "6": { "loadHeights": false, "multiplier": 10 },
                     }
                   }
                 }
+                var sim =  {
+                    counter: 0,
+                    setup: function() {
+                        counter = 0;
+                        console.log("Custom set up")
+                    },
+                    tick: function() {
+                        console.log("Custom tick: " + (++ counter))
+                    }
+                }
 
-                fp.init( config );
+                fp.init( config, sim, function() {
+                    var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
+                    var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
+                    var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
+                    fp.agentNetwork.networks = [ network1, network2, network3 ];
+                    console.log( 'got here', network1 )
+                } );
             }
         );
 

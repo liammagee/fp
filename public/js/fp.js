@@ -80,9 +80,9 @@ define([
              * @memberof fp.AgentNetwork
              * @inner
              */
-            this.AgentNetworkNetwork = function() {
+            this.AgentNetworkNetwork = function( color ) {
                 this.links = [];
-                this.networkColor = null;
+                this.networkColor = color;
 
                 this.AgentNetworkNetworkLink = function(agent1, agent2) {
                     this.agent1 = agent1;
@@ -148,7 +148,7 @@ define([
                  */
                 this.friendNetworkMaterial = function() {
                     return new THREE.LineBasicMaterial({
-                        color: appConfig.colorOptions.colorNightNetwork,
+                        color: this.networkColor || fp.appConfig.colorOptions.colorNightNetwork,
                         linewidth: 2,
                         opacity: 1.0,
                         blending: THREE.NormalBlending,
