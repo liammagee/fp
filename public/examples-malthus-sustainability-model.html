@@ -55,6 +55,7 @@
                             "cameraZ": 1000,
                         },
                         "5": {
+                            "coloriseAgentsByHealth": false,
                         },
                         "6": { "multiplier": 2 },
                     }
@@ -62,12 +63,65 @@
                 }
                 var sim =  {
                     counter: 0,
+
                     setup: function() {
                         counter = 0;
-                        console.log("Custom set up")
+                        var healthReduce = 0.05;
+                        var healthGain = 1.0;
+
+                        // Set up an agent class that can exercise, consume, reproduce and die
+                        fp.Agent.prototype.exercise = function() {
+                            if (this.health > 0)
+                                this.health -= healthReduce;
+                        }
+
+                        fp.Agent.prototype.exercise = function() {
+                            if (this.health > 0)
+                                this.health -= healthReduce;
+                        };
+
+                        fp.Agent.prototype.consume = function() {
+                            var index = fp.getPatchIndex(this.position.x, this.position.z);
+                            if ( !fp.patchNetwork.patches[index] )
+                                fp.patchNetwork.patches[index] = [];
+                            fp.patchNetwork.patches[index].push(this);
+                            this.health += healthGain * ( fp.patchNetwork.patchValues[index].value / fp.patchNetwork.patches[index].length );
+                            this.health = (this.health > 100) ? 100 : this.health;
+                        };
+
+                        fp.Agent.prototype.die = function() {
+                            fp.scene.remove( fp.agentNetwork.particles );
+                            var index = fp.agentNetwork.agents.indexOf(this);
+                            fp.agentNetwork.agents.splice(index, 1);
+                            fp.agentNetwork.updateAgentParticleSystem();
+                            fp.scene.add( fp.agentNetwork.particles );
+                        };
+
+                        fp.Agent.prototype.reproduce = function() {
+                            // && this.ticks > 1  * fp.timescale.framesToYear
+                            if ( Math.random() > 0.999 &&
+                                 this.children.length < 4 &&
+                                 this.gender == "f" )  {
+                                fp.scene.remove( fp.agentNetwork.particles );
+                                var agent = fp.agentNetwork.createAgent();
+                                agent.mother = this;
+                                agent.color = this.color;
+                                this.children.push(agent);
+                                fp.agentNetwork.agents.push(agent);
+                                fp.agentNetwork.updateAgentParticleSystem();
+                            }
+                        };
+
                     },
                     tick: function() {
-                        console.log("Custom tick: " + (++ counter))
+                        fp.patchNetwork.patches = {};
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            agent.exercise();
+                            agent.consume();
+                            agent.reproduce();
+                            if (agent.health <= 0)
+                                agent.die();
+                        } );
                     }
                 }
 

@@ -50,9 +50,7 @@ define([
         agentNetwork = null,
         pathNetwork = null,
         trailNetwork = null,
-        patchNetwork = null,
         terrain = null,
-        timescale = null,
         cursor = null,
         sim = null;
 
@@ -193,7 +191,7 @@ define([
                  * Creates a network of friends.
                  */
                 this.buildFriendNetwork = function() {
-                    var multiAgentPatches = _.values(patchNetwork.patches).filter(function(a) { return a.length > 1; } );
+                    var multiAgentPatches = _.values(fp.patchNetwork.patches).filter(function(a) { return a.length > 1; } );
                     var network = this;
                     multiAgentPatches.forEach( function( agents ) {
                         for (var j = 0; j < agents.length; j++) {
@@ -303,11 +301,10 @@ define([
             this.updateAgents = function() {
                 if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ))
                     return;
-                patchNetwork.patches = {};
                 for (var i = 0; i < this.agents.length; i++) {
                     var agent =  this.agents[i];
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    if ( (Math.floor( (i / this.agents.length) * timescale.framesToYear ) != timescale.frameCounter % timescale.framesToYear) )  {
+                    if ( (Math.floor( (i / this.agents.length) * fp.timescale.framesToYear ) != fp.timescale.frameCounter % fp.timescale.framesToYear) )  {
                         // Just interpollate the position
                         agent.lastPosition = agent.position;
                         agent.shiftPosition();
@@ -966,24 +963,24 @@ define([
             this.patchSize = 4;
 
             this.initialisePatches = function() {
-                var dim = (terrain.gridPoints / patchNetwork.patchSize);
-                patchNetwork.patchValues = new Array(dim * dim);
-                for (var i = 0; i < patchNetwork.patchValues.length; i++)
-                    patchNetwork.patchValues[i] = new fp.Patch(Math.random());
+                var dim = ( terrain.gridPoints / fp.patchNetwork.patchSize );
+                fp.patchNetwork.patchValues = new Array(dim * dim);
+                for (var i = 0; i < fp.patchNetwork.patchValues.length; i++)
+                    fp.patchNetwork.patchValues[i] = new fp.Patch(Math.random());
             };
 
             this.buildPatchMesh = function() {
                 var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
                 this.plane = new THREE.Mesh(terrain.plane.geometry.clone(), patchMaterial );
                 this.plane.rotation.set( -Math.PI / 2, 0, 0);
-                scene.add(this.plane);
+                scene.add( this.plane );
             };
 
-            this.reviseMeanValue = function() {
+            this.reviseValues = function() {
                 this.patchMeanValue = 0;
                 for (var i = 0; i < this.patchValues.length; i++) {
                     var patch = this.patchValues[i];
-                    if (!_.isUndefined( this.patches[i]) ) {
+                    if ( !_.isUndefined( this.patches[i] ) ) {
                         var len = this.patches[i].length;
                         patch.updateValue( - len / 100);
                     }
@@ -996,7 +993,7 @@ define([
 
             this.updatePatchValues = function() {
                 if ( appConfig.displayOptions.patchesUpdate && fp.AppState.runSimulation )
-                    this.reviseMeanValue();
+                    this.reviseValues();
 
                 if ( appConfig.displayOptions.patchesShow ) {
                     if (appConfig.displayOptions.patchesUseShader) {
@@ -1404,7 +1401,7 @@ define([
                         scene.add( terrain.plane );
 
                     if ( appConfig.displayOptions.patchesShow )
-                        patchNetwork.buildPatchMesh();
+                        fp.patchNetwork.buildPatchMesh();
                     terrain.createTerrainColors();
                     fp.toggleDayNight();
                     pathNetwork.setupAStarGraph();
@@ -1498,60 +1495,6 @@ define([
              */
             this.updateTick = function() {
                 this.ticks++;
-                this.exercise();
-                this.consume();
-                this.reproduce();
-                if (this.health <= 0)
-                    this.die();
-            };
-
-            /**
-             * @memberof Agent
-             */
-            this.exercise = function() {
-                if (this.health > 0)
-                    this.health -= appConfig.agentOptions.healthReduce;
-            };
-
-            /**
-             * @memberof Agent
-             */
-            this.consume = function() {
-                var index = fp.getPatchIndex(this.position.x, this.position.z);
-                if ( !patchNetwork.patches[index] )
-                    patchNetwork.patches[index] = [];
-                patchNetwork.patches[index].push(this);
-                this.health += appConfig.agentOptions.healthGain * ( patchNetwork.patchValues[index].value / patchNetwork.patches[index].length );
-                this.health = (this.health > 100) ? 100 : this.health;
-            };
-
-            /**
-             * @memberof Agent
-             */
-            this.die = function() {
-                scene.remove( fp.agentNetwork.particles );
-                var index = fp.agentNetwork.agents.indexOf(this);
-                fp.agentNetwork.agents.splice(index, 1);
-                fp.agentNetwork.updateAgentParticleSystem();
-                scene.add( fp.agentNetwork.particles );
-            };
-
-            /**
-             * @memberof Agent
-             */
-            this.reproduce = function() {
-                if ( Math.random() > 0.999 &&
-                     this.children.length < 10 &&
-                     this.gender == "f" &&
-                     this.ticks > 1  * timescale.framesToYear )  {
-                    scene.remove( fp.agentNetwork.particles );
-                    var agent = fp.agentNetwork.createAgent();
-                    agent.mother = this;
-                    agent.color = this.color;
-                    this.children.push(agent);
-                    fp.agentNetwork.agents.push(agent);
-                    fp.agentNetwork.updateAgentParticleSystem();
-                }
             };
 
             /**
@@ -1781,7 +1724,7 @@ define([
              * @memberof Agent
              */
             this.shiftPosition = function() {
-                var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / timescale.framesToYear );
+                var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
                 this.vertex = this.lastPosition.clone().add(directionAtSpeed);
                 this.position = this.vertex.clone();
             };
@@ -2774,9 +2717,9 @@ define([
                 fp.roadNetwork.indexValues = [];
                 fp.roadNetwork.roads = {};
 
-                timescale.currentYear = timescale.initialYear;
+                fp.timescale.currentYear = fp.timescale.initialYear;
                 fp.updateYear();
-                timescale.frameCounter = 0;
+                fp.timescale.frameCounter = 0;
                 if (trailNetwork.trailMeshes)
                     trailNetwork.trailMeshes.forEach(function(trail) { scene.remove(trail); });
 
@@ -2798,7 +2741,7 @@ define([
                 scene.remove(fp.roadNetwork.networkMesh);
                 scene.remove(pathNetwork.networkMesh);
                 scene.remove(trailNetwork.globalTrailLine);
-                patchNetwork.initialisePatches();
+                fp.patchNetwork.initialisePatches();
             };
             this.Setup = function() {
                 this.Reset();
@@ -2852,14 +2795,14 @@ define([
                 fp.AppState.runSimulation = fp.AppState.stepSimulation = true;
             };
             this.SpeedUp = function() {
-                if (timescale.framesToYear > timescale.MIN_FRAMES_TO_YEAR)
-                    timescale.framesToYear = Math.ceil(timescale.framesToYear / 2);
-                console.log("Speed: " + timescale.framesToYear);
+                if (fp.timescale.framesToYear > fp.timescale.MIN_FRAMES_TO_YEAR)
+                    fp.timescale.framesToYear = Math.ceil(fp.timescale.framesToYear / 2);
+                console.log("Speed: " + fp.timescale.framesToYear);
             };
             this.SlowDown = function() {
-                if (timescale.framesToYear < timescale.MAX_FRAMES_TO_YEAR)
-                    timescale.framesToYear *= 2;
-                console.log("Speed: " + timescale.framesToYear);
+                if (fp.timescale.framesToYear < fp.timescale.MAX_FRAMES_TO_YEAR)
+                    fp.timescale.framesToYear *= 2;
+                console.log("Speed: " + fp.timescale.framesToYear);
             };
             this.Snapshot = function() {
                 var mimetype = mimetype  || "image/png";
@@ -2898,7 +2841,7 @@ define([
                     if (fp.AppState.runSimulation) {
                         agentPopulationSeries.append( new Date().getTime(), fp.agentNetwork.agents.length );
                         agentHealthSeries.append( new Date().getTime(), agentDiv * jStat( _.map(fp.agentNetwork.agents, function(agent) { return agent.health; } ) ).mean() / 100 );
-                        patchValuesSeries.append( new Date().getTime(), agentDiv * patchNetwork.patchMeanValue );
+                        patchValuesSeries.append( new Date().getTime(), agentDiv * fp.patchNetwork.patchMeanValue );
                     }
                 }, 500);
                 var chartCanvas = document.createElement("canvas");
@@ -3185,8 +3128,8 @@ define([
             fp.roadNetwork = new fp.RoadNetwork();
             pathNetwork = new fp.PathNetwork();
             trailNetwork = new fp.TrailNetwork();
-            patchNetwork = new fp.PatchNetwork();
-            timescale = new fp.Timescale();
+            fp.patchNetwork = new fp.PatchNetwork();
+            fp.timescale = new fp.Timescale();
             cursor = new fp.Cursor();
             appConfig = new fp.AppConfig();
         },
@@ -3396,7 +3339,7 @@ define([
          * @memberof fp
          */
         setOutputHUD: function() {
-            $("#yearValue").html( timescale.currentYear );
+            $("#yearValue").html( fp.timescale.currentYear );
             $("#populationValue").html( fp.agentNetwork.agents.length );
         },
 
@@ -3462,7 +3405,7 @@ define([
                 fp.sim.tick.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
             fp.agentNetwork.updateAgentNetwork();
             fp.buildingNetwork.updateBuildings();
-            patchNetwork.updatePatchValues();
+            fp.patchNetwork.updatePatchValues();
             trailNetwork.updateTrails();
             fp.updateYear();
             fp.updateSimState();
@@ -3539,7 +3482,7 @@ define([
          * @memberof fp
          */
         updateGraph: function() {
-            if (chart.options.maxValue <= fp.agentNetwork.agents.length)
+            if ( chart.options.maxValue <= fp.agentNetwork.agents.length )
                 chart.options.maxValue *= 2;
         },
 
@@ -3548,7 +3491,7 @@ define([
          * @memberof fp
          */
         updateStats: function() {
-            if (appConfig.displayOptions.statsShow)
+            if ( appConfig.displayOptions.statsShow )
                 stats.update();
         },
 
@@ -3557,7 +3500,7 @@ define([
          * @memberof fp
          */
         updateCamera: function() {
-            scene.traverse(function(object) {
+            scene.traverse( function(object) {
                 if (object instanceof THREE.LOD)
                     object.update(camera);
             } );
@@ -3581,10 +3524,10 @@ define([
         updateYear: function() {
             if ( !fp.AppState.runSimulation )
                 return;
-            timescale.frameCounter++;
-            if ( timescale.frameCounter % timescale.framesToYear === 0) {
-                if ( timescale.currentYear <  timescale.endYear ) {
-                    timescale.currentYear++;
+            fp.timescale.frameCounter++;
+            if ( fp.timescale.frameCounter % fp.timescale.framesToYear === 0) {
+                if ( fp.timescale.currentYear <  fp.timescale.endYear ) {
+                    fp.timescale.currentYear++;
                     fp.setOutputHUD();
                 }
                 else
@@ -3596,7 +3539,7 @@ define([
          * @memberof fp
          */
         getPatchIndex: function(x, y) {
-            var dim = terrain.gridPoints / patchNetwork.patchSize;
+            var dim = terrain.gridPoints / fp.patchNetwork.patchSize;
             var halfGrid = terrain.gridExtent / 2;
             var pX = Math.floor( dim * (x / 2 + halfGrid) / terrain.gridExtent );
             var pY = Math.floor( dim * (halfGrid + y / 2) / terrain.gridExtent );
@@ -4006,9 +3949,9 @@ define([
          */
         togglePatchesState: function() {
             if ( appConfig.displayOptions.patchesUseShader )
-                patchNetwork.togglePatchesStateWithShader();
+                fp.patchNetwork.togglePatchesStateWithShader();
             else
-                patchNetwork.togglePatchesStateWithoutShader();
+                fp.patchNetwork.togglePatchesStateWithoutShader();
         },
 
         /**
