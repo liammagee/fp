@@ -73,17 +73,157 @@ define([
          * @inner
          */
         AgentNetwork: function() {
-            this.agents = [];
-            this.networkMesh = null;
-            this.particles = null;
-            this.agentParticleSystemAttributes = null;
+
+            /**
+             * Represents a specific network within the overall network configuration. Also provides factory and utility methods.
+             * @constructor
+             * @memberof fp.AgentNetwork
+             * @inner
+             */
+            this.AgentNetworkNetwork = function() {
+                this.links = [];
+                this.networkColor = null;
+
+                this.AgentNetworkNetworkLink = function(agent1, agent2) {
+                    this.agent1 = agent1;
+                    this.agent2 = agent2;
+                };
+
+                /**
+                 * Generates a set of vertices for connected agents.
+                 * @return {vertices}
+                 */
+                this.generateFriendNetworkVertices = function() {
+                    var vertices = [];
+                    for (var i = 0; i < this.links.length; i++ ) {
+                        var link = this.links[i];
+                        var agent1 = link.agent1,
+                            agent2 = link.agent2;
+                        var p1 = agent1.vertex.clone(), p2 = agent2.vertex.clone();
+                        p1.y += appConfig.agentOptions.size / 8;
+                        p2.y += appConfig.agentOptions.size / 8;
+                        vertices.push(p1);
+                        vertices.push(p2);
+                    }
+                    return vertices;
+                };
+
+                /**
+                 * Generates a curved geometry to represent the agent network.
+                 * @param  {Array} vertices
+                 * @return {THREE.Geometry}
+                 */
+                this.friendNetworkGeometryCurved = function(vertices) {
+                    var networkGeometry = new THREE.Geometry();
+                    var len = vertices.length;
+                    var spline = new THREE.Spline( vertices );
+                    var n_sub = appConfig.displayOptions.networkCurvePoints;
+                    var position, index;
+                    for (var i = 0; i < len * n_sub; i ++ ) {
+                        index = i / ( len * n_sub );
+                        position = spline.getPoint( index );
+                        networkGeometry.vertices[ i ] = new THREE.Vector3( position.x, position.y, position.z );
+                    }
+                    return networkGeometry;
+                };
+
+                /**
+                 * Generates a geometry (curved or straight) to represent the agent network.
+                 * @param  {Array} vertices
+                 * @return {THREE.Geometry}
+                 */
+                this.friendNetworkGeometry = function(vertices) {
+                    if ( !appConfig.displayOptions.networkCurve ) {
+                        var networkGeometry = new THREE.Geometry();
+                        networkGeometry.vertices = vertices;
+                        return networkGeometry;
+                    }
+                    else
+                        return this.friendNetworkGeometryCurved( vertices );
+                };
+
+                /**
+                 * Returns a material for the network.
+                 * @return {THREE.LineBasicMaterial}
+                 */
+                this.friendNetworkMaterial = function() {
+                    return new THREE.LineBasicMaterial({
+                        color: appConfig.colorOptions.colorNightNetwork,
+                        linewidth: 2,
+                        opacity: 1.0,
+                        blending: THREE.NormalBlending,
+                        transparent: false
+                    });
+                };
+
+                /**
+                 * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
+                 * @return {THREE.Line}
+                 */
+                this.renderFriendNetwork = function() {
+                    if ( !fp.AppState.runSimulation || !appConfig.displayOptions.networkShow )
+                        return;
+
+                    if ( !_.isUndefined( this.networkMesh ) )
+                        scene.remove( this.networkMesh );
+                    this.networkMesh = new THREE.Line(
+                        this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
+                        this.friendNetworkMaterial()
+                    );
+                    scene.add(this.networkMesh);
+                };
+
+                /**
+                 * Establish a link between two agents
+                 */
+                this.establishLink = function(agent1, agent2) {
+                    if ( Math.random() < appConfig.agentOptions.chanceToJoinNetwork ) {
+                        // Add the other agent if it is not already contained in
+                        // either agent's existing connections
+                        var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
+                        var link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+                        if ( this.links.indexOf( link1 ) == -1 &&
+                             this.links.indexOf( link2 ) == -1 ) {
+                            this.links.push( link1 );
+                        }
+                    }
+                };
+
+                /**
+                 * Creates a network of friends.
+                 */
+                this.buildFriendNetwork = function() {
+                    var multiAgentPatches = _.values(patchNetwork.patches).filter(function(a) { return a.length > 1; } );
+                    var network = this;
+                    multiAgentPatches.forEach( function( agents ) {
+                        for (var j = 0; j < agents.length; j++) {
+                            for (var k = j + 1; k < agents.length; k++) {
+                                var a = agents[j];
+                                var b = agents[k];
+                                network.establishLink( a, b );
+                            }
+                        }
+                    } );
+                };
+
+                /**
+                 * Updates the friend network at runtime, by building and rendering the network.
+                 */
+                this.updateFriendNetwork = function() {
+                    if ( !fp.AppState.runSimulation )
+                        return;
+                    this.buildFriendNetwork();
+                    this.renderFriendNetwork();
+                };
+
+            };
 
             /**
              * Creates an initial set of agents.
              */
             this.createInitialAgentPopulation = function() {
                 for (var i = 0; i < appConfig.agentOptions.initialPopulation; i++)
-                    fp.agentNetwork.agents.push( this.createAgent() );
+                    this.agents.push( this.createAgent() );
                 this.buildAgentParticleSystem();
             };
 
@@ -105,9 +245,9 @@ define([
                 agent.setVertex(vertex);
                 agent.setRandomDirection();
 
-                agent.color = "#" + (appConfig.displayOptions.dayShow ?
-                                    appConfig.colorOptions.colorDayAgent.toString(16) :
-                                    appConfig.colorOptions.colorNightAgent.toString(16) );
+                agent.color = "#" + ( appConfig.displayOptions.dayShow ?
+                                      appConfig.colorOptions.colorDayAgent.toString(16) :
+                                      appConfig.colorOptions.colorNightAgent.toString(16) );
                 return agent;
             };
 
@@ -117,8 +257,8 @@ define([
              * @return {coordinate}
              */
             this.randomPointForAgent = function() {
-                var x = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent)  + appConfig.agentOptions.initialX;
-                var z = Math.floor((Math.random() - 0.5) * appConfig.agentOptions.initialExtent) + appConfig.agentOptions.initialY;
+                var x = Math.floor( ( Math.random() - 0.5 ) * appConfig.agentOptions.initialExtent )  + appConfig.agentOptions.initialX;
+                var z = Math.floor( ( Math.random() - 0.5 ) * appConfig.agentOptions.initialExtent ) + appConfig.agentOptions.initialY;
                 var point = null;
 
                 x *=  appConfig.terrainOptions.multiplier;
@@ -161,13 +301,13 @@ define([
              * Updates all agents belonging to this network.
              */
             this.updateAgents = function() {
-                if ( !fp.AppState.runSimulation || _.isUndefined( fp.agentNetwork.particles ))
+                if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ))
                     return;
                 patchNetwork.patches = {};
-                for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
-                    var agent =  fp.agentNetwork.agents[i];
+                for (var i = 0; i < this.agents.length; i++) {
+                    var agent =  this.agents[i];
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    if ( (Math.floor( (i / fp.agentNetwork.agents.length) * timescale.framesToYear ) != timescale.frameCounter % timescale.framesToYear) )  {
+                    if ( (Math.floor( (i / this.agents.length) * timescale.framesToYear ) != timescale.frameCounter % timescale.framesToYear) )  {
                         // Just interpollate the position
                         agent.lastPosition = agent.position;
                         agent.shiftPosition();
@@ -190,7 +330,7 @@ define([
 
 
                         // Then add the vertex
-                        var ai = fp.getIndex(fp.agentNetwork.agents[i].lastPosition.x, fp.agentNetwork.agents[i].lastPosition.z);
+                        var ai = fp.getIndex(this.agents[i].lastPosition.x, this.agents[i].lastPosition.z);
                         if (ai > -1)
                             trailNetwork.trails[ai] = (trailNetwork.trails[ai]) ? trailNetwork.trails[ai] + 1 : 1;
 
@@ -210,122 +350,9 @@ define([
 
                         agent.updateTick();
                     }
-                    fp.agentNetwork.particles.geometry.vertices[i] = agent.vertex;
+                    this.particles.geometry.vertices[i] = agent.vertex;
                 }
-                fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
-            };
-
-            /**
-             * Generates a set of vertices for connected agents.
-             * @return {vertices}
-             */
-            this.generateFriendNetworkVertices = function() {
-                var vertices = [];
-                for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
-                    var agent =  fp.agentNetwork.agents[i];
-                    var friends = agent.friends;
-                    for (var j = 0; j < friends.length; j++) {
-                        var friend = friends[j];
-                        var p1 = friend.vertex.clone(), p2 = agent.vertex.clone();
-                        p1.y += appConfig.agentOptions.size / 8;
-                        p2.y += appConfig.agentOptions.size / 8;
-                        vertices.push(p1);
-                        vertices.push(p2);
-                    }
-                }
-                return vertices;
-            };
-
-            /**
-             * Generates a curved geometry to represent the agent network.
-             * @param  {Array} vertices
-             * @return {THREE.Geometry}
-             */
-            this.friendNetworkGeometryCurved = function(vertices) {
-                var networkGeometry = new THREE.Geometry();
-                var len = vertices.length;
-                var spline = new THREE.Spline(vertices);
-                var n_sub = appConfig.displayOptions.networkCurvePoints;
-                var position, index;
-                for (var i = 0; i < len * n_sub; i ++ ) {
-                    index = i / ( len * n_sub );
-                    position = spline.getPoint( index );
-                    networkGeometry.vertices[ i ] = new THREE.Vector3( position.x, position.y, position.z );
-                }
-                return networkGeometry;
-            };
-
-            /**
-             * Generates a geometry (curved or straight) to represent the agent network.
-             * @param  {Array} vertices
-             * @return {THREE.Geometry}
-             */
-            this.friendNetworkGeometry = function(vertices) {
-                if ( !appConfig.displayOptions.networkCurve ) {
-                    var networkGeometry = new THREE.Geometry();
-                    networkGeometry.vertices = vertices;
-                    return networkGeometry;
-                }
-                else
-                    return this.friendNetworkGeometryCurved( vertices );
-            };
-
-            /**
-             * Returns a material for the network.
-             * @return {THREE.LineBasicMaterial}
-             */
-            this.friendNetworkMaterial = function() {
-                return new THREE.LineBasicMaterial({
-                    color: appConfig.colorOptions.colorNightNetwork,
-                    linewidth: 1,
-                    opacity: 0.75,
-                    blending: THREE.AdditiveBlending,
-                    transparent: true
-                });
-            };
-
-            /**
-             * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
-             * @return {THREE.Line}
-             */
-            this.renderFriendNetwork = function() {
-                if ( !fp.AppState.runSimulation || !appConfig.displayOptions.networkShow )
-                    return;
-
-                if ( !_.isUndefined( fp.agentNetwork.networkMesh ) )
-                    scene.remove( fp.agentNetwork.networkMesh );
-                var vertices = this.generateFriendNetworkVertices();
-                fp.agentNetwork.networkMesh = new THREE.Line(
-                    this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
-                    this.friendNetworkMaterial()
-                );
-                scene.add(fp.agentNetwork.networkMesh);
-            };
-
-            /**
-             * Creates a network of friends.
-             */
-            this.buildFriendNetwork = function() {
-                var multiAgentPatches = _.values(patchNetwork.patches).filter(function(a) { return a.length > 1; } );
-                multiAgentPatches.forEach( function( agents ) {
-                    for (var j = 0; j < agents.length; j++) {
-                        for (var k = j + 1; k < agents.length; k++) {
-                            var a = agents[j];
-                            var b = agents[k];
-                            b.tryToBefriend(a);
-                        }
-                    }
-                } );
-            };
-
-            /**
-             * Updates the friend network at runtime, by building and rendering the network.
-             */
-            this.updateFriendNetwork = function() {
-                if ( !fp.AppState.runSimulation )
-                    return;
-                this.buildFriendNetwork();
-                this.renderFriendNetwork();
+                this.particles.geometry.verticesNeedUpdate = true;
             };
 
             /**
@@ -335,10 +362,10 @@ define([
                 if ( !_.isNull(this.agentParticleSystemAttributes) &&
                     typeof(this.agentParticleSystemAttributes.color) !== "undefined" &&
                     this.agentParticleSystemAttributes.color.value.length > 0) {
-                    for( var i = 0; i < fp.agentNetwork.agents.length; i ++ ) {
-                        if (appConfig.displayOptions.coloriseAgentsByHealth) {
-                            var agent = fp.agentNetwork.agents[i];
-                            var health = fp.agentNetwork.agents[i].health;
+                    for( var i = 0; i < this.agents.length; i ++ ) {
+                        if ( appConfig.displayOptions.coloriseAgentsByHealth ) {
+                            var agent = this.agents[i];
+                            var health = this.agents[i].health;
                             var r = 0;
                             var g = appConfig.displayOptions.dayShow ? 0.0 : 1.0;
                             var b = appConfig.displayOptions.dayShow ? 1.0 : 0.0;
@@ -350,8 +377,8 @@ define([
                             this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color(col);
                         }
                         else {
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = (fp.agentNetwork.agents[i].health * 0.0075) + 0.025;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[i].color );
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = (this.agents[i].health * 0.0075) + 0.025;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[i].color );
                         }
                     }
                     this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
@@ -363,7 +390,7 @@ define([
              */
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                fp.agentNetwork.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
+                this.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -380,10 +407,10 @@ define([
                 var agentShaderMaterial = fp.agentNetwork.particles.material;
                 agentShaderMaterial.attributes = this.agentParticleSystemAttributes;
                 scene.remove( fp.agentNetwork.particles );
-                fp.agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
-                fp.agentNetwork.particles.dynamic = true;
-                fp.agentNetwork.particles.sortParticles = true;
-                scene.add( fp.agentNetwork.particles );
+                this.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
+                this.particles.dynamic = true;
+                this.particles.sortParticles = true;
+                scene.add( this.particles );
             };
 
             /**
@@ -391,7 +418,7 @@ define([
              */
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                fp.agentNetwork.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
+                this.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -410,10 +437,9 @@ define([
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
-                    this.agentParticleSystemAttributes.alpha.value[ i ] = (fp.agentNetwork.agents[i].health * 0.0075) + 0.025;
-                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[i].color );
+                    this.agentParticleSystemAttributes.alpha.value[ i ] = (this.agents[i].health * 0.0075) + 0.025;
+                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[i].color );
                 }
-
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
@@ -429,11 +455,11 @@ define([
                     alphaTest: 0.5
                 });
 
-                scene.remove( fp.agentNetwork.particles );
-                fp.agentNetwork.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
-                fp.agentNetwork.particles.dynamic = true;
-                fp.agentNetwork.particles.sortParticles = true;
-                scene.add( fp.agentNetwork.particles );
+                scene.remove( this.particles );
+                this.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
+                this.particles.dynamic = true;
+                this.particles.sortParticles = true;
+                scene.add( this.particles );
             };
 
             /**
@@ -441,9 +467,16 @@ define([
              */
             this.updateAgentNetwork = function() {
                 this.updateAgents();
-                this.updateFriendNetwork();
+                this.networks.forEach( function(network) { network.updateFriendNetwork() } );
                 this.updateAgentShader();
             };
+
+            this.agents = [];
+            this.networks = [];
+            this.networks.push( new this.AgentNetworkNetwork() );
+            this.networkMesh = null;
+            this.particles = null;
+            this.agentParticleSystemAttributes = null;
         },
 
         BUILDING_FORMS: {
@@ -1459,18 +1492,30 @@ define([
          * @inner
          */
         Agent: function() {
+
+            /**
+             * @memberof Agent
+             */
             this.updateTick = function() {
-                    this.ticks++;
-                    this.exercise();
-                    this.consume();
-                    this.reproduce();
-                    if (this.health <= 0)
-                        this.die();
-                };
+                this.ticks++;
+                this.exercise();
+                this.consume();
+                this.reproduce();
+                if (this.health <= 0)
+                    this.die();
+            };
+
+            /**
+             * @memberof Agent
+             */
             this.exercise = function() {
                 if (this.health > 0)
                     this.health -= appConfig.agentOptions.healthReduce;
             };
+
+            /**
+             * @memberof Agent
+             */
             this.consume = function() {
                 var index = fp.getPatchIndex(this.position.x, this.position.z);
                 if ( !patchNetwork.patches[index] )
@@ -1479,6 +1524,10 @@ define([
                 this.health += appConfig.agentOptions.healthGain * ( patchNetwork.patchValues[index].value / patchNetwork.patches[index].length );
                 this.health = (this.health > 100) ? 100 : this.health;
             };
+
+            /**
+             * @memberof Agent
+             */
             this.die = function() {
                 scene.remove( fp.agentNetwork.particles );
                 var index = fp.agentNetwork.agents.indexOf(this);
@@ -1486,6 +1535,10 @@ define([
                 fp.agentNetwork.updateAgentParticleSystem();
                 scene.add( fp.agentNetwork.particles );
             };
+
+            /**
+             * @memberof Agent
+             */
             this.reproduce = function() {
                 if ( Math.random() > 0.999 &&
                      this.children.length < 10 &&
@@ -1500,21 +1553,40 @@ define([
                     fp.agentNetwork.updateAgentParticleSystem();
                 }
             };
+
+            /**
+             * @memberof Agent
+             */
             this.setDirection = function(dir) {
                 this.direction = dir;
             };
+
+            /**
+             * @memberof Agent
+             */
             this.setVertex = function(v) {
                 this.vertex = this.lastPosition = this.position = v;
             };
+
+            /**
+             * @memberof Agent
+             */
             this.findBuilding = function() {
                 var xl = this.lastPosition.x, zl = this.lastPosition.z;
                 return fp.buildingNetwork.buildingHash[fp.getIndex(xl, zl)];
             };
+
+            /**
+             * @memberof Agent
+             */
             this.goingUp = function(building) {
                 return ( building == this.home ) ?
                     ( Math.random() < appConfig.agentOptions.visitHomeBuilding ) :
                      ( Math.random() < appConfig.agentOptions.visitOtherBuilding );
             };
+            /**
+             * @memberof Agent
+             */
             this.updateGroundedState = function(building) {
                 var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
                     xd = this.direction.x, yd = this.direction.y, zd = this.direction.z;
@@ -1528,6 +1600,9 @@ define([
                     this.grounded = false;
                 }
             };
+            /**
+             * @memberof Agent
+             */
             this.nextComputedDirection = function() {
                 if ( !this.pathComputed || this.pathPosition >= this.pathComputed.length - 1 )
                     return undefined;
@@ -1551,6 +1626,10 @@ define([
                 }
                 return dir;
             };
+
+            /**
+             * @memberof Agent
+             */
             this.candidateDirections = function() {
                 // Check if we are in a building, and offer possibility of going up
                 var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
@@ -1665,6 +1744,10 @@ define([
 
                 return directions;
             };
+
+            /**
+             * @memberof Agent
+             */
             this.bestCandidate = function() {
                 var directions = this.candidateDirections();
 
@@ -1693,37 +1776,50 @@ define([
                 }
                 return directions[index][0];
             };
+
+            /**
+             * @memberof Agent
+             */
             this.shiftPosition = function() {
                 var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / timescale.framesToYear );
                 this.vertex = this.lastPosition.clone().add(directionAtSpeed);
                 this.position = this.vertex.clone();
             };
+
+            /**
+             * @memberof Agent
+             */
             this.move = function() {
                 this.lastPosition = this.position;
                 this.setDirection(this.bestCandidate());
                 this.shiftPosition();
             };
+
+            /**
+             * @memberof Agent
+             */
             this.randomDirection = function() {
                 return new THREE.Vector3(this.speed * (Math.random() - 0.5), 0, this.speed * (Math.random() - 0.5));
             };
+
+            /**
+             * @memberof Agent
+             */
             this.setRandomDirection = function() {
                 this.setDirection(this.randomDirection());
             };
+
+            /**
+             * @memberof Agent
+             */
             this.perturbDirection = function() {
                 this.direction.x += this.perturbBy * (Math.random() - 0.5);
                 this.direction.z += this.perturbBy * (Math.random() - 0.5);
             };
-            this.tryToBefriend = function(agent) {
-                if ( Math.random() < appConfig.agentOptions.chanceToJoinNetwork &&
-                     agent.friends.indexOf(this) == -1 &&
-                     this.friends.indexOf(agent) == -1 )
-                    this.friends.push(agent);
-            };
-            this.generateDimensions = function() {
 
-            };
-
-
+            /**
+             * @memberof Agent
+             */
             this.buildHome = function() {
                 if (this.home !== null)
                     return false;
@@ -3179,7 +3275,7 @@ define([
         setupLighting: function() {
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
-            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.0 );
+            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
             hemiLight.position.set( 0, 1000, 0 );
             scene.add( hemiLight );
