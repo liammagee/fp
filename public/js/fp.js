@@ -81,6 +81,7 @@ define([
             this.AgentNetworkNetwork = function( color ) {
                 this.links = [];
                 this.networkColor = color;
+                this.networkMesh = null;
 
                 this.AgentNetworkNetworkLink = function(agent1, agent2) {
                     this.agent1 = agent1;
@@ -100,8 +101,8 @@ define([
                         var p1 = agent1.vertex.clone(), p2 = agent2.vertex.clone();
                         p1.y += appConfig.agentOptions.size / 8;
                         p2.y += appConfig.agentOptions.size / 8;
-                        vertices.push(p1);
                         vertices.push(p2);
+                        vertices.push(p1);
                     }
                     return vertices;
                 };
@@ -164,10 +165,19 @@ define([
 
                     if ( !_.isUndefined( this.networkMesh ) )
                         scene.remove( this.networkMesh );
-                    this.networkMesh = new THREE.Line(
-                        this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
-                        this.friendNetworkMaterial()
-                    );
+                    if ( fp.appConfig.displayOptions.networkCurve ) {
+                        this.networkMesh = new THREE.Line(
+                            this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
+                            this.friendNetworkMaterial()
+                        );
+                    }
+                    else {
+                        this.networkMesh = new THREE.Line(
+                            this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
+                            this.friendNetworkMaterial(),
+                            THREE.LinePieces
+                        );
+                    }
                     scene.add(this.networkMesh);
                 };
 
@@ -175,7 +185,9 @@ define([
                  * Establish a link between two agents
                  */
                 this.establishLink = function(agent1, agent2) {
-                    if ( Math.random() < appConfig.agentOptions.chanceToJoinNetwork ) {
+                    // Introduce more variability by squaring the probability
+                    var chance = Math.pow(appConfig.agentOptions.chanceToJoinNetwork, 2);
+                    if ( Math.random() < chance ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
                         var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
@@ -188,20 +200,21 @@ define([
                 };
 
                 /**
-                 * Creates a network of friends.
+                 * Tries to enlist an agent in this network
+                 * @param {fp.Agent} agent
                  */
-                this.buildFriendNetwork = function() {
-                    var multiAgentPatches = _.values(fp.patchNetwork.patches).filter(function(a) { return a.length > 1; } );
-                    var network = this;
-                    multiAgentPatches.forEach( function( agents ) {
-                        for (var j = 0; j < agents.length; j++) {
-                            for (var k = j + 1; k < agents.length; k++) {
-                                var a = agents[j];
-                                var b = agents[k];
-                                network.establishLink( a, b );
-                            }
-                        }
-                    } );
+                this.enlistAgent = function( agent ) {
+                    var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z )];
+                    if ( _.isUndefined( agents ) )
+                        return;
+                    if ( agents.length <= 1 )
+                        return;
+                    for (var i = 0; i < agents.length; i++) {
+                        if ( agents[ i ] == agent)
+                            continue;
+                        var otherAgent = agents[ i ];
+                        this.establishLink( agent, otherAgent );
+                    }
                 };
 
                 /**
@@ -210,7 +223,6 @@ define([
                 this.updateFriendNetwork = function() {
                     if ( !fp.AppState.runSimulation )
                         return;
-                    this.buildFriendNetwork();
                     this.renderFriendNetwork();
                 };
 
@@ -303,6 +315,7 @@ define([
                     return;
                 for (var i = 0; i < this.agents.length; i++) {
                     var agent =  this.agents[i];
+
                     // Depending on the speed of the simulation, determine whether this agent needs to move
                     if ( (Math.floor( (i / this.agents.length) * fp.timescale.framesToYear ) != fp.timescale.frameCounter % fp.timescale.framesToYear) )  {
                         // Just interpollate the position
@@ -325,6 +338,10 @@ define([
                         // No water around or home built? Move on...
                         agent.move();
 
+                        // Enlist the agent in available networks
+                        this.networks.forEach( function( network ) {
+                            network.enlistAgent( agent );
+                        } );
 
                         // Then add the vertex
                         var ai = fp.getIndex(this.agents[i].lastPosition.x, this.agents[i].lastPosition.z);
@@ -471,7 +488,6 @@ define([
             this.agents = [];
             this.networks = [];
             this.networks.push( new this.AgentNetworkNetwork() );
-            this.networkMesh = null;
             this.particles = null;
             this.agentParticleSystemAttributes = null;
         },
@@ -989,6 +1005,17 @@ define([
                     this.patchMeanValue += patch.value;
                 }
                 this.patchMeanValue /= this.patchValues.length;
+            };
+
+            this.updatePatchAgents = function() {
+                this.patches = {};
+                for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
+                    var agent =  fp.agentNetwork.agents[i];
+                    var index = fp.getPatchIndex( agent.position.x, agent.position.z );
+                    if ( !this.patches[index] )
+                        this.patches[index] = [];
+                    this.patches[index].push( agent );
+                }
             };
 
             this.updatePatchValues = function() {
@@ -2711,6 +2738,7 @@ define([
             this.Reset = function() {
                 scene.remove(  fp.agentNetwork.particles  );
                 fp.agentNetwork.agents = [];
+                fp.agentNetwork.agents = [];
                 fp.agentNetwork.agentParticleSystemAttributes = null;
                 fp.buildingNetwork.buildings = [];
                 fp.buildingNetwork.buildingHash = {};
@@ -2736,13 +2764,20 @@ define([
                 terrain.plane.geometry.attributes.patch.needsUpdate = true;
 
                 trailNetwork.trails = {};
-                scene.remove(fp.agentNetwork.networkMesh);
-                scene.remove(fp.buildingNetwork.networkMesh);
-                scene.remove(fp.roadNetwork.networkMesh);
-                scene.remove(pathNetwork.networkMesh);
-                scene.remove(trailNetwork.globalTrailLine);
+                fp.agentNetwork.networks.forEach( function( network ) {
+                    network.links = [];
+                    scene.remove( network.networkMesh );
+                });
+                scene.remove( fp.buildingNetwork.networkMesh);
+                scene.remove( fp.roadNetwork.networkMesh);
+                scene.remove( pathNetwork.networkMesh);
+                scene.remove( trailNetwork.globalTrailLine);
                 fp.patchNetwork.initialisePatches();
             };
+
+            /**
+             * Sets up the simulation
+             */
             this.Setup = function() {
                 this.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
@@ -3401,8 +3436,10 @@ define([
          * @memberof fp
          */
         animate: function() {
+            // Must call this first!
+            fp.patchNetwork.updatePatchAgents();
             if ( fp.AppState.runSimulation )
-                fp.sim.tick.call(fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+                fp.sim.tick.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
             fp.agentNetwork.updateAgentNetwork();
             fp.buildingNetwork.updateBuildings();
             fp.patchNetwork.updatePatchValues();
@@ -3539,6 +3576,8 @@ define([
          * @memberof fp
          */
         getPatchIndex: function(x, y) {
+            x = Math.round(x / appConfig.terrainOptions.multiplier);
+            y = Math.round(y / appConfig.terrainOptions.multiplier);
             var dim = terrain.gridPoints / fp.patchNetwork.patchSize;
             var halfGrid = terrain.gridExtent / 2;
             var pX = Math.floor( dim * (x / 2 + halfGrid) / terrain.gridExtent );
@@ -3939,8 +3978,16 @@ define([
          * @memberof fp
          */
         toggleAgentNetwork: function() {
-            if ( !appConfig.displayOptions.networkShow )
-                scene.remove(fp.agentNetwork.networkMesh);
+            if ( !appConfig.displayOptions.networkShow ) {
+                fp.agentNetwork.networks.forEach( function( network ) {
+                    scene.remove( network.networkMesh );
+                });
+            }
+            else {
+                fp.agentNetwork.networks.forEach( function( network ) {
+                    scene.add( network.networkMesh );
+                });
+            }
         },
 
         /**
@@ -4066,10 +4113,12 @@ define([
                     road.material.colorsNeedUpdate = true;
                 });
             }
-            if ( !_.isNull( fp.agentNetwork.networkMesh ) ) {
-                fp.agentNetwork.networkMesh.material.color = new THREE.Color( colorNetwork );
-                fp.agentNetwork.networkMesh.material.colorsNeedUpdate = true;
-            }
+            fp.agentNetwork.networks.forEach( function( network ) {
+                if ( !_.isNull( network.networkMesh ) ) {
+                    network.networkMesh.material.color = new THREE.Color( colorNetwork );
+                    network.networkMesh.material.colorsNeedUpdate = true;
+                }
+            });
             if (!_.isNull(trailNetwork.globalTrailLine)) {
                 trailNetwork.globalTrailLine.material.color = new THREE.Color( colorTrail );
                 trailNetwork.globalTrailLine.material.colorsNeedUpdate = true;
