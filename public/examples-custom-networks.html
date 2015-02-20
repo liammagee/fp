@@ -47,6 +47,7 @@
                         "2": {
                             "maxNumber": 100,
                             "rotateRandomly": false,
+                            "rotateRandomly": false,
                             "showLines": false
                         },
                         "3": {
@@ -55,6 +56,7 @@
                       "4": {
                             "buildingsShow": false,
                             "networkShow": true,
+                            "networkCurve": false,
                             "terrainShow": true,
                             "dayShow": false,
                             "waterShow": false,
@@ -68,7 +70,7 @@
                             "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
                             "coloriseAgentsByHealth": false,
                         },
-                      "6": { "loadHeights": false, "multiplier": 10 },
+                      "6": { "loadHeights": false, "multiplier": 1 },
                     }
                   }
                 }
@@ -79,7 +81,7 @@
                         console.log("Custom set up")
                     },
                     tick: function() {
-                        // console.log("Custom tick: " + (++ counter))
+                        // console.log("Custom tick: " + (++ this.counter))
                     }
                 }
 

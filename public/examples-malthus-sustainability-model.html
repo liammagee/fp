@@ -82,9 +82,6 @@
 
                         fp.Agent.prototype.consume = function() {
                             var index = fp.getPatchIndex(this.position.x, this.position.z);
-                            if ( !fp.patchNetwork.patches[index] )
-                                fp.patchNetwork.patches[index] = [];
-                            fp.patchNetwork.patches[index].push(this);
                             this.health += healthGain * ( fp.patchNetwork.patchValues[index].value / fp.patchNetwork.patches[index].length );
                             this.health = (this.health > 100) ? 100 : this.health;
                         };
@@ -114,7 +111,6 @@
 
                     },
                     tick: function() {
-                        fp.patchNetwork.patches = {};
                         fp.agentNetwork.agents.forEach( function( agent ) {
                             agent.exercise();
                             agent.consume();
