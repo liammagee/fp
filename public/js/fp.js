@@ -191,7 +191,7 @@ define([
                  * Creates a network of friends.
                  */
                 this.buildFriendNetwork = function() {
-                    var multiAgentPatches = _.values(fp.patchNetwork.patches).filter(function(a) { return a.length > 1; } );
+                    var multiAgentPatches = _.values( fp.patchNetwork.patches ).filter(function(a) { return a.length > 1; } );
                     var network = this;
                     multiAgentPatches.forEach( function( agents ) {
                         for (var j = 0; j < agents.length; j++) {
@@ -3218,7 +3218,7 @@ define([
         setupLighting: function() {
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
-            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.0 );
+            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
             hemiLight.position.set( 0, 1000, 0 );
             scene.add( hemiLight );
