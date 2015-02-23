@@ -4395,6 +4395,9 @@ define([
             },
 
             // LAMBERT SHADER OVERRIDE FOR SHADOWS
+            /**
+             * Generates a vertex shader for a Lambert shader.
+             */
             lambertShaderVertex: function ( customParams, customCode ) {
                 var vertexShader = [
                     customParams,
@@ -4514,9 +4517,14 @@ define([
 
                 return fragmentShader;
             },
+
+            /**
+             * Returns an array of Lambert uniforms.
+             * @param  {Array} otherUniforms
+             * @return {Array} Merged array of uniforms
+             */
             lambertUniforms: function(otherUniforms) {
                 var uniforms = THREE.UniformsUtils.merge( [
-
                         THREE.UniformsLib[ "common" ],
                         THREE.UniformsLib[ "fog" ],
                         THREE.UniformsLib[ "lights" ],
@@ -4526,9 +4534,7 @@ define([
                             "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
                             "wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
                         }
-
                     ]);
-
                 return _.extend(uniforms, otherUniforms);
             },
 
