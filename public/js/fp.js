@@ -31,11 +31,7 @@ define([
 
     var container = null,
         scene = null,
-        camera = null,
-        renderer = null,    // Three.js
         controls = null,
-        clock = new THREE.Clock(),
-        keyboard = new THREEx.KeyboardState(),
         stats = null,
         gui = null,
         chart = null,
@@ -63,6 +59,10 @@ define([
 
         scene: null,
         appConfig: null,
+        camera: null,
+        renderer: null,
+        clock: new THREE.Clock(),
+        keyboard: new THREEx.KeyboardState(),
 
         /**
          * Represents a network of agents. Also provides factory and utility methods.
@@ -2841,7 +2841,7 @@ define([
             };
             this.Snapshot = function() {
                 var mimetype = mimetype  || "image/png";
-                var url = renderer.domElement.toDataURL(mimetype);
+                var url = fp.renderer.domElement.toDataURL(mimetype);
                 window.open(url, "name-" + Math.random());
             };
             this.FullScreen = function() {
@@ -3121,9 +3121,9 @@ define([
         },
 
         onWindowResize: function() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize( window.innerWidth, window.innerHeight );
+            fp.camera.aspect = window.innerWidth / window.innerHeight;
+            fp.camera.updateProjectionMatrix();
+            fp.renderer.setSize( window.innerWidth, window.innerHeight );
         },
 
         updateChartColors: function() {
@@ -3169,37 +3169,41 @@ define([
             appConfig = new fp.AppConfig();
         },
 
-        // Debug Objects
-        camera: function() { return camera; },
-
+        /**
+         * Sets up the THREE.js camera.
+         */
         setupCamera: function() {
-            camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
+            fp.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
             if ( appConfig.displayOptions.cameraOverride ) {
-                camera.position.x = appConfig.displayOptions.cameraX;
-                camera.position.y = appConfig.displayOptions.cameraY;
-                camera.position.z = appConfig.displayOptions.cameraZ;
+                fp.camera.position.x = appConfig.displayOptions.cameraX;
+                fp.camera.position.y = appConfig.displayOptions.cameraY;
+                fp.camera.position.z = appConfig.displayOptions.cameraZ;
             }
             else if ( appConfig.displayOptions.firstPersonView ) {
-                camera.position.x = 0;
-                camera.position.y = 50 * appConfig.terrainOptions.multiplier;
-                camera.position.z = 0;
+                fp.camera.position.x = 0;
+                fp.camera.position.y = 50 * appConfig.terrainOptions.multiplier;
+                fp.camera.position.z = 0;
             }
             else {
-                camera.position.x = 0;
-                camera.position.y = 200 * appConfig.terrainOptions.multiplier;
-                camera.position.z = 800 * appConfig.terrainOptions.multiplier;
+                fp.camera.position.x = 0;
+                fp.camera.position.y = 200 * appConfig.terrainOptions.multiplier;
+                fp.camera.position.z = 800 * appConfig.terrainOptions.multiplier;
             }
         },
 
+        /**
+         * Sets up the controls.
+         * @memberof fp
+         */
         setupControls: function() {
             if ( appConfig.displayOptions.firstPersonView ) {
-                controls = new THREE.PointerLockControls( camera );
+                controls = new THREE.PointerLockControls( fp.camera );
                 scene.add( controls.getObject() );
                 controls.enabled = true;
                 container.requestPointerLock();
             }
             else {
-                controls = new THREE.TrackballControls( camera, container );
+                controls = new THREE.TrackballControls( fp.camera, container );
                 // Works better - but has no rotation?
                 // controls = new THREE.OrbitControls( camera, container );
                 controls.rotateSpeed = 0.15;
@@ -3216,6 +3220,7 @@ define([
         },
 
         /**
+         * Resets the state of the camera, controls and water object.
          * @memberof fp
          */
         resetControls: function() {
@@ -3224,27 +3229,32 @@ define([
             fp.setupWater();
         },
 
+
+        /**
+         * Sets up the THREE.js renderer.
+         * @memberof fp
+         */
         setupRenderer: function() {
-            renderer = new THREE.WebGLRenderer({
+            fp.renderer = new THREE.WebGLRenderer({
                 alpha: true,
                 antialias: true,
                 preserveDrawingBuffer: true  // to allow screenshot
             });
-            renderer.gammaInput = true;
-            renderer.gammaOutput = true;
+            fp.renderer.gammaInput = true;
+            fp.renderer.gammaOutput = true;
 
-            renderer.shadowMapEnabled = true;
-            renderer.shadowMapType = THREE.PCFSoftShadowMap;
-            renderer.shadowMapCullFace = THREE.CullFaceBack;
+            fp.renderer.shadowMapEnabled = true;
+            fp.renderer.shadowMapType = THREE.PCFSoftShadowMap;
+            fp.renderer.shadowMapCullFace = THREE.CullFaceBack;
 
-            renderer.setClearColor( appConfig.colorOptions.colorNightBackground, 1);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            container.appendChild(renderer.domElement);
-            renderer.domElement.style.zIndex = 2;
+            fp.renderer.setClearColor( appConfig.colorOptions.colorNightBackground, 1);
+            fp.renderer.setSize( window.innerWidth, window.innerHeight );
+            container.appendChild( fp.renderer.domElement );
+            fp.renderer.domElement.style.zIndex = 2;
 
             // We add the event listener to: function the domElement
-            renderer.domElement.addEventListener( "mousemove", fp.onMouseMove );
-            renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
+            fp.renderer.domElement.addEventListener( "mousemove", fp.onMouseMove );
+            fp.renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
         },
 
         /**
@@ -3293,7 +3303,7 @@ define([
             };
             var waterNormals = new THREE.ImageUtils.loadTexture( "textures/waternormals.jpg" );
             waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
-            water = new THREE.Water( renderer, camera, scene, {
+            water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
                 textureWidth: 512,
                 textureHeight: 512,
                 waterNormals: waterNormals,
@@ -3303,7 +3313,7 @@ define([
                 waterColor: 0x001e0f,
                 distortionScale: 50.0,
             } );
-            if ( !_.isUndefined(waterMesh) )
+            if ( !_.isUndefined( waterMesh ) )
                 scene.remove( waterMesh );
             waterMesh = new THREE.Mesh(
                 new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
@@ -3453,7 +3463,7 @@ define([
             fp.updateCamera();
             fp.updateKeyboard();
             requestAnimationFrame( fp.animate );
-            renderer.render( scene, camera );
+            fp.renderer.render( fp.scene, fp.camera );
         },
 
         /**
@@ -3473,7 +3483,7 @@ define([
          * @memberof fp
          */
         updateSimState: function() {
-            if (fp.AppState.stepSimulation)
+            if ( fp.AppState.stepSimulation )
                 fp.AppState.runSimulation = false;
         },
 
@@ -3495,7 +3505,7 @@ define([
          */
         updateControls: function() {
             if ( !appConfig.displayOptions.cursorShow ) {
-                controls.update( clock.getDelta() );
+                controls.update( fp.clock.getDelta() );
 
                 if ( !_.isUndefined(controls.getObject) ) {
                     var obj = controls.getObject();
@@ -3538,8 +3548,8 @@ define([
          */
         updateCamera: function() {
             scene.traverse( function(object) {
-                if (object instanceof THREE.LOD)
-                    object.update(camera);
+                if ( object instanceof THREE.LOD )
+                    object.update( fp.camera );
             } );
             scene.updateMatrixWorld();
         },
@@ -3795,73 +3805,73 @@ define([
          * @memberof fp
          */
         updateKeyboard: function() {
-            if ( keyboard.pressed("V") ) {
+            if ( fp.keyboard.pressed("V") ) {
                 appConfig.displayOptions.firstPersonView = !appConfig.displayOptions.firstPersonView;
                 fp.resetControls();
             }
             if ( appConfig.displayOptions.firstPersonView )
                 return;
-            if ( keyboard.pressed("S") ) {
+            if ( fp.keyboard.pressed("S") ) {
                 appConfig.Setup();
             }
-            else if ( keyboard.pressed("R") ) {
+            else if ( fp.keyboard.pressed("R") ) {
                 appConfig.Run();
             }
-            else if ( keyboard.pressed("U") ) {
+            else if ( fp.keyboard.pressed("U") ) {
                 appConfig.SpeedUp();
             }
-            else if ( keyboard.pressed("D") ) {
+            else if ( fp.keyboard.pressed("D") ) {
                 appConfig.SlowDown();
             }
-            else if ( keyboard.pressed("B") ) {
+            else if ( fp.keyboard.pressed("B") ) {
                 appConfig.displayOptions.buildingsShow = !appConfig.displayOptions.buildingsShow;
                 fp.toggleBuildingState();
             }
-            else if ( keyboard.pressed("O") ) {
+            else if ( fp.keyboard.pressed("O") ) {
                 appConfig.displayOptions.roadsShow = !appConfig.displayOptions.roadsShow;
                 fp.toggleRoadState();
             }
-            else if ( keyboard.pressed("M") ) {
+            else if ( fp.keyboard.pressed("M") ) {
                 appConfig.displayOptions.waterShow = !appConfig.displayOptions.waterShow;
                 fp.toggleWaterState();
             }
-            else if ( keyboard.pressed("N") ) {
+            else if ( fp.keyboard.pressed("N") ) {
                 appConfig.displayOptions.networkShow = !appConfig.displayOptions.networkShow;
                 fp.toggleAgentNetwork();
             }
-            else if ( keyboard.pressed("P") ) {
+            else if ( fp.keyboard.pressed("P") ) {
                 appConfig.displayOptions.patchesShow = !appConfig.displayOptions.patchesShow;
                 fp.togglePatchesState();
             }
-            else if ( keyboard.pressed("T") ) {
+            else if ( fp.keyboard.pressed("T") ) {
                 appConfig.displayOptions.trailsShow = !appConfig.displayOptions.trailsShow;
                 fp.toggleTrailState();
             }
-            else if ( keyboard.pressed("C") ) {
+            else if ( fp.keyboard.pressed("C") ) {
                 appConfig.displayOptions.cursorShow = !appConfig.displayOptions.cursorShow;
                 fp.removeCursor();
             }
-            else if ( keyboard.pressed("A") ) {
+            else if ( fp.keyboard.pressed("A") ) {
                 appConfig.displayOptions.statsShow = !appConfig.displayOptions.statsShow;
                 fp.toggleStatsState();
             }
-            else if ( keyboard.pressed("W") ) {
+            else if ( fp.keyboard.pressed("W") ) {
                 appConfig.displayOptions.wireframeShow = !appConfig.displayOptions.wireframeShow;
                 fp.toggleWireframeState();
             }
-            else if ( keyboard.pressed("Y") ) {
+            else if ( fp.keyboard.pressed("Y") ) {
                 appConfig.displayOptions.dayShow = !appConfig.displayOptions.dayShow;
                 fp.toggleDayNight();
             }
-            else if ( keyboard.pressed("G") ) {
+            else if ( fp.keyboard.pressed("G") ) {
                 appConfig.displayOptions.chartShow = !appConfig.displayOptions.chartShow;
                 fp.updateGraph();
             }
-            else if ( keyboard.pressed("X") ) {
+            else if ( fp.keyboard.pressed("X") ) {
                 appConfig.displayOptions.pathsShow = !appConfig.displayOptions.pathsShow;
                 pathNetwork.updatePathsState();
             }
-            else if ( keyboard.pressed("E") ) {
+            else if ( fp.keyboard.pressed("E") ) {
                 appConfig.displayOptions.terrainShow = !appConfig.displayOptions.terrainShow;
                 terrain.updateTerrainPlane();
             }
@@ -3880,11 +3890,11 @@ define([
 
             //the final step of the transformation process, basically this method call
             //creates a point in 3d space where the mouse click occurd
-            mouseVector.unproject( camera );
+            mouseVector.unproject( fp.camera );
 
-            var direction = mouseVector.sub( camera.position ).normalize();
+            var direction = mouseVector.sub( fp.camera.position ).normalize();
 
-            ray.set( camera.position, direction );
+            ray.set( fp.camera.position, direction );
 
             //asking the raycaster if the mouse click touched the sphere object
             var intersects = ray.intersectObject( terrain.plane );
@@ -4096,7 +4106,7 @@ define([
             terrain.richTerrainMaterial.needsUpdate = true; // important!
             terrain.simpleTerrainMaterial.needsUpdate = true; // important!
             terrain.plane.material.needsUpdate = true; // important!
-            renderer.setClearColor( colorBackground, 1);
+            fp.renderer.setClearColor( colorBackground, 1);
             if ( appConfig.buildingOptions.useShader ) {
                 fp.buildingNetwork.buildings.forEach(function(building) {
                     building.highResMeshContainer.children.forEach( function(floor) {
