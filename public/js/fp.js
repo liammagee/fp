@@ -34,31 +34,32 @@ define([
      * @module fp
      * @namespace fp
      */
-    var fp = {
+    var FiercePlanet = function() {
 
-        container: null,
-        scene: null,
-        appConfig: null,
-        camera: null,
-        renderer: null,
-        clock: new THREE.Clock(),
-        mouse: { x: 0, y: 0, z: 1 },
-        mouseVector: new THREE.Vector3(),
-        keyboard: new THREEx.KeyboardState(),
-        stats: null,
-        terrain: null,
-        controls: null,
-        gui: null,
-        chart: null,
-        ray: new THREE.Raycaster( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) ),
-        skyBox: null,
-        waterMesh: null,    // Landscape variables
-        water: null,
-        agentNetwork: null,
-        pathNetwork: null,
-        trailNetwork: null,
-        cursor: null,
-        sim: null,
+        var fp = this;
+        this.container = null;
+        this.scene = null;
+        this.appConfig = null;
+        this.camera = null;
+        this.renderer = null;
+        this.clock = new THREE.Clock();
+        this.mouse = { x: 0, y: 0, z: 1 };
+        this.mouseVector = new THREE.Vector3();
+        this.keyboard = new THREEx.KeyboardState();
+        this.stats = null;
+        this.terrain = null;
+        this.controls = null;
+        this.gui = null;
+        this.chart = null;
+        this.ray = new THREE.Raycaster( new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0) );
+        this.skyBox = null;
+        this.waterMesh = null;
+        this.water = null;
+        this.agentNetwork = null;
+        this.pathNetwork = null;
+        this.trailNetwork = null;
+        this.cursor = null;
+        this.sim = null;
 
         /**
          * Represents a network of agents. Also provides factory and utility methods.
@@ -66,7 +67,7 @@ define([
          * @memberof fp
          * @inner
          */
-        AgentNetwork: function() {
+        this.AgentNetwork = function() {
 
             /**
              * Represents a specific network within the overall network configuration. Also provides factory and utility methods.
@@ -486,9 +487,9 @@ define([
             this.networks.push( new this.AgentNetworkNetwork() );
             this.particles = null;
             this.agentParticleSystemAttributes = null;
-        },
+        };
 
-        BUILDING_FORMS: {
+        this.BUILDING_FORMS = {
             names: [ "rectangle", "octagon", "fivesided", "triangle", "concave" ],
             rectangle: function(w, l, h) {
                 var p1 = new THREE.Vector3(-w / 2, h, -l / 2);
@@ -533,7 +534,7 @@ define([
                 var p4 = new THREE.Vector3(-w / 2, h, l / 2);
                 return [p1, p1_1, p1_2, p1_3, p1_4, p2, p3, p4];
             }
-        },
+        };
 
         /**
          * Represents a network of buildings. Also provides factory and utility methods.
@@ -541,7 +542,7 @@ define([
          * @memberof fp
          * @inner
          */
-        BuildingNetwork: function() {
+        this.BuildingNetwork = function() {
             this.networkMesh = null;
             this.networkJstsCache = [];
             this.buildings = [];
@@ -742,7 +743,7 @@ define([
                 fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
                 return building;
             };
-        },
+        };
 
         /**
          * Represents a network of roads. Also provides factory and utility methods.
@@ -750,7 +751,7 @@ define([
          * @memberof fp
          * @inner
          */
-        RoadNetwork: function() {
+        this.RoadNetwork = function() {
             this.networkMesh = null;
             this.networkJstsCache = [];
             this.roads = {};
@@ -959,7 +960,7 @@ define([
                 }
                 return area / 2;
             };
-        },
+        };
 
         /**
          * Represents a network of patches. Also provides factory and utility methods.
@@ -967,7 +968,7 @@ define([
          * @memberof fp
          * @inner
          */
-        PatchNetwork: function() {
+        this.PatchNetwork = function() {
             this.plane = null;
             this.patches = {};
             this.patchValues = [];
@@ -1115,7 +1116,7 @@ define([
                 else
                     fp.scene.remove( this.plane );
             };
-        },
+        };
 
         /**
          * Represents a network of trails. Also provides factory and utility methods.
@@ -1123,7 +1124,7 @@ define([
          * @memberof fp
          * @inner
          */
-        TrailNetwork: function() {
+        this.TrailNetwork = function() {
             this.trails = {};
             this.trailMeshes = null;
             this.globalTrailLine = null;
@@ -1148,7 +1149,7 @@ define([
                 }
                 fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
             };
-        },
+        };
 
         /**
          * Represents a cursor operating on the world.
@@ -1156,7 +1157,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Cursor: function() {
+        this.Cursor = function() {
             this.cell = null;
 
             /**
@@ -1249,7 +1250,7 @@ define([
                 }
                 this.cell.geometry.verticesNeedUpdate = true;
             };
-        },
+        };
 
 
         /**
@@ -1258,7 +1259,7 @@ define([
          * @memberof fp
          * @inner
          */
-        PathNetwork: function() {
+        this.PathNetwork = function() {
             this.networkMesh = null;
             this.pathCache = {};
             this.stepsPerNode = fp.terrain.ratioExtentToPoint;
@@ -1337,9 +1338,9 @@ define([
                 else
                     fp.scene.add( fp.pathNetwork.networkMesh );
             };
-        },
+        };
 
-        TERRAIN_MAPS: [ "assets/syd2.bin", "assets/mel2.bin" ],
+        this.TERRAIN_MAPS = [ "assets/syd2.bin", "assets/mel2.bin" ];
 
         /**
          * Represents the fp.terrain of the world.
@@ -1347,7 +1348,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Terrain: function() {
+        this.Terrain = function() {
             this.plane = null;
             this.richTerrainMaterial = null;
             this.simpleTerrainMaterial = null;
@@ -1519,7 +1520,7 @@ define([
                     fp.scene.add( fp.terrain.plane );
             };
 
-        },
+        };
 
         /**
          * Represents the time scale used by the world.
@@ -1527,7 +1528,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Timescale: function() {     // Time variables
+       this.Timescale = function() {     // Time variables
             this.initialYear = 1800;
             this.endYear = 2200;
             this.currentYear = this.initialYear;
@@ -1537,7 +1538,7 @@ define([
             this.MIN_FRAMES_TO_YEAR = null;
             this.framesToYear = 32;
             this.frameCounter = 0;
-        },
+        };
 
         /**
          * Represents a mobile and alive agent
@@ -1545,7 +1546,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Agent: function() {
+        this.Agent = function() {
 
             /**
              * @memberof Agent
@@ -1964,7 +1965,7 @@ define([
             this.friends = [];
             this.pathComputed = undefined;
             this.pathPosition = 0;
-        },
+        };
 
         /**
          * Represents a building with a position, dimesions, and one or more floors.
@@ -1972,7 +1973,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Building: function() {
+        this.Building = function() {
             this.mesh = null;
             this.lineMaterial = null;
             this.buildingMaterial = null;
@@ -2450,7 +2451,7 @@ define([
                 else
                     this.highResMeshContainer.remove(this.windowsFillContainer);
             };
-        },
+        };
 
         /**
          * Represents a road or path between two points.
@@ -2458,7 +2459,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Road: function() {
+        this.Road = function() {
             this.mesh = null;
             this.position = null;
             this.setupRoad = function(_x, _y, _z) {
@@ -2468,7 +2469,7 @@ define([
             };
             this.shadedShape = function (points) {};
             this.update = function() { };
-        },
+        };
 
         /**
          * Represents a square block of the fp.terrain. It has a value that can be used to represent some property of interest.
@@ -2476,7 +2477,7 @@ define([
          * @memberof fp
          * @inner
          */
-        Patch: function(val) {
+        this.Patch = function(val) {
             this.value = val;
             this.updateValue = function(inc) {
                 var val = this.value;
@@ -2488,7 +2489,7 @@ define([
                     val += inc;
                 this.value = val;
             };
-        },
+        };
 
         /**
          * Represents relevant state about the application.
@@ -2496,10 +2497,10 @@ define([
          * @memberof fp
          * @inner
          */
-        AppState: {
+        this.AppState = {
             runSimulation: false,
             stepSimulation: false
-        },
+        };
 
         /**
          * Represents configuration data about the application.
@@ -2508,7 +2509,7 @@ define([
          * @memberof fp
          * @inner
          */
-        AppConfig: function() {
+        this.AppConfig = function() {
             /**
              * World options.
              * @namespace fp~AppConfig~worldOptions
@@ -2605,6 +2606,7 @@ define([
                 dayShow: false,
                 skyboxShow: true,
                 chartShow: true,
+                guiShow: true,
                 pathsShow: true,
                 terrainShow: true,
                 coloriseAgentsByHealth: false,
@@ -2613,6 +2615,7 @@ define([
                 cameraX: 0,
                 cameraY: 200,
                 cameraZ: 800,
+                maximiseView: true,
             };
             this.roadOptions = {
                 create: true,
@@ -2856,6 +2859,7 @@ define([
                         fp.chart.stop();
                 }
             };
+
             this.Step = function() {
                 fp.AppState.runSimulation = fp.AppState.stepSimulation = true;
             };
@@ -2893,9 +2897,13 @@ define([
                       fp.terrain.terrainMapIndex + 1;
                 fp.terrain.loadTerrain();
             };
-        },
+        };
 
-        Chart: {  // Singleton objects
+        /**
+         * Singleton Chart object.
+         * @type {Object}
+         */
+        this.Chart = {
             setupChart: function () {
                 var agentDiv = fp.appConfig.agentOptions.initialPopulation * 2;
                 fp.chart = new SmoothieChart( { maxValue: agentDiv, minValue: 0.0  } );
@@ -2910,7 +2918,7 @@ define([
                     }
                 }, 500);
                 var chartCanvas = document.createElement("canvas");
-                chartCanvas.setAttribute("id", "chartCanvas");
+                chartCanvas.setAttribute("id", "chartCanvas-" + fp.container.id);
                 chartCanvas.setAttribute("width", "400");
                 chartCanvas.setAttribute("height", "100");
                 chartCanvas.setAttribute("style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  ");
@@ -2924,11 +2932,11 @@ define([
             },
 
             updateGraph: function() {
-                $("#chartCanvas").toggle( fp.appConfig.displayOptions.chartShow );
+                $("#chartCanvas-" + fp.container.id).toggle( fp.appConfig.displayOptions.chartShow );
             }
-        },
+        };
 
-        doGUI: function( config ) {
+        this.doGUI = function( config ) {
             fp.gui = new dat.GUI( { load: config } );
 
             fp.gui.remember( fp.appConfig );
@@ -3071,6 +3079,7 @@ define([
             displayFolder.add( fp.appConfig.displayOptions, "dayShow").onFinishChange( fp.toggleDayNight );
             displayFolder.add( fp.appConfig.displayOptions, "skyboxShow").onFinishChange( fp.toggleDayNight );
             displayFolder.add( fp.appConfig.displayOptions, "chartShow").onFinishChange( fp.updateGraph );
+            displayFolder.add( fp.appConfig.displayOptions, "guiShow");
             displayFolder.add( fp.appConfig.displayOptions, "pathsShow").onFinishChange( fp.pathNetwork.updatePathsState );
             displayFolder.add( fp.appConfig.displayOptions, "terrainShow").onFinishChange( fp.terrain.updateTerrainPlane );
             displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
@@ -3079,6 +3088,7 @@ define([
             displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 5000).onFinishChange( fp.resetControls );
             displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 5000).onFinishChange( fp.resetControls );
             displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 5000).onFinishChange( fp.resetControls );
+            displayFolder.add( fp.appConfig.displayOptions, "maximiseView");
 
             var colorFolder = fp.gui.addFolder("Color Options");
             var colorTerrainFolder = colorFolder.addFolder("Terrain Colors");
@@ -3116,7 +3126,12 @@ define([
             colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
             colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayTrail" );
             colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightTrail" );
-        },
+
+            if ( !fp.appConfig.displayOptions.guiShow ) {
+                fp.gui.destroy();
+                return;
+            }
+        };
 
         /**
          * Generates a THREE.Vector3 object containing RGB values from either
@@ -3124,7 +3139,7 @@ define([
          * @param  {string/number} color the color to convert
          * @return {THREE.Vector3}       [description]
          */
-        buildColorVector: function(color) {
+        this.buildColorVector = function(color) {
             var bc, r, g, b;
             if (!isNaN(parseInt(color))) {
                 b = color % 256;
@@ -3138,38 +3153,49 @@ define([
                 b = bc[2];
             }
             return new THREE.Vector3( r / 255.0, g / 255.0, b / 255.0 );
-        },
+        };
 
-        buildColorInteger: function(r, g, b) {
+        this.buildColorInteger = function(r, g, b) {
             return r * 256 * 256 + g * 256 + b;
-        },
+        };
 
-        getOffset: function(currentLevel, len) {
+        this.getOffset = function(currentLevel, len) {
             var initOffset = (currentLevel > 0) ? len * 2 : 0;
             var offset = initOffset + (currentLevel) * len * 4;
             return offset;
-        },
+        };
 
-        onWindowResize: function() {
-            fp.camera.aspect = window.innerWidth / window.innerHeight;
-            fp.camera.updateProjectionMatrix();
-            fp.renderer.setSize( window.innerWidth, window.innerHeight );
-        },
+        /**
+         * Resizes the renderer and camera aspect.
+         */
+        this.onWindowResize = function() {
+            if ( fp.appConfig.displayOptions.maximiseView ) {
+                fp.camera.aspect = window.innerWidth / window.innerHeight;
+                fp.camera.updateProjectionMatrix();
+                fp.renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+            else {
+                var width = $("#container1").width(), height = $("#container1").height();
+                fp.camera.aspect = width / height;
+                fp.camera.updateProjectionMatrix();
+                fp.renderer.setSize( width, height );
+            }
+        };
 
-        updateChartColors: function() {
+        this.updateChartColors = function() {
             var colorPop = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPopulation ).getHexString(),
                 colorHealth = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphHealth ).getHexString(),
                 colorPatches = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPatchValues ).getHexString();
             _.extend( fp.chart.seriesSet[0].options, { strokeStyle: colorPop } );
             _.extend( fp.chart.seriesSet[1].options, { strokeStyle: colorHealth } );
             _.extend( fp.chart.seriesSet[2].options, { strokeStyle: colorPatches } );
-        },
+        };
 
-        mostVisited: function() {
+        this.mostVisited = function() {
             return _.chain(trailNetwork.trails).pairs().sortBy(function(a) {return a[1];} ).last(100).value();
-        },
+        };
 
-        vertexCount: function(obj) {
+        this.vertexCount = function(obj) {
             var count = 0;
             if ( !_.isUndefined(obj.geometry) ) {
                 if ( !_.isUndefined(obj.geometry.vertices) )
@@ -3183,9 +3209,9 @@ define([
                 });
             }
             return count;
-        },
+        };
 
-        setupSimObjects: function() {
+        this.setupSimObjects = function() {
             // Set up root objects
             fp.terrain = new fp.Terrain();
             fp.agentNetwork = new fp.AgentNetwork();
@@ -3197,12 +3223,12 @@ define([
             fp.timescale = new fp.Timescale();
             fp.cursor = new fp.Cursor();
             fp.appConfig = new fp.AppConfig();
-        },
+        };
 
         /**
          * Sets up the THREE.js camera.
          */
-        setupCamera: function() {
+        this.setupCamera = function() {
             fp.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
             if ( fp.appConfig.displayOptions.cameraOverride ) {
                 fp.camera.position.x = fp.appConfig.displayOptions.cameraX;
@@ -3219,13 +3245,13 @@ define([
                 fp.camera.position.y = 200 * fp.appConfig.terrainOptions.multiplier;
                 fp.camera.position.z = 800 * fp.appConfig.terrainOptions.multiplier;
             }
-        },
+        };
 
         /**
          * Sets up the controls.
          * @memberof fp
          */
-        setupControls: function() {
+        this.setupControls = function() {
             if ( fp.appConfig.displayOptions.firstPersonView ) {
                 fp.controls = new THREE.PointerLockControls( fp.camera );
                 fp.scene.add( fp.controls.getObject() );
@@ -3247,24 +3273,24 @@ define([
                 fp.controls.minDistance = 250.0;
                 fp.controls.maxDistance = 10000.0;
             }
-        },
+        };
 
         /**
          * Resets the state of the camera, controls and water object.
          * @memberof fp
          */
-        resetControls: function() {
+        this.resetControls = function() {
             fp.setupCamera();
             fp.setupControls();
             fp.setupWater();
-        },
+        };
 
 
         /**
          * Sets up the THREE.js renderer.
          * @memberof fp
          */
-        setupRenderer: function() {
+        this.setupRenderer = function() {
             fp.renderer = new THREE.WebGLRenderer({
                 alpha: true,
                 antialias: true,
@@ -3278,19 +3304,19 @@ define([
             fp.renderer.shadowMapCullFace = THREE.CullFaceBack;
 
             fp.renderer.setClearColor( fp.appConfig.colorOptions.colorNightBackground, 1);
-            fp.renderer.setSize( window.innerWidth, window.innerHeight );
+            fp.onWindowResize();
             fp.container.appendChild( fp.renderer.domElement );
             fp.renderer.domElement.style.zIndex = 2;
 
-            // We add the event listener to: function the domElement
+            // We add the event listener to = function the domElement
             fp.renderer.domElement.addEventListener( "mousemove", fp.onMouseMove );
             fp.renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        setupLighting: function() {
+        this.setupLighting = function() {
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
             var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
@@ -3315,12 +3341,12 @@ define([
             dirLight.shadowBias = -0.0001;
             //dirLight.shadowCameraVisible = true; // for debugging
             fp.scene.add( dirLight );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        setupWater: function() {
+        this.setupWater = function() {
             // Taken from Three.js examples, webgl_shaders_ocean.html
             var parameters = {
                 width: 2000,
@@ -3354,12 +3380,12 @@ define([
             fp.waterMesh.position.y = 2;
             if ( fp.appConfig.displayOptions.waterShow )
                 fp.scene.add( fp.waterMesh );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        setupSky: function() {
+        this.setupSky = function() {
             // load skybox
             var cubeMap = new THREE.CubeTexture( [] );
             cubeMap.format = THREE.RGBFormat;
@@ -3408,20 +3434,20 @@ define([
             fp.skyBox.position.set(0, skies[skyI][2], 0);
             if ( fp.appConfig.displayOptions.skyboxShow )
                 fp.scene.add( fp.skyBox );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        setOutputHUD: function() {
+        this.setOutputHUD = function() {
             $("#yearValue").html( fp.timescale.currentYear );
             $("#populationValue").html( fp.agentNetwork.agents.length );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        setupGUI: function(config) {
+        this.setupGUI = function( config ) {
             if ( !_.isUndefined( config ) ) {
                 fp.doGUI( config );
             }
@@ -3432,7 +3458,7 @@ define([
                 }
                 else if ( !_.isUndefined( recipe ) ) {
                     $.getJSON("/recipes/" + recipe + ".json", function(data) {
-                        fp.doGUI(data);
+                        fp.doGUI( data );
                     });
                 }
                 else
@@ -3440,7 +3466,7 @@ define([
             }
             else
                 fp.doGUI();
-        },
+        };
 
         /**
          * Initialises the simulation.
@@ -3449,8 +3475,8 @@ define([
          * @param  {Object}   sim      An Object containing a setup() and a tick() function.
          * @param  {Function} callback Callback function to call at the end of initialisation.
          */
-        init: function( config, sim, callback ) {
-            fp.container = $( "#container" )[0];
+        this.init = function( config, sim, callback ) {
+            fp.container = $( "#container" )[0] || config.container;
             fp.scene = new THREE.Scene();
             fp.sim = sim || fp.simDefault();
             fp.setupSimObjects();
@@ -3466,13 +3492,15 @@ define([
             fp.toggleStatsState(); // Add stats
             window.addEventListener( "resize", fp.onWindowResize, false );
             fp.terrain.loadTerrain( callback ); // Load the terrain asynchronously
-        },
+            /*
+            */
+        };
 
         /**
          * The core simulation animation method.
          * @memberof fp
          */
-        animate: function() {
+        this.animate = function() {
             // Must call this first!
             fp.patchNetwork.updatePatchAgents();
             if ( fp.AppState.runSimulation )
@@ -3491,45 +3519,45 @@ define([
             fp.updateKeyboard();
             requestAnimationFrame( fp.animate );
             fp.renderer.render( fp.scene, fp.camera );
-        },
+        };
 
         /**
          * Factory method to generate a default sim object.
          * @memberof fp
          */
-        simDefault: function() {
+        this.simDefault = function() {
             return {
                 counter: 0,
                 setup: function() { /* console.log("Default sim set up"); */ },
                 tick: function()  { /* console.log("Default sim tick: " + (++ this.counter)); */ }
             };
-        },
+        };
 
         /**
          * Updates the simulation state.
          * @memberof fp
          */
-        updateSimState: function() {
+        this.updateSimState = function() {
             if ( fp.AppState.stepSimulation )
                 fp.AppState.runSimulation = false;
-        },
+        };
 
         /**
          * Updates the water object, if it exists.
          * @memberof fp
          */
-        updateWater: function() {
+        this.updateWater = function() {
             if ( !_.isUndefined( fp.water ) && !_.isUndefined( fp.water.material.uniforms.time ) ) {
                 fp.water.material.uniforms.time.value += 1.0 / 60.0;
                 fp.water.render();
             }
-        },
+        };
 
         /**
          * Updates the controls.
          * @memberof fp
          */
-        updateControls: function() {
+        this.updateControls = function() {
             if ( !fp.appConfig.displayOptions.cursorShow ) {
                 fp.controls.update( fp.clock.getDelta() );
 
@@ -3548,53 +3576,53 @@ define([
                     //obj.translateY( fp.getHeight(obj.position.x, obj.position.z) );
                 }
             }
-        },
+        };
 
         /**
          * Adjusts the graph size if needed.
          * @memberof fp
          */
-        updateGraph: function() {
+        this.updateGraph = function() {
             if ( fp.chart.options.maxValue <= fp.agentNetwork.agents.length )
                 fp.chart.options.maxValue *= 2;
-        },
+        };
 
         /**
          * Updates the stats widget.
          * @memberof fp
          */
-        updateStats: function() {
+        this.updateStats = function() {
             if ( fp.appConfig.displayOptions.statsShow )
                 fp.stats.update();
-        },
+        };
 
         /**
          * Updates the camera for the scene and its objects.
          * @memberof fp
          */
-        updateCamera: function() {
+        this.updateCamera = function() {
             fp.scene.traverse( function(object) {
                 if ( object instanceof THREE.LOD )
                     object.update( fp.camera );
             } );
             fp.scene.updateMatrixWorld();
-        },
+        };
 
         /**
          * Ends the simulation.
          * @memberof fp
          */
-        endSim: function() {
+        this.endSim = function() {
             fp.AppState.runSimulation = false;
             fp.appConfig.displayOptions.buildingsShow = false;
             fp.appConfig.displayOptions.patchesUpdate = false;
-        },
+        };
 
         /**
          * Updates the year of the simulation.
          * @memberof fp
          */
-        updateYear: function() {
+        this.updateYear = function() {
             if ( !fp.AppState.runSimulation )
                 return;
             fp.timescale.frameCounter++;
@@ -3606,12 +3634,12 @@ define([
                 else
                     fp.endSim();
             }
-        },
+        };
 
         /**
          * @memberof fp
          */
-        getPatchIndex: function(x, y) {
+        this.getPatchIndex = function(x, y) {
             x = Math.round(x / fp.appConfig.terrainOptions.multiplier);
             y = Math.round(y / fp.appConfig.terrainOptions.multiplier);
             var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
@@ -3619,12 +3647,12 @@ define([
             var pX = Math.floor( dim * (x / 2 + halfGrid) / fp.terrain.gridExtent );
             var pY = Math.floor( dim * (halfGrid + y / 2) / fp.terrain.gridExtent );
             return pY * dim + pX;
-        },
+        };
 
         /**
          * @memberof fp
          */
-        getIndex: function(x, y) {
+        this.getIndex = function(x, y) {
             x = Math.round(x / fp.appConfig.terrainOptions.multiplier);
             y = Math.round(y / fp.appConfig.terrainOptions.multiplier);
             var maxExtent = fp.appConfig.agentOptions.maxExtent;
@@ -3639,42 +3667,42 @@ define([
             var xLoc = Math.floor((Math.round(x) + halfGrid) / gridRatio);
             var yLoc = Math.floor((Math.round(y) + halfGrid) / gridRatio);
             return Math.floor( fp.terrain.gridPoints * yLoc + xLoc);
-        },
+        };
 
         /**
          * @memberof fp
          */
-        getHeightForIndex: function(index) {
+        this.getHeightForIndex = function(index) {
             if ( index >= 0 && !_.isUndefined( fp.terrain.plane.geometry.attributes.position.array[index * 3 + 2] ) )
                 return fp.terrain.plane.geometry.attributes.position.array[index * 3 + 2];
             return null;
-        },
+        };
 
         /**
          * @memberof fp
          */
-        getHeight: function(x, y) {
+        this.getHeight = function(x, y) {
             return fp.getHeightForIndex( fp.getIndex(x, y) );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        speedOfSim: function() {
+        this.speedOfSim = function() {
             return true;
-        },
+        };
 
         /**
          * @memberof fp
          */
-        likelihoodOfGrowth: function() {
+        this.likelihoodOfGrowth = function() {
             return (1 - ( fp.buildingNetwork.speedOfConstruction * fp.speedOfSim()) );
-        },
+        };
 
         /**
          * @memberof fp
          */
-        checkProximityOfRoads: function(index) {
+        this.checkProximityOfRoads = function(index) {
             var cells = fp.surroundingCells(index);
             for (var i = 0; i < cells.length; i++) {
                 var cell = cells[i];
@@ -3682,7 +3710,7 @@ define([
                     return 1.0;
             }
             return 0.0;
-        },
+        };
 
         /**
          * Count how many surrounding cells are also sea level
@@ -3690,7 +3718,7 @@ define([
          * @param  {Number} index
          * @return {Number}
          */
-        checkProximityOfWater: function(index) {
+        this.checkProximityOfWater = function(index) {
             // Now count how many surrounding are also sea level
             // We count in 8 directions, to maxDepth
             var seaLevelNeighbours = 0, totalNeighbours = 0;
@@ -3700,7 +3728,7 @@ define([
                 totalNeighbours++;
             });
             return seaLevelNeighbours / totalNeighbours;
-        },
+        };
 
         /**
          * Count how many surrounding cells are also buildings
@@ -3708,7 +3736,7 @@ define([
          * @param  {Number} index
          * @return {Number}
          */
-        checkProximityOfBuildings: function(index) {
+        this.checkProximityOfBuildings = function(index) {
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
             fp.surroundingCells(index).forEach(function(cell) {
@@ -3717,14 +3745,14 @@ define([
                 totalNeighbours++;
             });
             return buildingNeighbours / totalNeighbours;
-        },
+        };
 
         /**
          * Now count how many surrounding are also sea level.
          * We count in 8 directions, to maxDepth
          * @memberof fp
          */
-        checkProximiteBuildingHeight: function(index) {
+        this.checkProximiteBuildingHeight = function(index) {
             if ( fp.buildingNetwork.buildings.length === 0 )
                 return 0;
 
@@ -3760,12 +3788,12 @@ define([
             }
             else
                 return 0;
-        },
+        };
 
         /**
          * @memberof fp
          */
-        surroundingCells: function(index) {
+        this.surroundingCells = function(index) {
             // Now count how many surrounding are also sea level
             // We count in 8 directions, to maxDepth
             // We also try to ignore cases which go over grid boundaries
@@ -3825,12 +3853,12 @@ define([
                 ) );
             }
             return _.compact(surroundingCells);
-        },
+        };
 
         /**
          * @memberof fp
          */
-        updateKeyboard: function() {
+        this.updateKeyboard = function() {
             if ( fp.keyboard.pressed("V") ) {
                 fp.appConfig.displayOptions.firstPersonView = !fp.appConfig.displayOptions.firstPersonView;
                 fp.resetControls();
@@ -3901,12 +3929,12 @@ define([
                 fp.appConfig.displayOptions.terrainShow = !fp.appConfig.displayOptions.terrainShow;
                 fp.terrain.updateTerrainPlane();
             }
-        },
+        };
 
         /**
          * @memberof fp
          */
-        mouseIntersects: function( eventInfo ) {
+        this.mouseIntersects = function( eventInfo ) {
             //this where begin to transform the mouse cordinates to three,js cordinates
             fp.mouse.x = ( eventInfo.clientX / window.innerWidth ) * 2 - 1;
             fp.mouse.y = -( eventInfo.clientY / window.innerHeight ) * 2 + 1;
@@ -3932,12 +3960,12 @@ define([
                 point = intersects[0].point;
 
             return point;
-        },
+        };
 
         /**
          * @memberof fp
          */
-        onMouseMove: function( eventInfo ) {
+        this.onMouseMove = function( eventInfo ) {
             //stop any other event listener from recieving this event
             eventInfo.preventDefault();
 
@@ -3952,12 +3980,12 @@ define([
 
             if (eventInfo.which == 1)
                 fp.terrain.flattenTerrain();
-        },
+        };
 
         /**
          * @memberof fp
          */
-        onMouseUp: function(eventInfo) {
+        this.onMouseUp = function(eventInfo) {
             //stop any other event listener from recieving this event
             eventInfo.preventDefault();
 
@@ -3974,46 +4002,46 @@ define([
                     p1 = p2 = undefined;
                 }
             }
-        },
+        };
 
         /**
          * Toggles the visibility of the building network.
          * @memberof fp
          */
-        toggleBuildingState: function() {
+        this.toggleBuildingState = function() {
             if ( !fp.appConfig.displayOptions.buildingsShow )
                 fp.scene.remove( fp.buildingNetwork.networkMesh);
             else
                 fp.scene.add( fp.buildingNetwork.networkMesh);
-        },
+        };
 
         /**
          * Toggles the visibility of the raod network.
          * @memberof fp
          */
-        toggleRoadState: function() {
+        this.toggleRoadState = function() {
             if ( !fp.appConfig.displayOptions.roadsShow )
                 fp.scene.remove( fp.roadNetwork.networkMesh );
             else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
                 fp.scene.add( fp.roadNetwork.networkMesh );
-        },
+        };
 
         /**
          * Toggles the visibility of water.
          * @memberof fp
          */
-        toggleWaterState: function() {
+        this.toggleWaterState = function() {
             if ( !fp.appConfig.displayOptions.waterShow )
                 fp.scene.remove( fp.waterMesh );
             else
                 fp.scene.add( fp.waterMesh );
-        },
+        };
 
         /**
          * Toggles the visibility of the agent network.
          * @memberof fp
          */
-        toggleAgentNetwork: function() {
+        this.toggleAgentNetwork = function() {
             if ( !fp.appConfig.displayOptions.networkShow ) {
                 fp.agentNetwork.networks.forEach( function( network ) {
                     fp.scene.remove( network.networkMesh );
@@ -4025,24 +4053,24 @@ define([
                         fp.scene.add( network.networkMesh );
                 });
             }
-        },
+        };
 
         /**
          * Toggles the visibility of fp.terrain patches.
          * @memberof fp
          */
-        togglePatchesState: function() {
+        this.togglePatchesState = function() {
             if ( fp.appConfig.displayOptions.patchesUseShader )
                 fp.patchNetwork.togglePatchesStateWithShader();
             else
                 fp.patchNetwork.togglePatchesStateWithoutShader();
-        },
+        };
 
         /**
          * Toggles the visibility of the trail.
          * @memberof fp
          */
-        toggleTrailState: function() {
+        this.toggleTrailState = function() {
             if ( !fp.appConfig.displayOptions.trailsShow ||
                 !fp.appConfig.displayOptions.trailsShowAsLines ) {
                 fp.scene.remove( fp.trailNetwork.globalTrailLine );
@@ -4050,22 +4078,22 @@ define([
             else if ( appConfig.displayOptions.trailsShowAsLines ) {
                 fp.scene.add( fp.trailNetwork.globalTrailLine );
             }
-        },
+        };
 
         /**
          * Removes cursor.
          * @memberof fp
          */
-        removeCursor: function()  {
+        this.removeCursor = function()  {
             fp.scene.remove( fp.cursor.cell );
             fp.cursor.cell = undefined;
-        },
+        };
 
         /**
          * Toggles the visibility of the stats widget.
          * @memberof fp
          */
-        toggleStatsState: function() {
+        this.toggleStatsState = function() {
             if ( fp.appConfig.displayOptions.statsShow && fp.stats === null ) {
                 fp.stats = new Stats();
                 fp.stats.domElement.style.position = "absolute";
@@ -4073,33 +4101,33 @@ define([
                 fp.container.appendChild( fp.stats.domElement );
             }
             $( "#stats" ).toggle( fp.appConfig.displayOptions.statsShow );
-        },
+        };
 
         /**
          * Toggles the visibility of the heads-up display.
          * @memberof fp
          */
-        toggleHUDState: function() {
+        this.toggleHUDState = function() {
             $( "#hudDiv" ).toggle( fp.appConfig.displayOptions.hudShow );
-        },
+        };
 
         /**
          * Toggles the visibility of the wireframe.
          * @memberof fp
          */
-        toggleWireframeState: function() {
+        this.toggleWireframeState = function() {
             fp.terrain.simpleTerrainMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
             fp.terrain.richTerrainMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
             fp.buildingNetwork.buildings.forEach(function(building) {
                 building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayOptions.wireframeShow; });
             });
-        },
+        };
 
         /**
          * Toggles day or night visibility.
          * @memberof fp
          */
-        toggleDayNight: function() {
+        this.toggleDayNight = function() {
             var colorBackground, colorBuilding, colorRoad,
                 colorAgent, colorNetwork, colorTrail,
                 colorBuildingFill, colorBuildingLine, colorBuildingWindow;
@@ -4162,9 +4190,9 @@ define([
             }
             if ( !_.isNull( fp.agentNetwork.particles ))
                 fp.agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent; });
-        },
+        };
 
-        ShaderUtils: {
+        this.ShaderUtils = {
             buildingVertexShaderParams: function() {
                 return [
                     "varying vec3 pos; ",
@@ -4567,8 +4595,11 @@ define([
 
         }
     }
-    if (typeof(window) !== "undefined")
-        window.fp = fp;
+    var fp = new FiercePlanet();
+    if (typeof(window) !== "undefined") {
+        window.FiercePlanet = FiercePlanet;
+        window.fp = new FiercePlanet();
+    }
     return fp;
 });
 

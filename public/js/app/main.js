@@ -1,5 +1,5 @@
 define(["fp"], function(fp) {
-    fp.init( );
+    window.fp.init( );
 });
 
 
