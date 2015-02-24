@@ -1,11 +1,11 @@
 <html>
     <head>
         <title>Fierce Planet</title>
-        <link rel="stylesheet" type="text/css" href="css/fp.css">
-        <script src="js/require.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
         <script>
         requirejs.config({
-            baseUrl: 'js',
+            baseUrl: '/js',
             "shim": {
                 "underscore": { exports: "_" },
                 "dat.gui": { exports: "dat.gui" },
@@ -24,7 +24,6 @@
         requirejs([
                 "fp",
                 "dat.gui",
-                "csscolorparser",
                 "smoothie",
                 "stats.min",
                 "jstat.min",
@@ -42,22 +41,38 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                      "4": { "dayShow": true }
+                        "1": {  },
+                        "2": { },
+                        "3": { "create": false },
+                        "4": {
+                            "waterShow": false,
+                            "terrainShow": true,
+                            "dayShow": false,
+                            "patchesShow": true,
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 1000,
+                        },
+                        "5": {
+                            "coloriseAgentsByHealth": false,
+                        },
+                        "6": { "multiplier": 2 },
                     }
                   }
                 }
                 var sim =  {
                     counter: 0,
+
                     setup: function() {
-                        counter = 0;
-                        console.log("Custom set up")
                     },
                     tick: function() {
-                        console.log("Custom tick: " + (++ counter))
                     }
                 }
 
-                fp.init( config, sim );
+                fp.init( config, sim, function() {
+                    fp.appConfig.Setup();
+                } );
             }
         );
 

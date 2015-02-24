@@ -6,10 +6,10 @@ $(document).ready(function() {
         $('#heading-' + id).show();
         $('.content').hide();
         $('#content-' + id).show();
+        $('#model').empty();
 
-        if ( id.indexOf('examples') > -1 ) {
-            $('#model').empty();
-            $('#model').append('<iframe frameborder="0" src="' + id + '.html"/>');
+        if ( id.indexOf('example') > -1 ) {
+            $('#model').append('<iframe frameborder="0" src="examples/' + id + '.html"/>');
         }
 	});
 });

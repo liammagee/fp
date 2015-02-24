@@ -1,11 +1,11 @@
 <html>
     <head>
         <title>Fierce Planet</title>
-        <link rel="stylesheet" type="text/css" href="css/fp.css">
-        <script src="js/require.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
         <script>
         requirejs.config({
-            baseUrl: 'js',
+            baseUrl: '/js',
             "shim": {
                 "underscore": { exports: "_" },
                 "dat.gui": { exports: "dat.gui" },
@@ -47,18 +47,14 @@
                         "2": {
                             "maxNumber": 100,
                             "rotateRandomly": false,
-                            "rotateRandomly": false,
                             "showLines": false
                         },
                         "3": {
                             "create": false
                         },
                       "4": {
-                            "buildingsShow": false,
-                            "networkShow": true,
-                            "networkCurve": false,
                             "terrainShow": true,
-                            "dayShow": false,
+                            "dayShow": true,
                             "waterShow": false,
                             "skyboxShow": false,
                             "cameraOverride": true,
@@ -66,31 +62,42 @@
                             "cameraZ": 800
                         },
                       "5": {
-                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
-                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
+                            "colorDayTerrainSea": 239 * 256 * 256 + 238 * 256 + 192,
+                            "colorDayTerrainLowland1": 239 * 256 * 256 + 238 * 256 + 192,
+                            "colorDayTerrainLowland2": 239 * 256 * 256 + 238 * 256 + 192,
+                            "colorDayTerrainMidland": 239 * 256 * 256 + 238 * 256 + 192,
+                            "colorDayTerrainHighland": 239 * 256 * 256 + 238 * 256 + 192,
+                            "colorDayBuildingFill": 94 * 256 * 256 + 166 * 256 + 165,
+                            "colorDayBuildingLine": 151 * 256 * 256 + 217 * 256 + 207,
+                            "colorDayBuildingWindow": 194 * 256 * 256 + 103 * 256 + 92,
+                            "colorDayBackground": 234 * 256 * 256 + 110 * 256 + 94,
+                            "colorDayRoad": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorDayAgent": 194 * 256 * 256 + 103 * 256 + 92,
+                            "colorDayNetwork": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorDayTrail": 135 * 256 * 256 + 187 * 256 + 175,
+
+                            "colorNightTerrainSea": 55 * 256 * 256 + 140 * 256 + 117,
+                            "colorNightTerrainLowland1": 55 * 256 * 256 + 140 * 256 + 117,
+                            "colorNightTerrainLowland2": 55 * 256 * 256 + 140 * 256 + 117,
+                            "colorNightTerrainMidland": 55 * 256 * 256 + 140 * 256 + 117,
+                            "colorNightTerrainHighland": 55 * 256 * 256 + 140 * 256 + 117,
+                            "colorNightBuildingFill": 242 * 256 * 256 + 180 * 256 + 69,
+                            "colorNightBuildingLine": 151 * 256 * 256 + 217 * 256 + 207,
+                            "colorNightBuildingWindow": 95 * 256 * 256 + 180 * 256 + 157,
+                            "colorNightBackground": 95 * 256 * 256 + 180 * 256 + 157,
+                            "colorNightRoad": 135 * 256 * 256 + 187 * 256 + 175,
+                            "colorNightAgent": 223 * 256 * 256 + 223 * 256 + 196,
+                            "colorNightNetwork": 223 * 256 * 256 + 223 * 256 + 196,
+                            "colorNightTrail": 135 * 256 * 256 + 187 * 256 + 175,
+
                             "coloriseAgentsByHealth": false,
                         },
-                      "6": { "loadHeights": false, "multiplier": 1 },
+                      "6": { "loadHeights": false, "multiplier": 10 },
                     }
                   }
                 }
-                var sim =  {
-                    counter: 0,
-                    setup: function() {
-                        counter = 0;
-                        console.log("Custom set up")
-                    },
-                    tick: function() {
-                        // console.log("Custom tick: " + (++ this.counter))
-                    }
-                }
 
-                fp.init( config, sim, function() {
-                    var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
-                    var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
-                    var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
-                    fp.agentNetwork.networks = [ network1, network2, network3 ];
-                } );
+                fp.init( config );
             }
         );
 

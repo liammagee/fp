@@ -22,7 +22,7 @@ body {
     font-family: 'inconsolata', 'Courier';
     font-size: 15px;
     line-height: 18px;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 #sidebar-wrapper {
     /*background-color: #404040;*/

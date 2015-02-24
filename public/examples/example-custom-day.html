@@ -1,0 +1,69 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
+        <script>
+        requirejs.config({
+            baseUrl: '/js',
+            "shim": {
+                "underscore": { exports: "_" },
+                "dat.gui": { exports: "dat.gui" },
+                "smoothie": { exports: "SmoothieChart" },
+                "stats.min": { exports: "Stats" },
+                "jstat.min": { exports: "jStat" },
+                "three": { exports: "THREE" },
+                "Mirror": ["three"],
+                "WaterShader": ["three"],
+                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
+                "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
+                "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
+            }
+        })
+        requirejs([
+                "fp",
+                "dat.gui",
+                "csscolorparser",
+                "smoothie",
+                "stats.min",
+                "jstat.min",
+                "javascript.util",
+                "jsts",
+                "Mirror",
+                "WaterShader",
+                "TerrainLoader",
+                "THREEx.KeyboardState",
+                "TrackballControls",
+                "PointerLockControls",
+            ],
+            function() {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                      "4": { "dayShow": true }
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+                    setup: function() {
+                        counter = 0;
+                        console.log("Custom set up")
+                    },
+                    tick: function() {
+                        console.log("Custom tick: " + (++ counter))
+                    }
+                }
+
+                fp.init( config, sim );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
