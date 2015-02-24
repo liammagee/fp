@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'inconsolata';
-    src: url('/fonts/inconsolata.woff') format('woff');
+    src: url('../fonts/inconsolata.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
