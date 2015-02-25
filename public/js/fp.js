@@ -2704,10 +2704,10 @@ define([
             };
 
             /**
-             * Sets up the simulation
+             * Sets up the simulation.
              */
             this.Setup = function() {
-                this.Reset();
+                fp.appConfig.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
                 fp.trailNetwork.globalTrailGeometry = new THREE.Geometry();
                 var trailMaterial = new THREE.LineBasicMaterial({
@@ -2831,6 +2831,10 @@ define([
             }
         };
 
+        /**
+         * Creates a dat.GUI interface for controlling and configuring the simulation.
+         * @param  {Object} config  An object representation of properties to override defaults for the fp.AppConfig object.
+         */
         this.doGUI = function( config ) {
             fp.appConfig = new fp.AppConfig();
 
@@ -2946,19 +2950,19 @@ define([
 
             var roadsFolder = fp.gui.addFolder("Road Options");
             roadsFolder.add( fp.appConfig.roadOptions, "create" );
-            roadsFolder.add( fp.appConfig.roadOptions, "maxNumber", 1, 100).step(1 );
-            roadsFolder.add( fp.appConfig.roadOptions, "roadWidth", 5, 50).step(5 );
-            roadsFolder.add( fp.appConfig.roadOptions, "roadDeviation", 0, 50).step(1 );
-            roadsFolder.add( fp.appConfig.roadOptions, "roadRadiusSegments", 2, 20).step(1 );
-            roadsFolder.add( fp.appConfig.roadOptions, "roadSegments", 1, 20).step(1 );
-            roadsFolder.add( fp.appConfig.roadOptions, "initialRadius", 0, 1000).step(100 );
-            roadsFolder.add( fp.appConfig.roadOptions, "probability", 50, 1000).step(50 );
-            roadsFolder.add( fp.appConfig.roadOptions, "lenMinimum", 0, 2000).step(100 );
-            roadsFolder.add( fp.appConfig.roadOptions, "lenMaximum", 100, 2000).step(100 );
-            roadsFolder.add( fp.appConfig.roadOptions, "lenDistributionFactor", 1, 10).step(1 );
-            roadsFolder.add( fp.appConfig.roadOptions, "overlapThreshold", 1, 100).step(1 );
-            roadsFolder.add( fp.appConfig.roadOptions, "flattenAdjustment", 0.025, 1.0).step(0.025 );
-            roadsFolder.add( fp.appConfig.roadOptions, "flattenLift", 0, 40).step(1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "maxNumber", 1, 100).step( 1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "roadWidth", 5, 50).step( 5 );
+            roadsFolder.add( fp.appConfig.roadOptions, "roadDeviation", 0, 50).step( 1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "roadRadiusSegments", 2, 20).step( 1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "roadSegments", 1, 20).step( 1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "initialRadius", 0, 1000).step( 100 );
+            roadsFolder.add( fp.appConfig.roadOptions, "probability", 50, 1000).step( 50 );
+            roadsFolder.add( fp.appConfig.roadOptions, "lenMinimum", 0, 2000).step( 100 );
+            roadsFolder.add( fp.appConfig.roadOptions, "lenMaximum", 100, 2000).step( 100 );
+            roadsFolder.add( fp.appConfig.roadOptions, "lenDistributionFactor", 1, 10).step( 1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "overlapThreshold", 1, 100).step( 1 );
+            roadsFolder.add( fp.appConfig.roadOptions, "flattenAdjustment", 0.025, 1.0).step( 0.025 );
+            roadsFolder.add( fp.appConfig.roadOptions, "flattenLift", 0, 40).step( 1 );
 
             var displayFolder = fp.gui.addFolder("Display Options");
             displayFolder.add( fp.appConfig.displayOptions, "buildingsShow").onFinishChange( fp.toggleBuildingState );
