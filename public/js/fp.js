@@ -948,7 +948,6 @@ define([
                 return polygonizer.getPolygons().toArray();
             };
 
-            //
             /**
              * Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
              * @param  {jsts.geom.Polygon} polygon
@@ -1698,7 +1697,7 @@ define([
             };
 
             /**
-             * @memberof Agent
+             * Slightly changes to the direction of the agent.
              */
             this.perturbDirection = function() {
                 this.direction.x += this.perturbBy * (Math.random() - 0.5);
@@ -1706,7 +1705,8 @@ define([
             };
 
             /**
-             * @memberof Agent
+             * Builds a building on the agent's current position.
+             * @return {Boolean} Whether the road construction was successful.
              */
             this.buildHome = function() {
                 if (this.home !== null)
@@ -1756,7 +1756,8 @@ define([
             };
 
             /**
-             * Builds a road
+             * Builds a road on the agent's current position.
+             * @return {Boolean} Whether the road construction was successful.
              */
             this.buildRoad = function() {
                 var xOrig = this.position.x,
@@ -3653,8 +3654,9 @@ define([
 
         /**
          * Now count how many surrounding are also sea level.
-         * We count in 8 directions, to maxDepth
+         * We count in 8 directions, to maxDepth.
          * @memberof fp
+         * @param  {Number} index
          */
         this.checkProximiteBuildingHeight = function(index) {
             if ( fp.buildingNetwork.buildings.length === 0 )
@@ -3695,7 +3697,11 @@ define([
         };
 
         /**
+         * Retrieves a collection of THREE.Vector3 objects around a given
+         * index point.
          * @memberof fp
+         * @param  {Number} index
+         * @return {Array} a collection of THREE.Vector3 objects
          */
         this.surroundingCells = function(index) {
             // Now count how many surrounding are also sea level
