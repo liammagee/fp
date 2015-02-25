@@ -2616,11 +2616,15 @@ define([
                 colorDayBuildingFill: 0xb1abab,
                 colorDayBuildingLine: 0x222222,
                 colorDayBuildingWindow: 0x222222,
-                colorDayTerrainSea: 0xa6a6a6,
-                colorDayTerrainLowland1: 0x4d7848,
-                colorDayTerrainLowland2: 0x8db17b,
-                colorDayTerrainMidland: 0xa9752e,
-                colorDayTerrainHighland: 0xacacac,
+                colorDayTerrainSea: 0x969696,
+                colorDayTerrainLowland1: 0x2d5828,
+                colorDayTerrainLowland2: 0x6d915b,
+                colorDayTerrainMidland: 0x89450e,
+                colorDayTerrainHighland: 0x8c8c8c,
+                // colorDayTerrainLowland1: 0x4d7848,
+                // colorDayTerrainLowland2: 0x8db17b,
+                // colorDayTerrainMidland: 0xa9752e,
+                // colorDayTerrainHighland: 0xacacac,
 
                 colorNightBackground: 0x636363,
                 colorNightRoad: 0x474747,
@@ -3215,7 +3219,7 @@ define([
         this.setupLighting = function() {
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
-            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.0 );
             // var hemiLight = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
             hemiLight.position.set( 0, 1000, 0 );
             fp.scene.add( hemiLight );
