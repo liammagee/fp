@@ -264,35 +264,39 @@ define([
              * @return {coordinate}
              */
             this.randomPointForAgent = function() {
-                var x = Math.floor( ( Math.random() - 0.5 ) * fp.appConfig.agentOptions.initialExtent )  + fp.appConfig.agentOptions.initialX;
-                var z = Math.floor( ( Math.random() - 0.5 ) * fp.appConfig.agentOptions.initialExtent ) + fp.appConfig.agentOptions.initialY;
+                var extent = fp.appConfig.terrainOptions.gridExtent;
+                var initExtent = ( fp.appConfig.agentOptions.initialExtent / 100 ) * extent;
+                var initX = ( fp.appConfig.agentOptions.initialX / 100 ) * extent - ( extent / 2 );
+                var initY = ( fp.appConfig.agentOptions.initialY / 100 ) * extent - ( extent / 2 );
+                var x = Math.floor( ( Math.random() - 0.5 ) * initExtent ) + initX;
+                var z = Math.floor( ( Math.random() - 0.5 ) * initExtent ) + initY;
                 var point = null;
 
                 x *=  fp.appConfig.terrainOptions.multiplier;
                 z *=  fp.appConfig.terrainOptions.multiplier;
 
-                if (fp.appConfig.agentOptions.initialCircle) {
-                    var normX = x - fp.appConfig.agentOptions.initialX, normZ = z - fp.appConfig.agentOptions.initialY;
+                if ( fp.appConfig.agentOptions.initialCircle ) {
+                    var normX = x - initX, normZ = z - initY;
                     var radius = Math.sqrt(normX * normX + normZ * normZ);
 
-                    while (radius > fp.appConfig.agentOptions.initialExtent / 2) {
+                    while (radius > initExtent / 2) {
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
-                        normX = x - fp.appConfig.agentOptions.initialX;
-                        normZ = z - fp.appConfig.agentOptions.initialY;
+                        normX = x - initX;
+                        normZ = z - initY;
                         radius = Math.sqrt(normX * normX + normZ * normZ);
                     }
                 }
 
-                var boundary = ( fp.terrain.gridExtent / 2 ) * fp.appConfig.terrainOptions.multiplier;
+                var boundary = ( extent / 2 ) * fp.appConfig.terrainOptions.multiplier;
                 while ( (x <  - boundary || x > boundary ) || (z <  - boundary || z > boundary ) ) {
                     point = this.randomPointForAgent();
                     x = point.x;
                     z = point.z;
                 }
 
-                if (fp.appConfig.agentOptions.noWater) {
+                if ( fp.appConfig.agentOptions.noWater ) {
                     var y = fp.getHeight(x, z);
                     while (y <= 0) {
                         point = this.randomPointForAgent();
@@ -1023,7 +1027,7 @@ define([
                     this.reviseValues();
 
                 if ( fp.appConfig.displayOptions.patchesShow ) {
-                    if (fp.appConfig.displayOptions.patchesUseShader) {
+                    if ( fp.appConfig.displayOptions.patchesUseShader ) {
                         if (this.plane !== null)
                             fp.scene.remove(this.plane);
                         this.updateTerrainPatchAttributes();
@@ -1040,7 +1044,7 @@ define([
                 if (this.plane === null)
                     return;
                 var geometry = this.plane.geometry;
-                if ( _.isUndefined( geometry.faces ) && geometry.faces[0] === null )
+                if ( _.isUndefined( geometry.faces ) || geometry.faces[0] === null )
                     return;
 
                 if (scene.children.indexOf(this.plane) == -1)
@@ -1331,13 +1335,6 @@ define([
                     return v && v.length > 0 && agent.home !== null && agent.position != agent.home.lod.position;
                 });
             };
-
-            this.updatePathsState = function() {
-                if ( !fp.appConfig.displayOptions.pathsShow )
-                    fp.scene.remove( fp.pathNetwork.networkMesh );
-                else
-                    fp.scene.add( fp.pathNetwork.networkMesh );
-            };
         };
 
         this.TERRAIN_MAPS = [ "../assets/syd2.bin", "../assets/mel2.bin" ];
@@ -1355,117 +1352,12 @@ define([
             this.dayTerrainUniforms = null;
             this.nightTerrainUniforms = null;
             this.terrainMapIndex = 0;
-            this.gridExtent = 8000;
+            this.gridExtent = fp.appConfig.terrainOptions.gridExtent;
             this.halfExtent = this.gridExtent / 2;
-            this.gridPoints = 400;
+            this.gridPoints = fp.appConfig.terrainOptions.gridPoints;
             this.ratioExtentToPoint = this.gridExtent / this.gridPoints;
-            this.maxTerrainHeight = 400;
+            this.maxTerrainHeight = fp.appConfig.terrainOptions.maxTerrainHeight;
             this.gridSize = 4;
-
-            this.loadTerrain = function( callback ) {
-                var terrainLoader = new THREE.TerrainLoader();
-                terrainLoader.load( fp.TERRAIN_MAPS[fp.terrain.terrainMapIndex], function(data) {
-                    fp.scene.remove( fp.terrain.plane);
-                    var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
-                    var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
-
-                    // Use logic from math.stackexchange.com
-                    var vertices = geometry.attributes.position.array;
-                    var i, j, l = vertices.length,
-                        n = Math.sqrt(l),
-                        k = l + 1;
-                    if ( fp.appConfig.terrainOptions.loadHeights ) {
-                        for (i = 0, j = 0; i < l; i++, j += 3 ) {
-                            geometry.attributes.position.array[ j + 2 ] =
-                                data[ i ] / 65535 *
-                                fp.terrain.maxTerrainHeight *
-                                fp.appConfig.terrainOptions.multiplier;
-                        }
-                    }
-                    else {
-                        for (i = 0, j = 0; i < l; i++, j += 3 ) {
-                            geometry.attributes.position.array[ j + 2 ] = 10;
-                        }
-                    }
-
-                    fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial({ color: 0x666666, wireframe: fp.appConfig.displayOptions.wireframeShow });
-                    fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
-                    fp.terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
-
-                    var len = geometry.attributes.position.array.length / 3,
-                        heights = new Float32Array(len),
-                        trailPoints = new Float32Array(len),
-                        patchPoints = new Float32Array(len);
-                    for (i = 0; i < len; i++) {
-                        heights[i] = vertices[ i * 3 + 2 ];
-                        trailPoints[i] = 0;
-                        patchPoints[i] = 0;
-                    }
-                    var terrainAttributes = {
-                        height: { type: "f", value: null },
-                        trail: { type: "f", value: null },
-                        patch: { type: "f", value: null },
-                    };
-                    geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
-                    geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-                    geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
-
-                    fp.terrain.dayTerrainUniforms = {
-                        seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainSea ) },
-                        lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
-                        lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
-                        midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland ) },
-                        highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
-                        size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
-                        maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
-                    };
-                    fp.terrain.nightTerrainUniforms = {
-                        seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainSea ) },
-                        lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
-                        lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
-                        midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland ) },
-                        highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
-                        size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
-                        maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
-                    };
-                    fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial({
-                        uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
-                        attributes: terrainAttributes,
-                        vertexShader:   fp.ShaderUtils.lambertShaderVertex(
-                            fp.ShaderUtils.terrainVertexShaderParams(),
-                            fp.ShaderUtils.terrainVertexShaderMain()
-                        ),
-                        fragmentShader: fp.ShaderUtils.lambertShaderFragment(
-                            fp.ShaderUtils.terrainFragmentShaderParams(),
-                            fp.ShaderUtils.terrainFragmentShaderMain()
-                        ),
-                        lights: true
-                    });
-
-                    // Only use the shader material if we have variable heights
-                    if ( fp.appConfig.terrainOptions.loadHeights ) {
-                        fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
-                    }
-                    else {
-                        fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
-                    }
-                    fp.terrain.plane.castShadow = true;
-                    fp.terrain.plane.receiveShadow = true;
-                    fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0);
-                    if ( fp.appConfig.displayOptions.terrainShow )
-                        fp.scene.add( fp.terrain.plane );
-
-                    if ( fp.appConfig.displayOptions.patchesShow )
-                        fp.patchNetwork.buildPatchMesh();
-                    fp.terrain.createTerrainColors();
-                    fp.toggleDayNight();
-                    fp.pathNetwork.setupAStarGraph();
-
-                    fp.animate(); // Kick off the animation loop
-                    if ( !_.isUndefined(callback) )
-                        callback(); // Run the callback
-               });
-            };
 
             this.flattenTerrain = function() {
                 if ( !fp.appConfig.displayOptions.cursorShow )
@@ -1513,12 +1405,6 @@ define([
                 return fp.terrain.plane.geometry.color;
             };
 
-            this.updateTerrainPlane = function() {
-                if ( !fp.appConfig.displayOptions.terrainShow )
-                    fp.scene.remove( fp.terrain.plane );
-                else
-                    fp.scene.add( fp.terrain.plane );
-            };
 
         };
 
@@ -2543,35 +2429,35 @@ define([
                 initialPopulation: 100,
                 /**
                  * The <em>initial</em> extent, or diameter, around the point of origin, where agents can be
-                spawed.
+                spawned, expressed as a percentage (0-100).
                  * @type {Number}
                  * @memberOf fp~AppConfig~agentOptions
                  * @inner
                  */
-                initialExtent: 1000,
+                initialExtent: 10,
                 /**
                  * The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be
-                spawed.
+                spawed, expressed as a percentage (0-100).
                  * @type {Number}
                  * @memberOf fp~AppConfig~agentOptions
                  * @inner
                  */
-                maxExtent: fp.terrain.gridExtent,
+                maxExtent: 100,
                 // initialX: -500, initialY: -1500, // Melbourne
                 /**
-                 * The <em>x</em> co-ordinate of the point of origin.
+                 * The <em>x</em> co-ordinate of the point of origin, expressed as a percentage (0-100) of distance from the actual grid center.
                  * @type {Number}
                  * @memberOf fp~AppConfig~agentOptions
                  * @inner
                  */
-                initialX: 0,
+                initialX: 50,
                 /**
-                 * The <em>y</em> co-ordinate of the point of origin.
+                 * The <em>y</em> co-ordinate of the point of origin, expressed as a percentage (0-100) of distance from the actual grid center.
                  * @type {Number}
                  * @memberOf fp~AppConfig~agentOptions
                  * @inner
                  */
-                initialY: 0,
+                initialY: 50,
                 chanceToJoinNetwork: 0.05,
                 chanceToFindPathToHome: 0.00,
                 initialCircle: true,
@@ -2715,6 +2601,10 @@ define([
             };
             this.terrainOptions = {
                 loadHeights: true,
+                gridExtent: 8000,
+                gridPoints: 400,
+                maxTerrainHeight: 400,
+                shaderUse: true,
                 multiplier: 1
             };
             this.colorOptions = {
@@ -2895,7 +2785,7 @@ define([
                     ( fp.terrain.terrainMapIndex == fp.TERRAIN_MAPS.length - 1 ) ?
                       0 :
                       fp.terrain.terrainMapIndex + 1;
-                fp.terrain.loadTerrain();
+                fp.loadTerrain();
             };
         };
 
@@ -2937,6 +2827,8 @@ define([
         };
 
         this.doGUI = function( config ) {
+            fp.appConfig = new fp.AppConfig();
+
             fp.gui = new dat.GUI( { load: config } );
 
             fp.gui.remember( fp.appConfig );
@@ -2959,13 +2851,13 @@ define([
             controlPanel.add( fp.appConfig, "SwitchTerrain" );
 
             var agentsFolder = fp.gui.addFolder("Agent Options");
-            agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 10000).step(1 );
-            agentsFolder.add( fp.appConfig.agentOptions, "initialExtent", 100, fp.terrain.gridExtent).step(100 );
-            agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1000, fp.terrain.gridExtent).step(100 );
-            agentsFolder.add( fp.appConfig.agentOptions, "initialX",  - fp.terrain.gridExtent / 2, fp.terrain.gridExtent / 2).step(100 );
-            agentsFolder.add( fp.appConfig.agentOptions, "initialY",  - fp.terrain.gridExtent / 2, fp.terrain.gridExtent / 2).step(100 );
-            agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0).step(0.01 );
-            agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0).step(0.01 );
+            agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 10000 ).step( 1 );
+            agentsFolder.add( fp.appConfig.agentOptions, "initialExtent", 1, 100 ).step( 1 );
+            agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1, 100 ).step( 1 );
+            agentsFolder.add( fp.appConfig.agentOptions, "initialX",  0, 100 ).step( 1 );
+            agentsFolder.add( fp.appConfig.agentOptions, "initialY",  0, 100 ).step( 1 );
+            agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0).step( 0.01 );
+            agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0).step( 0.01 );
             agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
             agentsFolder.add( fp.appConfig.agentOptions, "noWater" );
             agentsFolder.add( fp.appConfig.agentOptions, "noUphill" );
@@ -3040,8 +2932,12 @@ define([
             animation.add( fp.appConfig.buildingOptions, "falling" );
 
             var terrainFolder = fp.gui.addFolder("Terrain Options");
-            terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights").onFinishChange( fp.terrain.loadTerrain );
-            terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 1, 10).step(1).onFinishChange( fp.terrain.loadTerrain );
+            terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights").onFinishChange( fp.loadTerrain );
+            terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000).step( 1000 ).onFinishChange( fp.loadTerrain );
+            terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
+            terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
+            terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse").onFinishChange( fp.loadTerrain );
+            terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 1, 10).step(1).onFinishChange( fp.loadTerrain );
 
             var roadsFolder = fp.gui.addFolder("Road Options");
             roadsFolder.add( fp.appConfig.roadOptions, "create" );
@@ -3080,8 +2976,8 @@ define([
             displayFolder.add( fp.appConfig.displayOptions, "skyboxShow").onFinishChange( fp.toggleDayNight );
             displayFolder.add( fp.appConfig.displayOptions, "chartShow").onFinishChange( fp.updateGraph );
             displayFolder.add( fp.appConfig.displayOptions, "guiShow");
-            displayFolder.add( fp.appConfig.displayOptions, "pathsShow").onFinishChange( fp.pathNetwork.updatePathsState );
-            displayFolder.add( fp.appConfig.displayOptions, "terrainShow").onFinishChange( fp.terrain.updateTerrainPlane );
+            displayFolder.add( fp.appConfig.displayOptions, "pathsShow").onFinishChange( fp.togglePathsState );
+            displayFolder.add( fp.appConfig.displayOptions, "terrainShow").onFinishChange( fp.toggleTerrainPlane );
             displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
             displayFolder.add( fp.appConfig.displayOptions, "firstPersonView").onFinishChange( fp.resetControls );
             displayFolder.add( fp.appConfig.displayOptions, "cameraOverride").onFinishChange( fp.resetControls );
@@ -3092,16 +2988,16 @@ define([
 
             var colorFolder = fp.gui.addFolder("Color Options");
             var colorTerrainFolder = colorFolder.addFolder("Terrain Colors");
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainSea").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainSea").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland1").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland1").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland2").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland2").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainHighland").onChange( fp.terrain.loadTerrain );
-            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainHighland").onChange( fp.terrain.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainSea").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainSea").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland1").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland1").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland2").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland2").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainHighland").onChange( fp.loadTerrain );
+            colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainHighland").onChange( fp.loadTerrain );
             var colorBuildingFolder = colorFolder.addFolder("Building Colors");
             colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingFill" );
             colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingFill" );
@@ -3214,6 +3110,7 @@ define([
         this.setupSimObjects = function() {
             // Set up root objects
             fp.terrain = new fp.Terrain();
+            fp.terrain.gridExtent = fp.appConfig.terrainOptions.gridExtent;
             fp.agentNetwork = new fp.AgentNetwork();
             fp.buildingNetwork = new fp.BuildingNetwork();
             fp.roadNetwork = new fp.RoadNetwork();
@@ -3222,7 +3119,6 @@ define([
             fp.patchNetwork = new fp.PatchNetwork();
             fp.timescale = new fp.Timescale();
             fp.cursor = new fp.Cursor();
-            fp.appConfig = new fp.AppConfig();
         };
 
         /**
@@ -3479,8 +3375,8 @@ define([
             fp.container = $( "#container" )[0] || config.container;
             fp.scene = new THREE.Scene();
             fp.sim = sim || fp.simDefault();
-            fp.setupSimObjects();
             fp.setupGUI( config );
+            fp.setupSimObjects();
             fp.setupCamera();
             fp.setupControls();
             fp.setupRenderer();
@@ -3491,7 +3387,7 @@ define([
             fp.Chart.setupChart();
             fp.toggleStatsState(); // Add stats
             window.addEventListener( "resize", fp.onWindowResize, false );
-            fp.terrain.loadTerrain( callback ); // Load the terrain asynchronously
+            fp.loadTerrain( callback ); // Load the terrain asynchronously
             /*
             */
         };
@@ -3650,12 +3546,14 @@ define([
         };
 
         /**
+         * Gets the terrain index point for a given (x, y) co-ordinate.
          * @memberof fp
          */
         this.getIndex = function(x, y) {
-            x = Math.round(x / fp.appConfig.terrainOptions.multiplier);
-            y = Math.round(y / fp.appConfig.terrainOptions.multiplier);
-            var maxExtent = fp.appConfig.agentOptions.maxExtent;
+            var multiplier = fp.appConfig.terrainOptions.multiplier;
+            x = Math.round( x / multiplier );
+            y = Math.round( y / multiplier );
+            var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.appConfig.terrainOptions.gridExtent;
             var xRel = Math.round(x) + fp.terrain.halfExtent;
             var yRel = Math.round(y) + fp.terrain.halfExtent;
             if (xRel < 0 || yRel < 0 || xRel > maxExtent || yRel > maxExtent)
@@ -3670,6 +3568,7 @@ define([
         };
 
         /**
+         * Gets the terrain height for a given (x, y) co-ordinate.
          * @memberof fp
          */
         this.getHeightForIndex = function(index) {
@@ -3679,6 +3578,7 @@ define([
         };
 
         /**
+         * Gets the terrain height for a given (x, y) co-ordinate.
          * @memberof fp
          */
         this.getHeight = function(x, y) {
@@ -3923,11 +3823,11 @@ define([
             }
             else if ( fp.keyboard.pressed("X") ) {
                 fp.appConfig.displayOptions.pathsShow = !fp.appConfig.displayOptions.pathsShow;
-                pathNetwork.updatePathsState();
+                fp.togglePathsState();
             }
             else if ( fp.keyboard.pressed("E") ) {
                 fp.appConfig.displayOptions.terrainShow = !fp.appConfig.displayOptions.terrainShow;
-                fp.terrain.updateTerrainPlane();
+                fp.toggleTerrainPlane();
             }
         };
 
@@ -4081,6 +3981,28 @@ define([
         };
 
         /**
+         * Toggles the visibility of the path network.
+         * @memberof fp
+         */
+        this.togglePathsState = function() {
+            if ( !fp.appConfig.displayOptions.pathsShow )
+                fp.scene.remove( fp.pathNetwork.networkMesh );
+            else
+                fp.scene.add( fp.pathNetwork.networkMesh );
+        };
+
+
+        /**
+         * Toggles the visibility of the terrain.
+         * @memberof fp
+         */
+        this.toggleTerrainPlane = function() {
+            if ( !fp.appConfig.displayOptions.terrainShow )
+                fp.scene.remove( fp.terrain.plane );
+            else
+                fp.scene.add( fp.terrain.plane );
+        };
+        /**
          * Removes cursor.
          * @memberof fp
          */
@@ -4190,6 +4112,115 @@ define([
             }
             if ( !_.isNull( fp.agentNetwork.particles ))
                 fp.agentNetwork.agents.forEach(function(agent) { agent.color = colorAgent; });
+        };
+
+        /**
+         * Loads the actual terrain, using the THREE.TerrainLoader class.
+         * @param  {Function} callback A function that is called after the terrain is loaded successfully.
+         */
+        this.loadTerrain = function( callback ) {
+            var terrainLoader = new THREE.TerrainLoader();
+            terrainLoader.load( fp.TERRAIN_MAPS[fp.terrain.terrainMapIndex], function(data) {
+                fp.scene.remove( fp.terrain.plane);
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
+
+                // Use logic from math.stackexchange.com
+                var vertices = geometry.attributes.position.array;
+                var i, j, l = vertices.length,
+                    n = Math.sqrt(l),
+                    k = l + 1;
+                if ( fp.appConfig.terrainOptions.loadHeights ) {
+                    for (i = 0, j = 0; i < l; i++, j += 3 ) {
+                        geometry.attributes.position.array[ j + 2 ] =
+                            data[ i ] / 65535 *
+                            fp.terrain.maxTerrainHeight *
+                            fp.appConfig.terrainOptions.multiplier;
+                    }
+                }
+                else {
+                    for (i = 0, j = 0; i < l; i++, j += 3 ) {
+                        geometry.attributes.position.array[ j + 2 ] = 10;
+                    }
+                }
+
+                fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial({ color: 0x666666, wireframe: fp.appConfig.displayOptions.wireframeShow });
+                fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
+                fp.terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
+
+                var len = geometry.attributes.position.array.length / 3,
+                    heights = new Float32Array(len),
+                    trailPoints = new Float32Array(len),
+                    patchPoints = new Float32Array(len);
+                for (i = 0; i < len; i++) {
+                    heights[i] = vertices[ i * 3 + 2 ];
+                    trailPoints[i] = 0;
+                    patchPoints[i] = 0;
+                }
+                var terrainAttributes = {
+                    height: { type: "f", value: null },
+                    trail: { type: "f", value: null },
+                    patch: { type: "f", value: null },
+                };
+                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
+
+                fp.terrain.dayTerrainUniforms = {
+                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainSea ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
+                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland ) },
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
+                };
+                fp.terrain.nightTerrainUniforms = {
+                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainSea ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
+                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland ) },
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
+                };
+                fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial({
+                    uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
+                    attributes: terrainAttributes,
+                    vertexShader:   fp.ShaderUtils.lambertShaderVertex(
+                        fp.ShaderUtils.terrainVertexShaderParams(),
+                        fp.ShaderUtils.terrainVertexShaderMain()
+                    ),
+                    fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                        fp.ShaderUtils.terrainFragmentShaderParams(),
+                        fp.ShaderUtils.terrainFragmentShaderMain()
+                    ),
+                    lights: true
+                });
+
+                // Only use the shader material if we have variable heights
+                if ( fp.appConfig.terrainOptions.shaderUse ) {
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
+                }
+                else {
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
+                }
+                fp.terrain.plane.castShadow = true;
+                fp.terrain.plane.receiveShadow = true;
+                fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0);
+                if ( fp.appConfig.displayOptions.terrainShow )
+                    fp.scene.add( fp.terrain.plane );
+
+                if ( fp.appConfig.displayOptions.patchesShow )
+                    fp.patchNetwork.buildPatchMesh();
+                fp.terrain.createTerrainColors();
+                fp.toggleDayNight();
+                fp.pathNetwork.setupAStarGraph();
+
+                fp.animate(); // Kick off the animation loop
+                if ( !_.isUndefined(callback) )
+                    callback(); // Run the callback
+           });
         };
 
         this.ShaderUtils = {

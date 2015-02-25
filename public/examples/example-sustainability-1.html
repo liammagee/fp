@@ -43,14 +43,17 @@
                     "Default": {
                         "1": {  },
                         "2": { },
-                        "3": { "create": false },
+                        "3": {
+                            "create": false
+                        },
                         "4": {
                             "buildingsShow": false,
                             "roadsShow": false,
                             "waterShow": false,
-                            "terrainShow": false,
+                            "terrainShow": true,
                             "dayShow": false,
                             "patchesShow": true,
+                            "patchesUseShader": true,
                             "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 1000,
@@ -59,7 +62,12 @@
                         "5": {
                             "coloriseAgentsByHealth": false,
                         },
-                        "6": { "loadHeights": false, "multiplier": 2 },
+                        "6": {
+                            "loadHeights": false,
+                            "shaderUse": true,
+                            "gridExtent": 8000,
+                            "multiplier": 1
+                        },
                     }
                   }
                 }
