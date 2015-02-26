@@ -1350,7 +1350,7 @@ define([
             this.simpleTerrainMaterial = null;
             this.dayTerrainUniforms = null;
             this.nightTerrainUniforms = null;
-            this.terrainMapIndex = 0;
+            this.terrainMapIndex = fp.appConfig.terrainOptions.mapIndex;
             this.gridExtent = fp.appConfig.terrainOptions.gridExtent;
             this.halfExtent = this.gridExtent / 2;
             this.gridPoints = fp.appConfig.terrainOptions.gridPoints;
@@ -2613,7 +2613,8 @@ define([
                 gridPoints: 400,
                 maxTerrainHeight: 400,
                 shaderUse: true,
-                multiplier: 1
+                multiplier: 1,
+                mapIndex: 0
             };
             this.colorOptions = {
                 colorDayBackground: 0x000000,
@@ -2979,6 +2980,7 @@ define([
                 terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse").onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 1, 10).step(1).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1).step(1).onFinishChange( fp.loadTerrain );
             }
 
             if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
