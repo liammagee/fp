@@ -192,9 +192,10 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 				quaternion.setFromAxisAngle( axis, -angle );
 
+				// Liam's change to prevent rotation below the horizon
 				var testEye = _eye.clone();
 				testEye.applyQuaternion( quaternion )
-				if ( testEye.y > 10 ) {
+				// if ( testEye.y > 10 ) {
 					_eye.applyQuaternion( quaternion );
 					_this.object.up.applyQuaternion( quaternion );
 
@@ -210,7 +211,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 						_rotateStart.applyQuaternion( quaternion );
 
 					}
-				}
+				// }
 			}
 		}
 

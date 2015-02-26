@@ -279,7 +279,7 @@ define([
                     var normX = x - initX, normZ = z - initY;
                     var radius = Math.sqrt(normX * normX + normZ * normZ);
 
-                    while (radius > initExtent / 2) {
+                    while ( radius > initExtent / 2 ) {
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
@@ -2475,7 +2475,7 @@ define([
             this.displayOptions = {
                 buildingsShow: true,
                 roadsShow: true,
-                waterShow: true,
+                waterShow: false,
                 networkShow: false,
                 networkCurve: true,
                 networkCurvePoints: 20,
@@ -2608,6 +2608,7 @@ define([
                 detectRoadCollisions: true
             };
             this.terrainOptions = {
+                renderAsSphere: true,
                 loadHeights: true,
                 gridExtent: 8000,
                 gridPoints: 400,
@@ -4171,12 +4172,52 @@ define([
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
                 var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
 
+                
                 // Use logic from math.stackexchange.com
                 var vertices = geometry.attributes.position.array;
                 var i, j, l = vertices.length,
                     n = Math.sqrt(l),
                     k = l + 1;
-                if ( fp.appConfig.terrainOptions.loadHeights ) {
+                // Simple function to return the sign of a number - http://stackoverflow.com/questions/7624920/number-sign-in-javascript
+                var sign = function(x) {
+                    return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+                };
+                if ( fp.appConfig.terrainOptions.renderAsSphere ) {
+                    // hack to create a sphere
+                    var he = size / 2;
+                    var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                    for (j = 0; j < l; i++, j += 3 ) {
+                        var x = geometry.attributes.position.array[ j + 0 ];
+                        var z = geometry.attributes.position.array[ j + 1 ];
+                        var sx = sign(x), sz = sign(z),
+                            ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
+                            angle = Math.atan2(ax, az),
+                            ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
+                            nry = -ry,
+                            // dx = Math.sin( Math.PI * ( x / he ) ),
+                            // dz = Math.sin( Math.PI * ( z / he ) ),
+                            // dx = ( x % he ) / ( he / 2 ),
+                            // dz = ( z % he ) / ( he / 2 ),
+                            // py = ( Math.sin( Math.PI * ( ( ry / diameter ) - 0.5 ) ) ) / 2 + 0.5,
+                            my = ( radius > nry ? radius - nry : nry - radius ),
+                            py = Math.cos( Math.asin( my / radius ) ),
+                            // py = Math.sin( Math.PI * ( ry / diameter ) ),
+                            dx = sx * py,
+                            dz = sz * py,
+                            // dx = x / he,
+                            // dz = z / he,
+                            rx = dx * Math.sin( angle ) * ( diameter / 2 ), 
+                            rz = dz * Math.cos( angle ) * ( diameter / 2 ),
+                            w = 0;
+                            // ry = 10;
+                        if ( j % 10000 == 5000 )
+                            console.log ( nry, my, py, radius)
+                        geometry.attributes.position.array[ j + 0 ] = rx;
+                        geometry.attributes.position.array[ j + 1 ] = rz;
+                        geometry.attributes.position.array[ j + 2 ] = ry;
+                    }
+                }
+                else if ( fp.appConfig.terrainOptions.loadHeights ) {
                     for (i = 0, j = 0; i < l; i++, j += 3 ) {
                         geometry.attributes.position.array[ j + 2 ] =
                             data[ i ] / 65535 *
