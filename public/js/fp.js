@@ -1357,7 +1357,27 @@ define([
             this.ratioExtentToPoint = this.gridExtent / this.gridPoints;
             this.maxTerrainHeight = fp.appConfig.terrainOptions.maxTerrainHeight;
             this.gridSize = 4;
+            /**
+             * Used to cache the plane geometry array.
+             */
+            this.planeArray = null;
+            /**
+             * Used to cache the sphere geometry array.
+             */
+            this.sphereArray = null;
+            /**
+             * Specifies the percentage to which the plane is wrapped.
+             */
+            this.wrappedPercent = 0;
+            /**
+             * Specifies whether the plane is being wrapped, unwrapped or neither.
+             */
+            this.wrappingState = 0;
 
+            /**
+             * Flattens out the terrain.
+             * @return {[type]} [description]
+             */
             this.flattenTerrain = function() {
                 if ( !fp.appConfig.displayOptions.cursorShow )
                     return;
@@ -1405,6 +1425,97 @@ define([
             };
 
 
+            /**
+             * Wraps a plane into a sphere
+             */
+            this.constructSphere = function( ) {
+                var sign = function(x) {
+                    return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+                };
+                fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
+                fp.terrain.sphereArray = fp.terrain.planeArray.clone();//
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var i, j, l = fp.terrain.sphereArray.array.length,
+                    n = Math.sqrt(l),
+                    k = l + 1;
+                // hack to create a sphere
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = new THREE.Vector3( 0, 0, - radius );
+                for (j = 0; j < l; i++, j += 3 ) {
+                    var x = fp.terrain.plane.geometry.attributes.position.array[ j + 0 ];
+                    var z = fp.terrain.plane.geometry.attributes.position.array[ j + 1 ];
+                    var y = fp.terrain.plane.geometry.attributes.position.array[ j + 2 ];
+                    var sx = sign(x), sz = sign(z),
+                        ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
+                        angle = Math.atan2(ax, az),
+                        ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
+                        nry = -ry,
+                        my = ( radius > nry ? radius - nry : nry - radius ),
+                        py = Math.cos( Math.asin( my / radius ) ),
+                        dx = sx * py,
+                        dz = sz * py,
+                        rx = dx * Math.sin( angle ) * ( diameter / 2 ), 
+                        rz = dz * Math.cos( angle ) * ( diameter / 2 ),
+                        w = 0;
+                    // Adjust for existing terrain heights
+                    var v1 = new THREE.Vector3( rx, rz, ry );
+                    var v2 = new THREE.Vector3();
+                    v2.subVectors( v1, v2 ).normalize().multiplyScalar( y );
+                    fp.terrain.sphereArray.array[ j + 0 ] = rx + v2.x;
+                    fp.terrain.sphereArray.array[ j + 1 ] = rz + v2.z;
+                    fp.terrain.sphereArray.array[ j + 2 ] = ry + v2.y;
+                }
+            }
+
+            /**
+             * Wraps the plane into a sphere, to a specified percent (0 unwraps back to a plane).
+             */
+            this.wrapTerrainIntoSphere = function( percent ) {
+                this.wrappedPercent = percent;
+                if ( !_.isUndefined( percent ) && percent < 100 && percent > 0 ) {
+                    var l = fp.terrain.sphereArray.array.length;
+                    for ( var i = 0; i < l; i++ ) {
+                        var pv = fp.terrain.planeArray.array[ i ];
+                        var sv = fp.terrain.sphereArray.array[ i ];
+                        var nv = pv + ( sv - pv ) * ( percent / 100 );
+                        fp.terrain.plane.geometry.attributes.position.array[ i ] = nv; 
+                    }
+                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                }
+                else if ( percent == 100 ) {
+                    fp.terrain.plane.geometry.attributes.position = fp.terrain.sphereArray.clone();
+                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                }
+                else {
+                    fp.terrain.plane.geometry.attributes.position = fp.terrain.planeArray.clone();
+                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+
+            /**
+             * Updates terrain.
+             */
+            this.updateTerrain = function() {
+                if ( this.wrappingState === 1 ) {
+                    if ( fp.terrain.wrappedPercent < 100 ) {
+                        fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
+                        fp.terrain.wrappedPercent += this.wrappingState;
+                    }
+                    else {
+                        this.wrappingState = 0;
+                    }
+                }
+                else if ( this.wrappingState === -1 ) {
+                    if ( fp.terrain.wrappedPercent > 0 ) {
+                        fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
+                        fp.terrain.wrappedPercent += this.wrappingState;
+                    }
+                    else {
+                        this.wrappingState = 0;
+                    }
+                }
+            }
         };
 
         /**
@@ -2801,6 +2912,12 @@ define([
                       fp.terrain.terrainMapIndex + 1;
                 fp.loadTerrain();
             };
+            this.WrapTerrain = function() {
+                fp.terrain.wrappingState = 1;
+            };
+            this.UnwrapTerrain = function() {
+                fp.terrain.wrappingState = -1;
+            };
         };
 
         /**
@@ -2868,6 +2985,8 @@ define([
                 controlPanel.add( fp.appConfig, "Snapshot" );
                 controlPanel.add( fp.appConfig, "FullScreen" );
                 controlPanel.add( fp.appConfig, "SwitchTerrain" );
+                controlPanel.add( fp.appConfig, "WrapTerrain" );
+                controlPanel.add( fp.appConfig, "UnwrapTerrain" );
             }
 
             if ( fp.appConfig.displayOptions.guiShowAgentFolder ) {
@@ -3416,6 +3535,8 @@ define([
         this.init = function( config, sim, callback ) {
             fp.container = $( "#container" )[0] || config.container;
             fp.scene = new THREE.Scene();
+            fp.scene.add(new THREE.AxisHelper(100));
+            fp.scene.add(new THREE.GridHelper(100,10));
             fp.sim = sim || fp.simDefault();
             fp.setupGUI( config );
             fp.setupSimObjects();
@@ -3447,6 +3568,7 @@ define([
             fp.buildingNetwork.updateBuildings();
             fp.patchNetwork.updatePatchValues();
             fp.trailNetwork.updateTrails();
+            fp.terrain.updateTerrain();
             fp.updateYear();
             fp.updateSimState();
             fp.updateGraph();
@@ -4162,6 +4284,89 @@ define([
         };
 
         /**
+         * Wraps a plane into a sphere
+         */
+        this.wrapTerrainIntoSphere = function( percent ) {
+            var sign = function(x) {
+                return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+            };
+            var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+            fp.debug = _.clone( fp.terrain.plane.geometry.attributes.position.array ) 
+            var geometry = fp.terrain.plane.geometry;
+            var vertices = geometry.attributes.position.array;
+            var i, j, l = vertices.length,
+                n = Math.sqrt(l),
+                k = l + 1;
+            if ( fp.appConfig.terrainOptions.renderAsSphere ) {
+                // hack to create a sphere
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                for (j = 0; j < l; i++, j += 3 ) {
+                    var x = geometry.attributes.position.array[ j + 0 ];
+                    var z = geometry.attributes.position.array[ j + 1 ];
+                    var y = geometry.attributes.position.array[ j + 2 ];
+                    var sx = sign(x), sz = sign(z),
+                        ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
+                        angle = Math.atan2(ax, az),
+                        ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
+                        nry = -ry,
+                        my = ( radius > nry ? radius - nry : nry - radius ),
+                        py = Math.cos( Math.asin( my / radius ) ),
+                        dx = sx * py,
+                        dz = sz * py,
+                        rx = dx * Math.sin( angle ) * ( diameter / 2 ), 
+                        rz = dz * Math.cos( angle ) * ( diameter / 2 ),
+                        w = 0;
+                    geometry.attributes.position.array[ j + 0 ] = rx;
+                    geometry.attributes.position.array[ j + 1 ] = rz;
+                    geometry.attributes.position.array[ j + 2 ] = ry;
+                }
+            }
+            geometry.attributes.position.needsUpdate = true;
+        }
+
+        //fp.unwrapTerrainFromSphere();
+        /**
+         * Unwraps a sphere to a plane.
+         */
+        this.unwrapTerrainFromSphere = function() {
+            var sign = function(x) {
+                return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+            };
+            var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+            // fp.terrain.plane.geometry.attributes.position.array
+            fp.debug2 = _.clone( fp.terrain.plane.geometry.attributes.position.array ) 
+            var geometry = fp.terrain.plane.geometry;
+            var vertices = geometry.attributes.position.array;
+            var i, j, l = vertices.length,
+                n = Math.sqrt(l),
+                k = l + 1;
+            if ( fp.appConfig.terrainOptions.renderAsSphere ) {
+                // hack to create a sphere
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                for (j = 0; j < l; i++, j += 3 ) {
+                    var x = geometry.attributes.position.array[ j + 0 ];
+                    var z = geometry.attributes.position.array[ j + 1 ];
+                    var y = geometry.attributes.position.array[ j + 2 ];
+                    var sx = sign(x), sz = sign(z),
+                        ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
+                        angle = Math.atan2(ax, az),
+                        ly = -y / diameter,
+                        ly = -y / diameter,
+                        ry = 0,
+                        rx = ly * he * sx,
+                        rz = ly * he * sz,
+                        w = 0;
+                    geometry.attributes.position.array[ j + 0 ] = rx;
+                    geometry.attributes.position.array[ j + 1 ] = rz;
+                    geometry.attributes.position.array[ j + 2 ] = ry;
+                }
+            }
+            geometry.attributes.position.needsUpdate = true;
+        }
+
+        /**
          * Loads the actual terrain, using the THREE.TerrainLoader class.
          * @param  {Function} callback A function that is called after the terrain is loaded successfully.
          */
@@ -4172,52 +4377,13 @@ define([
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
                 var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
 
-                
                 // Use logic from math.stackexchange.com
                 var vertices = geometry.attributes.position.array;
                 var i, j, l = vertices.length,
                     n = Math.sqrt(l),
                     k = l + 1;
                 // Simple function to return the sign of a number - http://stackoverflow.com/questions/7624920/number-sign-in-javascript
-                var sign = function(x) {
-                    return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
-                };
-                if ( fp.appConfig.terrainOptions.renderAsSphere ) {
-                    // hack to create a sphere
-                    var he = size / 2;
-                    var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
-                    for (j = 0; j < l; i++, j += 3 ) {
-                        var x = geometry.attributes.position.array[ j + 0 ];
-                        var z = geometry.attributes.position.array[ j + 1 ];
-                        var sx = sign(x), sz = sign(z),
-                            ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
-                            angle = Math.atan2(ax, az),
-                            ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
-                            nry = -ry,
-                            // dx = Math.sin( Math.PI * ( x / he ) ),
-                            // dz = Math.sin( Math.PI * ( z / he ) ),
-                            // dx = ( x % he ) / ( he / 2 ),
-                            // dz = ( z % he ) / ( he / 2 ),
-                            // py = ( Math.sin( Math.PI * ( ( ry / diameter ) - 0.5 ) ) ) / 2 + 0.5,
-                            my = ( radius > nry ? radius - nry : nry - radius ),
-                            py = Math.cos( Math.asin( my / radius ) ),
-                            // py = Math.sin( Math.PI * ( ry / diameter ) ),
-                            dx = sx * py,
-                            dz = sz * py,
-                            // dx = x / he,
-                            // dz = z / he,
-                            rx = dx * Math.sin( angle ) * ( diameter / 2 ), 
-                            rz = dz * Math.cos( angle ) * ( diameter / 2 ),
-                            w = 0;
-                            // ry = 10;
-                        if ( j % 10000 == 5000 )
-                            console.log ( nry, my, py, radius)
-                        geometry.attributes.position.array[ j + 0 ] = rx;
-                        geometry.attributes.position.array[ j + 1 ] = rz;
-                        geometry.attributes.position.array[ j + 2 ] = ry;
-                    }
-                }
-                else if ( fp.appConfig.terrainOptions.loadHeights ) {
+                if ( fp.appConfig.terrainOptions.loadHeights ) {
                     for (i = 0, j = 0; i < l; i++, j += 3 ) {
                         geometry.attributes.position.array[ j + 2 ] =
                             data[ i ] / 65535 *
@@ -4303,6 +4469,12 @@ define([
                 fp.terrain.createTerrainColors();
                 fp.toggleDayNight();
                 fp.pathNetwork.setupAStarGraph();
+
+                // Construct the sphere, and switch it on
+                if ( fp.appConfig.terrainOptions.renderAsSphere ) {
+                    fp.terrain.constructSphere(); 
+                    // fp.terrain.wrapTerrainIntoSphere( 100 ); 
+                }
 
                 fp.animate(); // Kick off the animation loop
                 if ( !_.isUndefined(callback) )
