@@ -175,7 +175,7 @@ define([
                             THREE.LinePieces
                         );
                     }
-                    fp.scene.add(this.networkMesh);
+                    fp.scene.add( this.networkMesh );
                 };
 
                 /**
@@ -643,7 +643,7 @@ define([
                     if ( _.isUndefined(lineUnion) )
                         lineUnion = line;
                     else
-                        lineUnion = lineUnion.union(line);
+                        lineUnion = lineUnion.union( line );
                 }
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( lineUnion );
@@ -1046,8 +1046,8 @@ define([
                 if ( _.isUndefined( geometry.faces ) || geometry.faces[0] === null )
                     return;
 
-                if (scene.children.indexOf(this.plane) == -1)
-                    scene.add(this.plane);
+                if (fp.scene.children.indexOf(this.plane) == -1)
+                    fp.scene.add(this.plane);
                 var dim = fp.terrain.gridPoints / this.patchSize;
                 for (var y = 0; y < dim; y++) {
                     for (var x = 0; x < dim; x++) {
@@ -1424,14 +1424,43 @@ define([
                 return fp.terrain.plane.geometry.color;
             };
 
+            var sign = function(x) {
+                return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+            };
+
+            /**
+             * Transforms a single point to 
+             */
+            this.transformSpherePoint = function( x, y, z ) {
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = new THREE.Vector3( 0, - radius, 0 );
+                var sx = sign(x), sz = sign(z),
+                    ax = Math.abs( x ), az = Math.abs( z ), 
+                    mxz = ( ax > az ? ax : az ),
+                    angle = Math.atan2(ax, az),
+                    ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
+                    nry = -ry,
+                    my = ( radius > nry ? radius - nry : nry - radius ),
+                    py = Math.cos( Math.asin( my / radius ) ),
+                    dx = sx * py,
+                    dz = sz * py,
+                    rx = dx * Math.sin( angle ) * radius, 
+                    rz = dz * Math.cos( angle ) * radius,
+                    w = 0;
+                // Adjust for existing terrain heights
+                var v1 = new THREE.Vector3( rx, rz, ry );
+                var v2 = new THREE.Vector3();
+                v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
+                return v1.add( v2 );                    
+            };
+
 
             /**
              * Wraps a plane into a sphere
              */
             this.constructSphere = function( ) {
-                var sign = function(x) {
-                    return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
-                };
                 fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
                 fp.terrain.sphereArray = fp.terrain.planeArray.clone();//
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
@@ -1441,11 +1470,12 @@ define([
                 // hack to create a sphere
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
-                var origin = new THREE.Vector3( 0, 0, - radius );
+                var origin = new THREE.Vector3( 0, - radius, 0 );
                 for (j = 0; j < l; i++, j += 3 ) {
                     var x = fp.terrain.plane.geometry.attributes.position.array[ j + 0 ];
                     var z = fp.terrain.plane.geometry.attributes.position.array[ j + 1 ];
                     var y = fp.terrain.plane.geometry.attributes.position.array[ j + 2 ];
+                    /*
                     var sx = sign(x), sz = sign(z),
                         ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
                         angle = Math.atan2(ax, az),
@@ -1461,10 +1491,15 @@ define([
                     // Adjust for existing terrain heights
                     var v1 = new THREE.Vector3( rx, rz, ry );
                     var v2 = new THREE.Vector3();
-                    v2.subVectors( v1, v2 ).normalize().multiplyScalar( y );
-                    fp.terrain.sphereArray.array[ j + 0 ] = rx + v2.x;
-                    fp.terrain.sphereArray.array[ j + 1 ] = rz + v2.z;
-                    fp.terrain.sphereArray.array[ j + 2 ] = ry + v2.y;
+                    v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
+                    */
+                    var v = this.transformSpherePoint( x, y, z );
+                    // fp.terrain.sphereArray.array[ j + 0 ] = rx + v2.x;
+                    // fp.terrain.sphereArray.array[ j + 1 ] = rz + v2.z;
+                    // fp.terrain.sphereArray.array[ j + 2 ] = ry + v2.y;
+                    fp.terrain.sphereArray.array[ j + 0 ] = v.x;
+                    fp.terrain.sphereArray.array[ j + 1 ] = v.y;
+                    fp.terrain.sphereArray.array[ j + 2 ] = v.z;
                 }
             }
 
@@ -2847,7 +2882,9 @@ define([
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.buildingsShow )
-                    fp.scene.add( fp.buildingNetwork.networkMesh);
+                    fp.terrain.plane.add( fp.buildingNetwork.networkMesh );
+                fp.buildingNetwork.networkMesh.matrixAutoUpdate = false;
+                fp.buildingNetwork.networkMesh.matrix.makeRotationX( Math.PI / 2 );
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.roadsShow )
