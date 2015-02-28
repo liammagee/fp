@@ -703,34 +703,23 @@ define([
              * Creates a new building, given a position and dimension
              * Some of the logic derived from: http://learningthreejs.com/blog/2013/08/02/how-to-do-a-procedural-city-in-100lines/
              */
-            this.createBuilding = function(position, dimensions) {
-                var building = new fp.Building();
+            this.createBuilding = function( position, dimensions ) {
 
                 // Give the building a form
-                building.buildingForm = fp.appConfig.buildingOptions.buildingForm;
+                var buildingForm = fp.appConfig.buildingOptions.buildingForm;
                 if (fp.appConfig.buildingOptions.randomForm)
-                    building.buildingForm = fp.BUILDING_FORMS.names[Math.floor(Math.random() * fp.BUILDING_FORMS.names.length)];
+                    buildingForm = fp.BUILDING_FORMS.names[Math.floor(Math.random() * fp.BUILDING_FORMS.names.length)];
 
-                // Determine a height and develop the geometry
-                building.setupBuilding(dimensions);
 
-                // Set rotation and position
                 var rotateY = (fp.appConfig.buildingOptions.rotateSetAngle / 180) * Math.PI;
                 if (fp.appConfig.buildingOptions.rotateRandomly)
                     rotateY = Math.random() * Math.PI;
-                building.lod.rotation.set(0, rotateY, 0);
-                building.highResMeshContainer.rotation.set(0, rotateY, 0);
-                building.lowResMeshContainer.rotation.set(0, rotateY, 0);
-
-                var posY = fp.getHeight(position.x, position.z) + fp.appConfig.buildingOptions.levelHeight;
-                building.lod.position.set(position.x, posY, position.z);
-                building.highResMeshContainer.position.set(position.x, posY, position.z);
-                building.lowResMeshContainer.position.set(position.x, posY, position.z);
-                building.addFloor();
+                var rotation = new THREE.Vector3( 0, rotateY, 0 );
+                var building = new fp.Building( buildingForm, dimensions, position, rotation );
 
                 // Before we add this, try to detect collision
                 if (fp.appConfig.buildingOptions.detectBuildingCollisions) {
-                    if ( fp.buildingNetwork.collidesWithOtherBuildings(building) )
+                    if ( fp.buildingNetwork.collidesWithOtherBuildings( building ) )
                         return undefined;
                 }
 
@@ -1429,15 +1418,34 @@ define([
             };
 
             /**
-             * Transforms a single point to 
+             * Retrieves the origin of the terrain sphere
+             */
+            this.sphereOrigin = function() {
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = new THREE.Vector3( 0, - radius, 0 );
+                return origin;
+            }
+
+            /**
+             * Retrieves the angle to the origin of the terrain sphere.
+             */
+            this.sphereOriginAngle = function( x, y, z ) {
+                var origin = this.sphereOrigin();
+                return origin.sub( new THREE.Vector3( x, y, z ) ).normalize().multiplyScalar( Math.PI / 2 );
+            }
+
+            /**
+             * Transforms a single point to
              */
             this.transformSpherePoint = function( x, y, z ) {
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
-                var origin = new THREE.Vector3( 0, - radius, 0 );
+                var origin = this.sphereOrigin();
                 var sx = sign(x), sz = sign(z),
-                    ax = Math.abs( x ), az = Math.abs( z ), 
+                    ax = Math.abs( x ), az = Math.abs( z ),
                     mxz = ( ax > az ? ax : az ),
                     angle = Math.atan2(ax, az),
                     ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
@@ -1446,14 +1454,14 @@ define([
                     py = Math.cos( Math.asin( my / radius ) ),
                     dx = sx * py,
                     dz = sz * py,
-                    rx = dx * Math.sin( angle ) * radius, 
+                    rx = dx * Math.sin( angle ) * radius,
                     rz = dz * Math.cos( angle ) * radius,
                     w = 0;
                 // Adjust for existing terrain heights
                 var v1 = new THREE.Vector3( rx, rz, ry );
                 var v2 = new THREE.Vector3();
                 v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
-                return v1.add( v2 );                    
+                return v1.add( v2 );
             };
 
 
@@ -1463,40 +1471,12 @@ define([
             this.constructSphere = function( ) {
                 fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
                 fp.terrain.sphereArray = fp.terrain.planeArray.clone();//
-                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
-                var i, j, l = fp.terrain.sphereArray.array.length,
-                    n = Math.sqrt(l),
-                    k = l + 1;
-                // hack to create a sphere
-                var he = size / 2;
-                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
-                var origin = new THREE.Vector3( 0, - radius, 0 );
-                for (j = 0; j < l; i++, j += 3 ) {
+                var l = fp.terrain.sphereArray.array.length;
+                for (var j = 0; j < l; j += 3 ) {
                     var x = fp.terrain.plane.geometry.attributes.position.array[ j + 0 ];
                     var z = fp.terrain.plane.geometry.attributes.position.array[ j + 1 ];
                     var y = fp.terrain.plane.geometry.attributes.position.array[ j + 2 ];
-                    /*
-                    var sx = sign(x), sz = sign(z),
-                        ax = Math.abs( x ), az = Math.abs( z ), mxz = ( ax > az ? ax : az ),
-                        angle = Math.atan2(ax, az),
-                        ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
-                        nry = -ry,
-                        my = ( radius > nry ? radius - nry : nry - radius ),
-                        py = Math.cos( Math.asin( my / radius ) ),
-                        dx = sx * py,
-                        dz = sz * py,
-                        rx = dx * Math.sin( angle ) * ( diameter / 2 ), 
-                        rz = dz * Math.cos( angle ) * ( diameter / 2 ),
-                        w = 0;
-                    // Adjust for existing terrain heights
-                    var v1 = new THREE.Vector3( rx, rz, ry );
-                    var v2 = new THREE.Vector3();
-                    v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
-                    */
                     var v = this.transformSpherePoint( x, y, z );
-                    // fp.terrain.sphereArray.array[ j + 0 ] = rx + v2.x;
-                    // fp.terrain.sphereArray.array[ j + 1 ] = rz + v2.z;
-                    // fp.terrain.sphereArray.array[ j + 2 ] = ry + v2.y;
                     fp.terrain.sphereArray.array[ j + 0 ] = v.x;
                     fp.terrain.sphereArray.array[ j + 1 ] = v.y;
                     fp.terrain.sphereArray.array[ j + 2 ] = v.z;
@@ -1514,13 +1494,47 @@ define([
                         var pv = fp.terrain.planeArray.array[ i ];
                         var sv = fp.terrain.sphereArray.array[ i ];
                         var nv = pv + ( sv - pv ) * ( percent / 100 );
-                        fp.terrain.plane.geometry.attributes.position.array[ i ] = nv; 
+                        fp.terrain.plane.geometry.attributes.position.array[ i ] = nv;
                     }
                     fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                    fp.buildingNetwork.buildings.forEach( function( building ) {
+                        building.lod.matrixAutoUpdate = false;
+                        var x = building.lod.position.x,
+                            y = building.lod.position.y,
+                            z = building.lod.position.z;
+                        var cv = new THREE.Vector3( x, z, y );
+                        var v2 = fp.terrain.transformSpherePoint( x, y, z );
+                        var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
+                        dv.sub( cv ).multiplyScalar( percent / 100 );
+                        //v2.multiplyScalar( percent / 100 );
+                        var v = fp.terrain.sphereOriginAngle( v2.x, v2.y, v2.z ).multiplyScalar( percent / 100 );
+                        cv = v2;//.add(dv);
+                        console.log(cv,v2, dv)
+                        //building.lod.rotation.set( v.x, v.z, v.y );
+                        building.lod.position.set( cv.x, cv.z, cv.y );
+                        //building.highResMeshContainer.rotation.set( v.x, v.z, v.y );
+                        building.highResMeshContainer.position.set( cv.x, cv.z, cv.y );
+                        //building.lowResMeshContainer.rotation.set( v.x, v.z, v.y );
+                        building.lowResMeshContainer.position.set( cv.x, cv.z, cv.y );
+                    })
                 }
                 else if ( percent == 100 ) {
                     fp.terrain.plane.geometry.attributes.position = fp.terrain.sphereArray.clone();
                     fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                    /*
+                    fp.buildingNetwork.buildings.forEach( function( building ) {
+                        building.lod.matrixAutoUpdate = false;
+                        var x = building.lod.position.x,
+                            y = building.lod.position.y,
+                            z = building.lod.position.z;
+                        var v = fp.terrain.sphereOriginAngle( x, y, z );
+                        var v2 = fp.terrain.transformSpherePoint( x, y, z );
+                        building.lod.matrix.makeRotationX( v.x );
+                        building.lod.matrix.makeRotationY( v.y );
+                        building.lod.matrix.makeRotationZ( v.z );
+                        building.lod.position.set( v2.x, v2.y, v2.z );
+                    })
+                    */
                 }
                 else {
                     fp.terrain.plane.geometry.attributes.position = fp.terrain.planeArray.clone();
@@ -2006,66 +2020,13 @@ define([
          * @memberof fp
          * @inner
          */
-        this.Building = function() {
-            this.mesh = null;
-            this.lineMaterial = null;
-            this.buildingMaterial = null;
-            this.windowMaterial = null;
-            this.lod = null;
-            this.geometry = null;
-            this.windowGeometry = null;
-            this.windowMesh = null;
-            this.windowsFillContainer = null;
-            this.windowsOutlineContainer = null;
-            this.lowResGeomtery = null;
-            this.lowResMesh = null;
-            this.highResMeshContainer = null;
-            this.lowResMeshContainer = null;
-            this.levels = 0;
-            this.counter = 0;
-            this.localMaxLevels = null;
-            this.localWidth = null;
-            this.localLength = null;
-            this.yOffset = 0;
-            this.uniforms = null;
-            this.buildingForm = null;
-            this.destroying = false;
+        this.Building = function( form, dimensions, position, rotation ) {
 
-            // Use Poisson distribution with lambda of 1 to contour building heights instead
-            var w = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
-            var d = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
-            // var h =  Math.floor(jStat.exponential.pdf(Math.random(), 50))
-            var h = Math.floor(jStat.exponential.sample(fp.appConfig.buildingOptions.heightA) * fp.appConfig.buildingOptions.heightB);
-            this.maxWidth = Math.floor(w * 9) + fp.appConfig.buildingOptions.heightB;
-            this.maxDepth = Math.floor(d * 9) + 1;
-            this.maxHeight = h + 1;
-
-            this.bottomWindow = 1.0 - (fp.appConfig.buildingOptions.windowsEndY / 100.0);
-            this.topWindow = 1.0 - (fp.appConfig.buildingOptions.windowsStartY/ 100.0);
-            this.windowWidth = fp.appConfig.buildingOptions.windowWidth;
-            this.windowPercent = fp.appConfig.buildingOptions.windowPercent / 100.0;
-            if ( fp.appConfig.buildingOptions.windowsRandomise ) {
-                // Randomise based on a normal distribution
-                var bottomWindowTmp = jStat.normal.inv(Math.random(), this.bottomWindow, 0.1);
-                var topWindowTmp = jStat.normal.inv(Math.random(), this.topWindow, 0.1);
-                var windowWidthTmp = jStat.normal.inv(Math.random(), this.windowWidth, 0.1);
-                var windowPercentTmp = jStat.normal.inv(Math.random(), this.windowPercent, 0.1);
-                // Coerce value between a min and max
-                var coerceValue = function(num, min, max) {
-                    if ( num < min )
-                        return min;
-                    if ( num > max )
-                        return max;
-                    return num;
-                };
-                this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
-                this.topWindow = coerceValue( topWindowTmp, 0, 100 );
-                this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
-                this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
-            }
-
-
-            this.setupBuilding = function(dimensions) {
+            /**
+             * Sets the dimensions of the building.
+             * @param  {object} dimensions object containing levels, width and length properties.
+             */
+            this.initDimensions = function( dimensions ) {
                 this.lod = new THREE.LOD();
                 this.yOffset = 0;
                 this.levels = 0;
@@ -2484,6 +2445,90 @@ define([
                 else
                     this.highResMeshContainer.remove(this.windowsFillContainer);
             };
+
+            /**
+             * Initialises the building.
+             */
+            this.init = function( form, dimensions, position, rotation ) {
+                // Use Poisson distribution with lambda of 1 to contour building heights instead
+                var w = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
+                var d = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
+                // var h =  Math.floor(jStat.exponential.pdf(Math.random(), 50))
+                var h = Math.floor(jStat.exponential.sample(fp.appConfig.buildingOptions.heightA) * fp.appConfig.buildingOptions.heightB);
+                this.maxWidth = Math.floor(w * 9) + fp.appConfig.buildingOptions.heightB;
+                this.maxDepth = Math.floor(d * 9) + 1;
+                this.maxHeight = h + 1;
+
+                this.bottomWindow = 1.0 - (fp.appConfig.buildingOptions.windowsEndY / 100.0);
+                this.topWindow = 1.0 - (fp.appConfig.buildingOptions.windowsStartY/ 100.0);
+                this.windowWidth = fp.appConfig.buildingOptions.windowWidth;
+                this.windowPercent = fp.appConfig.buildingOptions.windowPercent / 100.0;
+                if ( fp.appConfig.buildingOptions.windowsRandomise ) {
+                    // Randomise based on a normal distribution
+                    var bottomWindowTmp = jStat.normal.inv(Math.random(), this.bottomWindow, 0.1);
+                    var topWindowTmp = jStat.normal.inv(Math.random(), this.topWindow, 0.1);
+                    var windowWidthTmp = jStat.normal.inv(Math.random(), this.windowWidth, 0.1);
+                    var windowPercentTmp = jStat.normal.inv(Math.random(), this.windowPercent, 0.1);
+                    // Coerce value between a min and max
+                    var coerceValue = function(num, min, max) {
+                        if ( num < min )
+                            return min;
+                        if ( num > max )
+                            return max;
+                        return num;
+                    };
+                    this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
+                    this.topWindow = coerceValue( topWindowTmp, 0, 100 );
+                    this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
+                    this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
+                }
+
+                if ( !_.isUndefined( form ) )
+                    this.buildingForm = form;
+                if ( !_.isUndefined( dimensions ) )
+                    this.initDimensions( dimensions );
+                if ( !_.isUndefined( position ) ) {
+                    var posY = fp.getHeight(position.x, position.z) + fp.appConfig.buildingOptions.levelHeight;
+                    this.originPosition = new THREE.Vector3( position.x, posY, position.z );
+                    this.lod.position.set( position.x, posY, position.z );
+                    this.highResMeshContainer.position.set(position.x, posY, position.z);
+                    this.lowResMeshContainer.position.set(position.x, posY, position.z);
+                }
+                if ( !_.isUndefined( rotation ) ) {
+                    this.lod.rotation.set( rotation.x, rotation.y, rotation.z );
+                    this.highResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
+                    this.lowResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
+                }
+                // Add an initial floor so the building is visible.
+                this.addFloor();
+            };
+
+            this.mesh = null;
+            this.lineMaterial = null;
+            this.buildingMaterial = null;
+            this.windowMaterial = null;
+            this.lod = null;
+            this.geometry = null;
+            this.windowGeometry = null;
+            this.windowMesh = null;
+            this.windowsFillContainer = null;
+            this.windowsOutlineContainer = null;
+            this.lowResGeomtery = null;
+            this.lowResMesh = null;
+            this.highResMeshContainer = null;
+            this.lowResMeshContainer = null;
+            this.levels = 0;
+            this.counter = 0;
+            this.localMaxLevels = null;
+            this.localWidth = null;
+            this.localLength = null;
+            this.yOffset = 0;
+            this.uniforms = null;
+            this.buildingForm = null;
+            this.destroying = false;
+            this.originPosition = null;
+
+            this.init( form, dimensions, position, rotation );
         };
 
         /**
@@ -2882,9 +2927,9 @@ define([
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.buildingsShow )
-                    fp.terrain.plane.add( fp.buildingNetwork.networkMesh );
-                fp.buildingNetwork.networkMesh.matrixAutoUpdate = false;
-                fp.buildingNetwork.networkMesh.matrix.makeRotationX( Math.PI / 2 );
+                    fp.scene.add( fp.buildingNetwork.networkMesh );
+                // fp.buildingNetwork.networkMesh.matrixAutoUpdate = false;
+                // fp.buildingNetwork.networkMesh.matrix.makeRotationX( Math.PI / 2 );
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.roadsShow )
@@ -4426,8 +4471,8 @@ define([
 
                 // Construct the sphere, and switch it on
                 if ( fp.appConfig.terrainOptions.renderAsSphere ) {
-                    fp.terrain.constructSphere(); 
-                    // fp.terrain.wrapTerrainIntoSphere( 100 ); 
+                    fp.terrain.constructSphere();
+                    // fp.terrain.wrapTerrainIntoSphere( 100 );
                 }
 
                 fp.animate(); // Kick off the animation loop
