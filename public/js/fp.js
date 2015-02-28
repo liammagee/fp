@@ -1499,23 +1499,23 @@ define([
                     fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
                     fp.buildingNetwork.buildings.forEach( function( building ) {
                         building.lod.matrixAutoUpdate = false;
-                        var x = building.lod.position.x,
-                            y = building.lod.position.y,
-                            z = building.lod.position.z;
-                        var cv = new THREE.Vector3( x, z, y );
+                        var cv = _.clone( building.originPosition );
+                        var x = cv.x, y = cv.y, z = cv.z;
+                        var nv = new THREE.Vector3( x, y, z );
                         var v2 = fp.terrain.transformSpherePoint( x, y, z );
                         var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
-                        dv.sub( cv ).multiplyScalar( percent / 100 );
+                        dv.sub( nv ).multiplyScalar( percent / 100 );
                         //v2.multiplyScalar( percent / 100 );
                         var v = fp.terrain.sphereOriginAngle( v2.x, v2.y, v2.z ).multiplyScalar( percent / 100 );
-                        cv = v2;//.add(dv);
-                        console.log(cv,v2, dv)
-                        //building.lod.rotation.set( v.x, v.z, v.y );
-                        building.lod.position.set( cv.x, cv.z, cv.y );
-                        //building.highResMeshContainer.rotation.set( v.x, v.z, v.y );
-                        building.highResMeshContainer.position.set( cv.x, cv.z, cv.y );
-                        //building.lowResMeshContainer.rotation.set( v.x, v.z, v.y );
-                        building.lowResMeshContainer.position.set( cv.x, cv.z, cv.y );
+                        v.setY( 0 );
+                        nv.add( dv );
+                        console.log(v)
+                        building.lod.rotation.set( -v.z, v.y, v.x );
+                        building.lod.position.set( nv.x, nv.y, nv.z );
+                        building.highResMeshContainer.rotation.set( -v.z, v.y, v.x );
+                        building.highResMeshContainer.position.set( nv.x, nv.y, nv.z );
+                        building.lowResMeshContainer.rotation.set( -v.z, v.y, v.x );
+                        building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     })
                 }
                 else if ( percent == 100 ) {
