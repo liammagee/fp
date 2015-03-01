@@ -1432,8 +1432,16 @@ define([
              * Retrieves the angle to the origin of the terrain sphere.
              */
             this.sphereOriginAngle = function( x, y, z ) {
-                var origin = this.sphereOrigin();
-                return origin.sub( new THREE.Vector3( x, y, z ) ).normalize().multiplyScalar( Math.PI / 2 );
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = fp.terrain.sphereOrigin();
+                var diff = new THREE.Vector3( x, y, z ).sub( origin );
+                var xtan = Math.atan2( diff.x, diff.y );
+                var xyHyp = Math.sqrt( diff.x * diff.x + diff.y * diff.y );
+                var ztan = Math.atan2( diff.z, xyHyp );
+                var rotation = new THREE.Vector3( ztan, 0, - xtan );
+                return rotation;
             }
 
             /**
@@ -1506,15 +1514,13 @@ define([
                         var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
                         dv.sub( nv ).multiplyScalar( percent / 100 );
                         //v2.multiplyScalar( percent / 100 );
-                        var v = fp.terrain.sphereOriginAngle( v2.x, v2.y, v2.z ).multiplyScalar( percent / 100 );
-                        v.setY( 0 );
                         nv.add( dv );
-                        console.log(v)
-                        building.lod.rotation.set( -v.z, v.y, v.x );
+                        var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
+                        building.lod.rotation.set( v.x, v.y, v.z );
                         building.lod.position.set( nv.x, nv.y, nv.z );
-                        building.highResMeshContainer.rotation.set( -v.z, v.y, v.x );
+                        building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.highResMeshContainer.position.set( nv.x, nv.y, nv.z );
-                        building.lowResMeshContainer.rotation.set( -v.z, v.y, v.x );
+                        building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     })
                 }
