@@ -95,7 +95,8 @@ define([
                         var link = this.links[i];
                         var agent1 = link.agent1,
                             agent2 = link.agent2;
-                        var p1 = agent1.vertex.clone(), p2 = agent2.vertex.clone();
+                        var p1 = fp.terrain.transformPointFromPlaneToSphere( agent1.vertex.clone(), fp.terrain.wrappedPercent ),
+                            p2 = fp.terrain.transformPointFromPlaneToSphere( agent2.vertex.clone(), fp.terrain.wrappedPercent );
                         p1.y += fp.appConfig.agentOptions.size / 8;
                         p2.y += fp.appConfig.agentOptions.size / 8;
                         vertices.push(p2);
@@ -109,7 +110,7 @@ define([
                  * @param  {Array} vertices
                  * @return {THREE.Geometry}
                  */
-                this.friendNetworkGeometryCurved = function(vertices) {
+                this.friendNetworkGeometryCurved = function( vertices ) {
                     var networkGeometry = new THREE.Geometry();
                     var len = vertices.length;
                     var spline = new THREE.Spline( vertices );
@@ -128,7 +129,7 @@ define([
                  * @param  {Array} vertices
                  * @return {THREE.Geometry}
                  */
-                this.friendNetworkGeometry = function(vertices) {
+                this.friendNetworkGeometry = function( vertices ) {
                     if ( !fp.appConfig.displayOptions.networkCurve ) {
                         var networkGeometry = new THREE.Geometry();
                         networkGeometry.vertices = vertices;
@@ -1730,6 +1731,16 @@ define([
                         fp.agentNetwork.particles.geometry.vertices[j] = nv;
                     }
                     fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
+                    for (var j = 0; j < fp.agentNetwork.networks.length; j ++ ) {
+                        var transformedVertices = [];
+                        var network = fp.agentNetwork.networks[ j ];
+                        var vertices = network.networkMesh.geometry.vertices;
+                        for (var i = 0; i < vertices.length; i ++) {
+                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                        }
+                        network.networkMesh.geometry.vertices = transformedVertices;
+                        network.networkMesh.geometry.verticesNeedUpdate = true;
+                    }
                 }
             }
 
@@ -4472,7 +4483,9 @@ define([
             fp.terrain.simpleTerrainMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
             fp.terrain.richTerrainMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
             fp.buildingNetwork.buildings.forEach(function(building) {
-                building.highResMeshContainer.children.forEach(function(mesh) { mesh.material.wireframe = appConfig.displayOptions.wireframeShow; });
+                building.highResMeshContainer.children.forEach(function(mesh) {
+                    mesh.material.wireframe = fp.appConfig.displayOptions.wireframeShow;
+                } );
             });
         };
 
