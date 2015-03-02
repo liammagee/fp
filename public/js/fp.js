@@ -433,7 +433,9 @@ define([
              */
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                this.agents.forEach(function(agent) { agentGeometry.vertices.push( agent.vertex ); } );
+                this.agents.forEach(function(agent) {
+                    agentGeometry.vertices.push( agent.vertex );
+                } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -1584,7 +1586,7 @@ define([
             };
 
             /**
-             * Transforms a single point to
+             * Transforms a single point from a plane to a sphere geometry.
              * @param {Number} x
              * @param {Number} y
              * @param {Number} z
@@ -1618,6 +1620,23 @@ define([
                 return v1.add( v2 );
             };
 
+            /**
+             * Wraps planar point to sphere - calls transformSpherePoint,
+             * but handles unpacking and applying the transformation to a certain percentage.
+             * @param {THREE.Vector3} point    the point to transform
+             * @param {Number} percent
+             * @return {THREE.Vector3} The sphere position to transform the plane position to.
+             */
+            this.transformPointFromPlaneToSphere = function( point, percent ) {
+                var x = point.x, y = point.y, z = point.z;
+                var nv = new THREE.Vector3( x, y, z );
+                var v2 = fp.terrain.transformSpherePoint( x, y, z );
+                var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
+                dv.sub( nv ).multiplyScalar( percent / 100 );
+                nv.add( dv );
+                return nv;
+            };
+
 
             /**
              * Wraps a plane into a sphere
@@ -1641,7 +1660,7 @@ define([
              */
             this.wrapTerrainIntoSphere = function( percent ) {
                 this.wrappedPercent = percent;
-                if ( !_.isUndefined( percent ) && percent < 100 && percent > 0 ) {
+                if ( !_.isUndefined( percent ) && percent <= 100 && percent >= 0 ) {
                     var l = fp.terrain.sphereArray.array.length;
                     for ( var i = 0; i < l; i++ ) {
                         var pv = fp.terrain.planeArray.array[ i ];
@@ -1653,16 +1672,9 @@ define([
                     fp.buildingNetwork.buildings.forEach( function( building ) {
                         building.lod.matrixAutoUpdate = false;
                         var cv = _.clone( building.originPosition );
-                        var x = cv.x, y = cv.y, z = cv.z;
-                        var nv = new THREE.Vector3( x, y, z );
-                        var v2 = fp.terrain.transformSpherePoint( x, y, z );
-                        var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
-                        dv.sub( nv );
-                        nv.add( dv );
+                        var nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
                         var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
-                        dv.multiplyScalar( percent / 100 );
-                        nv = new THREE.Vector3( x, y, z );
-                        nv.add( dv );
+                        nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
                         building.lod.rotation.set( v.x, v.y, v.z );
                         building.lod.position.set( nv.x, nv.y, nv.z );
                         building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
@@ -1675,53 +1687,17 @@ define([
                         var verticesOriginal = fp.roadNetwork.planeVertices[j];
                         for (var i = 0; i < verticesOriginal.length; i ++) {
                             var v = verticesOriginal[i];
-                            var x = v.x, y = v.y, z = v.z;
-                            var nv = new THREE.Vector3( x, y, z );
-                            var v2 = fp.terrain.transformSpherePoint( x, y, z );
-                            var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
-                            dv.sub( nv );
-                            dv.multiplyScalar( percent / 100 );
-                            nv.add( dv );
-                            vertices.push( nv );
+                            vertices.push( fp.terrain.transformPointFromPlaneToSphere( v, percent ) );
                         }
                         fp.roadNetwork.networkMesh.children[j].geometry.vertices = vertices;
                         fp.roadNetwork.networkMesh.children[j].geometry.verticesNeedUpdate = true;
                     }
                     for (var j = 0; j < fp.agentNetwork.agents.length; j ++ ) {
                         var agent = fp.agentNetwork.agents[ j ];
-                        var v = agent.vertex;
-                        var x = v.x, y = v.y, z = v.z;
-                        var nv = new THREE.Vector3( x, y, z );
-                        var v2 = fp.terrain.transformSpherePoint( x, y, z );
-                        var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
-                        dv.sub( nv );
-                        dv.multiplyScalar( percent / 100 );
-                        nv.add( dv );
+                        var nv = fp.terrain.transformPointFromPlaneToSphere( agent.vertex, percent );
                         fp.agentNetwork.particles.geometry.vertices[j] = nv;
                     }
                     fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
-                }
-                else if ( percent == 100 ) {
-                    fp.terrain.plane.geometry.attributes.position = fp.terrain.sphereArray.clone();
-                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
-                    /*
-                    fp.buildingNetwork.buildings.forEach( function( building ) {
-                        building.lod.matrixAutoUpdate = false;
-                        var x = building.lod.position.x,
-                            y = building.lod.position.y,
-                            z = building.lod.position.z;
-                        var v = fp.terrain.sphereOriginAngle( x, y, z );
-                        var v2 = fp.terrain.transformSpherePoint( x, y, z );
-                        building.lod.matrix.makeRotationX( v.x );
-                        building.lod.matrix.makeRotationY( v.y );
-                        building.lod.matrix.makeRotationZ( v.z );
-                        building.lod.position.set( v2.x, v2.y, v2.z );
-                    })
-                    */
-                }
-                else {
-                    fp.terrain.plane.geometry.attributes.position = fp.terrain.planeArray.clone();
-                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
                 }
             }
 
@@ -3111,8 +3087,6 @@ define([
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.buildingsShow )
                     fp.scene.add( fp.buildingNetwork.networkMesh );
-                // fp.buildingNetwork.networkMesh.matrixAutoUpdate = false;
-                // fp.buildingNetwork.networkMesh.matrix.makeRotationX( Math.PI / 2 );
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
                 fp.roadNetwork.planeVertices = [];
@@ -3127,7 +3101,7 @@ define([
                 if (fp.appConfig.displayOptions.trailsShowAsLines)
                     fp.scene.add(fp.trailNetwork.globalTrailLine);
 
-                fp.sim.setup.call( fp.sim); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
             };
 
             this.Run = function() {
