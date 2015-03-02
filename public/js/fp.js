@@ -768,7 +768,7 @@ define([
          */
         this.RoadNetwork = function() {
             this.networkMesh = null;
-            this.planeMesh = null;
+            this.planeVertices = [];
             this.networkJstsCache = [];
             this.roads = {};
             this.indexValues = [];
@@ -1716,7 +1716,7 @@ define([
                         building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     });
-                    for (var j = 0; j < fp.roadNetwork.planeVertices.length; j ++ ){
+                    for (var j = 0; j < fp.roadNetwork.planeVertices.length; j ++ ) {
                         var transformedVertices = [];
                         var vertices = fp.roadNetwork.planeVertices[j];
                         for (var i = 0; i < vertices.length; i ++) {
@@ -1730,16 +1730,19 @@ define([
                         var nv = fp.terrain.transformPointFromPlaneToSphere( agent.vertex, percent );
                         fp.agentNetwork.particles.geometry.vertices[j] = nv;
                     }
-                    fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
+                    if ( !_.isNull( fp.agentNetwork.particles ) )
+                        fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
                     for (var j = 0; j < fp.agentNetwork.networks.length; j ++ ) {
                         var transformedVertices = [];
                         var network = fp.agentNetwork.networks[ j ];
-                        var vertices = network.networkMesh.geometry.vertices;
-                        for (var i = 0; i < vertices.length; i ++) {
-                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                        if ( !_.isNull( network.networkMesh) ) {
+                            var vertices = network.networkMesh.geometry.vertices;
+                            for (var i = 0; i < vertices.length; i ++) {
+                                transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                            }
+                            network.networkMesh.geometry.vertices = transformedVertices;
+                            network.networkMesh.geometry.verticesNeedUpdate = true;
                         }
-                        network.networkMesh.geometry.vertices = transformedVertices;
-                        network.networkMesh.geometry.verticesNeedUpdate = true;
                     }
                 }
             }
@@ -1749,6 +1752,7 @@ define([
              */
             this.updateTerrain = function() {
                 if ( this.wrappingState === 1 ) {
+                    fp.appConfig.displayOptions.waterShow = false;
                     if ( fp.terrain.wrappedPercent < 100 ) {
                         fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
                         fp.terrain.wrappedPercent += this.wrappingState;
@@ -1763,9 +1767,11 @@ define([
                         fp.terrain.wrappedPercent += this.wrappingState;
                     }
                     else {
+                        fp.appConfig.displayOptions.waterShow = true;
                         this.wrappingState = 0;
                     }
                 }
+                fp.toggleWaterState();
             };
         };
 
@@ -2868,7 +2874,7 @@ define([
             this.displayOptions = {
                 buildingsShow: true,
                 roadsShow: true,
-                waterShow: false,
+                waterShow: true,
                 networkShow: false,
                 networkCurve: true,
                 networkCurvePoints: 20,
@@ -3196,6 +3202,7 @@ define([
                 fp.loadTerrain();
             };
             this.WrapTerrain = function() {
+                fp.appConfig.waterShow = false;
                 fp.terrain.wrappingState = 1;
             };
             this.UnwrapTerrain = function() {
