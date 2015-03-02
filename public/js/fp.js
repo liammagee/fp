@@ -365,7 +365,7 @@ define([
 
                         agent.updateTick();
                     }
-                    this.particles.geometry.vertices[i] = agent.vertex;
+                    this.particles.geometry.vertices[i] = fp.terrain.transformPointFromPlaneToSphere( agent.vertex, fp.terrain.wrappedPercent );
                 }
                 this.particles.geometry.verticesNeedUpdate = true;
             };
@@ -405,7 +405,9 @@ define([
              */
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                this.agents.forEach( function(agent) { agentGeometry.vertices.push( agent.vertex ); } );
+                this.agents.forEach( function(agent) {
+                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.vertex, fp.terrain.wrappedPercent ) );
+                } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -434,7 +436,8 @@ define([
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
                 this.agents.forEach(function(agent) {
-                    agentGeometry.vertices.push( agent.vertex );
+                    // agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.vertex ), fp.terrain.wrappedPercent );
+                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.vertex, fp.terrain.wrappedPercent ) );
                 } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
