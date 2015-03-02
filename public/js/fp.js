@@ -1430,22 +1430,36 @@ define([
 
             /**
              * Retrieves the angle to the origin of the terrain sphere.
+             * @param {Number} x
+             * @param {Number} y
+             * @param {Number} z
+             * @return {THREE.Vector3} A rotation vector in the order: pitch (x), yaw (y), roll (z)
              */
             this.sphereOriginAngle = function( x, y, z ) {
+                // Retrieve standard variables about the sphere
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = fp.terrain.sphereOrigin();
+                // Obtain the difference between the coordinate and the sphere's origin.
                 var diff = new THREE.Vector3( x, y, z ).sub( origin );
+                // Calculate the x offset angle (used to deflect the *z* or roll angle)
                 var xtan = Math.atan2( diff.x, diff.y );
+                // Calculate the hypotenuse of the XY triangle, in order to calculate the z offset angle
                 var xyHyp = Math.sqrt( diff.x * diff.x + diff.y * diff.y );
+                // Calculate the z offset angle (used to deflect the *x* or pitch angle)
                 var ztan = Math.atan2( diff.z, xyHyp );
+                // Rotation is in the order: pitch, yaw, roll
                 var rotation = new THREE.Vector3( ztan, 0, - xtan );
                 return rotation;
             }
 
             /**
              * Transforms a single point to
+             * @param {Number} x
+             * @param {Number} y
+             * @param {Number} z
+             * @return {THREE.Vector3} The sphere position to transform the plane position to.
              */
             this.transformSpherePoint = function( x, y, z ) {
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
