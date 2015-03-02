@@ -405,7 +405,7 @@ define([
              */
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                this.agents.forEach( function(agent) { agentGeometry.vertices.push(agent.vertex);} );
+                this.agents.forEach( function(agent) { agentGeometry.vertices.push( agent.vertex ); } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -433,7 +433,7 @@ define([
              */
             this.buildAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
-                this.agents.forEach(function(agent) { agentGeometry.vertices.push(agent.vertex);});
+                this.agents.forEach(function(agent) { agentGeometry.vertices.push( agent.vertex ); } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -1687,6 +1687,19 @@ define([
                         fp.roadNetwork.networkMesh.children[j].geometry.vertices = vertices;
                         fp.roadNetwork.networkMesh.children[j].geometry.verticesNeedUpdate = true;
                     }
+                    for (var j = 0; j < fp.agentNetwork.agents.length; j ++ ) {
+                        var agent = fp.agentNetwork.agents[ j ];
+                        var v = agent.vertex;
+                        var x = v.x, y = v.y, z = v.z;
+                        var nv = new THREE.Vector3( x, y, z );
+                        var v2 = fp.terrain.transformSpherePoint( x, y, z );
+                        var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
+                        dv.sub( nv );
+                        dv.multiplyScalar( percent / 100 );
+                        nv.add( dv );
+                        fp.agentNetwork.particles.geometry.vertices[j] = nv;
+                    }
+                    fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
                 }
                 else if ( percent == 100 ) {
                     fp.terrain.plane.geometry.attributes.position = fp.terrain.sphereArray.clone();
@@ -1862,7 +1875,7 @@ define([
 
                 // Update whether we are in a building, and should be going up or down
                 var building = this.findBuilding();
-                this.updateGroundedState(building);
+                this.updateGroundedState( building );
 
                 // Weight variables
                 var weight = 1.0, weightForRoadIsSet = false;
@@ -2008,7 +2021,7 @@ define([
              */
             this.move = function() {
                 this.lastPosition = this.position;
-                this.setDirection(this.bestCandidate());
+                this.setDirection( this.bestCandidate() );
                 this.shiftPosition();
             };
 
@@ -2164,11 +2177,11 @@ define([
                 return fp.roadNetwork.addRoad(this.position, endPoint, width);
             };
             this.vertex = null;
+            this.position = null;
             this.direction = null;
             this.speed = 2.0;
             this.perturbBy = 0.05;
             this.lastPosition = null;
-            this.position = null;
             this.grounded = true;
             this.alpha =  0.5 + (Math.random() / 2);
             this.color = "#ff0000"; // Red. Alternative for this model is blue: "#0000ff"
