@@ -298,7 +298,7 @@ define([
 
                 if ( fp.appConfig.agentOptions.noWater ) {
                     var y = fp.getHeight(x, z);
-                    while (y <= 0) {
+                    while ( y <= 0 ) {
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
@@ -1270,7 +1270,7 @@ define([
                 for (var i = 0; i < fp.terrain.gridPoints; i++) {
                     var nodeRow = [];
                     for (var j = 0; j < fp.terrain.gridPoints; j++) {
-                        var weight = 1 - fp.getHeightForIndex( i * fp.terrain.gridPoints + j) / fp.terrain.maxTerrainHeight;
+                        var weight = 1 - fp.terrain.getHeightForIndex( i * fp.terrain.gridPoints + j) / fp.terrain.maxTerrainHeight;
                         weight = (weight == 1 ? 0 : weight);
                         nodeRow.push(weight);
                     }
@@ -1364,6 +1364,128 @@ define([
             this.wrappingState = 0;
 
             /**
+             * Initialises the terrain.
+             */
+            this.initTerrain = function( data ) {
+                fp.scene.remove( fp.terrain.plane);
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
+
+                // Use logic from math.stackexchange.com
+                var vertices = geometry.attributes.position.array;
+                var i, j, l = vertices.length,
+                    n = Math.sqrt(l),
+                    k = l + 1;
+                // Simple function to return the sign of a number - http://stackoverflow.com/questions/7624920/number-sign-in-javascript
+                if ( fp.appConfig.terrainOptions.loadHeights ) {
+                    for (i = 0, j = 0; i < l; i++, j += 3 ) {
+                        geometry.attributes.position.array[ j + 2 ] =
+                            data[ i ] / 65535 *
+                            fp.terrain.maxTerrainHeight *
+                            fp.appConfig.terrainOptions.multiplier;
+                    }
+                }
+                else {
+                    for (i = 0, j = 0; i < l; i++, j += 3 ) {
+                        geometry.attributes.position.array[ j + 2 ] = 10;
+                    }
+                }
+
+                fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial({ color: 0x666666, wireframe: fp.appConfig.displayOptions.wireframeShow });
+                fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
+                fp.terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
+
+                var len = geometry.attributes.position.array.length / 3,
+                    heights = new Float32Array(len),
+                    trailPoints = new Float32Array(len),
+                    patchPoints = new Float32Array(len);
+                for (i = 0; i < len; i++) {
+                    heights[i] = vertices[ i * 3 + 2 ];
+                    trailPoints[i] = 0;
+                    patchPoints[i] = 0;
+                }
+                var terrainAttributes = {
+                    height: { type: "f", value: null },
+                    trail: { type: "f", value: null },
+                    patch: { type: "f", value: null },
+                };
+                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
+
+                fp.terrain.dayTerrainUniforms = {
+                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainSea ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
+                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland ) },
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
+                };
+                fp.terrain.nightTerrainUniforms = {
+                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainSea ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
+                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland ) },
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
+                };
+                fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial({
+                    uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
+                    attributes: terrainAttributes,
+                    vertexShader:   fp.ShaderUtils.lambertShaderVertex(
+                        fp.ShaderUtils.terrainVertexShaderParams(),
+                        fp.ShaderUtils.terrainVertexShaderMain()
+                    ),
+                    fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                        fp.ShaderUtils.terrainFragmentShaderParams(),
+                        fp.ShaderUtils.terrainFragmentShaderMain()
+                    ),
+                    lights: true
+                });
+
+                // Only use the shader material if we have variable heights
+                if ( fp.appConfig.terrainOptions.shaderUse ) {
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
+                }
+                else {
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
+                }
+                // Cache the array
+                fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
+                fp.terrain.plane.castShadow = true;
+                fp.terrain.plane.receiveShadow = true;
+                fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0);
+                if ( fp.appConfig.displayOptions.terrainShow )
+                    fp.scene.add( fp.terrain.plane );
+
+                if ( fp.appConfig.displayOptions.patchesShow )
+                    fp.patchNetwork.buildPatchMesh();
+                fp.terrain.createTerrainColors();
+                fp.toggleDayNight();
+                fp.pathNetwork.setupAStarGraph();
+
+                // Construct the sphere, and switch it on
+                if ( fp.appConfig.terrainOptions.renderAsSphere ) {
+                    fp.terrain.constructSphere();
+                    // fp.terrain.wrapTerrainIntoSphere( 100 );
+                }
+            };
+
+            /**
+             * Gets the terrain height for a given co-ordinate index.
+             * @memberof fp.Terrain
+             * @param {Number} index The co-ordinate index
+             * @return {Number} The corresponding y value
+             */
+            this.getHeightForIndex = function( index ) {
+                if ( index >= 0 && !_.isUndefined( fp.terrain.planeArray.array[index * 3 + 2] ) )
+                    return fp.terrain.planeArray.array[index * 3 + 2];
+                return null;
+            };
+
+            /**
              * Flattens out the terrain.
              * @return {[type]} [description]
              */
@@ -1443,16 +1565,20 @@ define([
                 var origin = fp.terrain.sphereOrigin();
                 // Obtain the difference between the coordinate and the sphere's origin.
                 var diff = new THREE.Vector3( x, y, z ).sub( origin );
-                // Calculate the x offset angle (used to deflect the *z* or roll angle)
-                var xtan = Math.atan2( diff.x, diff.y );
-                // Calculate the hypotenuse of the XY triangle, in order to calculate the z offset angle
-                var xyHyp = Math.sqrt( diff.x * diff.x + diff.y * diff.y );
-                // Calculate the z offset angle (used to deflect the *x* or pitch angle)
-                var ztan = Math.atan2( diff.z, xyHyp );
+                // Get differences and signs of values.
+                var dx = diff.x % radius, sx = sign( diff.x), rx = Math.floor( Math.abs( diff.x ) / radius );
+                var dz = diff.z % radius, sz = sign( diff.z), rz = Math.floor( Math.abs( diff.z ) / radius );
+                // Calculate the X and Z angle
+                var angleX = Math.asin( dx / radius );
+                var angleZ = Math.asin( dz / radius );
+                // Reflect the X angle if we have on the other side of the sphere.
+                if ( y < - radius ) {
+                    angleX = ( sx * Math.PI ) - angleX;
+                }
                 // Rotation is in the order: pitch, yaw, roll
-                var rotation = new THREE.Vector3( ztan, 0, - xtan );
+                var rotation = new THREE.Vector3( angleZ, 0, - angleX );
                 return rotation;
-            }
+            };
 
             /**
              * Transforms a single point to
@@ -1462,27 +1588,30 @@ define([
              * @return {THREE.Vector3} The sphere position to transform the plane position to.
              */
             this.transformSpherePoint = function( x, y, z ) {
+                // Retrieve standard variables about the sphere
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = this.sphereOrigin();
-                var sx = sign(x), sz = sign(z),
-                    ax = Math.abs( x ), az = Math.abs( z ),
-                    mxz = ( ax > az ? ax : az ),
-                    angle = Math.atan2(ax, az),
-                    ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter,
-                    nry = -ry,
-                    my = ( radius > nry ? radius - nry : nry - radius ),
-                    py = Math.cos( Math.asin( my / radius ) ),
-                    dx = sx * py,
-                    dz = sz * py,
-                    rx = dx * Math.sin( angle ) * radius,
-                    rz = dz * Math.cos( angle ) * radius,
-                    w = 0;
+                // Obtain the signs and absolute values for x and z values
+                var sx = sign(x), sz = sign( z );
+                var ax = Math.abs( x ), az = Math.abs( z );
+                // Which is the highest absolute value?
+                var mxz = ( ax > az ? ax : az );
+                // Obtain the angle between the absolute values
+                var angle = Math.atan2( ax, az );
+                var ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter;
+                var nry = -ry;
+                var my = ( radius > nry ? radius - nry : nry - radius );
+                var py = Math.cos( Math.asin( my / radius ) );
+                var dx = sx * py;
+                var dz = sz * py;
+                var rx = dx * Math.sin( angle ) * radius;
+                var rz = dz * Math.cos( angle ) * radius;
                 // Adjust for existing terrain heights
                 var v1 = new THREE.Vector3( rx, rz, ry );
                 var v2 = new THREE.Vector3();
-                v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
+                v2.subVectors( origin, v2 ).normalize(); //.multiplyScalar( y );
                 return v1.add( v2 );
             };
 
@@ -1491,7 +1620,6 @@ define([
              * Wraps a plane into a sphere
              */
             this.constructSphere = function( ) {
-                fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
                 fp.terrain.sphereArray = fp.terrain.planeArray.clone();//
                 var l = fp.terrain.sphereArray.array.length;
                 for (var j = 0; j < l; j += 3 ) {
@@ -1503,7 +1631,7 @@ define([
                     fp.terrain.sphereArray.array[ j + 1 ] = v.y;
                     fp.terrain.sphereArray.array[ j + 2 ] = v.z;
                 }
-            }
+            };
 
             /**
              * Wraps the plane into a sphere, to a specified percent (0 unwraps back to a plane).
@@ -1526,17 +1654,19 @@ define([
                         var nv = new THREE.Vector3( x, y, z );
                         var v2 = fp.terrain.transformSpherePoint( x, y, z );
                         var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
-                        dv.sub( nv ).multiplyScalar( percent / 100 );
-                        //v2.multiplyScalar( percent / 100 );
+                        dv.sub( nv );
                         nv.add( dv );
                         var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
+                        dv.multiplyScalar( percent / 100 );
+                        nv = new THREE.Vector3( x, y, z );
+                        nv.add( dv );
                         building.lod.rotation.set( v.x, v.y, v.z );
                         building.lod.position.set( nv.x, nv.y, nv.z );
                         building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.highResMeshContainer.position.set( nv.x, nv.y, nv.z );
                         building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
-                    })
+                    });
                 }
                 else if ( percent == 100 ) {
                     fp.terrain.plane.geometry.attributes.position = fp.terrain.sphereArray.clone();
@@ -1584,7 +1714,7 @@ define([
                         this.wrappingState = 0;
                     }
                 }
-            }
+            };
         };
 
         /**
@@ -3837,18 +3967,8 @@ define([
          * Gets the terrain height for a given (x, y) co-ordinate.
          * @memberof fp
          */
-        this.getHeightForIndex = function(index) {
-            if ( index >= 0 && !_.isUndefined( fp.terrain.plane.geometry.attributes.position.array[index * 3 + 2] ) )
-                return fp.terrain.plane.geometry.attributes.position.array[index * 3 + 2];
-            return null;
-        };
-
-        /**
-         * Gets the terrain height for a given (x, y) co-ordinate.
-         * @memberof fp
-         */
         this.getHeight = function(x, y) {
-            return fp.getHeightForIndex( fp.getIndex(x, y) );
+            return fp.terrain.getHeightForIndex( fp.getIndex(x, y) );
         };
 
         /**
@@ -4392,109 +4512,7 @@ define([
         this.loadTerrain = function( callback ) {
             var terrainLoader = new THREE.TerrainLoader();
             terrainLoader.load( fp.TERRAIN_MAPS[fp.terrain.terrainMapIndex], function(data) {
-                fp.scene.remove( fp.terrain.plane);
-                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
-                var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
-
-                // Use logic from math.stackexchange.com
-                var vertices = geometry.attributes.position.array;
-                var i, j, l = vertices.length,
-                    n = Math.sqrt(l),
-                    k = l + 1;
-                // Simple function to return the sign of a number - http://stackoverflow.com/questions/7624920/number-sign-in-javascript
-                if ( fp.appConfig.terrainOptions.loadHeights ) {
-                    for (i = 0, j = 0; i < l; i++, j += 3 ) {
-                        geometry.attributes.position.array[ j + 2 ] =
-                            data[ i ] / 65535 *
-                            fp.terrain.maxTerrainHeight *
-                            fp.appConfig.terrainOptions.multiplier;
-                    }
-                }
-                else {
-                    for (i = 0, j = 0; i < l; i++, j += 3 ) {
-                        geometry.attributes.position.array[ j + 2 ] = 10;
-                    }
-                }
-
-                fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial({ color: 0x666666, wireframe: fp.appConfig.displayOptions.wireframeShow });
-                fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
-                fp.terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
-
-                var len = geometry.attributes.position.array.length / 3,
-                    heights = new Float32Array(len),
-                    trailPoints = new Float32Array(len),
-                    patchPoints = new Float32Array(len);
-                for (i = 0; i < len; i++) {
-                    heights[i] = vertices[ i * 3 + 2 ];
-                    trailPoints[i] = 0;
-                    patchPoints[i] = 0;
-                }
-                var terrainAttributes = {
-                    height: { type: "f", value: null },
-                    trail: { type: "f", value: null },
-                    patch: { type: "f", value: null },
-                };
-                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
-                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
-
-                fp.terrain.dayTerrainUniforms = {
-                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainSea ) },
-                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
-                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
-                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland ) },
-                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
-                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
-                };
-                fp.terrain.nightTerrainUniforms = {
-                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainSea ) },
-                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
-                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
-                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland ) },
-                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2)},
-                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
-                };
-                fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial({
-                    uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
-                    attributes: terrainAttributes,
-                    vertexShader:   fp.ShaderUtils.lambertShaderVertex(
-                        fp.ShaderUtils.terrainVertexShaderParams(),
-                        fp.ShaderUtils.terrainVertexShaderMain()
-                    ),
-                    fragmentShader: fp.ShaderUtils.lambertShaderFragment(
-                        fp.ShaderUtils.terrainFragmentShaderParams(),
-                        fp.ShaderUtils.terrainFragmentShaderMain()
-                    ),
-                    lights: true
-                });
-
-                // Only use the shader material if we have variable heights
-                if ( fp.appConfig.terrainOptions.shaderUse ) {
-                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
-                }
-                else {
-                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
-                }
-                fp.terrain.plane.castShadow = true;
-                fp.terrain.plane.receiveShadow = true;
-                fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0);
-                if ( fp.appConfig.displayOptions.terrainShow )
-                    fp.scene.add( fp.terrain.plane );
-
-                if ( fp.appConfig.displayOptions.patchesShow )
-                    fp.patchNetwork.buildPatchMesh();
-                fp.terrain.createTerrainColors();
-                fp.toggleDayNight();
-                fp.pathNetwork.setupAStarGraph();
-
-                // Construct the sphere, and switch it on
-                if ( fp.appConfig.terrainOptions.renderAsSphere ) {
-                    fp.terrain.constructSphere();
-                    // fp.terrain.wrapTerrainIntoSphere( 100 );
-                }
-
+                fp.terrain.initTerrain( data );
                 fp.animate(); // Kick off the animation loop
                 if ( !_.isUndefined(callback) )
                     callback(); // Run the callback
