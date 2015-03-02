@@ -746,6 +746,7 @@ define([
          */
         this.RoadNetwork = function() {
             this.networkMesh = null;
+            this.planeMesh = null;
             this.networkJstsCache = [];
             this.roads = {};
             this.indexValues = [];
@@ -857,8 +858,8 @@ define([
              * @param {THREE.Vector3} p2
              * @param {Number} roadWidth
              */
-            this.addRoad = function(p1, p2, roadWidth) {
-                var points = this.getRoadTerrainPoints(p1, p2);
+            this.addRoad = function( p1, p2, roadWidth ) {
+                var points = this.getRoadTerrainPoints( p1, p2 );
 
                 // Use a cut-off of 5 intersecting points to prevent this road being built
                 var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
@@ -894,8 +895,10 @@ define([
                     }
                 }
 
-                var roadMesh = new THREE.Mesh(roadGeom, roadMaterial);
-                fp.roadNetwork.networkMesh.add(roadMesh);
+
+                var roadMesh = new THREE.Mesh( roadGeom, roadMaterial );
+                fp.roadNetwork.networkMesh.add( roadMesh );
+                fp.roadNetwork.planeVertices.push( vertices );
                 thisIndexValues.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; });
                 if ( _.isNull(this.networkGeometry) )
                     this.networkGeometry = new jsts.geom.LineString(jstsCoords);
@@ -1611,7 +1614,7 @@ define([
                 // Adjust for existing terrain heights
                 var v1 = new THREE.Vector3( rx, rz, ry );
                 var v2 = new THREE.Vector3();
-                v2.subVectors( origin, v2 ).normalize(); //.multiplyScalar( y );
+                v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
                 return v1.add( v2 );
             };
 
@@ -1667,6 +1670,23 @@ define([
                         building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     });
+                    for (var j = 0; j < fp.roadNetwork.planeVertices.length; j ++ ){
+                        var vertices = [];
+                        var verticesOriginal = fp.roadNetwork.planeVertices[j];
+                        for (var i = 0; i < verticesOriginal.length; i ++) {
+                            var v = verticesOriginal[i];
+                            var x = v.x, y = v.y, z = v.z;
+                            var nv = new THREE.Vector3( x, y, z );
+                            var v2 = fp.terrain.transformSpherePoint( x, y, z );
+                            var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
+                            dv.sub( nv );
+                            dv.multiplyScalar( percent / 100 );
+                            nv.add( dv );
+                            vertices.push( nv );
+                        }
+                        fp.roadNetwork.networkMesh.children[j].geometry.vertices = vertices;
+                        fp.roadNetwork.networkMesh.children[j].geometry.verticesNeedUpdate = true;
+                    }
                 }
                 else if ( percent == 100 ) {
                     fp.terrain.plane.geometry.attributes.position = fp.terrain.sphereArray.clone();
@@ -3082,8 +3102,9 @@ define([
                 // fp.buildingNetwork.networkMesh.matrix.makeRotationX( Math.PI / 2 );
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
+                fp.roadNetwork.planeVertices = [];
                 if ( fp.appConfig.displayOptions.roadsShow )
-                    fp.scene.add( fp.roadNetwork.networkMesh);
+                    fp.scene.add( fp.roadNetwork.networkMesh );
 
                 fp.pathNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.pathsShow )
@@ -4485,7 +4506,7 @@ define([
                     });
                 });
             }
-            if (!_.isNull( fp.roadNetwork.networkMesh)) {
+            if ( !_.isNull( fp.roadNetwork.networkMesh ) ) {
                 fp.roadNetwork.networkMesh.children.forEach(function(road) {
                     road.material.color = new THREE.Color( colorRoad );
                     road.material.colorsNeedUpdate = true;
