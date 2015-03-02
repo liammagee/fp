@@ -3805,8 +3805,8 @@ define([
         this.init = function( config, sim, callback ) {
             fp.container = $( "#container" )[0] || config.container;
             fp.scene = new THREE.Scene();
-            fp.scene.add(new THREE.AxisHelper(100));
-            fp.scene.add(new THREE.GridHelper(100,10));
+            // fp.scene.add(new THREE.AxisHelper(100));
+            // fp.scene.add(new THREE.GridHelper(100,10));
             fp.sim = sim || fp.simDefault();
             fp.setupGUI( config );
             fp.setupSimObjects();
