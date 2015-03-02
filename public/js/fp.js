@@ -715,7 +715,6 @@ define([
                 if (fp.appConfig.buildingOptions.randomForm)
                     buildingForm = fp.BUILDING_FORMS.names[Math.floor(Math.random() * fp.BUILDING_FORMS.names.length)];
 
-
                 var rotateY = (fp.appConfig.buildingOptions.rotateSetAngle / 180) * Math.PI;
                 if (fp.appConfig.buildingOptions.rotateRandomly)
                     rotateY = Math.random() * Math.PI;
@@ -733,9 +732,26 @@ define([
                         return undefined;
                 }
 
+                // Handle building rotation
+                var percent = fp.terrain.wrappedPercent;
+                if ( percent > 0 ) {
+                    var cv = _.clone( building.originPosition );
+                    var nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
+                    var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
+                    v.y = rotateY;
+                    nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
+                    building.lod.rotation.set( v.x, v.y, v.z );
+                    building.lod.position.set( nv.x, nv.y, nv.z );
+                    building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
+                    building.highResMeshContainer.position.set( nv.x, nv.y, nv.z );
+                    building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
+                    building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
+                }
+
                 // Add the building to caches
-                fp.buildingNetwork.buildings.push(building);
-                fp.buildingNetwork.buildingHash[fp.getIndex(position.x, position.z)] = building;
+                fp.buildingNetwork.buildings.push( building );
+                var index = fp.getIndex( position.x, position.z );
+                fp.buildingNetwork.buildingHash[ index ] = building;
                 // Add all ground floor vertices to hash, as crude collision detection
                 fp.buildingNetwork.networkMesh.add( building.lod );
                 fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
@@ -870,13 +886,13 @@ define([
                 var jstsCoords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.z); } );
                 var jstsGeom = new jsts.geom.LineString(jstsCoords);
                 var overlap = fp.roadNetwork.countCollisions( jstsGeom );
-                if (overlap > fp.appConfig.roadOptions.overlapThreshold)
+                if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
                     return false;
 
                 // The above code probably should supercede this
                 var thisIndexValues = _.map(points, function(p) { return fp.getIndex(p.x,p.z); });
                 overlap = _.intersection( fp.roadNetwork.indexValues, thisIndexValues).length;
-                if (overlap > fp.appConfig.roadOptions.overlapThreshold)
+                if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
                     return false;
 
                 var extrudePath = new THREE.SplineCurve3( points );
@@ -900,10 +916,22 @@ define([
                     }
                 }
 
+                // Cache the ordinary plane vertices
+                fp.roadNetwork.planeVertices.push( vertices );
 
+                // Transform vertices
+                var percent = fp.terrain.wrappedPercent;
+                if ( percent > 0 ) {
+                    var transformedVertices = [];
+                    for (var i = 0; i < vertices.length; i ++) {
+                        transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                    }
+                    roadGeom.vertices = transformedVertices;
+                }
+
+                // Add the road
                 var roadMesh = new THREE.Mesh( roadGeom, roadMaterial );
                 fp.roadNetwork.networkMesh.add( roadMesh );
-                fp.roadNetwork.planeVertices.push( vertices );
                 thisIndexValues.forEach(function(p) { fp.roadNetwork.roads[p] = roadMesh; });
                 if ( _.isNull(this.networkGeometry) )
                     this.networkGeometry = new jsts.geom.LineString(jstsCoords);
@@ -1686,14 +1714,13 @@ define([
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     });
                     for (var j = 0; j < fp.roadNetwork.planeVertices.length; j ++ ){
-                        var vertices = [];
-                        var verticesOriginal = fp.roadNetwork.planeVertices[j];
-                        for (var i = 0; i < verticesOriginal.length; i ++) {
-                            var v = verticesOriginal[i];
-                            vertices.push( fp.terrain.transformPointFromPlaneToSphere( v, percent ) );
+                        var transformedVertices = [];
+                        var vertices = fp.roadNetwork.planeVertices[j];
+                        for (var i = 0; i < vertices.length; i ++) {
+                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
                         }
-                        fp.roadNetwork.networkMesh.children[j].geometry.vertices = vertices;
-                        fp.roadNetwork.networkMesh.children[j].geometry.verticesNeedUpdate = true;
+                        fp.roadNetwork.networkMesh.children[ j ].geometry.vertices = transformedVertices;
+                        fp.roadNetwork.networkMesh.children[ j ].geometry.verticesNeedUpdate = true;
                     }
                     for (var j = 0; j < fp.agentNetwork.agents.length; j ++ ) {
                         var agent = fp.agentNetwork.agents[ j ];
@@ -2037,8 +2064,8 @@ define([
                 if (this.position === null)
                     return false;
 
-                var index = fp.getIndex(this.position.x, this.position.z);
-                if (_.isUndefined(index))
+                var index = fp.getIndex( this.position.x, this.position.z );
+                if ( _.isUndefined( index ) )
                     return false;
 
                 // Don't build in an existing position
@@ -2058,13 +2085,13 @@ define([
                     return false;
 
                 // Simple test of local roads, water, buildings and building height
-                var roadsProximate = fp.checkProximityOfRoads(index),
+                var roadsProximate = fp.checkProximityOfRoads( index ),
                     roadsSig = (1 - fp.appConfig.buildingOptions.roads);
-                var waterProximate = fp.checkProximityOfWater(index),
+                var waterProximate = fp.checkProximityOfWater( index ),
                     waterSig = (1 - fp.appConfig.buildingOptions.water);
-                var buildingsProximate = fp.checkProximityOfBuildings(index),
+                var buildingsProximate = fp.checkProximityOfBuildings( index ),
                     buildingSig = (1 - fp.appConfig.buildingOptions.otherBuildings);
-                var buildingHeightProximate = fp.checkProximiteBuildingHeight(index),
+                var buildingHeightProximate = fp.checkProximiteBuildingHeight( index ),
                     buildingHeightSig = (1 - fp.appConfig.buildingOptions.buildingHeight);
 
                 if ( roadsProximate > roadsSig ||
@@ -3999,8 +4026,8 @@ define([
         /**
          * @memberof fp
          */
-        this.checkProximityOfRoads = function(index) {
-            var cells = fp.surroundingCells(index);
+        this.checkProximityOfRoads = function( index ) {
+            var cells = fp.surroundingCells( index );
             for (var i = 0; i < cells.length; i++) {
                 var cell = cells[i];
                 if ( fp.roadNetwork.indexValues.indexOf( fp.getIndex(cell.x, cell.y)) > -1)
@@ -4015,12 +4042,12 @@ define([
          * @param  {Number} index
          * @return {Number}
          */
-        this.checkProximityOfWater = function(index) {
+        this.checkProximityOfWater = function( index ) {
             // Now count how many surrounding are also sea level
             // We count in 8 directions, to maxDepth
             var seaLevelNeighbours = 0, totalNeighbours = 0;
-            fp.surroundingCells(index).forEach(function(cell) {
-                if (cell.z <= 0)
+            fp.surroundingCells( index ).forEach(function(cell) {
+                if ( cell.z <= 0 )
                     seaLevelNeighbours++;
                 totalNeighbours++;
             });
@@ -4033,7 +4060,7 @@ define([
          * @param  {Number} index
          * @return {Number}
          */
-        this.checkProximityOfBuildings = function(index) {
+        this.checkProximityOfBuildings = function( index ) {
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
             fp.surroundingCells(index).forEach(function(cell) {
@@ -4050,11 +4077,11 @@ define([
          * @memberof fp
          * @param  {Number} index
          */
-        this.checkProximiteBuildingHeight = function(index) {
+        this.checkProximiteBuildingHeight = function( index ) {
             if ( fp.buildingNetwork.buildings.length === 0 )
                 return 0;
 
-            var surrounding = fp.surroundingCells(index);
+            var surrounding = fp.surroundingCells( index );
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
 
@@ -4095,13 +4122,13 @@ define([
          * @param  {Number} index
          * @return {Array} a collection of THREE.Vector3 objects
          */
-        this.surroundingCells = function(index) {
+        this.surroundingCells = function( index ) {
             // Now count how many surrounding are also sea level
             // We count in 8 directions, to maxDepth
             // We also try to ignore cases which go over grid boundaries
             var surroundingCells = [];
             var maxCells = fp.terrain.gridPoints * fp.terrain.gridPoints,
-                positions = fp.terrain.plane.geometry.attributes.position.array;
+                positions = fp.terrain.planeArray.array;
             var indexY = Math.floor(index / fp.terrain.gridPoints),
                 indexX = index % fp.terrain.gridPoints,
                 indexMirroredOnY = (indexY) * fp.terrain.gridPoints + indexX,
