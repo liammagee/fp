@@ -1659,6 +1659,8 @@ define([
              * @return {THREE.Vector3} The sphere position to transform the plane position to.
              */
             this.transformPointFromPlaneToSphere = function( point, percent ) {
+                if ( percent <= 0 || percent > 100 )
+                    return point; // Optimisation when no transform is needed.
                 var x = point.x, y = point.y, z = point.z;
                 var nv = new THREE.Vector3( x, y, z );
                 var v2 = fp.terrain.transformSpherePoint( x, y, z );
