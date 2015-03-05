@@ -266,21 +266,17 @@ define([
              */
             this.randomPointForAgent = function() {
                 var extent = fp.appConfig.terrainOptions.gridExtent;
-                var initExtent = ( fp.appConfig.agentOptions.initialExtent / 100 ) * extent;
+                var initExtent = ( fp.appConfig.agentOptions.initialExtent / 100 ) * extent * fp.appConfig.terrainOptions.multiplier;
                 var initX = ( fp.appConfig.agentOptions.initialX / 100 ) * extent - ( extent / 2 );
                 var initY = ( fp.appConfig.agentOptions.initialY / 100 ) * extent - ( extent / 2 );
                 var x = Math.floor( ( Math.random() - 0.5 ) * initExtent ) + initX;
                 var z = Math.floor( ( Math.random() - 0.5 ) * initExtent ) + initY;
                 var point = null;
 
-                x *=  fp.appConfig.terrainOptions.multiplier;
-                z *=  fp.appConfig.terrainOptions.multiplier;
-
                 if ( fp.appConfig.agentOptions.initialCircle ) {
                     var normX = x - initX, normZ = z - initY;
                     var radius = Math.sqrt(normX * normX + normZ * normZ);
-
-                    while ( radius > initExtent / 2 ) {
+                    while ( radius > initExtent  / 2 ) {
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
@@ -319,7 +315,7 @@ define([
                     var agent =  this.agents[i];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    if ( (Math.floor( (i / this.agents.length) * fp.timescale.framesToYear ) != fp.timescale.frameCounter % fp.timescale.framesToYear) )  {
+                    if ( ( Math.floor( (i / this.agents.length) * fp.timescale.framesToYear ) != fp.timescale.frameCounter % fp.timescale.framesToYear ) )  {
                         // Just interpollate the position
                         agent.lastPosition = agent.position;
                         agent.shiftPosition();
@@ -354,7 +350,7 @@ define([
                         if (fp.appConfig.displayOptions.trailsShow && fp.appConfig.displayOptions.trailsShowAsLines) {
 
                             // Creates a cycle of 5000 trail 'pieces'
-                            if (agent.ticks * 2 > fp.appConfig.displayOptions.trailLength)
+                            if ( agent.ticks * 2 > fp.appConfig.displayOptions.trailLength )
                                 agent.ticks = 0;
                             fp.trailNetwork.globalTrailLine.geometry.vertices[i * fp.appConfig.displayOptions.trailLength + agent.ticks * 2] = agent.lastPosition;
                             fp.trailNetwork.globalTrailLine.geometry.vertices[i * fp.appConfig.displayOptions.trailLength + agent.ticks * 2 + 1] = agent.position;
@@ -908,7 +904,7 @@ define([
                 var vertices = roadGeom.vertices;
                 for (var i = 0; i <= vertices.length - fp.appConfig.roadOptions.roadRadiusSegments; i += fp.appConfig.roadOptions.roadRadiusSegments) {
                     var coil = vertices.slice(i, i + fp.appConfig.roadOptions.roadRadiusSegments);
-                    var mean = jStat.mean(_.map(coil, function(p) { return p.y; } ) );
+                    var mean = jStat.mean( _.map(coil, function(p) { return p.y; } ) );
                     for (var j = 0; j < coil.length; j++) {
                         var y = coil[j].y;
                         var diff = y - mean;
@@ -991,6 +987,34 @@ define([
             };
         };
 
+
+        /**
+         * Represents a square block of the fp.terrain. It has a value that can be used to represent some property of interest.
+         * Using the default assumptions of the PatchNetwork functions, the value should be in the range [0, 1].
+         * @constructor
+         * @memberof fp
+         * @inner
+         */
+        this.Patch = function( val ) {
+            this.value = val;
+            this.initialValue = val;
+
+            /**
+             * Updates the value of the patch.
+             * @param  {Number} amount the amount to increment the value by.
+             */
+            this.updatePatchValue = function( amount ) {
+                var val = this.value;
+                if ( val + amount < 0.0001 )
+                    val = 0.0001;
+                else if ( val + amount > 1.0 )
+                    val = 1.0;
+                else
+                    val += amount;
+                this.value = val;
+            };
+        };
+
         /**
          * Represents a network of patches. Also provides factory and utility methods.
          * @constructor
@@ -1002,15 +1026,22 @@ define([
             this.patches = {};
             this.patchValues = [];
             this.patchMeanValue = 0;
-            this.patchSize = 4;
+            this.patchSize = fp.appConfig.terrainOptions.patchSize;
 
+            /**
+             * Initialises each patch value with a random value.
+             */
             this.initialisePatches = function() {
                 var dim = ( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
                 fp.patchNetwork.patchValues = new Array(dim * dim);
-                for (var i = 0; i < fp.patchNetwork.patchValues.length; i++)
-                    fp.patchNetwork.patchValues[i] = new fp.Patch(Math.random());
+                for (var i = 0; i < fp.patchNetwork.patchValues.length; i++ ) {
+                    fp.patchNetwork.patchValues[i] = new fp.Patch( Math.random() );
+                }
             };
 
+            /**
+             * Builds a plane mesh based on the current terrain geometry, but with its own material.
+             */
             this.buildPatchMesh = function() {
                 var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
                 this.plane = new THREE.Mesh( fp.terrain.plane.geometry.clone(), patchMaterial );
@@ -1018,21 +1049,29 @@ define([
                 fp.scene.add( this.plane );
             };
 
-            this.reviseValues = function() {
+            /**
+             * Default revision of the values of each patch. 
+             * TODO: this should be abstracted or overriden by specific models.
+             */
+            this.defaultReviseValues = function() {
                 this.patchMeanValue = 0;
                 for (var i = 0; i < this.patchValues.length; i++) {
                     var patch = this.patchValues[i];
                     if ( !_.isUndefined( this.patches[i] ) ) {
                         var len = this.patches[i].length;
-                        patch.updateValue( - len / 100);
+                        patch.updatePatchValue( - len / 100 );
                     }
-                    else
-                        patch.updateValue(0.0001);
+                    else if ( patch.value < patch.initialValue ) { // Recover
+                        patch.updatePatchValue( 0.0001 );
+                    }
                     this.patchMeanValue += patch.value;
                 }
                 this.patchMeanValue /= this.patchValues.length;
             };
 
+            /**
+             * Update the cached count of patch agents.
+             */
             this.updatePatchAgents = function() {
                 this.patches = {};
                 for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
@@ -1048,8 +1087,14 @@ define([
              * Updates values of all patches in the network.
              */
             this.updatePatchValues = function() {
-                if ( fp.appConfig.displayOptions.patchesUpdate && fp.AppState.runSimulation )
-                    this.reviseValues();
+                if ( fp.appConfig.displayOptions.patchesUpdate && fp.AppState.runSimulation ) {
+                    if ( !_.isUndefined( fp.patchNetwork.reviseValues ) ) {
+                        fp.patchNetwork.reviseValues();
+                    }
+                    else {
+                        fp.patchNetwork.defaultReviseValues();
+                    }
+                }
 
                 if ( fp.appConfig.displayOptions.patchesShow ) {
                     if ( fp.appConfig.displayOptions.patchesUseShader ) {
@@ -1806,6 +1851,7 @@ define([
              */
             this.updateTick = function() {
                 this.ticks++;
+                this.age++;
             };
 
             /**
@@ -2188,7 +2234,7 @@ define([
                 }
                 var totalLen = lenMinimum +
                                 (lenMaximum - lenMinimum) *
-                                ( 1 - jStat.exponential.cdf(lenFactor, fp.appConfig.roadOptions.lenDistributionFactor) ),
+                                ( 1 - jStat.exponential.cdf( lenFactor, fp.appConfig.roadOptions.lenDistributionFactor ) ),
                     xExtent = xr * totalLen,
                     zExtent = zr * totalLen,
                     xEnd = this.position.x + xExtent,
@@ -2211,11 +2257,11 @@ define([
             this.alpha =  0.5 + (Math.random() / 2);
             this.color = "#ff0000"; // Red. Alternative for this model is blue: "#0000ff"
             this.ticks = 0;
+            this.age = 0;
 
             this.home = null;
             this.health = 100;
             this.gender = Math.random() < 0.5 ? "f": "m";
-            this.children = [];
             this.children = [];
             this.friends = [];
             this.pathComputed = undefined;
@@ -2758,26 +2804,6 @@ define([
         };
 
         /**
-         * Represents a square block of the fp.terrain. It has a value that can be used to represent some property of interest.
-         * @constructor
-         * @memberof fp
-         * @inner
-         */
-        this.Patch = function(val) {
-            this.value = val;
-            this.updateValue = function(inc) {
-                var val = this.value;
-                if (val + inc < 0.0001)
-                    val = 0.0001;
-                else if (val + inc > 1.0)
-                    val = 1.0;
-                else
-                    val += inc;
-                this.value = val;
-            };
-        };
-
-        /**
          * Represents relevant state about the application.
          * @constructor
          * @memberof fp
@@ -2858,14 +2884,13 @@ define([
                  * @inner
                  */
                 initialY: 50,
+                randomAge: true,
                 chanceToJoinNetwork: 0.05,
                 chanceToFindPathToHome: 0.00,
                 initialCircle: true,
                 noWater: true,
                 noUphill: false, // Eventually remove for more fine-grained weight control
                 useStickman: true,
-                healthReduce: 0.05,
-                healthGain: 1.0,
                 visitHomeBuilding: 0.02,
                 visitOtherBuilding: 0.002,
                 size: 40,
@@ -3014,7 +3039,8 @@ define([
                 maxTerrainHeight: 400,
                 shaderUse: true,
                 multiplier: 1,
-                mapIndex: 0
+                mapIndex: 0,
+                patchSize: 4
             };
             this.colorOptions = {
                 colorDayBackground: 0x000000,
@@ -3235,8 +3261,8 @@ define([
                 chartCanvas.setAttribute("style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  ");
                 fp.container.insertBefore(chartCanvas, fp.container.firstChild);
                 fp.chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba(0, 0, 255, 0.2)", lineWidth: 4 } );
-                fp.chart.addTimeSeries(agentHealthSeries, { lineWidth: 4 });
-                fp.chart.addTimeSeries(patchValuesSeries, { lineWidth: 4 });
+                fp.chart.addTimeSeries( agentHealthSeries, { fillStyle: "rgba(255, 0, 0, 0.2)", lineWidth: 4 } );
+                fp.chart.addTimeSeries( patchValuesSeries, { fillStyle: "rgba(0, 255, 0, 0.2)", lineWidth: 4 } );
                 fp.updateChartColors();
                 fp.chart.streamTo(chartCanvas, 500);
                 this.updateGraph();
@@ -3286,14 +3312,13 @@ define([
                 agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1, 100 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialX",  0, 100 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialY",  0, 100 ).step( 1 );
+                agentsFolder.add( fp.appConfig.agentOptions, "randomAge" );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
                 agentsFolder.add( fp.appConfig.agentOptions, "noWater" );
                 agentsFolder.add( fp.appConfig.agentOptions, "noUphill" );
                 agentsFolder.add( fp.appConfig.agentOptions, "useStickman" );
-                agentsFolder.add( fp.appConfig.agentOptions, "healthReduce", 0.0, 0.1).step(0.01 );
-                agentsFolder.add( fp.appConfig.agentOptions, "healthGain", 0.0, 5.0).step(0.5 );
                 agentsFolder.add( fp.appConfig.agentOptions, "visitHomeBuilding", 0.0, 1.0).step(0.001 );
                 agentsFolder.add( fp.appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0).step(0.001 );
             }
@@ -3389,8 +3414,9 @@ define([
                 terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse").onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 1, 10).step(1).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10).step(0.1).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1).step(1).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 10).step(1).onFinishChange( fp.loadTerrain );
             }
 
             if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
@@ -3990,27 +4016,31 @@ define([
          * @memberof fp
          */
         this.getPatchIndex = function(x, y) {
-            x = Math.round(x / fp.appConfig.terrainOptions.multiplier);
-            y = Math.round(y / fp.appConfig.terrainOptions.multiplier);
+            x = Math.floor( x / fp.appConfig.terrainOptions.multiplier );
+            y = Math.floor( y / fp.appConfig.terrainOptions.multiplier );
             var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
             var halfGrid = fp.terrain.gridExtent / 2;
-            var pX = Math.floor( dim * (x / 2 + halfGrid) / fp.terrain.gridExtent );
-            var pY = Math.floor( dim * (halfGrid + y / 2) / fp.terrain.gridExtent );
-            return pY * dim + pX;
+            var pX = Math.floor( dim * ( x + halfGrid ) / fp.terrain.gridExtent );
+            var pY = Math.floor( dim * ( y + halfGrid ) / fp.terrain.gridExtent );
+            var index = pY * dim + pX;
+            index = ( index < 0 ) ? 0 : index;
+            index = ( index >= fp.patchNetwork.patchValues.length ) ? fp.patchNetwork.patchValues.length - 1 : index;
+            return index;
         };
 
         /**
          * Gets the terrain index point for a given (x, y) co-ordinate.
          * @memberof fp
          */
-        this.getIndex = function(x, y) {
+        this.getIndex = function( x, y ) {
             var multiplier = fp.appConfig.terrainOptions.multiplier;
-            x = Math.round( x / multiplier );
-            y = Math.round( y / multiplier );
-            var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.appConfig.terrainOptions.gridExtent;
-            var xRel = Math.round(x) + fp.terrain.halfExtent;
-            var yRel = Math.round(y) + fp.terrain.halfExtent;
-            if (xRel < 0 || yRel < 0 || xRel > maxExtent || yRel > maxExtent)
+            x = Math.floor( x / multiplier );
+            y = Math.floor( y / multiplier );
+            var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
+            var xRel = Math.floor(x) + fp.terrain.halfExtent;
+            var yRel = Math.floor(y) + fp.terrain.halfExtent;
+            if ( xRel < fp.terrain.halfExtent - maxExtent || yRel < fp.terrain.halfExtent - maxExtent || 
+                 xRel > fp.terrain.halfExtent + maxExtent || yRel > fp.terrain.halfExtent + maxExtent )
                 return -1;
             var halfGrid = fp.terrain.gridExtent / 2;
             var gridRatio = fp.terrain.gridExtent / fp.terrain.gridPoints;

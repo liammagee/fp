@@ -41,8 +41,8 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                        "1": {  },
-                        "2": { },
+                        "1": { "initialPopulation": 250, "initialExtent": 100, "maxExtent": 100 },
+                        "2": { "create": false },
                         "3": { "create": false },
                         "4": {
                             "waterShow": false,
@@ -59,7 +59,7 @@
                         "5": {
                             "coloriseAgentsByHealth": false,
                         },
-                        "6": { "multiplier": 2 },
+                        "6": { "multiplier": 0.25, "loadHeights": true, "patchSize": 16 },
                     }
                   }
                 };
@@ -68,19 +68,24 @@
 
                     setup: function() {
                         counter = 0;
-                        var healthReduce = 0.05;
-                        var healthGain = 1.0;
 
                         // Set up an agent class that can exercise, consume, reproduce and die
                         fp.Agent.prototype.exercise = function() {
                             if (this.health > 0)
-                                this.health -= fp.appConfig.malthusOptions.healthReduce;
+                                this.health -= fp.appConfig.malthusOptions.energyLoss;
                         }
 
                         fp.Agent.prototype.consume = function() {
-                            var index = fp.getPatchIndex(this.position.x, this.position.z);
-                            this.health += fp.appConfig.malthusOptions.healthGain * ( fp.patchNetwork.patchValues[index].value / fp.patchNetwork.patches[index].length );
-                            this.health = (this.health > 100) ? 100 : this.health;
+                            var index = fp.getPatchIndex( this.position.x, this.position.z );
+                            var patch = fp.patchNetwork.patches[index];
+                            if ( !_.isUndefined( patch ) ) {
+                                var agentsOnPatch = patch.length;
+                                var patchValue = fp.patchNetwork.patchValues[index];
+                                var availableYield = patchValue.value / agentsOnPatch;
+                                patchValue.updatePatchValue( - fp.appConfig.malthusOptions.patchConsumptionRate );
+                                this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
+                                this.health = (this.health > 100) ? 100 : this.health;
+                            }
                         };
 
                         fp.Agent.prototype.die = function() {
@@ -92,10 +97,15 @@
                         };
 
                         fp.Agent.prototype.reproduce = function() {
-                            if ( Math.random() > fp.appConfig.malthusOptions.reproductionChance &&
+                            // Crude set of assumptions about conditions for reproduction
+                            var current = fp.agentNetwork.agents.length;
+                            var initial = fp.appConfig.agentOptions.initialPopulation;
+                            var popCorrection = Math.pow( ( current / initial ), 2 );
+                            if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
                                  this.children.length < fp.appConfig.malthusOptions.maxChildren &&
                                  this.gender == "f" &&
-                                 this.ticks > 1  * fp.timescale.framesToYear )  {
+                                 Math.random() * this.health > 50 && 
+                                 this.age > 15 && this.age < 50 )  {
                                 fp.scene.remove( fp.agentNetwork.particles );
                                 var agent = fp.agentNetwork.createAgent();
                                 agent.mother = this;
@@ -106,6 +116,31 @@
                             }
                         };
 
+
+                        // Override PatchNetwork methods
+                        fp.PatchNetwork.prototype.reviseValues = function() {
+                            fp.patchNetwork.patchMeanValue = 0;
+                            for (var i = 0; i < fp.patchNetwork.patchValues.length; i++) {
+                                var patch = fp.patchNetwork.patchValues[i];
+                                // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
+                                if ( patch.value < patch.initialValue ) { // Recover
+                                    patch.updatePatchValue( fp.appConfig.malthusOptions.patchRecoveryRate );
+                                }
+                                fp.patchNetwork.patchMeanValue += patch.value;
+                            }
+                            fp.patchNetwork.patchMeanValue /= fp.patchNetwork.patchValues.length;
+                        };
+
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            // Set up a random age
+                            if ( fp.appConfig.agentOptions.randomAge ) {
+                                // Sample a beta distribution with alpha = 2 and beta = 5
+                                // This produces a large population at roughly a reproductive age.
+                                agent.age = Math.floor( jStat.beta.sample( 2, 5 ) * 100 );
+                                agent.health = 100 - agent.age;
+                            }
+                        });
+
                     },
                     tick: function() {
                         fp.agentNetwork.agents.forEach( function( agent ) {
@@ -115,20 +150,23 @@
                             if (agent.health <= 0)
                                 agent.die();
                         } );
+                        //fp.patchNetwork.reviseValues();
                     }
                 }
 
                 fp.init( config, sim, function() {
                     fp.appConfig.malthusOptions = {};
-                    fp.appConfig.malthusOptions.reproductionChance = 0.99;
-                    fp.appConfig.malthusOptions.maxChildren = 4;
-                    fp.appConfig.malthusOptions.healthReduce = 0.05;
-                    fp.appConfig.malthusOptions.healthGain = 1.0;
+                    fp.appConfig.malthusOptions.reproductionChance = 0.25;
+                    fp.appConfig.malthusOptions.maxChildren = 10;
+                    fp.appConfig.malthusOptions.energyLoss = 0.1;
+                    fp.appConfig.malthusOptions.energyGain = 2;
+                    fp.appConfig.malthusOptions.patchConsumptionRate = 0.1;
+                    fp.appConfig.malthusOptions.patchRecoveryRate = 0.005;
                     var malthusFolder = fp.gui.addFolder( "Malthusian Options" );
                     malthusFolder.add( fp.appConfig.malthusOptions, "reproductionChance", 0, 1).step( 0.01 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "maxChildren", 1, 10).step( 1 );
-                    malthusFolder.add( fp.appConfig.malthusOptions, "healthReduce", 0, 1).step( 0.05 );
-                    malthusFolder.add( fp.appConfig.malthusOptions, "healthGain", 0, 1).step( 0.05 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyLoss", 0, 1).step( 0.05 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 1).step( 0.05 );
                     fp.appConfig.Setup();
                 } );
             }
@@ -140,3 +178,4 @@
         <div id="container"></div>
     </body>
 </html>
+1
