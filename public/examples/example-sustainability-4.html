@@ -41,7 +41,7 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                        "1": { "initialPopulation": 250, "initialExtent": 100, "maxExtent": 100 },
+                        "1": { "initialPopulation": 250, "initialExtent": 80, "maxExtent": 80 },
                         "2": { "create": false },
                         "3": { "create": false },
                         "4": {
@@ -166,7 +166,9 @@
                     malthusFolder.add( fp.appConfig.malthusOptions, "reproductionChance", 0, 1).step( 0.01 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "maxChildren", 1, 10).step( 1 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "energyLoss", 0, 1).step( 0.05 );
-                    malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 1).step( 0.05 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 10).step( 0.1 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "patchConsumptionRate", 0, 1).step( 0.005 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "patchRecoveryRate", 0, 0.1).step( 0.005 );
                     fp.appConfig.Setup();
                 } );
             }
