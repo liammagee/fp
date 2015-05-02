@@ -95,8 +95,8 @@ define([
                         var link = this.links[i];
                         var agent1 = link.agent1,
                             agent2 = link.agent2;
-                        var p1 = fp.terrain.transformPointFromPlaneToSphere( agent1.vertex.clone(), fp.terrain.wrappedPercent ),
-                            p2 = fp.terrain.transformPointFromPlaneToSphere( agent2.vertex.clone(), fp.terrain.wrappedPercent );
+                        var p1 = fp.terrain.transformPointFromPlaneToSphere( agent1.position.clone(), fp.terrain.wrappedPercent ),
+                            p2 = fp.terrain.transformPointFromPlaneToSphere( agent2.position.clone(), fp.terrain.wrappedPercent );
                         p1.y += fp.appConfig.agentOptions.size / 8;
                         p2.y += fp.appConfig.agentOptions.size / 8;
                         vertices.push(p2);
@@ -240,17 +240,17 @@ define([
              * @return {fp#Agent}
              */
             this.createAgent = function() {
-                var vertex = new THREE.Vector3();
+                var position = new THREE.Vector3();
                 var point = this.randomPointForAgent();
                 var x = point.x;
                 var z = point.z;
                 var y = fp.getHeight(x, z) + fp.appConfig.agentOptions.terrainOffset;
-                vertex.x = x;
-                vertex.y = y;
-                vertex.z = z;
+                position.x = x;
+                position.y = y;
+                position.z = z;
 
                 var agent = new fp.Agent();
-                agent.setVertex(vertex);
+                agent.setPosition( position );
                 agent.setRandomDirection();
 
                 agent.color = "#" + ( fp.appConfig.displayOptions.dayShow ?
@@ -311,13 +311,16 @@ define([
             this.updateAgents = function() {
                 if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ))
                     return;
-                for (var i = 0; i < this.agents.length; i++) {
-                    var agent =  this.agents[i];
+                var agents = this.agents;
+                if ( fp.appConfig.agentOptions.shuffle )
+                    agents = _.shuffle( this.agents );
+                for (var i = 0; i < agents.length; i++) {
+                    var agent =  agents[ i ];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
                     if ( ( Math.floor( (i / this.agents.length) * fp.timescale.framesToYear ) != fp.timescale.frameCounter % fp.timescale.framesToYear ) )  {
                         // Just interpollate the position
-                        agent.lastPosition = agent.position;
+                        // agent.lastPosition = agent.position;
                         agent.shiftPosition();
                     }
                     else {
@@ -337,24 +340,16 @@ define([
                         agent.move();
 
                         // Enlist the agent in available networks
-                        this.networks.forEach( function( network ) {
-                            network.enlistAgent( agent );
-                        } );
+                        if ( fp.appConfig.agentOptions.establishLinks ) {
+                            this.networks.forEach( function( network ) {
+                                network.enlistAgent( agent );
+                            } );
+                        }
 
-                        // Then add the vertex
-                        var ai = fp.getIndex(this.agents[i].lastPosition.x, this.agents[i].lastPosition.z);
-                        if (ai > -1)
-                            fp.trailNetwork.trails[ai] = (fp.trailNetwork.trails[ai]) ? fp.trailNetwork.trails[ai] + 1 : 1;
-
-                        // Replace with shader for now
-                        if (fp.appConfig.displayOptions.trailsShow && fp.appConfig.displayOptions.trailsShowAsLines) {
-
-                            // Creates a cycle of 5000 trail 'pieces'
-                            if ( agent.ticks * 2 > fp.appConfig.displayOptions.trailLength )
-                                agent.ticks = 0;
-                            fp.trailNetwork.globalTrailLine.geometry.vertices[i * fp.appConfig.displayOptions.trailLength + agent.ticks * 2] = agent.lastPosition;
-                            fp.trailNetwork.globalTrailLine.geometry.vertices[i * fp.appConfig.displayOptions.trailLength + agent.ticks * 2 + 1] = agent.position;
-                            fp.trailNetwork.globalTrailLine.geometry.verticesNeedUpdate = true;
+                        // Then add the position to this agent's trail
+                        var ai = fp.getIndex( this.agents[i].lastPosition.x, this.agents[i].lastPosition.z );
+                        if ( ai > -1 ) {
+                            fp.trailNetwork.trails[ ai ] = ( fp.trailNetwork.trails[ai] ) ? fp.trailNetwork.trails[ai] + 1 : 1;
                         }
 
                         if ( agent.grounded )
@@ -362,7 +357,7 @@ define([
 
                         agent.updateTick();
                     }
-                    this.particles.geometry.vertices[i] = fp.terrain.transformPointFromPlaneToSphere( agent.vertex, fp.terrain.wrappedPercent );
+                    this.particles.geometry.vertices[i] = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                 }
                 this.particles.geometry.verticesNeedUpdate = true;
             };
@@ -403,7 +398,7 @@ define([
             this.updateAgentParticleSystem = function() {
                 var agentGeometry = new THREE.Geometry();
                 this.agents.forEach( function(agent) {
-                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.vertex, fp.terrain.wrappedPercent ) );
+                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent ) );
                 } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
@@ -427,6 +422,7 @@ define([
                 fp.scene.add( this.particles );
             };
 
+
             /**
              * Creates a set of attributes to represent each agent in the network.
              */
@@ -434,7 +430,7 @@ define([
                 var agentGeometry = new THREE.Geometry();
                 this.agents.forEach(function(agent) {
                     // agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.vertex ), fp.terrain.wrappedPercent );
-                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.vertex, fp.terrain.wrappedPercent ) );
+                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent ) );
                 } );
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
@@ -1051,7 +1047,6 @@ define([
 
             /**
              * Default revision of the values of each patch. 
-             * TODO: this should be abstracted or overriden by specific models.
              */
             this.defaultReviseValues = function() {
                 this.patchMeanValue = 0;
@@ -1203,25 +1198,83 @@ define([
             this.trailMeshes = null;
             this.globalTrailLine = null;
 
+            /**
+             * Builds the initial trail network.
+             */
+            this.buildTrailNetwork = function( clone ) {
+                var len = fp.appConfig.displayOptions.trailLength;
+                var geom = new THREE.Geometry();
+                if ( clone ) {
+                    geom = fp.trailNetwork.globalTrailLine.geometry.clone();
+                }
+                for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+                    var vertices = new Array( len );
+                    for (var j = 0; j < len ; j++) {
+                        var index = i * len  + j;
+                        if ( !clone || index > geom.vertices.length ) {
+                            geom.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
+                        }
+                    }
+                    var ai = fp.getIndex( 
+                        fp.agentNetwork.agents[i].lastPosition.x / fp.appConfig.terrainOptions.multiplier, 
+                        fp.agentNetwork.agents[i].lastPosition.z / fp.appConfig.terrainOptions.multiplier
+                    );
+                    if (ai > -1)
+                        fp.trailNetwork.trails[ai] = 1;
+                }
+                var trailMaterial = new THREE.LineBasicMaterial({
+                    color: fp.appConfig.colorOptions.colorNightTrail,
+                    linewidth: 1.0,
+                    opacity: 0.1,
+                    blending: THREE.AdditiveBlending,
+                    transparent: true
+                });
+                fp.trailNetwork.globalTrailLine = new THREE.Line( geom, trailMaterial, THREE.LinePieces );
+                if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+                    fp.scene.add( fp.trailNetwork.globalTrailLine );
+                }
+            };
+
+            /**
+             * Updates the trail network.
+             */
             this.updateTrails = function() {
                 if ( !fp.AppState.runSimulation )
                     return;
 
-                if ( fp.appConfig.displayOptions.trailsShow &&
-                    !fp.appConfig.displayOptions.trailsShowAsLines) {
-                    var weightMax = _.chain(trailNetwork.trails).values().max().value();
-                    for (var j in trailNetwork.trails) {
-                        var weight = trailNetwork.trails[j];
-                        var weightNormed = weight / weightMax;
-                        var weightAdjusted = Math.pow(weightNormed, 0.2);
-                        fp.terrain.plane.geometry.attributes.trail.array[k] = weightAdjusted;
+                if ( fp.appConfig.displayOptions.trailsShow ) {
+                    if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+                        for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
+                            var agent =  fp.agentNetwork.agents[i];
+                            // Creates a cycle of trail 'pieces'
+                            var len = fp.appConfig.displayOptions.trailLength;
+                            var offset = agent.ticks * 2 % len;
+                            if ( offset == 0 ) {
+                                for ( var j = 0; j < len; j++ ) {
+                                    fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + j ] = agent.lastPosition;
+                                }
+                            }
+                            fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + offset ] = agent.lastPosition;
+                            fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + offset + 1 ] = agent.position;
+                        }
+                        fp.trailNetwork.globalTrailLine.geometry.verticesNeedUpdate = true;
+                    }
+                    else {
+                        var weightMax = _.chain( fp.trailNetwork.trails ).values().max().value();
+                        for ( var j in fp.trailNetwork.trails ) {
+                            var weight = fp.trailNetwork.trails[j];
+                            var weightNormed = weight / weightMax;
+                            var weightAdjusted = Math.pow( weightNormed, 0.2 );
+                            fp.terrain.plane.geometry.attributes.trail.array[ k ] = weightAdjusted;
+                        }
                     }
                 }
-                else {
-                    for (var k in fp.trailNetwork.trails)
-                        fp.terrain.plane.geometry.attributes.trail.array[k] = 0.0;
+                else if ( !fp.appConfig.displayOptions.trailsShowAsLines ) {
+                    for ( var k in fp.trailNetwork.trails )  {
+                        fp.terrain.plane.geometry.attributes.trail.array[ k ] = 0.0;
+                    }
+                    fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
                 }
-                fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
             };
         };
 
@@ -1864,8 +1917,8 @@ define([
             /**
              * @memberof Agent
              */
-            this.setVertex = function(v) {
-                this.vertex = this.lastPosition = this.position = v;
+            this.setPosition = function(v) {
+                this.lastPosition = this.position = v;
             };
 
             /**
@@ -2083,8 +2136,8 @@ define([
              */
             this.shiftPosition = function() {
                 var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
-                this.vertex = this.lastPosition.clone().add(directionAtSpeed);
-                this.position = this.vertex.clone();
+                var newPosition = this.position.clone().add( directionAtSpeed );
+                this.position = newPosition.clone();
             };
 
             /**
@@ -2106,8 +2159,32 @@ define([
             /**
              * @memberof Agent
              */
+            this.nearestNeighbour = function( ignoreHeight ) {
+                var agents = fp.agentNetwork.agents;
+                var x = this.position.x, y = this.position.y, z = this.position.z;
+                var nearest = null, leastLen = 0;
+                for ( var i = 0; i < agents.length; i++ ) {
+                    var agent = agents[ i ];
+                    if ( agent == this )
+                        continue;
+                    var ox = agent.position.x, oy = agent.position.y, oz = agent.position.z;
+                    var len = Math.sqrt( Math.pow( ox - x, 2 ) + Math.pow( oz - z, 2 ) );
+                    if ( ! ignoreHeight ) {
+                        len = Math.sqrt( Math.pow( len, 2 ) + Math.pow( oy - y, 2 ) );
+                    }
+                    if ( leastLen == 0 || len < leastLen) {
+                        nearest = agent;
+                        leastLen = len;
+                    }
+                }
+                return nearest;
+            };
+
+            /**
+             * @memberof Agent
+             */
             this.setRandomDirection = function() {
-                this.setDirection(this.randomDirection());
+                this.setDirection( this.randomDirection() );
             };
 
             /**
@@ -2893,8 +2970,10 @@ define([
                 useStickman: true,
                 visitHomeBuilding: 0.02,
                 visitOtherBuilding: 0.002,
+                establishLinks: false,
                 size: 40,
-                terrainOffset: 20
+                terrainOffset: 20,
+                shuffle: false
             };
             this.displayOptions = {
                 buildingsShow: true,
@@ -3130,10 +3209,10 @@ define([
                     network.links = [];
                     fp.scene.remove( network.networkMesh );
                 });
-                fp.scene.remove( fp.buildingNetwork.networkMesh);
-                fp.scene.remove( fp.roadNetwork.networkMesh);
-                fp.scene.remove( fp.pathNetwork.networkMesh);
-                fp.scene.remove( fp.trailNetwork.globalTrailLine);
+                fp.scene.remove( fp.buildingNetwork.networkMesh );
+                fp.scene.remove( fp.roadNetwork.networkMesh );
+                fp.scene.remove( fp.pathNetwork.networkMesh );
+                fp.scene.remove( fp.trailNetwork.globalTrailLine );
                 fp.patchNetwork.initialisePatches();
             };
 
@@ -3143,21 +3222,6 @@ define([
             this.Setup = function() {
                 fp.appConfig.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
-                fp.trailNetwork.globalTrailGeometry = new THREE.Geometry();
-                var trailMaterial = new THREE.LineBasicMaterial({
-                    color: fp.appConfig.colorOptions.colorNightTrail,
-                    opacity: 0.75,
-                    linewidth: 0.25
-                });
-                for (var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++) {
-                    var vertices = new Array(fp.appConfig.displayOptions.trailLength);
-                    for (var j = 0; j < fp.appConfig.displayOptions.trailLength ; j++) {
-                        fp.trailNetwork.globalTrailGeometry.vertices.push( fp.agentNetwork.agents[i].lastPosition);
-                    }
-                    var ai = fp.getIndex( fp.agentNetwork.agents[i].lastPosition.x / fp.appConfig.terrainOptions.multiplier, fp.agentNetwork.agents[i].lastPosition.z / fp.appConfig.terrainOptions.multiplier);
-                    if (ai > -1)
-                        fp.trailNetwork.trails[ai] = 1;
-                }
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.buildingsShow )
@@ -3172,9 +3236,30 @@ define([
                 if ( fp.appConfig.displayOptions.pathsShow )
                     fp.scene.add(fp.pathNetwork.networkMesh);
 
-                fp.trailNetwork.globalTrailLine = new THREE.Line(fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LinePieces);
-                if (fp.appConfig.displayOptions.trailsShowAsLines)
-                    fp.scene.add(fp.trailNetwork.globalTrailLine);
+                fp.trailNetwork.buildTrailNetwork( false );
+                /*
+                fp.trailNetwork.globalTrailGeometry = new THREE.Geometry();
+                for (var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++) {
+                    var vertices = new Array( fp.appConfig.displayOptions.trailLength );
+                    for (var j = 0; j < fp.appConfig.displayOptions.trailLength ; j++) {
+                        fp.trailNetwork.globalTrailGeometry.vertices.push( fp.agentNetwork.agents[i].lastPosition );
+                    }
+                    var ai = fp.getIndex( fp.agentNetwork.agents[i].lastPosition.x / fp.appConfig.terrainOptions.multiplier, fp.agentNetwork.agents[i].lastPosition.z / fp.appConfig.terrainOptions.multiplier);
+                    if (ai > -1)
+                        fp.trailNetwork.trails[ai] = 1;
+                }
+                var trailMaterial = new THREE.LineBasicMaterial({
+                    color: fp.appConfig.colorOptions.colorNightTrail,
+                    linewidth: 0.1,
+                    opacity: 0.1,
+                    blending: THREE.NormalBlending,
+                    transparent: true
+                });
+                fp.trailNetwork.globalTrailLine = new THREE.Line( fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LinePieces );
+                if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+                    fp.scene.add( fp.trailNetwork.globalTrailLine );
+                }
+                */
 
                 fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
             };
@@ -3196,12 +3281,12 @@ define([
             this.SpeedUp = function() {
                 if ( fp.timescale.framesToYear > fp.timescale.MIN_FRAMES_TO_YEAR)
                     fp.timescale.framesToYear = Math.ceil( fp.timescale.framesToYear / 2);
-                console.log("Speed: " + fp.timescale.framesToYear);
+                console.log( "Speed: " + fp.timescale.framesToYear );
             };
             this.SlowDown = function() {
                 if ( fp.timescale.framesToYear < fp.timescale.MAX_FRAMES_TO_YEAR)
                     fp.timescale.framesToYear *= 2;
-                console.log("Speed: " + fp.timescale.framesToYear);
+                console.log( "Speed: " + fp.timescale.framesToYear );
             };
             this.Snapshot = function() {
                 var mimetype = mimetype  || "image/png";
@@ -3321,6 +3406,8 @@ define([
                 agentsFolder.add( fp.appConfig.agentOptions, "useStickman" );
                 agentsFolder.add( fp.appConfig.agentOptions, "visitHomeBuilding", 0.0, 1.0).step(0.001 );
                 agentsFolder.add( fp.appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0).step(0.001 );
+                agentsFolder.add( fp.appConfig.agentOptions, "establishLinks");
+                agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
             }
 
             if ( fp.appConfig.displayOptions.guiShowBuildingsFolder ) {
@@ -3876,6 +3963,8 @@ define([
          * @memberof fp
          */
         this.animate = function() {
+            if ( fp.AppState.halt == true )
+                return;
             // Must call this first!
             fp.patchNetwork.updatePatchAgents();
             if ( fp.AppState.runSimulation )
