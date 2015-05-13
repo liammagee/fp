@@ -715,7 +715,7 @@ define([
                 var building = new fp.Building( buildingForm, dimensions, position, rotation );
 
                 // Before we add this, try to detect collision
-                if (fp.appConfig.buildingOptions.detectBuildingCollisions) {
+                if ( fp.appConfig.buildingOptions.detectBuildingCollisions ) {
                     if ( fp.buildingNetwork.collidesWithOtherBuildings( building ) )
                         return undefined;
                 }
@@ -1163,6 +1163,10 @@ define([
                 fp.terrain.plane.geometry.attributes.patch.needsUpdate = true;
             };
 
+            /**
+             * Toggles 
+             * @return {[type]} [description]
+             */
             this.togglePatchesStateWithShader = function() {
                 if (! fp.appConfig.displayOptions.patchesShow) {
                     for (var i = 0; i < fp.terrain.plane.geometry.attributes.patch.array.length; i++)
@@ -2217,7 +2221,7 @@ define([
                 var dimensions = fp.buildingNetwork.generateRandomDimensions();
 
                 if ( fp.buildingNetwork.buildings.length === 0 ) { // If there are no buildings, build an initial "seed"
-                    this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
+                    this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
                     return ( !_.isUndefined(this.home) );
                 }
                 else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber)
@@ -2428,7 +2432,8 @@ define([
 
             this.addFloor = function () {
                 var base = this.levels * fp.appConfig.buildingOptions.levelHeight;
-                var points = fp.BUILDING_FORMS[this.buildingForm](this.localWidth, this.localLength, base);
+                var points = fp.BUILDING_FORMS[this.buildingForm]( this.localWidth, this.localLength, base );
+
                 if ( !fp.appConfig.buildingOptions.useShader ) {
                     if (fp.appConfig.buildingOptions.showLines) {
                         this.geometry.dynamic = true;
@@ -2975,61 +2980,6 @@ define([
                 terrainOffset: 20,
                 shuffle: false
             };
-            this.displayOptions = {
-                buildingsShow: true,
-                roadsShow: true,
-                waterShow: true,
-                networkShow: false,
-                networkCurve: true,
-                networkCurvePoints: 20,
-                patchesShow: false,
-                patchesUpdate: true,
-                patchesUseShader: true,
-                trailsShow: false,
-                trailsShowAsLines: false,
-                trailLength: 10000,
-                cursorShow: false,
-                cursorShowCell: true,
-                statsShow: true,
-                hudShow: true,
-                wireframeShow: false,
-                dayShow: false,
-                skyboxShow: true,
-                chartShow: true,
-                guiShow: true,
-                guiShowControls: true,
-                guiShowAgentFolder: true,
-                guiShowBuildingsFolder: true,
-                guiShowRoadsFolder: true,
-                guiShowTerrainFolder: true,
-                guiShowDisplayFolder: true,
-                guiShowColorFolder: true,
-                pathsShow: true,
-                terrainShow: true,
-                coloriseAgentsByHealth: false,
-                firstPersonView: false,
-                cameraOverride: false,
-                cameraX: 0,
-                cameraY: 200,
-                cameraZ: 800,
-                maximiseView: true,
-            };
-            this.roadOptions = {
-                create: true,
-                maxNumber: 200,  // Maximum number of roads - for performance reasons
-                roadWidth: 20,
-                roadDeviation: 20,
-                roadRadiusSegments: 10,
-                roadSegments: 10,
-                initialRadius: 100,
-                probability: 1,
-                lenMinimum: 100,
-                lenMaximum: 2000,
-                lenDistributionFactor: 3,
-                overlapThreshold: 3,
-                flattenAdjustment: 0.025,
-                flattenLift: 20
-            };
             this.buildingOptions = {
                 create: true,
 
@@ -3110,6 +3060,61 @@ define([
                 detectBuildingCollisions: true,
                 detectRoadCollisions: true
             };
+            this.roadOptions = {
+                create: true,
+                maxNumber: 200,  // Maximum number of roads - for performance reasons
+                roadWidth: 20,
+                roadDeviation: 20,
+                roadRadiusSegments: 10,
+                roadSegments: 10,
+                initialRadius: 100,
+                probability: 1,
+                lenMinimum: 100,
+                lenMaximum: 2000,
+                lenDistributionFactor: 3,
+                overlapThreshold: 3,
+                flattenAdjustment: 0.025,
+                flattenLift: 20
+            };
+            this.displayOptions = {
+                buildingsShow: true,
+                roadsShow: true,
+                waterShow: true,
+                networkShow: false,
+                networkCurve: true,
+                networkCurvePoints: 20,
+                patchesShow: false,
+                patchesUpdate: true,
+                patchesUseShader: true,
+                trailsShow: false,
+                trailsShowAsLines: false,
+                trailLength: 10000,
+                cursorShow: false,
+                cursorShowCell: true,
+                statsShow: true,
+                hudShow: true,
+                wireframeShow: false,
+                dayShow: false,
+                skyboxShow: true,
+                chartShow: true,
+                guiShow: true,
+                guiShowControls: true,
+                guiShowAgentFolder: true,
+                guiShowBuildingsFolder: true,
+                guiShowRoadsFolder: true,
+                guiShowTerrainFolder: true,
+                guiShowDisplayFolder: true,
+                guiShowColorFolder: true,
+                pathsShow: true,
+                terrainShow: true,
+                coloriseAgentsByHealth: false,
+                firstPersonView: false,
+                cameraOverride: false,
+                cameraX: 0,
+                cameraY: 200,
+                cameraZ: 800,
+                maximiseView: true,
+            };
             this.terrainOptions = {
                 renderAsSphere: true,
                 loadHeights: true,
@@ -3159,6 +3164,7 @@ define([
             };
             this.buildingOptions.maxHeight = (this.buildingOptions.minHeight > this.buildingOptions.maxHeight) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
             this.buildingOptions.maxWidth = (this.buildingOptions.minWidth > this.buildingOptions.maxWidth) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
+            console.log(this.buildingOptions.maxLength)
             this.buildingOptions.maxLength = (this.buildingOptions.minLength > this.buildingOptions.maxLength) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
             this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor(Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight);
             this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor(Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth);

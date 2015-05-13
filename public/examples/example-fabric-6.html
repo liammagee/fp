@@ -24,7 +24,6 @@
         requirejs([
                 "fp",
                 "dat.gui",
-                "csscolorparser",
                 "smoothie",
                 "stats.min",
                 "jstat.min",
@@ -42,20 +41,46 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                      "4": { "dayShow": true }
+                        "1": { 
+                            "initialPopulation": 1000,
+                         },
+                        "2": { 
+                        },
+                        "3": { 
+                            "create": true },
+                        "4": {
+                            "waterShow": true,
+                            "terrainShow": true,
+                            "dayShow": false,
+                            "patchesShow": false,
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 1000,
+                        },
+                        "5": {
+                            "coloriseAgentsByHealth": false,
+                            "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
+                        },
+                        "6": { 
+                            "multiplier": 2,
+                            "loadHeights": true
+                         },
                     }
                   }
                 }
                 var sim =  {
                     counter: 0,
+
                     setup: function() {
-                        counter = 0;
                     },
                     tick: function() {
                     }
                 }
 
-                fp.init( config, sim );
+                fp.init( config, sim, function() {
+                    fp.appConfig.Setup();
+                } );
             }
         );
 
