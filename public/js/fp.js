@@ -603,8 +603,8 @@ define([
              * @param  {fp~Building} building
              * @return {Array} points
              */
-            this.get2dIndexPoints = function(building) {
-                return _.map( this.get2dPoints(building), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
+            this.get2dIndexPoints = function( building ) {
+                return _.map( this.get2dPoints( building ), function(point) { return fp.getIndex(point.x, point.y); }  ) ;
             };
 
             /**
@@ -613,14 +613,15 @@ define([
              * @param  {fp~Building} building
              * @return {Array} points
              */
-            this.get2dPointsForBoundingBox = function(building) {
+            this.get2dPointsForBoundingBox = function( building ) {
                 var points = [];
                 var firstFloor = building.highResMeshContainer.children[0],
                     position = building.highResMeshContainer.position,
                     vertices = firstFloor.geometry.vertices,
                     verticesOnBase = vertices.length;
                 for (var i = 0; i < verticesOnBase / 2; i ++) {
-                    var point  = vertices[i].clone().applyMatrix4( firstFloor.matrix).add(building.highResMeshContainer.position);
+                    // Adjust for the vertex's rotation, and add its position
+                    var point  = vertices[ i ].clone().applyMatrix4( firstFloor.matrix ).add( position );
                     points.push({ x: point.x, y: point.z });
                 }
                 return points;
@@ -656,16 +657,16 @@ define([
              */
             this.collidesWithOtherBuildings = function(building) {
                 // Quick check
-                if (this.buildingHash[fp.getIndex(building.lod.position.x, building.lod.position.z)])
+                if ( this.buildingHash[ fp.getIndex( building.lod.position.x, building.lod.position.z ) ] )
                     return true;
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
                 for (var i = 0; i < this.networkJstsCache.length; i ++) {
                     var b = this.networkJstsCache[i];
-                    var localResult = false;
-                    if ( b.intersects(buildingGeometry) )
-                        localResult = true;
-                    if ( localResult )
+                    if ( b.intersects( buildingGeometry ) ) {
+                        // console.log(buildingsProximate, buildingSig, this.home)
+                        // console.log(buildingGeometry)
                         return true;
+                    }
                 }
                 return false; // Be optimistic
             };
@@ -716,7 +717,7 @@ define([
 
                 // Before we add this, try to detect collision
                 if ( fp.appConfig.buildingOptions.detectBuildingCollisions ) {
-                    if ( fp.buildingNetwork.collidesWithOtherBuildings( building ) )
+                    if ( fp.buildingNetwork.collidesWithOtherBuildings( building ) ) 
                         return undefined;
                 }
 
@@ -2200,14 +2201,41 @@ define([
             };
 
             /**
+             * Calculate likelihood of building a home
+             */
+            this.calculateLikelihoodOfHome = function( index ) {
+                // Simple test of local roads, water, buildings and building height
+                var roadsProximate = fp.checkProximityOfRoads( index ),
+                    roadsSig = (1 - fp.appConfig.buildingOptions.roads);
+                var waterProximate = fp.checkProximityOfWater( index ),
+                    waterSig = (1 - fp.appConfig.buildingOptions.water);
+                var buildingsProximate = fp.checkProximityOfBuildings( index ),
+                    buildingSig = ( 1 - fp.appConfig.buildingOptions.otherBuildings);
+                var buildingHeightProximate = fp.checkProximiteBuildingHeight( index ),
+                    buildingHeightSig = (1 - fp.appConfig.buildingOptions.buildingHeight);
+
+                var buildingChance =  Math.pow( buildingsProximate, Math.random() );
+                console.log( buildingChance );
+
+                var buildHome = false;
+                if ( roadsProximate > roadsSig ||
+                     waterProximate > waterSig ||
+                     buildingChance > buildingSig ||
+                     buildingHeightProximate > buildingHeightSig ) {
+                    buildHome = true;
+                }
+                return buildHome;
+            }
+
+            /**
              * Builds a building on the agent's current position.
-             * @return {Boolean} Whether the road construction was successful.
+             * @return {Boolean} Whether the building construction was successful.
              */
             this.buildHome = function() {
-                if (this.home !== null)
+                if ( this.home !== null )
                     return false;
 
-                if (this.position === null)
+                if ( this.position === null )
                     return false;
 
                 var index = fp.getIndex( this.position.x, this.position.z );
@@ -2224,29 +2252,18 @@ define([
                     this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
                     return ( !_.isUndefined(this.home) );
                 }
-                else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber)
+                else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber )
                     return false;
 
                 if ( !_.isNull( fp.stats ) && fp.statss <= 10 )
                     return false;
 
-                // Simple test of local roads, water, buildings and building height
-                var roadsProximate = fp.checkProximityOfRoads( index ),
-                    roadsSig = (1 - fp.appConfig.buildingOptions.roads);
-                var waterProximate = fp.checkProximityOfWater( index ),
-                    waterSig = (1 - fp.appConfig.buildingOptions.water);
-                var buildingsProximate = fp.checkProximityOfBuildings( index ),
-                    buildingSig = (1 - fp.appConfig.buildingOptions.otherBuildings);
-                var buildingHeightProximate = fp.checkProximiteBuildingHeight( index ),
-                    buildingHeightSig = (1 - fp.appConfig.buildingOptions.buildingHeight);
-
-                if ( roadsProximate > roadsSig ||
-                     waterProximate > waterSig ||
-                     buildingsProximate > buildingSig ||
-                     buildingHeightProximate > buildingHeightSig ) {
-                    this.home = fp.buildingNetwork.createBuilding(this.position, dimensions);
-                    return ( !_.isUndefined(this.home) );
+                var shouldBuildHome = this.calculateLikelihoodOfHome( index );
+                if ( shouldBuildHome ) {
+                    this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
+                    return ( !_.isUndefined( this.home ) );
                 }
+
                 return false;
             };
 
@@ -2914,14 +2931,14 @@ define([
                  * @memberOf fp~AppConfig~worldOptions
                  * @inner
                  */
-                maxLandSearchDepth: 1,
+                maxLandSearchDepth: 2,
 
                 /**
                  * Number of index points to use in search (depends on building size)
                  * @memberOf fp~AppConfig~worldOptions
                  * @inner
                  */
-                searchIncrement: 1
+                searchIncrement: 2
             };
             /**
              * Agent options.
@@ -3164,7 +3181,6 @@ define([
             };
             this.buildingOptions.maxHeight = (this.buildingOptions.minHeight > this.buildingOptions.maxHeight) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
             this.buildingOptions.maxWidth = (this.buildingOptions.minWidth > this.buildingOptions.maxWidth) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
-            console.log(this.buildingOptions.maxLength)
             this.buildingOptions.maxLength = (this.buildingOptions.minLength > this.buildingOptions.maxLength) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
             this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor(Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight);
             this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor(Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth);
@@ -3187,6 +3203,7 @@ define([
                 fp.scene.remove(  fp.agentNetwork.particles  );
                 fp.agentNetwork.agents = [];
                 fp.agentNetwork.agentParticleSystemAttributes = null;
+                fp.buildingNetwork.networkJstsCache = [];
                 fp.buildingNetwork.buildings = [];
                 fp.buildingNetwork.buildingHash = {};
                 fp.roadNetwork.indexValues = [];
@@ -4208,11 +4225,12 @@ define([
         this.checkProximityOfBuildings = function( index ) {
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
-            fp.surroundingCells(index).forEach(function(cell) {
-                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[fp.getIndex(cell.x, cell.y)] ) )
+            var surroundingCells = fp.surroundingCells( index );
+            surroundingCells.forEach( function( cell ) {
+                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ fp.getIndex(cell.x, cell.y) ] ) )
                     buildingNeighbours++;
                 totalNeighbours++;
-            });
+            } );
             return buildingNeighbours / totalNeighbours;
         };
 
@@ -4276,10 +4294,11 @@ define([
                 positions = fp.terrain.planeArray.array;
             var indexY = Math.floor(index / fp.terrain.gridPoints),
                 indexX = index % fp.terrain.gridPoints,
-                indexMirroredOnY = (indexY) * fp.terrain.gridPoints + indexX,
+                //indexMirroredOnY = (indexY) * fp.terrain.gridPoints + indexX,
+                indexMirroredOnY = ( fp.terrain.gridPoints - indexY) * fp.terrain.gridPoints + indexX,
                 inc = fp.appConfig.worldOptions.searchIncrement,
                 threshold = fp.appConfig.worldOptions.maxLandSearchDepth * inc;
-                //indexMirroredOnY = ( fp.terrain.gridPoints - indexY) * fp.terrain.gridPoints + indexX;
+                
             for (var j = inc; j <= threshold; j += inc) {
                 if (Math.floor((indexMirroredOnY - j) / fp.terrain.gridPoints) == Math.floor(indexMirroredOnY / fp.terrain.gridPoints)) {
                     surroundingCells.push( new THREE.Vector3(
