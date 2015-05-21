@@ -552,6 +552,19 @@ define([
             this.speedOfConstruction = 0.05;
 
             /**
+             * Evaluation functions to determine proximities for developing buildings.
+             * Currently evaluates for proximity of local roads, water, buildings and building height
+             */
+            this.proximityFunctions = function() {
+                return [
+                    [ fp.checkProximityOfRoads, fp.appConfig.buildingOptions.roads ],
+                    [ fp.checkProximityOfWater, fp.appConfig.buildingOptions.water ],
+                    [ fp.checkProximityOfBuildings, fp.appConfig.buildingOptions.otherBuildings ],
+                    [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight ]
+                ];
+            };
+
+            /**
              * Generates a random number of levels, width and length for a building
              * @return {object} contains levels, width, length properties
              */
@@ -663,8 +676,6 @@ define([
                 for (var i = 0; i < this.networkJstsCache.length; i ++) {
                     var b = this.networkJstsCache[i];
                     if ( b.intersects( buildingGeometry ) ) {
-                        // console.log(buildingsProximate, buildingSig, this.home)
-                        // console.log(buildingGeometry)
                         return true;
                     }
                 }
@@ -2205,26 +2216,20 @@ define([
              */
             this.calculateLikelihoodOfHome = function( index ) {
                 // Simple test of local roads, water, buildings and building height
-                var roadsProximate = fp.checkProximityOfRoads( index ),
-                    roadsSig = (1 - fp.appConfig.buildingOptions.roads);
-                var waterProximate = fp.checkProximityOfWater( index ),
-                    waterSig = (1 - fp.appConfig.buildingOptions.water);
-                var buildingsProximate = fp.checkProximityOfBuildings( index ),
-                    buildingSig = ( 1 - fp.appConfig.buildingOptions.otherBuildings);
-                var buildingHeightProximate = fp.checkProximiteBuildingHeight( index ),
-                    buildingHeightSig = (1 - fp.appConfig.buildingOptions.buildingHeight);
-
-                var buildingChance =  Math.pow( buildingsProximate, Math.random() );
-                console.log( buildingChance );
-
-                var buildHome = false;
-                if ( roadsProximate > roadsSig ||
-                     waterProximate > waterSig ||
-                     buildingChance > buildingSig ||
-                     buildingHeightProximate > buildingHeightSig ) {
-                    buildHome = true;
-                }
-                return buildHome;
+                var proximityTests = fp.buildingNetwork.proximityFunctions();
+                for (var i = proximityTests.length - 1; i >= 0; i--) {
+                    var proximityTest = proximityTests[i];
+                    var func = proximityTest[ 0 ];
+                    var value = proximityTest[ 1 ];
+                    var testValue = func.apply( fp, [ index ] );
+                    testValue = testValue < 0 ? 0 : testValue;
+                    var chance = Math.pow( testValue, Math.random() );
+                    // console.log(testValue, chance, value)
+                    // Return true if the probability is greater than 1 minus the target value
+                    if ( chance > ( 1 - value ) )
+                        return true;
+                }; 
+                return false;
             }
 
             /**
