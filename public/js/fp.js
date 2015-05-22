@@ -557,10 +557,11 @@ define([
              */
             this.proximityFunctions = function() {
                 return [
-                    [ fp.checkProximityOfRoads, fp.appConfig.buildingOptions.roads ],
-                    [ fp.checkProximityOfWater, fp.appConfig.buildingOptions.water ],
+                    // [ fp.checkProximityOfRoads, fp.appConfig.buildingOptions.roads ],
+                    // [ fp.checkProximityOfWater, fp.appConfig.buildingOptions.water ],
                     [ fp.checkProximityOfBuildings, fp.appConfig.buildingOptions.otherBuildings ],
-                    [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight ]
+                    [ fp.checkNearestNeighbour, 800, 1000 ],
+                    // [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight ]
                 ];
             };
 
@@ -1631,8 +1632,29 @@ define([
              * @return {Number} The corresponding y value
              */
             this.getHeightForIndex = function( index ) {
+                var x = index % fp.terrain.gridPoints ;
+                var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints );
+                var reversedIndex = y * fp.terrain.gridPoints + x;
                 if ( index >= 0 && !_.isUndefined( fp.terrain.planeArray.array[index * 3 + 2] ) )
-                    return fp.terrain.planeArray.array[index * 3 + 2];
+                    return fp.terrain.planeArray.array[ index * 3 + 2 ];
+                return null;
+            };
+
+            /**
+             * Gets the terrain coordinates for a given co-ordinate index.
+             * @memberof fp.Terrain
+             * @param {Number} index The co-ordinate index
+             * @return {Number} The corresponding y value
+             */
+            this.getCoordinatesForIndex = function( index ) {
+                var x = index % fp.terrain.gridPoints ;
+                var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints );
+                var reversedIndex = y * fp.terrain.gridPoints + x;
+                if ( reversedIndex >= 0 && !_.isUndefined( fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ] ) ) {
+                    var x = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ]; 
+                    var z = fp.terrain.planeArray.array[ reversedIndex * 3 + 1 ]; 
+                    return [ x, z ];
+                }
                 return null;
             };
 
@@ -2219,14 +2241,10 @@ define([
                 var proximityTests = fp.buildingNetwork.proximityFunctions();
                 for (var i = proximityTests.length - 1; i >= 0; i--) {
                     var proximityTest = proximityTests[i];
-                    var func = proximityTest[ 0 ];
-                    var value = proximityTest[ 1 ];
-                    var testValue = func.apply( fp, [ index ] );
-                    testValue = testValue < 0 ? 0 : testValue;
-                    var chance = Math.pow( testValue, Math.random() );
-                    // console.log(testValue, chance, value)
-                    // Return true if the probability is greater than 1 minus the target value
-                    if ( chance > ( 1 - value ) )
+                    var func = _.first( proximityTest );
+                    var values = _.rest( proximityTest );
+                    var response = func.apply( fp, _.union( [ index ], values ) );
+                    if ( response )
                         return true;
                 }; 
                 return false;
@@ -4154,8 +4172,8 @@ define([
             x = Math.floor( x / multiplier );
             y = Math.floor( y / multiplier );
             var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
-            var xRel = Math.floor(x) + fp.terrain.halfExtent;
-            var yRel = Math.floor(y) + fp.terrain.halfExtent;
+            var xRel = Math.floor( x ) + fp.terrain.halfExtent;
+            var yRel = Math.floor( y ) + fp.terrain.halfExtent;
             if ( xRel < fp.terrain.halfExtent - maxExtent || yRel < fp.terrain.halfExtent - maxExtent || 
                  xRel > fp.terrain.halfExtent + maxExtent || yRel > fp.terrain.halfExtent + maxExtent )
                 return -1;
@@ -4163,16 +4181,16 @@ define([
             var gridRatio = fp.terrain.gridExtent / fp.terrain.gridPoints;
             y += gridRatio / 2;
             //y = ( fp.terrain.gridPoints * fp.terrain.gridPoints) - y - 1;
-            var xLoc = Math.floor((Math.round(x) + halfGrid) / gridRatio);
-            var yLoc = Math.floor((Math.round(y) + halfGrid) / gridRatio);
-            return Math.floor( fp.terrain.gridPoints * yLoc + xLoc);
+            var xLoc = Math.floor( ( Math.round(x) + halfGrid ) / gridRatio );
+            var yLoc = Math.floor( ( Math.round(y) + halfGrid ) / gridRatio );
+            return Math.floor( fp.terrain.gridPoints * yLoc + xLoc );
         };
 
         /**
          * Gets the terrain height for a given (x, y) co-ordinate.
          * @memberof fp
          */
-        this.getHeight = function(x, y) {
+        this.getHeight = function( x, y ) {
             return fp.terrain.getHeightForIndex( fp.getIndex(x, y) );
         };
 
@@ -4227,7 +4245,7 @@ define([
          * @param  {Number} index
          * @return {Number}
          */
-        this.checkProximityOfBuildings = function( index ) {
+        this.checkProximityOfBuildings = function( index, threshold ) {
             // Count number of positions
             var buildingNeighbours = 0, totalNeighbours = 0;
             var surroundingCells = fp.surroundingCells( index );
@@ -4236,8 +4254,45 @@ define([
                     buildingNeighbours++;
                 totalNeighbours++;
             } );
-            return buildingNeighbours / totalNeighbours;
+            var testValue = buildingNeighbours / totalNeighbours;
+            var chance = Math.pow( testValue, Math.random() );
+            // Return true if the probability is greater than 1 minus the target value
+            return ( chance > ( 1 - threshold ) )
         };
+
+        /**
+         * Count how many surrounding cells are also buildings
+         * @memberof fp
+         * @param  {Number} index
+         * @return {Number}
+         */
+        this.checkNearestNeighbour = function( index, min, max ) {
+            // Get coordinates for index
+            var coords = fp.terrain.getCoordinatesForIndex( index );
+            var x = coords[ 0 ], z = coords[ 1 ];
+            // Get nearest neighbouring building
+            var nnDistance = this.nearestNeighbouringBuildings( x, z );
+            if ( min <= nnDistance && nnDistance <= max )
+                console.log (nnDistance, min, max, index, x, z, fp.buildingNetwork.buildings.length)
+            return ( min <= nnDistance && nnDistance <= max );
+        };
+
+
+        /**
+         * Determines nearest neighbouring building.
+         */
+        this.nearestNeighbouringBuildings = function( x, z ) {
+            var minSquaredDistance = -1;
+            for (var i = 0; i < fp.buildingNetwork.buildings.length; i++) {
+                var building = fp.buildingNetwork.buildings[i];
+                var bx = building.lod.position.x, bz = building.lod.position.z;
+                var squaredDistance = Math.pow( bx - x, 2 ) + Math.pow( bz - z, 2 );
+                if ( minSquaredDistance == -1 || squaredDistance < minSquaredDistance )
+                    minSquaredDistance = squaredDistance;
+            };
+            return Math.sqrt( minSquaredDistance );
+        };
+
 
         /**
          * Now count how many surrounding are also sea level.
