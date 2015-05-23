@@ -41,36 +41,219 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                        "1": { 
+                        // Agent options
+                        "1": {
                             "initialPopulation": 1000,
+                            "initialExtent": 30,
+                            // "maxExtent": 100,
+                            // "initialX": 50,
+                            // "initialY": 50,
+                            // "randomAge": true,
+                            // "chanceToJoinNetwork": 0.05,
+                            // "chanceToFindPathToHome": 0.00,
+                            // "initialCircle": true,
+                            // "noWater": true,
+                            // "noUphill": false,
+                            // "useStickman": true,
+                            // "visitHomeBuilding": 0.02,
+                            // "visitOtherBuilding": 0.002,
+                            // "establishLinks": false,
+                            // "size": 40,
+                            // "terrainOffset": 20,
                             "shuffle": true
                          },
-                        "2": { 
+                        // Building options
+                        "2": {
                             "roads": 0.0,
                             "water": 0.0,
                             "otherBuildings": 0.1,
                             "buildingHeight": 0.0,
                             "detectBuildingCollisions": true,
+
+                            "create": true,
+
+                            "maxNumber": 250,
+
+                            // Carry over from generation
+                            "heightA": 2,
+                            "heightB": 10,
+
+                            // Influences
+                            "roads": 0.0,
+                            "water": 0.4,
+                            "otherBuildings": 0.9,
+                            "buildingHeight": 0.1,
+
+                            // Building form
+                            "buildingForm": "rectangle",
+                            "spread": 10,
+                            "randomForm": false,
+                            "rotateRandomly": false,
+                            "rotateSetAngle": 0,
+
+                            "destroyOnComplete": false,
+                            "loopCreateDestroy": false,
+
+                            // Visualisation
+                            "turning": false,
+                            "falling": false,
+                            "riseRate": 10,
+
+                            // Dimensions
+                            "minHeight": 10,
+                            "maxHeight": 70,
+                            "minWidth": 40,
+                            "maxWidth": 200,
+                            "minLength": 40,
+                            "maxLength": 200,
+                            "maxLevels": 0,
+                            "width": 0,
+                            "length": 0,
+                            "levelHeight": 40,
+
+                            // View parameters
+                            "useShader": true,
+                            "useLevelOfDetail": true,
+                            "highResDistance": 1000,
+                            "lowResDistance": 7500,
+                            "opacity": 1.0,
+
+                            // Fill parameters
+                            "showFill": true,
+                            "fillRooves": false,
+
+                            // Stroke parameters
+                            "showLines": true,
+                            "linewidth": 1.0,
+
+                            // Window parameters
+                            "showWindows": true,
+                            "windowsRandomise": false,
+                            "windowWidth": 15,
+                            "windowPercent": 60,
+                            "windowsStartY": 40,
+                            "windowsEndY": 80,
+                            "windowsLine": true,
+                            "windowsFill": false,
+
+                            // Stagger
+                            "stagger": true,
+                            "staggerAmount": 40,
+
+                            // Taper
+                            "taper": true,
+                            "taperExponent": 2,
+                            "taperDistribution": 1,
+
+                            // Collision detection
+                            "detectBuildingCollisions": true,
+                            "detectRoadCollisions": true
+
                         },
-                        "3": { 
-                            "create": false },
+                        // Road options
+                        "3": {
+                            "create": false
+
+                            // "maxNumber": 200,  // Maximum number of roads - for performance reasons
+                            // "roadWidth": 20,
+                            // "roadDeviation": 20,
+                            // "roadRadiusSegments": 10,
+                            // "roadSegments": 10,
+                            // "initialRadius": 100,
+                            // "probability": 1,
+                            // "lenMinimum": 100,
+                            // "lenMaximum": 2000,
+                            // "lenDistributionFactor": 3,
+                            // "overlapThreshold": 3,
+                            // "flattenAdjustment": 0.025,
+                            // "flattenLift": 20
+                        },
+                        // Display options
                         "4": {
-                            "waterShow": true,
-                            "terrainShow": true,
-                            "dayShow": false,
-                            "patchesShow": false,
+                            // "buildingsShow": true,
+                            // "roadsShow": true,
+                            "waterShow": false,
+                            // "networkShow": false,
+                            // "networkCurve": true,
+                            // "networkCurvePoints": 20,
+                            // "patchesShow": false,
+                            // "patchesUpdate": true,
+                            // "patchesUseShader": true,
+                            // "trailsShow": false,
+                            // "trailsShowAsLines": false,
+                            // "trailLength": 10000,
+                            // "cursorShow": false,
+                            // "cursorShowCell": true,
+                            // "statsShow": true,
+                            // "hudShow": true,
+                            // "wireframeShow": false,
+                            // "dayShow": false,
+                            // "skyboxShow": true,
+                            // "chartShow": true,
+                            // "guiShow": true,
+                            // "guiShowControls": true,
+                            // "guiShowAgentFolder": true,
+                            // "guiShowBuildingsFolder": true,
+                            // "guiShowRoadsFolder": true,
+                            // "guiShowTerrainFolder": true,
+                            // "guiShowDisplayFolder": true,
+                            // "guiShowColorFolder": true,
+                            // "pathsShow": true,
+                            // "terrainShow": true,
+                            // "coloriseAgentsByHealth": false,
+                            // "firstPersonView": false,
                             "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 1000,
                             "cameraZ": 1000,
+                            // "maximiseView": true,
                         },
+                        // Color options
                         "5": {
-                            "coloriseAgentsByHealth": false,
+                            // "colorDayBackground": 0x000000,
+                            // "colorDayRoad": 0x474747,
+                            // "colorDayAgent": 0x4747b3,
+                            // "colorDayNetwork": 0x474747,
+                            // "colorDayTrail": 0x474747,
+                            // "colorDayBuildingFill": 0xb1abab,
+                            // "colorDayBuildingLine": 0x222222,
+                            // "colorDayBuildingWindow": 0x222222,
+                            // "colorDayTerrainSea": 0x969696,
+                            // "colorDayTerrainLowland1": 0x2d5828,
+                            // "colorDayTerrainLowland2": 0x6d915b,
+                            // "colorDayTerrainMidland": 0x89450e,
+                            // "colorDayTerrainHighland": 0x8c8c8c,
+
+                            // "colorNightBackground": 0x636363,
                             "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
+                            // "colorNightAgent": 0x47b347,
+                            // "colorNightNetwork": 0x47b347,
+                            // "colorNightTrail": 0x47b347,
+                            // "colorNightBuildingFill": 0x838383,
+                            // "colorNightBuildingLine": 0x838383,
+                            // "colorNightBuildingWindow": 0xffff8f,
+                            // "colorNightTerrainSea": 0x000000,
+                            // "colorNightTerrainLowland1": 0x000000,
+                            // "colorNightTerrainLowland2": 0x181818,
+                            // "colorNightTerrainMidland": 0x282828,
+                            // "colorNightTerrainHighland": 0x4c4c4c,
+                            // "colorGraphPopulation": 0x4747b3,
+                            // "colorGraphHealth": 0xb34747,
+                            // "colorGraphPatchValues": 0x47b347,
+
                         },
-                        "6": { 
+                        // Terrain options
+                        "6": {
+                            // "renderAsSphere": true,
+                            // "loadHeights": true,
+                            // "gridExtent": 8000,
+                            // "gridPoints": 400,
+                            // "maxTerrainHeight": 400,
+                            // "shaderUse": true,
                             "multiplier": 2,
-                            "loadHeights": true
+                            // "mapIndex": 0,
+                            // "patchSize": 4
+
                          },
                     }
                   }
