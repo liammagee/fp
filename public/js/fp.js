@@ -2827,8 +2827,8 @@ define([
              */
             this.init = function( form, dimensions, position, rotation ) {
                 // Use Poisson distribution with lambda of 1 to contour building heights instead
-                var w = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
-                var d = 1 - jStat.exponential.cdf(Math.random() * 9, 1);
+                var w = 1 - jStat.exponential.cdf( Math.random() * 9, 1 );
+                var d = 1 - jStat.exponential.cdf( Math.random() * 9, 1 );
                 // var h =  Math.floor(jStat.exponential.pdf(Math.random(), 50))
                 var h = Math.floor(jStat.exponential.sample(fp.appConfig.buildingOptions.heightA) * fp.appConfig.buildingOptions.heightB);
                 this.maxWidth = Math.floor(w * 9) + fp.appConfig.buildingOptions.heightB;
