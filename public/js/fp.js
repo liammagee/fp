@@ -324,8 +324,7 @@ define([
                         agent.shiftPosition();
                     }
                     else {
-                        var underConstruction = (fp.appConfig.buildingOptions.create && agent.buildHome()) ||
-                                       (fp.appConfig.roadOptions.create && agent.buildRoad());
+                        var underConstruction = agent.build() || agent.buildRoad();
 
                         if ( underConstruction )
                             continue;
@@ -560,10 +559,10 @@ define([
                     // [ fp.checkProximityOfRoads, fp.appConfig.buildingOptions.roads ],
                     // [ fp.checkProximityOfWater, fp.appConfig.buildingOptions.water ],
                     [ fp.checkProximityOfBuildings, fp.appConfig.buildingOptions.otherBuildings ],
-                    [ fp.checkNearestNeighbour, 800, 1000 ],
-                    // [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight ]
+                    [ fp.checkNearestNeighbour, fp.appConfig.buildingOptions.distanceFromOtherBuildingsMin, fp.appConfig.buildingOptions.distanceFromOtherBuildingsMax ],
+                    // [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight  ]
                 ];
-            };
+             };
 
             /**
              * Generates a random number of levels, width and length for a building
@@ -1647,8 +1646,8 @@ define([
              * @return {Number} The corresponding y value
              */
             this.getCoordinatesForIndex = function( index ) {
-                var x = index % fp.terrain.gridPoints ;
-                var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints );
+                var x = index % fp.terrain.gridPoints;
+                var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints ) - 1;
                 var reversedIndex = y * fp.terrain.gridPoints + x;
                 if ( reversedIndex >= 0 && !_.isUndefined( fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ] ) ) {
                     var x = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ]; 
@@ -1920,6 +1919,7 @@ define([
        this.Timescale = function() {     // Time variables
             this.initialYear = 1800;
             this.endYear = 2200;
+            this.terminate = false;
             this.currentYear = this.initialYear;
             this.MAX_FRAMES_TO_YEAR = 480;
             this.MIN_FRAMES_TO_YEAR = 1;
@@ -2023,9 +2023,13 @@ define([
              */
             this.candidateDirections = function() {
                 // Check if we are in a building, and offer possibility of going up
-                var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
-                    xd = this.direction.x, yd = this.direction.y, zd = this.direction.z,
-                    isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex(xl, zl)) > -1;
+                var xl = this.lastPosition.x, 
+                    yl = this.lastPosition.y, 
+                    zl = this.lastPosition.z,
+                    xd = this.direction.x, 
+                    yd = this.direction.y, 
+                    zd = this.direction.z,
+                    isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
 
                 var directionCount = 10,
                     directions = new Array( directionCount );
@@ -2052,7 +2056,7 @@ define([
                     if ( ( i < 8 && ! this.grounded ) || ( i >= 8 && this.grounded ) )
                         continue; // Move horizontally if grounded, vertically if not
 
-                    if (i < 8 && this.grounded) { // Horizonal directions
+                    if ( i < 8 && this.grounded ) { // Horizonal directions
                         var newAngle = angle + (i * Math.PI / divisor);
                         xd = Math.cos(newAngle) * hyp;
                         yd = 0;
@@ -2069,12 +2073,12 @@ define([
                         isRoad = ( fp.roadNetwork.indexValues.indexOf( fp.getIndex(xn, zn)) > -1);
 
                     // If we've had a horizontal shift, for now neutralise the vertical to the fp.terrain height
-                    if (yd === 0) {
+                    if ( yd === 0 ) {
                         yn = fp.getHeight(xn, zn);
                         // Smooth the transition between heights
                         yd = ( ( fp.appConfig.agentOptions.terrainOffset + yn ) - yl ) / fp.terrain.ratioExtentToPoint;
                     }
-                    if (yn === null)
+                    if ( yn === null )
                         continue; // Off the grid - don't return this option
 
                     // Work out weights
@@ -2101,7 +2105,7 @@ define([
                         weight *= yl / yn;
 
                     // If currect direction is moving to water, set the preference low
-                    if (i === 0 && yn <= 0 && fp.appConfig.agentOptions.noWater)
+                    if ( i === 0 && yn <= 0 && fp.appConfig.agentOptions.noWater )
                         weight = 0.0001;
 
                     // If inside a building, adjust weights
@@ -2124,15 +2128,22 @@ define([
                     }
 
                     // Set the direction
-                    directions[i] = [new THREE.Vector3(xd, yd, zd), weight];
+                    directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
                 }
 
                 // Compact directions and sort by weight descending
                 directions = _.chain(directions).compact().sort(function(a,b) { return (a[1] > b[1]) ? 1 : (a[1] < b [1]? -1 : 0); }).value();
 
-                // If no directions are found, select one randomly
-                if (directions.length === 0)
-                    directions.push([this.randomDirection(), 1.0]);
+                // If no directions are found, reverse current direction
+                if ( directions.length === 0 ) {
+                    var x = -this.direction.x;
+                    var z = -this.direction.z;
+                    var direction = new THREE.Vector3( x, fp.getHeight( x, z ), z );
+                    directions.push( [ direction, 1.0 ] );
+
+                    // Random direction option
+                    // directions.push([this.randomDirection(), 1.0]);
+                }
 
                 return directions;
             };
@@ -2254,7 +2265,10 @@ define([
              * Builds a building on the agent's current position.
              * @return {Boolean} Whether the building construction was successful.
              */
-            this.buildHome = function() {
+            this.build = function() {
+                if ( !fp.appConfig.buildingOptions.create )
+                    return false;
+
                 if ( this.home !== null )
                     return false;
 
@@ -2295,6 +2309,9 @@ define([
              * @return {Boolean} Whether the road construction was successful.
              */
             this.buildRoad = function() {
+                if ( !fp.appConfig.roadOptions.create )
+                    return false;
+
                 var xOrig = this.position.x,
                     zOrig = this.position.z,
                     index = fp.getIndex(xOrig, zOrig),
@@ -2388,6 +2405,7 @@ define([
             this.pathComputed = undefined;
             this.pathPosition = 0;
         };
+
 
         /**
          * Represents a building with a position, dimesions, and one or more floors.
@@ -3033,6 +3051,8 @@ define([
                 roads: 0.0,
                 water: 0.4,
                 otherBuildings: 0.9,
+                distanceFromOtherBuildingsMin: 800,
+                distanceFromOtherBuildingsMax: 1000,
                 buildingHeight: 0.1,
 
                 // Building form
@@ -3483,6 +3503,8 @@ define([
                 influences.add( fp.appConfig.buildingOptions, "roads", 0.0, 1.0).step(0.1 );
                 influences.add( fp.appConfig.buildingOptions, "water", 0.0, 1.0).step(0.1 );
                 influences.add( fp.appConfig.buildingOptions, "otherBuildings", 0.0, 1.0).step(0.1 );
+                influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMin", 0, 10000).step( 100 );
+                influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMax", 0, 10000).step( 100 );
                 influences.add( fp.appConfig.buildingOptions, "buildingHeight", 0.0, 1.0).step(0.1 );
                 var view = buildingsFolder.addFolder("Appearance");
                 view.add( fp.appConfig.buildingOptions, "useShader" );
@@ -4138,7 +4160,7 @@ define([
                 return;
             fp.timescale.frameCounter++;
             if ( fp.timescale.frameCounter % fp.timescale.framesToYear === 0) {
-                if ( fp.timescale.currentYear <  fp.timescale.endYear ) {
+                if ( !fp.timescale.terminate || fp.timescale.currentYear <  fp.timescale.endYear ) {
                     fp.timescale.currentYear++;
                     fp.setOutputHUD();
                 }
@@ -4250,7 +4272,7 @@ define([
             var buildingNeighbours = 0, totalNeighbours = 0;
             var surroundingCells = fp.surroundingCells( index );
             surroundingCells.forEach( function( cell ) {
-                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ fp.getIndex(cell.x, cell.y) ] ) )
+                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ fp.getIndex( cell.x, cell.y ) ] ) )
                     buildingNeighbours++;
                 totalNeighbours++;
             } );
@@ -4269,11 +4291,11 @@ define([
         this.checkNearestNeighbour = function( index, min, max ) {
             // Get coordinates for index
             var coords = fp.terrain.getCoordinatesForIndex( index );
+            if ( _.isNull( coords ) )
+                return false;
             var x = coords[ 0 ], z = coords[ 1 ];
             // Get nearest neighbouring building
             var nnDistance = this.nearestNeighbouringBuildings( x, z );
-            if ( min <= nnDistance && nnDistance <= max )
-                console.log (nnDistance, min, max, index, x, z, fp.buildingNetwork.buildings.length)
             return ( min <= nnDistance && nnDistance <= max );
         };
 
@@ -4356,7 +4378,7 @@ define([
                 indexX = index % fp.terrain.gridPoints,
                 //indexMirroredOnY = (indexY) * fp.terrain.gridPoints + indexX,
                 indexMirroredOnY = ( fp.terrain.gridPoints - indexY) * fp.terrain.gridPoints + indexX,
-                inc = fp.appConfig.worldOptions.searchIncrement,
+                inc = fp.appConfig.terrainOptions.multiplier,
                 threshold = fp.appConfig.worldOptions.maxLandSearchDepth * inc;
                 
             for (var j = inc; j <= threshold; j += inc) {
