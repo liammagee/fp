@@ -312,18 +312,21 @@ define([
                 if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ))
                     return;
                 var agents = this.agents;
+
                 if ( fp.appConfig.agentOptions.shuffle )
                     agents = _.shuffle( this.agents );
+
+
                 for (var i = 0; i < agents.length; i++) {
+
                     var agent =  agents[ i ];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    if ( ( Math.floor( (i / this.agents.length) * fp.timescale.framesToYear ) != fp.timescale.frameCounter % fp.timescale.framesToYear ) )  {
-                        // Just interpollate the position
-                        // agent.lastPosition = agent.position;
-                        agent.shiftPosition();
-                    }
-                    else {
+                    var timeToMove = Math.floor( ( i / this.agents.length) * fp.timescale.framesToYear );
+                    var interval = fp.timescale.frameCounter % fp.timescale.framesToYear;
+                    if ( i == 0 )
+                        console.log( timeToMove, interval );
+                    if ( timeToMove == interval )  {
                         var underConstruction = agent.build() || agent.buildRoad();
 
                         if ( underConstruction )
@@ -331,12 +334,12 @@ define([
 
                         var r = Math.random();
                         if ( r < fp.appConfig.agentOptions.chanceToFindPathToHome ) {
-                            agent.pathComputed = drawPathHome(agent);
+                            agent.pathComputed = fp.pathNetwork.drawPathHome( agent );
                             agent.pathPosition = 0;
                         }
 
                         // No water around or home built? Move on...
-                        agent.move();
+                        agent.evaluateDirection();
 
                         // Enlist the agent in available networks
                         if ( fp.appConfig.agentOptions.establishLinks ) {
@@ -356,6 +359,10 @@ define([
 
                         agent.updateTick();
                     }
+
+                    // Move the agent
+                    agent.move();
+
                     this.particles.geometry.vertices[i] = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                 }
                 this.particles.geometry.verticesNeedUpdate = true;
@@ -728,7 +735,7 @@ define([
 
                 // Before we add this, try to detect collision
                 if ( fp.appConfig.buildingOptions.detectBuildingCollisions ) {
-                    if ( fp.buildingNetwork.collidesWithOtherBuildings( building ) ) 
+                    if ( fp.buildingNetwork.collidesWithOtherBuildings( building ) )
                         return undefined;
                 }
 
@@ -1058,7 +1065,7 @@ define([
             };
 
             /**
-             * Default revision of the values of each patch. 
+             * Default revision of the values of each patch.
              */
             this.defaultReviseValues = function() {
                 this.patchMeanValue = 0;
@@ -1176,7 +1183,7 @@ define([
             };
 
             /**
-             * Toggles 
+             * Toggles
              * @return {[type]} [description]
              */
             this.togglePatchesStateWithShader = function() {
@@ -1231,8 +1238,8 @@ define([
                             geom.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
                         }
                     }
-                    var ai = fp.getIndex( 
-                        fp.agentNetwork.agents[i].lastPosition.x / fp.appConfig.terrainOptions.multiplier, 
+                    var ai = fp.getIndex(
+                        fp.agentNetwork.agents[i].lastPosition.x / fp.appConfig.terrainOptions.multiplier,
                         fp.agentNetwork.agents[i].lastPosition.z / fp.appConfig.terrainOptions.multiplier
                     );
                     if (ai > -1)
@@ -1438,11 +1445,11 @@ define([
             };
 
             this.findPathHome = function(agent) {
-                if (! agent.home)
+                if ( !agent.home )
                     return [];
-                var start = this.nodeAt(agent.home.lod.position);
-                var end = this.nodeAt(agent.position);
-                var path = astar.astar.search( this.graphAStar, start, end, { closest: opts.closest } );
+                var start = this.nodeAt( agent.home.lod.position );
+                var end = this.nodeAt( agent.position );
+                var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
             };
 
@@ -1458,7 +1465,7 @@ define([
                         point3d = new THREE.Vector3(x, y, z);
                     pathGeom.vertices.push(point3d);
                 });
-                var pathMaterial = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 10 });
+                var pathMaterial = new THREE.LineBasicMaterial( { color: 0xff0000, linewidth: 1.0 } );
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
                 this.networkMesh.add( pathLine );
                 this.pathCache[agent] = this.networkMesh.children.length - 1;
@@ -1650,8 +1657,8 @@ define([
                 var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints ) - 1;
                 var reversedIndex = y * fp.terrain.gridPoints + x;
                 if ( reversedIndex >= 0 && !_.isUndefined( fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ] ) ) {
-                    var x = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ]; 
-                    var z = fp.terrain.planeArray.array[ reversedIndex * 3 + 1 ]; 
+                    var x = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ];
+                    var z = fp.terrain.planeArray.array[ reversedIndex * 3 + 1 ];
                     return [ x, z ];
                 }
                 return null;
@@ -2023,11 +2030,11 @@ define([
              */
             this.candidateDirections = function() {
                 // Check if we are in a building, and offer possibility of going up
-                var xl = this.lastPosition.x, 
-                    yl = this.lastPosition.y, 
+                var xl = this.lastPosition.x,
+                    yl = this.lastPosition.y,
                     zl = this.lastPosition.z,
-                    xd = this.direction.x, 
-                    yd = this.direction.y, 
+                    xd = this.direction.x,
+                    yd = this.direction.y,
                     zd = this.direction.z,
                     isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
 
@@ -2036,7 +2043,7 @@ define([
 
                 // Work out if we have a precomputed path
                 var dir = this.nextComputedDirection();
-                if (!_.isUndefined(dir))
+                if ( !_.isUndefined( dir ) )
                     return [ [dir, 1.0] ];
 
                 // Update whether we are in a building, and should be going up or down
@@ -2052,7 +2059,7 @@ define([
                     hyp = Math.sqrt(xd * xd + zd * zd),
                     divisor = (directionCount - 2) / 2;
 
-                for (var i = 0; i < directionCount; i++) {
+                for ( var i = 0; i < directionCount; i++ ) {
                     if ( ( i < 8 && ! this.grounded ) || ( i >= 8 && this.grounded ) )
                         continue; // Move horizontally if grounded, vertically if not
 
@@ -2074,7 +2081,7 @@ define([
 
                     // If we've had a horizontal shift, for now neutralise the vertical to the fp.terrain height
                     if ( yd === 0 ) {
-                        yn = fp.getHeight(xn, zn);
+                        yn = fp.getHeight( xn, zn );
                         // Smooth the transition between heights
                         yd = ( ( fp.appConfig.agentOptions.terrainOffset + yn ) - yl ) / fp.terrain.ratioExtentToPoint;
                     }
@@ -2083,7 +2090,7 @@ define([
 
                     // Work out weights
 
-                    if (i === 0) { // Current direction most preferred
+                    if ( i === 0 ) { // Current direction most preferred
                         weight = 0.999;
                         if ( isRoad )
                             weightForRoadIsSet = true;
@@ -2183,7 +2190,7 @@ define([
             /**
              * @memberof Agent
              */
-            this.shiftPosition = function() {
+            this.move = function() {
                 var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
                 var newPosition = this.position.clone().add( directionAtSpeed );
                 this.position = newPosition.clone();
@@ -2192,13 +2199,13 @@ define([
             /**
              * @memberof Agent
              */
-            this.move = function() {
+            this.evaluateDirection = function() {
                 this.lastPosition = this.position;
                 this.setDirection( this.bestCandidate() );
-                this.shiftPosition();
             };
 
             /**
+             * Genenerates a random vector.
              * @memberof Agent
              */
             this.randomDirection = function() {
@@ -2257,7 +2264,7 @@ define([
                     var response = func.apply( fp, _.union( [ index ], values ) );
                     if ( response )
                         return true;
-                }; 
+                };
                 return false;
             }
 
@@ -3344,16 +3351,25 @@ define([
             this.Step = function() {
                 fp.AppState.runSimulation = fp.AppState.stepSimulation = true;
             };
+
+            /**
+             * Increase the frame rate relative to the timescale interval.
+             */
             this.SpeedUp = function() {
                 if ( fp.timescale.framesToYear > fp.timescale.MIN_FRAMES_TO_YEAR)
                     fp.timescale.framesToYear = Math.ceil( fp.timescale.framesToYear / 2);
                 console.log( "Speed: " + fp.timescale.framesToYear );
             };
+
+            /**
+             * Decrease the frame rate relative to the timescale interval.
+             */
             this.SlowDown = function() {
                 if ( fp.timescale.framesToYear < fp.timescale.MAX_FRAMES_TO_YEAR)
                     fp.timescale.framesToYear *= 2;
                 console.log( "Speed: " + fp.timescale.framesToYear );
             };
+
             this.Snapshot = function() {
                 var mimetype = mimetype  || "image/png";
                 var url = fp.renderer.domElement.toDataURL(mimetype);
@@ -4196,7 +4212,7 @@ define([
             var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
             var xRel = Math.floor( x ) + fp.terrain.halfExtent;
             var yRel = Math.floor( y ) + fp.terrain.halfExtent;
-            if ( xRel < fp.terrain.halfExtent - maxExtent || yRel < fp.terrain.halfExtent - maxExtent || 
+            if ( xRel < fp.terrain.halfExtent - maxExtent || yRel < fp.terrain.halfExtent - maxExtent ||
                  xRel > fp.terrain.halfExtent + maxExtent || yRel > fp.terrain.halfExtent + maxExtent )
                 return -1;
             var halfGrid = fp.terrain.gridExtent / 2;
@@ -4380,7 +4396,7 @@ define([
                 indexMirroredOnY = ( fp.terrain.gridPoints - indexY) * fp.terrain.gridPoints + indexX,
                 inc = fp.appConfig.terrainOptions.multiplier,
                 threshold = fp.appConfig.worldOptions.maxLandSearchDepth * inc;
-                
+
             for (var j = inc; j <= threshold; j += inc) {
                 if (Math.floor((indexMirroredOnY - j) / fp.terrain.gridPoints) == Math.floor(indexMirroredOnY / fp.terrain.gridPoints)) {
                     surroundingCells.push( new THREE.Vector3(
