@@ -1998,7 +1998,9 @@ define([
                     this.grounded = false;
                 }
             };
+
             /**
+             * Determines the next step for a computed direction.
              * @memberof Agent
              */
             this.nextComputedDirection = function() {
@@ -2015,7 +2017,7 @@ define([
                     dir = new THREE.Vector3(xDir, 0, zDir);
 
                 this.pathPosition++;
-                if (this.pathPosition >= this.pathComputed.length - 1){
+                if ( this.pathPosition >= this.pathComputed.length - 1 ){
                     this.pathPosition = 0;
                     this.pathComputed = undefined;
                     fp.pathNetwork.networkMesh.remove(fp.pathNetwork.pathCache[this]);
@@ -2025,7 +2027,28 @@ define([
                 return dir;
             };
 
+
             /**
+             * 
+             */
+            this.generateDirectionVectorsAndWeights = function() {
+                var xl = this.lastPosition.x,
+                    yl = this.lastPosition.y,
+                    zl = this.lastPosition.z,
+                    xd = this.direction.x,
+                    yd = this.direction.y,
+                    zd = this.direction.z,
+                    isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
+
+                var directionCount = 10,
+                    directions = new Array( directionCount );
+
+                for ( var i = 0; i < directionCount; i++ ) {
+                }
+            };
+
+            /**
+             * Generates candicate directions from an existing direction.
              * @memberof Agent
              */
             this.candidateDirections = function() {
