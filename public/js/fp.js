@@ -2071,7 +2071,7 @@ define([
                     }
                     else if ( !this.grounded && i >= 8 ) { // Vertical directions
                         xd = 0;
-                        yd = (i == 8) ? newSpeed : -newSpeed;
+                        yd = ( i == 8 ) ? newSpeed : -newSpeed;
                         zd = 0;
                     }
 
@@ -2108,12 +2108,12 @@ define([
                     }
 
                     // If moving upward, decrease the preference
-                    if (yn > yl && this.grounded && fp.appConfig.agentOptions.noUphill)
+                    if ( yn > yl && this.grounded && fp.appConfig.agentOptions.noUphill )
                         weight *= yl / yn;
 
                     // If currect direction is moving to water, set the preference low
-                    if ( i === 0 && yn <= 0 && fp.appConfig.agentOptions.noWater )
-                        weight = 0.0001;
+                    if ( i == 0 && yn <= 0 && fp.appConfig.agentOptions.noWater )
+                        weight = 0.0;
 
                     // If inside a building, adjust weights
                     if ( !this.grounded && !_.isUndefined( building ) ) {
@@ -4217,6 +4217,7 @@ define([
                 return -1;
             var halfGrid = fp.terrain.gridExtent / 2;
             var gridRatio = fp.terrain.gridExtent / fp.terrain.gridPoints;
+            // NOT SURE WHY THIS IS HERE?
             y += gridRatio / 2;
             //y = ( fp.terrain.gridPoints * fp.terrain.gridPoints) - y - 1;
             var xLoc = Math.floor( ( Math.round(x) + halfGrid ) / gridRatio );
@@ -4229,7 +4230,7 @@ define([
          * @memberof fp
          */
         this.getHeight = function( x, y ) {
-            return fp.terrain.getHeightForIndex( fp.getIndex(x, y) );
+            return fp.terrain.getHeightForIndex( fp.getIndex( x, y ) );
         };
 
         /**
