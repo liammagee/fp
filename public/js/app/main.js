@@ -1,5 +1,7 @@
-define(["fp"], function(fp) {
+define(["fp"], function( fp ) {
     window.fp.init( );
+    //trigger Jasmine
+    window.onload();
 });
 
 

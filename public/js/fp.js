@@ -2029,7 +2029,7 @@ define([
 
 
             /**
-             * 
+             * Generates directions and weights, given an agent's existing direction.
              */
             this.generateDirectionVectorsAndWeights = function() {
                 var xl = this.lastPosition.x,
@@ -2040,11 +2040,54 @@ define([
                     zd = this.direction.z,
                     isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
 
-                var directionCount = 10,
+                var directionCount = 8,
                     directions = new Array( directionCount );
 
+
+                // Weight variables
+                var weight = 1.0, weightForRoadIsSet = false;
+
+                // Pre-calculate speed and current angle
+                var newSpeed = Math.random() * this.speed / 2,
+                    angle = Math.atan2( zd, xd ),
+                    hyp = Math.sqrt( xd * xd + zd * zd ),
+                    divisor = directionCount / 2;
+
                 for ( var i = 0; i < directionCount; i++ ) {
+                    // Slight rounding errors using above calculation
+                    var newAngle = angle + (i * Math.PI / divisor);
+                    xd = Math.cos(newAngle) * hyp;
+                    yd = 0;
+                    zd = Math.sin(newAngle) * hyp;
+
+                    // Calculate new position
+                    var xn = xl + xd, yn = yl + yd, zn = zl + zd,
+                        isRoad = ( fp.roadNetwork.indexValues.indexOf( fp.getIndex(xn, zn)) > -1);
+
+                    // Work out weights - should be
+                    switch( i ) {
+                        case 0:
+                            weight = Math.pow( 0.5, 1 );
+                            break;
+                        case 1:
+                        case 7:
+                            weight = Math.pow( 0.5, 3 );
+                            break;
+                        case 2:
+                        case 4:
+                        case 6:
+                            weight = Math.pow( 0.5, 4 );
+                            break;
+                        case 3:
+                        case 5:
+                            weight = Math.pow( 0.5, 5 );
+                            break;
+                    }
+
+                    // Set the direction
+                    directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
                 }
+                return directions;
             };
 
             /**
@@ -2182,6 +2225,7 @@ define([
              * @memberof Agent
              */
             this.bestCandidate = function() {
+                // var directions = this.generateDirectionVectorsAndWeights();
                 var directions = this.candidateDirections();
 
                 // Simple version - highest weight wins
