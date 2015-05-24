@@ -2031,7 +2031,7 @@ define([
             /**
              * Generates directions and weights, given an agent's existing direction.
              */
-            this.generateDirectionVectorsAndWeights = function() {
+            this.generateDirectionVectorsAndWeights = function( seed ) {
                 var xl = this.lastPosition.x,
                     yl = this.lastPosition.y,
                     zl = this.lastPosition.z,
@@ -2067,20 +2067,20 @@ define([
                     // Work out weights - should be
                     switch( i ) {
                         case 0:
-                            weight = Math.pow( 0.5, 1 );
+                            weight = Math.pow( seed, 1 );
                             break;
                         case 1:
                         case 7:
-                            weight = Math.pow( 0.5, 3 );
+                            weight = Math.pow( seed, 3 );
                             break;
                         case 2:
                         case 4:
                         case 6:
-                            weight = Math.pow( 0.5, 4 );
+                            weight = Math.pow( seed, 4 );
                             break;
                         case 3:
                         case 5:
-                            weight = Math.pow( 0.5, 5 );
+                            weight = Math.pow( seed, 5 );
                             break;
                     }
 
@@ -2241,11 +2241,11 @@ define([
                         var v = _.reduce(a, function(x, y) { return y;}, 1);
                         return a.concat(v + b);
                     }, [0]);
-                var r = Math.random();
+                var r = Math.random() * intervals[ intervals.length - 1 ];
                 var index = 0;
                 // Note the interval array is initialisaed with an addition zero
                 for (var i = 0; i < intervals.length - 1; i++) {
-                    var a = intervals[i], b = intervals[i + 1];
+                    var a = intervals[ i ], b = intervals[ i + 1 ];
                     if (r >= a && r < b) {
                         index = i;
                         break;
