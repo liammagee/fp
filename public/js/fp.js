@@ -316,27 +316,18 @@ define([
                 if ( fp.appConfig.agentOptions.shuffle )
                     agents = _.shuffle( this.agents );
 
-
                 for (var i = 0; i < agents.length; i++) {
-
                     var agent =  agents[ i ];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
                     var timeToMove = Math.floor( ( i / this.agents.length) * fp.timescale.framesToYear );
                     var interval = fp.timescale.frameCounter % fp.timescale.framesToYear;
-                    if ( i == 0 )
-                        console.log( timeToMove, interval );
+
                     if ( timeToMove == interval )  {
                         var underConstruction = agent.build() || agent.buildRoad();
 
                         if ( underConstruction )
                             continue;
-
-                        var r = Math.random();
-                        if ( r < fp.appConfig.agentOptions.chanceToFindPathToHome ) {
-                            agent.pathComputed = fp.pathNetwork.drawPathHome( agent );
-                            agent.pathPosition = 0;
-                        }
 
                         // No water around or home built? Move on...
                         agent.evaluateDirection();
@@ -1411,7 +1402,6 @@ define([
          */
         this.PathNetwork = function() {
             this.networkMesh = null;
-            this.pathCache = {};
             this.stepsPerNode = fp.terrain.ratioExtentToPoint;
             this.graphAStar = null;
             this.nodes = [];
@@ -1441,26 +1431,39 @@ define([
             this.nodeAt = function(position) {
                 var index = fp.getIndex(position.x, position.z);
                 var x = index % fp.terrain.gridPoints, y = Math.floor(index / fp.terrain.gridPoints);
-                return this.graphAStar.grid[x][y];
+                try {
+                    return this.graphAStar.grid[x][y];
+                }
+                catch ( err ) {
+                    return undefined;
+                }
             };
 
             this.findPathHome = function(agent) {
                 if ( !agent.home )
                     return [];
-                var start = this.nodeAt( agent.home.lod.position );
-                var end = this.nodeAt( agent.position );
+                var start = this.nodeAt( agent.position );
+                var end = this.nodeAt( agent.home.lod.position );
+                if ( _.isUndefined( start ) || _.isUndefined( end ) )
+                    return [];
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
             };
 
-            this.drawPathHome = function(agent) {
-                var path = this.findPathHome(agent);
-                if ( path.length < 2 ) // Need 2 points for a line
+            /**
+             * Draws a path between this agent and its home
+             * @param  {Agent} agent 
+             * @return {Array}       of nodes describing the path
+             */
+            this.drawPathHome = function( agent ) {
+                var path = agent.pathComputed;
+                if ( _.isUndefined( path ) || path.length < 2 ) // Need 2 points for a line
                     return undefined;
                 var pathGeom = new THREE.Geometry();
+                var multiplier = fp.terrain.ratioExtentToPoint; 
                 path.forEach(function(point) {
-                    var x = (  point.x ) * fp.terrain.ratioExtentToPoint - fp.terrain.halfExtent,
-                        z = (  point.y ) * fp.terrain.ratioExtentToPoint - fp.terrain.halfExtent,
+                    var x = ( point.x * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
+                        z = ( point.y * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
                         y = fp.getHeight(x, z) + fp.appConfig.agentOptions.terrainOffset,
                         point3d = new THREE.Vector3(x, y, z);
                     pathGeom.vertices.push(point3d);
@@ -1468,17 +1471,23 @@ define([
                 var pathMaterial = new THREE.LineBasicMaterial( { color: 0xff0000, linewidth: 1.0 } );
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
                 this.networkMesh.add( pathLine );
-                this.pathCache[agent] = this.networkMesh.children.length - 1;
-                return path;
+                return pathLine;
             };
 
-            this.drawPathHomeForEveryone = function() {
-                this.children.forEach( function(child) { this.networkMesh.remove(child); } );
-                var ahaway = _.select( fp.agentNetwork.agents, function(agent) {
-                    var v = this.drawPathHome(agent);
-                    agent.pathComputed = v;
-                    agent.pathPosition = 0;
-                    return v && v.length > 0 && agent.home !== null && agent.position != agent.home.lod.position;
+            this.updatePath = function() {
+                if ( !fp.AppState.runSimulation )
+                    return;
+
+                var children = fp.pathNetwork.networkMesh.children;
+                for ( var i = children.length - 1; i >= 0; i-- ) {
+                    fp.pathNetwork.networkMesh.remove( children[ i ] ); 
+                }
+                var agentsWithPaths = _.chain( fp.agentNetwork.agents ).
+                    map( function( agent ) { if ( !_.isUndefined( agent.pathComputed ) && agent.pathComputed.length > 1 ) return agent; } ).
+                        compact().
+                        value();
+                _.each( agentsWithPaths, function(agent) {
+                    fp.pathNetwork.drawPathHome( agent );
                 });
             };
         };
@@ -1955,7 +1964,7 @@ define([
             /**
              * @memberof Agent
              */
-            this.setDirection = function(dir) {
+            this.setDirection = function( dir ) {
                 this.direction = dir;
             };
 
@@ -2007,22 +2016,22 @@ define([
                 if ( !this.pathComputed || this.pathPosition >= this.pathComputed.length - 1 )
                     return undefined;
                 // If we have prearranged a path, ensure the current direction points towards that
-                var nextNode = this.pathComputed[this.pathPosition + 1];
-                var x = (nextNode.x * fp.terrain.ratioExtentToPoint) - fp.terrain.halfExtent,
-                    z = (nextNode.z * fp.terrain.ratioExtentToPoint) - fp.terrain.halfExtent,
+                var nextNode = this.pathComputed[ this.pathPosition + 1 ];
+                var multiplier = fp.terrain.ratioExtentToPoint; 
+                var x = ( nextNode.x * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
+                    z = ( nextNode.y * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
                     xd = x - this.position.x,
                     zd = z - this.position.z,
                     xDir = xd / fp.pathNetwork.stepsPerNode,
                     zDir = zd / fp.pathNetwork.stepsPerNode,
                     dir = new THREE.Vector3(xDir, 0, zDir);
+                console.log()
 
                 this.pathPosition++;
                 if ( this.pathPosition >= this.pathComputed.length - 1 ){
                     this.pathPosition = 0;
                     this.pathComputed = undefined;
-                    fp.pathNetwork.networkMesh.remove(fp.pathNetwork.pathCache[this]);
-                    delete fp.pathNetwork.pathCache[this];
-                    this.setRandomDirection();
+                    dir = this.setRandomDirection();
                 }
                 return dir;
             };
@@ -2040,9 +2049,19 @@ define([
                     zd = this.direction.z,
                     isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
 
-                var directionCount = 8,
-                    directions = new Array( directionCount );
+                // Logic for handling pre-determined paths
+                if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToHome && ( _.isUndefined( this.pathComputed ) || this.pathComputed.length < 2 ) )  {
+                    this.pathComputed = fp.pathNetwork.findPathHome( this );
+                    this.pathPosition = 0;
+                }
 
+                // Work out if we have a precomputed path
+                var dir = this.nextComputedDirection();
+                if ( !_.isUndefined( dir ) )
+                    return [ [dir, 1.0] ];
+
+                var directionCount = 8,
+                     directions = new Array( directionCount  );
 
                 // Weight variables
                 var weight = 1.0, weightForRoadIsSet = false;
@@ -2084,9 +2103,28 @@ define([
                             break;
                     }
 
+                    yn = fp.getHeight( xn, zn );
+
+                    // Smooth the transition between heights
+                    yd = ( fp.appConfig.agentOptions.terrainOffset + yn - yl ) / fp.terrain.ratioExtentToPoint;
+
+                    // If the new y position is zero, set the weight to zero
+                    if ( yn === null ) 
+                        continue;
+
+                    // If the new y position is zero, set the weight to zero
+                    if ( yn <= 0 ) 
+                        weight = 0;
+
                     // Set the direction
                     directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
                 }
+                directions = _.chain(directions).
+                                compact().
+                                shuffle().
+                                sort(function(a,b) { return (a[1] > b[1]) ? 1 : (a[1] < b [1]? -1 : 0); }).
+                                value();
+
                 return directions;
             };
 
@@ -2112,7 +2150,7 @@ define([
                 if ( !_.isUndefined( dir ) )
                     return [ [dir, 1.0] ];
 
-                // Update whether we are in a building, and should be going up or down
+                // Update whether we are in  a building, and should be going up or do wn
                 var building = this.findBuilding();
                 this.updateGroundedState( building );
 
@@ -2225,15 +2263,21 @@ define([
              * @memberof Agent
              */
             this.bestCandidate = function() {
-                // var directions = this.generateDirectionVectorsAndWeights();
-                var directions = this.candidateDirections();
+                var directions = this.generateDirectionVectorsAndWeights( 0.1 );
+                // var directions = this.candidateDirections();
 
                 // Simple version - highest weight wins
                 // var bestCandidate = _.chain(directions).sortBy(function(a) {return a[1];} ).last().value()[0];
 
                 // Alternative approach - a direction is pulled from a weighted list of possibilities
-                var total = _.chain(directions).map(function(d) { return d[1]; } ).reduce(function(memo, num) { return memo + num; }, 0).value();
-                var weightsNormed = _.chain(directions).map(function(d) { return d[1] / total; } ).sort().value();
+                var total = _.chain( directions ).
+                    map(function(d) { return d[ 1 ]; } ).
+                    reduce(function(memo, num) { return memo + num; }, 0).
+                    value();
+                var weightsNormed = _.chain(directions).
+                    map(function(d) { return d[ 1 ] / total; } ).
+                    sort().
+                    value();
                 // This convoluted expression simply generates a set of intervals from the normalised weights
                 // e.g. [0.25, 0.25, 0.25 ,0.25] => [0, 0.25, 0.5, 0.75, 1.0]
                 var intervals = _.reduce(weightsNormed,
@@ -2251,7 +2295,13 @@ define([
                         break;
                     }
                 }
-                return directions[index][0];
+                try {
+                    return directions[index][0];
+                }
+                catch (e) {
+                    // Stay put
+                    return new THREE.Vector3(0, 0, 0);
+                }
             };
 
             /**
@@ -2276,7 +2326,7 @@ define([
              * @memberof Agent
              */
             this.randomDirection = function() {
-                return new THREE.Vector3(this.speed * (Math.random() - 0.5), 0, this.speed * (Math.random() - 0.5));
+                return new THREE.Vector3( this.speed * ( Math.random() - 0.5 ), 0, this.speed * ( Math.random() - 0.5 ) );
             };
 
             /**
@@ -2314,8 +2364,8 @@ define([
              * Slightly changes to the direction of the agent.
              */
             this.perturbDirection = function() {
-                this.direction.x += this.perturbBy * (Math.random() - 0.5);
-                this.direction.z += this.perturbBy * (Math.random() - 0.5);
+                this.direction.x += this.perturbBy * ( Math.random() - 0.5 );
+                this.direction.z += this.perturbBy * ( Math.random() - 0.5 );
             };
 
             /**
@@ -3374,7 +3424,7 @@ define([
 
                 fp.pathNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.pathsShow )
-                    fp.scene.add(fp.pathNetwork.networkMesh);
+                    fp.scene.add( fp.pathNetwork.networkMesh );
 
                 fp.trailNetwork.buildTrailNetwork( false );
                 /*
@@ -4125,6 +4175,7 @@ define([
             fp.patchNetwork.updatePatchValues();
             fp.trailNetwork.updateTrails();
             fp.terrain.updateTerrain();
+            fp.pathNetwork.updatePath();
             fp.updateYear();
             fp.updateSimState();
             fp.updateGraph();
