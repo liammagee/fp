@@ -44,13 +44,15 @@
                         // Agent options
                         "1": {
                             "initialPopulation": 1000,
-                            "initialExtent": 30,
+                            "initialExtent": 50,
                             // "maxExtent": 100,
                             // "initialX": 50,
                             // "initialY": 50,
                             // "randomAge": true,
-                            // "chanceToJoinNetwork": 0.05,
-                            "chanceToFindPathToHome": 0.1,
+                            "chanceToJoinNetwork": 0.000001,
+                            "chanceToJoinNetworkWithHome": 0.5,
+                            "chanceToFindPathToHome": 0.001,
+                            "chanceToFindPathToOtherAgentHome": 0.01,
                             // "initialCircle": true,
                             // "noWater": true,
                             // "noUphill": false,
@@ -66,9 +68,9 @@
                         "2": {
                             "roads": 0.0,
                             "water": 0.0,
-                            "otherBuildings": 0.1,
-                            "distanceFromOtherBuildingsMin": 4000,
-                            "distanceFromOtherBuildingsMax": 4500,
+                            "otherBuildings": 0.25,
+                            "distanceFromOtherBuildingsMin": 1800,
+                            "distanceFromOtherBuildingsMax": 2000,
                             "buildingHeight": 0.0,
                             "detectBuildingCollisions": true,
 
@@ -81,10 +83,6 @@
                             // "heightB": 10,
 
                             // // Influences
-                            // "roads": 0.0,
-                            // "water": 0.4,
-                            // "otherBuildings": 0.9,
-                            // "buildingHeight": 0.1,
 
                             // // Building form
                             // "buildingForm": "rectangle",
@@ -175,8 +173,8 @@
                             // "buildingsShow": true,
                             // "roadsShow": true,
                             "waterShow": false,
-                            // "networkShow": false,
-                            // "networkCurve": true,
+                            "networkShow": false,
+                            "networkCurve": false,
                             // "networkCurvePoints": 20,
                             // "patchesShow": false,
                             // "patchesUpdate": true,
@@ -247,9 +245,9 @@
                         // Terrain options
                         "6": {
                             // "renderAsSphere": true,
-                            // "loadHeights": true,
-                            // "gridExtent": 8000,
-                            // "gridPoints": 400,
+                            "loadHeights": false,
+                            "gridExtent": 2000,
+                            "gridPoints": 200,
                             // "maxTerrainHeight": 400,
                             // "shaderUse": true,
                             "multiplier": 2,
@@ -264,7 +262,7 @@
                     counter: 0,
 
                     setup: function() {
-                        fp.timescale.framesToYear = 1;
+                        // fp.timescale.framesToYear = 1;
                     },
                     tick: function() {
                     }

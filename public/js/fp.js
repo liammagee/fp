@@ -28,6 +28,10 @@ define([
            return results[1] || 0;
     };
 
+    $.sign = function(x) {
+        return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+    };
+
 
     /**
      * Overall Fierce Planet object.
@@ -185,7 +189,18 @@ define([
                 this.establishLink = function(agent1, agent2) {
                     // Introduce more variability by squaring the probability
                     var chance = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetwork, 2 );
+                    var chanceWithHome = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithHome, 2 );
                     if ( Math.random() < chance ) {
+                        // Add the other agent if it is not already contained in
+                        // either agent's existing connections
+                        var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
+                        var link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+                        if ( this.links.indexOf( link1 ) == -1 &&
+                             this.links.indexOf( link2 ) == -1 ) {
+                            this.links.push( link1 );
+                        }
+                    }
+                    if ( Math.random() < chanceWithHome && agent1.home != null && agent2.home != null ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
                         var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
@@ -218,7 +233,7 @@ define([
                 /**
                  * Updates the friend network at runtime, by building and rendering the network.
                  */
-                this.updateFriendNetwork = function() {
+                this.updateAgentNetworkRendering = function() {
                     if ( !fp.AppState.runSimulation )
                         return;
                     this.renderFriendNetwork();
@@ -477,7 +492,7 @@ define([
              */
             this.updateAgentNetwork = function() {
                 this.updateAgents();
-                this.networks.forEach( function(network) { network.updateFriendNetwork() } );
+                this.networks.forEach( function(network) { network.updateAgentNetworkRendering() } );
                 this.updateAgentShader();
             };
 
@@ -1439,7 +1454,14 @@ define([
                 }
             };
 
-            this.findPathHome = function(agent) {
+
+            /**
+             * Find path to the home of another agent in this network
+             * @param  {fp.Agent} agent [description]
+             * @return {Array}       Of nodes
+             */
+            this.findPathHome = function( agent ) {
+
                 if ( !agent.home )
                     return [];
                 var start = this.nodeAt( agent.position );
@@ -1449,6 +1471,38 @@ define([
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
             };
+
+
+            /**
+             * Find path to an agent's home
+             * @param  {fp.Agent} agent [description]
+             * @return {Array}       Of nodes
+             */
+            this.findPathToOtherAgentsHome = function( agent ) {
+                var otherAgentHome = null;
+                var networks = _.shuffle( fp.agentNetwork.networks );
+                for ( var i = 0; i < networks.length; i++ ) {
+                    var network = fp.agentNetwork.networks[ i ];
+                    var links = _.shuffle( network.links );
+                    for ( var j = 0; j < links.length; j++ ) {
+                        var link = links[ j ];
+                        if ( link.agent1 == agent )
+                            otherAgentHome = link.agent2.home;
+                        else if ( link.agent2 ==  agent )
+                            otherAgentHome = link.agent1.home;
+                    }
+                }
+
+                if ( !otherAgentHome )
+                    return [];
+                var start = this.nodeAt( agent.position );
+                var end = this.nodeAt( otherAgentHome.lod.position );
+                if ( _.isUndefined( start ) || _.isUndefined( end ) )
+                    return [];
+                var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
+                return path;
+            };
+
 
             /**
              * Draws a path between this agent and its home
@@ -1474,6 +1528,10 @@ define([
                 return pathLine;
             };
 
+            /**
+             * Update the visualisation of all agent paths.
+             * @return {[type]} [description]
+             */
             this.updatePath = function() {
                 if ( !fp.AppState.runSimulation )
                     return;
@@ -1723,10 +1781,6 @@ define([
                 return fp.terrain.plane.geometry.color;
             };
 
-            var sign = function(x) {
-                return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
-            };
-
             /**
              * Retrieves the origin of the terrain sphere
              */
@@ -1754,8 +1808,8 @@ define([
                 // Obtain the difference between the coordinate and the sphere's origin.
                 var diff = new THREE.Vector3( x, y, z ).sub( origin );
                 // Get differences and signs of values.
-                var dx = diff.x % radius, sx = sign( diff.x), rx = Math.floor( Math.abs( diff.x ) / radius );
-                var dz = diff.z % radius, sz = sign( diff.z), rz = Math.floor( Math.abs( diff.z ) / radius );
+                var dx = diff.x % radius, sx = $.sign( diff.x), rx = Math.floor( Math.abs( diff.x ) / radius );
+                var dz = diff.z % radius, sz = $.sign( diff.z), rz = Math.floor( Math.abs( diff.z ) / radius );
                 // Calculate the X and Z angle
                 var angleX = Math.asin( dx / radius );
                 var angleZ = Math.asin( dz / radius );
@@ -1782,7 +1836,7 @@ define([
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = this.sphereOrigin();
                 // Obtain the signs and absolute values for x and z values
-                var sx = sign(x), sz = sign( z );
+                var sx = $.sign(x), sz = $.sign( z );
                 var ax = Math.abs( x ), az = Math.abs( z );
                 // Which is the highest absolute value?
                 var mxz = ( ax > az ? ax : az );
@@ -1878,8 +1932,8 @@ define([
                     }
                     for (var j = 0; j < fp.agentNetwork.agents.length; j ++ ) {
                         var agent = fp.agentNetwork.agents[ j ];
-                        var nv = fp.terrain.transformPointFromPlaneToSphere( agent.vertex, percent );
-                        fp.agentNetwork.particles.geometry.vertices[j] = nv;
+                        var nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
+                        fp.agentNetwork.particles.geometry.vertices[ j ] = nv;
                     }
                     if ( !_.isNull( fp.agentNetwork.particles ) )
                         fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
@@ -2013,26 +2067,34 @@ define([
              * @memberof Agent
              */
             this.nextComputedDirection = function() {
-                if ( !this.pathComputed || this.pathPosition >= this.pathComputed.length - 1 )
+                if ( !this.pathComputed )
                     return undefined;
-                // If we have prearranged a path, ensure the current direction points towards that
-                var nextNode = this.pathComputed[ this.pathPosition + 1 ];
-                var multiplier = fp.terrain.ratioExtentToPoint; 
-                var x = ( nextNode.x * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
-                    z = ( nextNode.y * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
-                    xd = x - this.position.x,
-                    zd = z - this.position.z,
-                    xDir = xd / fp.pathNetwork.stepsPerNode,
-                    zDir = zd / fp.pathNetwork.stepsPerNode,
-                    dir = new THREE.Vector3(xDir, 0, zDir);
-                console.log()
-
-                this.pathPosition++;
-                if ( this.pathPosition >= this.pathComputed.length - 1 ){
+                if ( this.pathPosition + 1 >= this.pathComputed.length ) {
                     this.pathPosition = 0;
                     this.pathComputed = undefined;
-                    dir = this.setRandomDirection();
+                    return this.randomDirection();
                 }
+                // If we have prearranged a path, ensure the current direction points towards that
+                var multiplier = fp.terrain.ratioExtentToPoint; 
+                var nextNode = this.pathComputed[ this.pathPosition + 1 ],
+                    x = ( nextNode.x * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
+                    z = ( nextNode.y * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier;
+
+                // Time to move position?
+                if ( ( this.position.x + this.direction.x - x ) * $.sign( this.direction.x ) > 0  || 
+                     ( this.position.z + this.direction.z - z ) * $.sign( this.direction.z ) > 0 ) {
+                    this.pathPosition++;
+                    if ( this.pathPosition + 1 < this.pathComputed.length ) {
+                        nextNode = this.pathComputed[ this.pathPosition + 1 ];
+                        x = ( nextNode.x * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier;
+                        z = ( nextNode.y * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier;
+                    }
+                }
+                var xd = x - this.position.x,
+                    zd = z - this.position.z,
+                    xDir = xd / ( Math.abs( xd ) + Math.abs( zd ) ),
+                    zDir = zd / ( Math.abs( xd ) + Math.abs( zd ) ),
+                    dir = new THREE.Vector3(xDir, 0, zDir);
                 return dir;
             };
 
@@ -2050,9 +2112,15 @@ define([
                     isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
 
                 // Logic for handling pre-determined paths
-                if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToHome && ( _.isUndefined( this.pathComputed ) || this.pathComputed.length < 2 ) )  {
-                    this.pathComputed = fp.pathNetwork.findPathHome( this );
-                    this.pathPosition = 0;
+                if ( _.isUndefined( this.pathComputed ) || this.pathComputed.length < 2 ) {
+                    if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToHome )  {
+                        this.pathComputed = fp.pathNetwork.findPathHome( this );
+                        this.pathPosition = 0;
+                    }
+                    else if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToOtherAgentHome ) {
+                        this.pathComputed = fp.pathNetwork.findPathToOtherAgentsHome( this );
+                        this.pathPosition = 0;
+                    }
                 }
 
                 // Work out if we have a precomputed path
@@ -2074,10 +2142,10 @@ define([
 
                 for ( var i = 0; i < directionCount; i++ ) {
                     // Slight rounding errors using above calculation
-                    var newAngle = angle + (i * Math.PI / divisor);
-                    xd = Math.cos(newAngle) * hyp;
+                    var newAngle = angle + ( i * Math.PI / divisor );
+                    xd = Math.cos( newAngle ) * hyp;
                     yd = 0;
-                    zd = Math.sin(newAngle) * hyp;
+                    zd = Math.sin( newAngle ) * hyp;
 
                     // Calculate new position
                     var xn = xl + xd, yn = yl + yd, zn = zl + zd,
@@ -2109,8 +2177,9 @@ define([
                     yd = ( fp.appConfig.agentOptions.terrainOffset + yn - yl ) / fp.terrain.ratioExtentToPoint;
 
                     // If the new y position is zero, set the weight to zero
-                    if ( yn === null ) 
+                    if ( yn === null ) {
                         continue;
+                    }
 
                     // If the new y position is zero, set the weight to zero
                     if ( yn <= 0 ) 
@@ -2295,12 +2364,12 @@ define([
                         break;
                     }
                 }
+
                 try {
                     return directions[index][0];
                 }
                 catch (e) {
-                    // Stay put
-                    return new THREE.Vector3(0, 0, 0);
+                    return this.randomDirection();
                 }
             };
 
@@ -2310,7 +2379,13 @@ define([
             this.move = function() {
                 var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
                 var newPosition = this.position.clone().add( directionAtSpeed );
-                this.position = newPosition.clone();
+                var bound = fp.terrain.gridExtent;
+                if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
+                    this.setDirection( this.randomDirection() );
+                }
+                else {
+                    this.position = newPosition;
+                }
             };
 
             /**
@@ -3150,7 +3225,9 @@ define([
                 initialY: 50,
                 randomAge: true,
                 chanceToJoinNetwork: 0.05,
+                chanceToJoinNetworkWithHome: 0.05,
                 chanceToFindPathToHome: 0.00,
+                chanceToFindPathToOtherAgentHome: 0.00,
                 initialCircle: true,
                 noWater: true,
                 noUphill: false, // Eventually remove for more fine-grained weight control
@@ -3598,7 +3675,9 @@ define([
                 agentsFolder.add( fp.appConfig.agentOptions, "initialY",  0, 100 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "randomAge" );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0).step( 0.01 );
+                agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithHome", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0).step( 0.01 );
+                agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToOtherAgentHome", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
                 agentsFolder.add( fp.appConfig.agentOptions, "noWater" );
                 agentsFolder.add( fp.appConfig.agentOptions, "noUphill" );

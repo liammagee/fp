@@ -57,6 +57,27 @@ describe("Agent", function() {
       });
     });
 
+    describe( "#edges", function() {
+      var originalPosition, originalHeight = 0, offset = 0, bestCandidate = null;
+
+      beforeEach(function() {
+        // Make sure the agent's direction points to the cell immediately on the left
+        originalPosition = agent.position;
+        agent.position = agent.lastPosition = new THREE.Vector3( -fp.terrain.gridExtent, fp.getHeight( -fp.terrain.gridExtent, 0 ), 0 );
+        agent.direction = new THREE.Vector3( - fp.terrain.ratioExtentToPoint * 2, 0, 0 );
+        directions = agent.generateDirectionVectorsAndWeights( 0.5 );
+      });
+
+      it("should avoid the edge", function() {
+        console.log( agent.position )
+        expect( directions.length ).toEqual( 5 );
+      });
+
+      afterEach( function() {
+        agent.position = originalPosition;
+      });
+    });
+
     describe("building home and pre-computed path", function() {
       var directions, stepDistance; 
 
@@ -93,7 +114,6 @@ describe("Agent", function() {
       } );
 
       it( "should point the direction to the east (negative x)", function() {
-        console.log( agent.direction, agent.position )
         expect( agent.direction ).toHaveAnEqualVector( new THREE.Vector3( -stepDistance, 0, 0 ) );
         // expect( agent.direction ).toEqual( 0 );
       });
