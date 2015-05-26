@@ -190,6 +190,7 @@ define([
                     // Introduce more variability by squaring the probability
                     var chance = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetwork, 2 );
                     var chanceWithHome = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithHome, 2 );
+                    var chanceWithBothHomes = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithBothHomes, 2 );
                     if ( Math.random() < chance ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
@@ -200,7 +201,17 @@ define([
                             this.links.push( link1 );
                         }
                     }
-                    if ( Math.random() < chanceWithHome && agent1.home != null && agent2.home != null ) {
+                    if ( Math.random() < chanceWithHome && ( agent1.home != null || agent2.home != null ) ) {
+                        // Add the other agent if it is not already contained in
+                        // either agent's existing connections
+                        var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
+                        var link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+                        if ( this.links.indexOf( link1 ) == -1 &&
+                             this.links.indexOf( link2 ) == -1 ) {
+                            this.links.push( link1 );
+                        }
+                    }
+                    if ( Math.random() < chanceWithBothHomes && agent1.home != null && agent2.home != null ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
                         var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
@@ -1075,14 +1086,19 @@ define([
              */
             this.defaultReviseValues = function() {
                 this.patchMeanValue = 0;
+                var popPatch = fp.patchNetwork.patchValues.length;
+                var popAgent = fp.agentNetwork.agents.length;
+                var r = popAgent / popPatch;
                 for (var i = 0; i < this.patchValues.length; i++) {
                     var patch = this.patchValues[i];
                     if ( !_.isUndefined( this.patches[i] ) ) {
                         var len = this.patches[i].length;
-                        patch.updatePatchValue( - len / 100 );
+                        var change = - len * ( 1 / ( Math.pow( r, 2 ) ) );
+                        patch.updatePatchValue( change );
                     }
-                    else if ( patch.value < patch.initialValue ) { // Recover
-                        patch.updatePatchValue( 0.0001 );
+                    else { // if ( patch.value < patch.initialValue ) { // Recover
+                        var change = Math.pow( r, 2 );
+                        patch.updatePatchValue( Math.pow( r, 3 ) );
                     }
                     this.patchMeanValue += patch.value;
                 }
@@ -1108,6 +1124,7 @@ define([
              */
             this.updatePatchValues = function() {
                 if ( fp.appConfig.displayOptions.patchesUpdate && fp.AppState.runSimulation ) {
+                    // Allow for overriding of the patch values
                     if ( !_.isUndefined( fp.patchNetwork.reviseValues ) ) {
                         fp.patchNetwork.reviseValues();
                     }
@@ -1515,12 +1532,27 @@ define([
                     return undefined;
                 var pathGeom = new THREE.Geometry();
                 var multiplier = fp.terrain.ratioExtentToPoint; 
-                path.forEach(function(point) {
+                var wrapPercent = fp.terrain.wrappedPercent;
+                path.forEach( function( point ) {
                     var x = ( point.x * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
                         z = ( point.y * multiplier - fp.terrain.halfExtent ) * fp.appConfig.terrainOptions.multiplier,
                         y = fp.getHeight(x, z) + fp.appConfig.agentOptions.terrainOffset,
                         point3d = new THREE.Vector3(x, y, z);
-                    pathGeom.vertices.push(point3d);
+                    
+                    /*
+                    // Transform vertices
+                    var percent = fp.terrain.wrappedPercent;
+                    if ( percent > 0 ) {
+                        var transformedVertices = [];
+                        for (var i = 0; i < vertices.length; i ++) {
+                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                        }
+                        roadGeom.vertices = transformedVertices;
+                    }
+                    */
+
+                    var transformedPoint3d = fp.terrain.transformPointFromPlaneToSphere( point3d, wrapPercent )
+                    pathGeom.vertices.push( transformedPoint3d );
                 });
                 var pathMaterial = new THREE.LineBasicMaterial( { color: 0xff0000, linewidth: 1.0 } );
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
@@ -1921,6 +1953,7 @@ define([
                         building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     });
+                    // Alter roards
                     for (var j = 0; j < fp.roadNetwork.planeVertices.length; j ++ ) {
                         var transformedVertices = [];
                         var vertices = fp.roadNetwork.planeVertices[j];
@@ -1929,6 +1962,16 @@ define([
                         }
                         fp.roadNetwork.networkMesh.children[ j ].geometry.vertices = transformedVertices;
                         fp.roadNetwork.networkMesh.children[ j ].geometry.verticesNeedUpdate = true;
+                    }
+                    // Alter paths
+                    for (var j = 0; j < fp.pathNetwork.networkMesh.children.length; j ++ ) {
+                        var transformedVertices = [];
+                        var vertices = fp.pathNetwork.networkMesh.children[j];
+                        for (var i = 0; i < vertices.length; i ++) {
+                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                        }
+                        fp.pathNetwork.networkMesh.children[ j ].geometry.vertices = transformedVertices;
+                        fp.pathNetwork.networkMesh.children[ j ].geometry.verticesNeedUpdate = true;
                     }
                     for (var j = 0; j < fp.agentNetwork.agents.length; j ++ ) {
                         var agent = fp.agentNetwork.agents[ j ];
@@ -1972,7 +2015,7 @@ define([
                         fp.terrain.wrappedPercent += this.wrappingState;
                     }
                     else {
-                        fp.appConfig.displayOptions.waterShow = true;
+                        fp.appConfig.displayOptions.waterShow = fp.appConfig.displayOptions.waterShow;
                         this.wrappingState = 0;
                     }
                 }
@@ -3226,6 +3269,7 @@ define([
                 randomAge: true,
                 chanceToJoinNetwork: 0.05,
                 chanceToJoinNetworkWithHome: 0.05,
+                chanceToJoinNetworkWithBothHomes: 0.05,
                 chanceToFindPathToHome: 0.00,
                 chanceToFindPathToOtherAgentHome: 0.00,
                 initialCircle: true,
@@ -3676,6 +3720,7 @@ define([
                 agentsFolder.add( fp.appConfig.agentOptions, "randomAge" );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithHome", 0.0, 1.0).step( 0.01 );
+                agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithBothHomes", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToOtherAgentHome", 0.0, 1.0).step( 0.01 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );

@@ -44,14 +44,15 @@
                         // Agent options
                         "1": {
                             "initialPopulation": 1000,
-                            "initialExtent": 50,
+                            "initialExtent": 100,
                             // "maxExtent": 100,
                             // "initialX": 50,
                             // "initialY": 50,
                             // "randomAge": true,
-                            "chanceToJoinNetwork": 0.000001,
-                            "chanceToJoinNetworkWithHome": 0.5,
-                            "chanceToFindPathToHome": 0.001,
+                            "chanceToJoinNetwork": 0.01,
+                            "chanceToJoinNetworkWithHome": 0.25,
+                            "chanceToJoinNetworkWithBothHomes": 0.5,
+                            "chanceToFindPathToHome": 0.01,
                             "chanceToFindPathToOtherAgentHome": 0.01,
                             // "initialCircle": true,
                             // "noWater": true,
@@ -69,8 +70,8 @@
                             "roads": 0.0,
                             "water": 0.0,
                             "otherBuildings": 0.25,
-                            "distanceFromOtherBuildingsMin": 1800,
-                            "distanceFromOtherBuildingsMax": 2000,
+                            "distanceFromOtherBuildingsMin": 5000,
+                            "distanceFromOtherBuildingsMax": 5500,
                             "buildingHeight": 0.0,
                             "detectBuildingCollisions": true,
 
@@ -245,9 +246,9 @@
                         // Terrain options
                         "6": {
                             // "renderAsSphere": true,
-                            "loadHeights": false,
-                            "gridExtent": 2000,
-                            "gridPoints": 200,
+                            "loadHeights": true ,
+                            "gridExtent": 8000,
+                            "gridPoints": 400,
                             // "maxTerrainHeight": 400,
                             // "shaderUse": true,
                             "multiplier": 2,
