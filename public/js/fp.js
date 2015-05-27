@@ -1554,7 +1554,9 @@ define([
                     var transformedPoint3d = fp.terrain.transformPointFromPlaneToSphere( point3d, wrapPercent )
                     pathGeom.vertices.push( transformedPoint3d );
                 });
-                var pathMaterial = new THREE.LineBasicMaterial( { color: 0xff0000, linewidth: 1.0 } );
+                
+                var pathColor = ( fp.appConfig.displayOptions.dayShow ) ? fp.appConfig.colorOptions.colorDayPath : fp.appConfig.colorOptions.colorNightPath;
+                var pathMaterial = new THREE.LineBasicMaterial( { color: pathColor, linewidth: 1.0 } );
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
                 this.networkMesh.add( pathLine );
                 return pathLine;
@@ -3437,6 +3439,7 @@ define([
                 colorDayAgent: 0x4747b3,
                 colorDayNetwork: 0x474747,
                 colorDayTrail: 0x474747,
+                colorDayPath: 0x474747,
                 colorDayBuildingFill: 0xb1abab,
                 colorDayBuildingLine: 0x222222,
                 colorDayBuildingWindow: 0x222222,
@@ -3455,6 +3458,9 @@ define([
                 colorNightAgent: 0x47b347,
                 colorNightNetwork: 0x47b347,
                 colorNightTrail: 0x47b347,
+                colorNightNetworPath: 0x47b347,
+                colorNightTrail: 0x47b347,
+                colorNightPath: 0x47b347,
                 colorNightBuildingFill: 0x838383,
                 colorNightBuildingLine: 0x838383,
                 colorNightBuildingWindow: 0xffff8f,
@@ -3560,6 +3566,8 @@ define([
                         fp.trailNetwork.trails[ai] = 1;
                 }
                 var trailMaterial = new THREE.LineBasicMaterial({
+                    color: fp.appConfig.colorOptions.colorNightTrail,
+                var trailMaterial = new THREE.LineBasicMPath({
                     color: fp.appConfig.colorOptions.colorNightTrail,
                     linewidth: 0.1,
                     opacity: 0.1,
@@ -3909,6 +3917,8 @@ define([
                 colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
                 colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayTrail" );
                 colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightTrail" );
+                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayPath" );
+                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightPath" );
             }
 
             // Need to create the GUI to seed the parameters first.
@@ -4102,14 +4112,15 @@ define([
          * @memberof fp
          */
         this.setupLighting = function() {
-            // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbf8f, 0.6 );
+            var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 1.0 );
             // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
-            var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.0 );
+            // var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
             // var hemiLight = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
             hemiLight.position.set( 0, 1000, 0 );
             fp.scene.add( hemiLight );
 
-            var dirLight = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
+            var dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+            // var dirLight = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
             dirLight.position.set( 40000, 40000, 40000 );
             dirLight.shadowDarkness = 0.25;
             dirLight.castShadow = true;
