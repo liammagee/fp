@@ -51,8 +51,13 @@
                                 "detectBuildingCollisions": true,
                                 "detectRoadCollisions": true ,
                                 "windowsRandomise": true,
-                                "randomForm": true,
+                                "randomForm": false,
                                 "rotateRandomly": false,
+                                "minHeight": 1000,
+                                "maxHeight": 1000,
+                                "stagger": false,
+                                "taper": false,
+                                // "useShader": false,
                             },
                             "3": {
                                 "overlapThreshold": 100,
@@ -60,6 +65,7 @@
                             },
                             "4": {
                                 //"statsShow": false,
+                                "waterShow": false,
                                 "terrainShow": true,
                                 "chartShow": false,
                                 "dayShow": false,
@@ -111,13 +117,9 @@
                                 fp.roadNetwork.addRoad(p1, p2, 10);
                             }
 
-                            // Get city blocks
-                            // var cityBlocks = fp.roadNetwork.cityBlocks();
-                            // console.log(cityBlocks.length);
-                            // console.log(fp.roadNetwork.getPolygonArea(cityBlocks[0]));
                         },
                         tick: function() {
-                            if ( fp.buildingNetwork.buildings.length < this.maxBuildings ) {
+                            if ( fp.buildingNetwork.buildings.length < this.maxBuildings && fp.AppState.runSimulation ) {
                                 var minHeight = 30, maxHeight = 100;
                                 var x = Math.floor(Math.random() * this.dim * 2) - this.dim,
                                     z = Math.floor(Math.random() * this.dim * 2) - this.dim,
@@ -132,12 +134,13 @@
                                 //     width: fp.appConfig().buildingOptions.minWidth,
                                 //     length: fp.appConfig().buildingOptions.minLength
                                 // }
-                                var building = fp.buildingNetwork.createBuilding(position, dimensions);
+                                var building = fp.buildingNetwork.createBuilding( position, dimensions );
                                 if ( typeof( building ) !== "undefined" ) {
                                     var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
-                                    for (var i = 0; i < height; i++)
+                                    for (var i = 0; i < height; i++) {
                                         if ( building.canAddFloor() )
                                             building.addFloor();
+                                    }
                                 }
                                 else
                                     this.counter++;
