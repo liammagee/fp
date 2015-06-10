@@ -49,18 +49,19 @@
                             },
                             "2": {
                                 "detectBuildingCollisions": true,
-                                "detectRoadCollisions": true ,
+                                "detectRoadCollisions": true,
                                 "windowsRandomise": true,
-                                "randomForm": false,
+                                "randomForm": true,
                                 "rotateRandomly": false,
-                                "minHeight": 1000,
-                                "maxHeight": 1000,
-                                "stagger": false,
-                                "taper": false,
+                                "minHeight": 10,
+                                "maxHeight": 100,
+                                "stagger": true,
+                                "taper": true,
                                 // "useShader": false,
                             },
                             "3": {
                                 "overlapThreshold": 100,
+                                "flattenLift": 0,
                                 "roadRadiusSegments": 8
                             },
                             "4": {
@@ -100,8 +101,8 @@
                                 var x = i * (this.dim / (this.grid / 2)) - this.dim,
                                     z1 = -this.dim,
                                     z2 = this.dim,
-                                    y1 = fp.getHeight(x, z1),
-                                    y2 = fp.getHeight(x, z2),
+                                    y1 = -20,
+                                    y2 = -20,
                                     p1 = new THREE.Vector3(x, y1, z1),
                                     p2 = new THREE.Vector3(x, y2, z2);
                                 fp.roadNetwork.addRoad(p1, p2, 10);
@@ -110,8 +111,8 @@
                                 var z = i * (this.dim / (this.grid / 2)) - this.dim,
                                     x1 = -this.dim,
                                     x2 = this.dim,
-                                    y1 = fp.getHeight(x1, z),
-                                    y2 = fp.getHeight(x2, z),
+                                    y1 = -20,
+                                    y2 = -20,
                                     p1 = new THREE.Vector3(x1, y1, z),
                                     p2 = new THREE.Vector3(x2, y2, z);
                                 fp.roadNetwork.addRoad(p1, p2, 10);
@@ -119,20 +120,17 @@
 
                         },
                         tick: function() {
-                            if ( fp.buildingNetwork.buildings.length < this.maxBuildings && fp.AppState.runSimulation ) {
+                            if ( fp.buildingNetwork.buildings.length < this.maxBuildings  ) {
                                 var minHeight = 30, maxHeight = 100;
                                 var x = Math.floor(Math.random() * this.dim * 2) - this.dim,
                                     z = Math.floor(Math.random() * this.dim * 2) - this.dim,
-                                    y = fp.getHeight(x, z);
-                                // var x = this.counter,
-                                //     z = this.counter,
-                                //     y = fp.getHeight(x, z)
-                                var position = new THREE.Vector3(x, y, z);
+                                    y = fp.getHeight(x, z) + fp.appConfig.terrainOptions.defaultHeight;
+                                var position = new THREE.Vector3( x, y, z );
                                 var dimensions = fp.buildingNetwork.generateRandomDimensions();
                                 // var dimensions = {
-                                //     levels: fp.appConfig().buildingOptions.minHeight,
-                                //     width: fp.appConfig().buildingOptions.minWidth,
-                                //     length: fp.appConfig().buildingOptions.minLength
+                                //     levels: fp.appConfig.buildingOptions.minHeight,
+                                //     width: fp.appConfig.buildingOptions.minWidth,
+                                //     length: fp.appConfig.buildingOptions.minLength
                                 // }
                                 var building = fp.buildingNetwork.createBuilding( position, dimensions );
                                 if ( typeof( building ) !== "undefined" ) {
@@ -145,7 +143,6 @@
                                 else
                                     this.counter++;
                             }
-
                         }
                     };
 

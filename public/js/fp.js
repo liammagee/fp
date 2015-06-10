@@ -573,6 +573,7 @@ define([
             this.buildings = [];
             this.buildingHash = {};
             this.speedOfConstruction = 0.05;
+            this.buildingObject = new THREE.Object3D();
 
             /**
              * Evaluation functions to determine proximities for developing buildings.
@@ -652,13 +653,17 @@ define([
              */
             this.get2dPointsForBoundingBox = function( building ) {
                 var points = [];
-                var firstFloor = building.highResMeshContainer.children[0],
+                // var firstFloor = building.highResMeshContainer.children[ 0 ],
+                //     position = building.highResMeshContainer.position,
+                //     vertices = firstFloor.geometry.vertices,
+                //     verticesOnBase = vertices.length;
+                var firstFloor = building.mockMesh,
                     position = building.highResMeshContainer.position,
                     vertices = firstFloor.geometry.vertices,
                     verticesOnBase = vertices.length;
                 for (var i = 0; i < verticesOnBase / 2; i ++) {
                     // Adjust for the vertex's rotation, and add its position
-                    var point  = vertices[ i ].clone().applyMatrix4( firstFloor.matrix ).add( position );
+                    var point  = vertices[ i ].clone().applyMatrix4( firstFloor.matrix );//.add( position );
                     points.push({ x: point.x, y: point.z });
                 }
                 return points;
@@ -674,7 +679,7 @@ define([
                 var coords = _.map( points, function(p) { return new jsts.geom.Coordinate(p.x, p.y); } );
                 var lineUnion, j = coords.length - 1;
                 for (var i = 0; i < coords.length; i++ ) {
-                    var line = new jsts.geom.LineString([coords[i], coords[j]]);
+                    var line = new jsts.geom.LineString( [ coords[i], coords[ j ] ] );
                     j = i;
                     if ( _.isUndefined(lineUnion) )
                         lineUnion = line;
@@ -745,7 +750,7 @@ define([
                     buildingForm = fp.BUILDING_FORMS.names[Math.floor(Math.random() * fp.BUILDING_FORMS.names.length)];
 
                 var rotateY = (fp.appConfig.buildingOptions.rotateSetAngle / 180) * Math.PI;
-                if (fp.appConfig.buildingOptions.rotateRandomly)
+                if ( fp.appConfig.buildingOptions.rotateRandomly )
                     rotateY = Math.random() * Math.PI;
                 var rotation = new THREE.Vector3( 0, rotateY, 0 );
                 var building = new fp.Building( buildingForm, dimensions, position, rotation );
@@ -782,8 +787,17 @@ define([
                 var index = fp.getIndex( position.x, position.z );
                 fp.buildingNetwork.buildingHash[ index ] = building;
                 // Add all ground floor vertices to hash, as crude collision detection
-                fp.buildingNetwork.networkMesh.add( building.lod );
-                fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
+                // if ( fp.buildingNetwork.networkMesh.children.length == 0 ) {
+                //     fp.buildingNetwork.networkMesh.add( clone );
+                // }
+                // else {
+                //     console.log(fp.buildingNetwork.networkMesh.children[0].geometry.vertices.length);
+                //     fp.buildingNetwork.networkMesh.children[0].geometry.merge( building.mesh.geometry, fp.buildingNetwork.networkMesh.children[0].matrix );
+                //     console.log(fp.buildingNetwork.networkMesh.children[0].geometry.vertices.length);
+                //     fp.buildingNetwork.networkMesh.children[0].geometry.verticesNeedUpdate = true;
+                // }
+                if ( fp.appConfig.buildingOptions.detectBuildingCollisions || fp.appConfig.buildingOptions.detectRoadCollisions )
+                    fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
                 return building;
             };
         };
@@ -929,7 +943,7 @@ define([
                 // var roadMaterial = new THREE.MeshBasicMaterial({ color: roadColor });
                 var roadMaterial = new THREE.MeshLambertMaterial({ color: roadColor });
                 roadMaterial.side = THREE.DoubleSide;
-                var roadGeom = new THREE.TubeGeometry(extrudePath, points.length, roadWidth, fp.appConfig.roadOptions.roadRadiusSegments, false);
+                var roadGeom = new THREE.TubeGeometry( extrudePath, points.length, roadWidth, fp.appConfig.roadOptions.roadRadiusSegments, false );
 
                 var adjust = fp.appConfig.roadOptions.flattenAdjustment,
                     lift = fp.appConfig.roadOptions.flattenLift;
@@ -1646,7 +1660,7 @@ define([
                 }
                 else {
                     for (i = 0, j = 0; i < l; i++, j += 3 ) {
-                        geometry.attributes.position.array[ j + 2 ] = 10;
+                        geometry.attributes.position.array[ j + 2 ] = fp.appConfig.terrainOptions.defaultHeight;
                     }
                 }
 
@@ -2718,15 +2732,15 @@ define([
                 }
 
                 if ( fp.appConfig.buildingOptions.useLevelOfDetail ) {
-                    this.lod.addLevel(this.highResMeshContainer, fp.appConfig.buildingOptions.highResDistance);
-                    this.lod.addLevel(this.lowResMeshContainer, fp.appConfig.buildingOptions.lowResDistance);
+                    this.lod.addLevel( this.highResMeshContainer, fp.appConfig.buildingOptions.highResDistance );
+                    this.lod.addLevel( this.lowResMeshContainer, fp.appConfig.buildingOptions.lowResDistance );
                     this.lowResGeometry = new THREE.BoxGeometry(fp.appConfig.buildingOptions.width, (this.levels + 1) * fp.appConfig.buildingOptions.levelHeight, fp.appConfig.buildingOptions.length);
                     this.lowResGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, (this.levels + 1) * fp.appConfig.buildingOptions.levelHeight / 2, 0 ) );
                     this.lowResMesh = new THREE.Mesh(this.lowResGeometry, this.buildingMaterial);
                     this.lowResMeshContainer.add(this.lowResMesh);
                 }
                 else
-                    this.lod.addLevel(this.highResMeshContainer, 1);
+                    this.lod.addLevel( this.highResMeshContainer, 1 );
 
                 this.lod.updateMatrix();
                 this.lod.matrixAutoUpdate = false;
@@ -2750,8 +2764,17 @@ define([
                     if (fp.appConfig.buildingOptions.showWindows)
                         this.generateWindows(points);
                 }
-                else
-                    this.shadedShape( points );
+                else {
+                        this.shadedShape( points );
+                        /*
+                    if ( this.levels == 0 ) {
+                        this.shadedShape( points );
+                    }
+                    else {
+                        this.shadedShapeExtension( points );
+                    }
+                    */
+                }
 
                 this.levels++;
                 // Update a low res model once the rest is complete
@@ -2779,7 +2802,7 @@ define([
              * Removes the top floor from the current building
              */
             this.removeFloor = function() {
-                var topFloor = this.highResMeshContainer.children[this.highResMeshContainer.children.length - 1];
+                var topFloor = this.highResMeshContainer.children[ this.highResMeshContainer.children.length - 1 ];
                 this.highResMeshContainer.remove(topFloor);
                 this.levels--;
                 // Update a low res model once the rest is complete
@@ -2854,7 +2877,7 @@ define([
             };
 
             this.generateWindows = function (points) {
-                var base = points[0].y;
+                var base = points[0].y + fp.appConfig.agentOptions.terrainOffset;
                 var offset = fp.getOffset(this.levels, points.length);
 
                 // General calculable variables
@@ -2917,94 +2940,153 @@ define([
                 }
             };
 
-            this.shadedShape = function (points) {
+
+            this.shadedShapeMock = function( ) {
+                var base = this.levels * fp.appConfig.buildingOptions.levelHeight + fp.appConfig.terrainOptions.defaultHeight;
+                var points = fp.BUILDING_FORMS[this.buildingForm]( this.localWidth, this.localLength, base );
                 var base = points[0].y;
                 var height = base;// + this.lod.position.y;
-                var offset = fp.getOffset(this.levels, points.length);
-
+                var offset = fp.getOffset( this.levels, points.length );
                 var shape = new THREE.Shape();
                 shape.moveTo(points[0].x, points[0].z);
                 for (var i = 1; i < points.length; i ++)
                     shape.lineTo(points[i].x, points[i].z);
                 shape.lineTo(points[0].x, points[0].z);
                 var extrudeSettings = { amount: fp.appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
-                // var shapeGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-                var shapeGeometry = THREE.BoxGeometry( x, y, z );
+                var shapeGeometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+                shapeGeometry.computeBoundingBox();
+                var mesh;
+
+                if ( shapeGeometry.boundingBox ) {
+                    var dumbMaterial = new THREE.MeshBasicMaterial({ color: "#ff0000" });
+                    dumbMaterial.visible = false;
+
+                    mesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
+                    mesh.rotation.set( -Math.PI / 2, 0, 0 );
+                    var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                    mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
+                    mesh.updateMatrix();
+                    return mesh;
+                }
+                return null;
+            };
+
+            this.shadedShape = function( points ) {
+                var base = points[0].y;
+                var height = base;// + this.lod.position.y;
+                var offset = fp.getOffset( this.levels, points.length );
+                var shape = new THREE.Shape();
+                shape.moveTo(points[0].x, points[0].z);
+                for (var i = 1; i < points.length; i ++)
+                    shape.lineTo(points[i].x, points[i].z);
+                shape.lineTo(points[0].x, points[0].z);
+                var extrudeSettings = { amount: fp.appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
+                var shapeGeometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
                 shapeGeometry.computeBoundingBox();
 
                 if ( shapeGeometry.boundingBox ) {
-                    var fc, lc, wc;
-                    if (fp.appConfig.displayOptions.dayShow) {
-                        fc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingFill);
-                        lc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingLine);
-                        wc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingWindow);
+                    // if ( this.highResMeshContainer.children.length == 0 ) {
+                    if ( this.levels == 0 ) {
+                        var fc, lc, wc;
+                        if (fp.appConfig.displayOptions.dayShow) {
+                            fc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingFill);
+                            lc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingLine);
+                            wc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingWindow);
+                        }
+                        else {
+                            fc = fp.buildColorVector(fp.appConfig.colorOptions.colorNightBuildingFill);
+                            lc = fp.buildColorVector(fp.appConfig.colorOptions.colorNightBuildingLine);
+                            wc = fp.buildColorVector(fp.appConfig.colorOptions.colorNightBuildingWindow);
+                        }
+                        // Gets around a problem with rendering a single building with lines or windows
+                        var showLines = ( fp.buildingNetwork.buildings.length > 1 && fp.appConfig.buildingOptions.showLines );
+                        var showWindows = fp.appConfig.buildingOptions.showWindows;
+                        this.uniforms = {
+                            time: { type: "f", value: 1.0 },
+                            location: { type: "v2", value: new THREE.Vector2( this.lod.position.x, this.lod.position.z ) },
+                            resolution: { type: "v2", value: new THREE.Vector2() },
+                            dimensions: { type: "v3", value: new THREE.Vector3(shapeGeometry.boundingBox.max.x - shapeGeometry.boundingBox.min.x, fp.appConfig.buildingOptions.levelHeight, shapeGeometry.boundingBox.max.y - shapeGeometry.boundingBox.min.y) },
+                            bottomWindow: { type: "f", value: this.bottomWindow },
+                            topWindow: { type: "f", value: this.topWindow },
+                            windowWidth: { type: "f", value: this.windowWidth },
+                            windowPercent: { type: "f", value: this.windowPercent },
+                            floorLevel: { type: "f", value: this.levels },
+                            //opacity: { type: "f", value: fp.appConfig.buildingOptions.opacity },
+                            lineColor: { type: "v3", value: lc },
+                            lineWidth: { type: "f", value: fp.appConfig.buildingOptions.linewidth },
+                            fillColor: { type: "v3", value: fc },
+                            windowColor: { type: "v3", value: wc },
+                            showLines: { type: "i", value: showLines ? 1 : 0 },
+                            showFill: { type: "i", value: fp.appConfig.buildingOptions.showFill ? 1 : 0 },
+                            showWindows: { type: "i", value: showWindows ? 1 : 0 },
+                            fillRooves: { type: "i", value: fp.appConfig.buildingOptions.fillRooves ? 1 : 0 }
+                        };
+                        var attributes = { mixin: { type: "f", value: [] } };
+                        for (i = 0; i < shapeGeometry.vertices.length; i++)
+                            attributes.mixin.value[i] = Math.random() * 10;
+
+                        var shaderMaterial = new THREE.ShaderMaterial( {
+                            uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
+                            attributes: attributes,
+                            vertexShader: fp.ShaderUtils.lambertShaderVertex(
+                                fp.ShaderUtils.buildingVertexShaderParams(),
+                                fp.ShaderUtils.buildingVertexShaderMain()
+                            ),
+                            fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                                fp.ShaderUtils.buildingFragmentShaderParams(),
+                                fp.ShaderUtils.buildingFragmentShaderMain()
+                            ),
+                            lights: true
+                        } );
+
+                        shaderMaterial.side = THREE.DoubleSide;
+                        shaderMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
+
+                        // this.mesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
+                        this.mesh = new THREE.Mesh( shapeGeometry, shaderMaterial );
+                        this.mesh.castShadow = true;
+                        this.mesh.receiveShadow = true;
+                        this.mesh.children.forEach( function(b) {
+                            b.castShadow = true;
+                            b.receiveShadow = true;
+                        } );
+                        this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
+                        var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                        this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
+                        this.mesh.updateMatrix();
+                        fp.buildingNetwork.networkMesh.add( this.mesh );
+                        this.highResMeshContainer.add( this.mesh.clone() );
+                        /*
+                        if ( fp.buildingNetwork.networkMesh.children.length == 0 ) {
+                            this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
+                            this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
+                            this.mesh.updateMatrix();
+                            fp.buildingNetwork.networkMesh.add( this.mesh );
+                        }
+                        else {
+                            // this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
+                            console.log(this.highResMeshContainer.position)
+                            this.mesh.position.set( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z, height );
+                            this.mesh.updateMatrix();
+                            fp.buildingNetwork.networkMesh.children[0].geometry.mergeMesh( this.mesh );
+                            fp.buildingNetwork.networkMesh.children[ len ].geometry.verticesNeedUpdate = true;
+                        }
+                        */
                     }
                     else {
-                        fc = fp.buildColorVector(fp.appConfig.colorOptions.colorNightBuildingFill);
-                        lc = fp.buildColorVector(fp.appConfig.colorOptions.colorNightBuildingLine);
-                        wc = fp.buildColorVector(fp.appConfig.colorOptions.colorNightBuildingWindow);
+                        var dumbMaterial = new THREE.MeshBasicMaterial({ color: "#ff0000" });
+                        var floorMesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
+                        // this.mesh.matrixAutoUpdate = false;
+                        // this.highResMeshContainer.children[0].geometry.merge( this.mesh.geometry, this.mesh.matrix );
+                        var len = fp.buildingNetwork.networkMesh.children.length - 1;
+                        floorMesh.position.set( 0, 0, height );
+                        floorMesh.updateMatrix();
+                        fp.buildingNetwork.networkMesh.children[ len ].geometry.mergeMesh( floorMesh );
+                        fp.buildingNetwork.networkMesh.children[ len ].geometry.verticesNeedUpdate = true;
                     }
-                    // Gets around a problem with rendering a single building with lines or windows
-                    var showLines = ( fp.buildingNetwork.buildings.length > 1 && fp.appConfig.buildingOptions.showLines );
-                    var showWindows = fp.appConfig.buildingOptions.showWindows;
-                    this.uniforms = {
-                        time: { type: "f", value: 1.0 },
-                        location: { type: "v2", value: new THREE.Vector2(this.lod.position.x, this.lod.position.z) },
-                        resolution: { type: "v2", value: new THREE.Vector2() },
-                        dimensions: { type: "v3", value: new THREE.Vector3(shapeGeometry.boundingBox.max.x - shapeGeometry.boundingBox.min.x, fp.appConfig.buildingOptions.levelHeight, shapeGeometry.boundingBox.max.y - shapeGeometry.boundingBox.min.y) },
-                        bottomWindow: { type: "f", value: this.bottomWindow },
-                        topWindow: { type: "f", value: this.topWindow },
-                        windowWidth: { type: "f", value: this.windowWidth },
-                        windowPercent: { type: "f", value: this.windowPercent },
-                        floorLevel: { type: "f", value: this.levels },
-                        //opacity: { type: "f", value: fp.appConfig.buildingOptions.opacity },
-                        lineColor: { type: "v3", value: lc },
-                        lineWidth: { type: "f", value: fp.appConfig.buildingOptions.linewidth },
-                        fillColor: { type: "v3", value: fc },
-                        windowColor: { type: "v3", value: wc },
-                        showLines: { type: "i", value: showLines ? 1 : 0 },
-                        showFill: { type: "i", value: fp.appConfig.buildingOptions.showFill ? 1 : 0 },
-                        showWindows: { type: "i", value: showWindows ? 1 : 0 },
-                        fillRooves: { type: "i", value: fp.appConfig.buildingOptions.fillRooves ? 1 : 0 }
-                    };
-                    var attributes = { mixin: { type: "f", value: [] } };
-                    for (i = 0; i < shapeGeometry.vertices.length; i++)
-                        attributes.mixin.value[i] = Math.random() * 10;
-
-                    var shaderMaterial = new THREE.ShaderMaterial( {
-                        uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
-                        attributes: attributes,
-                        vertexShader: fp.ShaderUtils.lambertShaderVertex(
-                            fp.ShaderUtils.buildingVertexShaderParams(),
-                            fp.ShaderUtils.buildingVertexShaderMain()
-                        ),
-                        fragmentShader: fp.ShaderUtils.lambertShaderFragment(
-                            fp.ShaderUtils.buildingFragmentShaderParams(),
-                            fp.ShaderUtils.buildingFragmentShaderMain()
-                        ),
-                        lights: true
-                    } );
-                    var dumbMaterial = new THREE.MeshBasicMaterial({ color: "#ff0000" });
-
-                    shaderMaterial.side = THREE.DoubleSide;
-                    shaderMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
-
-                    var box = new THREE.Mesh( shapeGeometry, dumbMaterial );
-                    // var box = new THREE.Mesh( shapeGeometry, shaderMaterial );
-                    // box.matrixAutoUpdate = false;
-                    //box.rotation.set(Math.PI / 2, 0, 0);
-                    box.matrix.makeRotationX( Math.PI / 2 );
-                    box.matrix.setPosition(new THREE.Vector3(0, height, 0));
-                    //box.geometry.verticesNeedUpdate = true;
-                    // box.castShadow = true;
-                    // box.receiveShadow = true;
-                    // box.children.forEach(function(b) {
-                    //     b.castShadow = true;
-                    //     b.receiveShadow = true;
-                    // });
-                    this.highResMeshContainer.add(box);
                 }
             };
+
 
             this.canAddFloor = function() {
                 return ( !this.destroying && this.levels < this.localMaxLevels && this.localWidth > 0 && this.localLength > 0 );
@@ -3055,17 +3137,19 @@ define([
              * Updates the building's shader.
                  */
             this.updateBuildingShader = function() {
-                this.highResMeshContainer.children.forEach( function(floor) {
-                    var shaderMaterial = floor.material;
+                var verticesPerLevel = this.mesh.geometry.vertices.length / this.levels;
+                var shaderMaterial = this.mesh.material;
+                for ( var i = 0; i < this.levels; i++ ) {
                     var r = Math.random() * 10;
-                    var chance = 0.02;
+                    var chance = 0.1;
                     if ( Math.random() < chance ) {
-                        for (var i = 0; i < floor.geometry.vertices.length; i++) {
-                            shaderMaterial.attributes.mixin.value[i] = r;
+                        var v = i * verticesPerLevel;
+                        for ( var j = v; j < v + verticesPerLevel; j++ ) {
+                            shaderMaterial.attributes.mixin.value[ j ] = r;
                         }
                     }
                     shaderMaterial.attributes.mixin.needsUpdate = true; // important!
-                } );
+                };
             };
 
             this.updateSimpleBuilding = function () {
@@ -3103,6 +3187,7 @@ define([
              * Initialises the building.
              */
             this.init = function( form, dimensions, position, rotation ) {
+                this.originPosition = position;
                 // Use Poisson distribution with lambda of 1 to contour building heights instead
                 var w = 1 - jStat.exponential.cdf( Math.random() * 9, 1 );
                 var d = 1 - jStat.exponential.cdf( Math.random() * 9, 1 );
@@ -3118,10 +3203,10 @@ define([
                 this.windowPercent = fp.appConfig.buildingOptions.windowPercent / 100.0;
                 if ( fp.appConfig.buildingOptions.windowsRandomise ) {
                     // Randomise based on a normal distribution
-                    var bottomWindowTmp = jStat.normal.inv(Math.random(), this.bottomWindow, 0.1);
-                    var topWindowTmp = jStat.normal.inv(Math.random(), this.topWindow, 0.1);
-                    var windowWidthTmp = jStat.normal.inv(Math.random(), this.windowWidth, 0.1);
-                    var windowPercentTmp = jStat.normal.inv(Math.random(), this.windowPercent, 0.1);
+                    var bottomWindowTmp = jStat.normal.inv( Math.random(), this.bottomWindow, 0.1 );
+                    var topWindowTmp = jStat.normal.inv( Math.random(), this.topWindow, 0.1 );
+                    var windowWidthTmp = jStat.normal.inv( Math.random(), this.windowWidth, 0.1 );
+                    var windowPercentTmp = jStat.normal.inv( Math.random(), this.windowPercent, 0.1 );
                     // Coerce value between a min and max
                     var coerceValue = function(num, min, max) {
                         if ( num < min )
@@ -3153,14 +3238,17 @@ define([
                     this.lowResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
                 }
                 // Add an initial floor so the building is visible.
-                this.addFloor();
+                this.mockMesh = this.shadedShapeMock();
+                // this.addFloor();
             };
 
+            this.mockMesh = null;
             this.mesh = null;
             this.lineMaterial = null;
             this.buildingMaterial = null;
             this.windowMaterial = null;
             this.lod = null;
+            this.mesh = null;
             this.geometry = null;
             this.windowGeometry = null;
             this.windowMesh = null;
@@ -3446,7 +3534,8 @@ define([
                 shaderUse: true,
                 multiplier: 1,
                 mapIndex: 0,
-                patchSize: 4
+                patchSize: 4,
+                defaultHeight: 4
             };
             this.colorOptions = {
                 colorDayBackground: 0x000000,
@@ -4320,7 +4409,7 @@ define([
             fp.patchNetwork.updatePatchAgents();
             if ( fp.AppState.runSimulation )
                 fp.sim.tick.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-            /*
+
             fp.agentNetwork.updateAgentNetwork();
             fp.buildingNetwork.updateBuildings();
             fp.patchNetwork.updatePatchValues();
@@ -4331,7 +4420,7 @@ define([
             fp.updateSimState();
             fp.updateGraph();
             fp.updateWater();
-            */
+
             fp.updateStats();
             fp.updateControls();
             fp.updateCamera();
@@ -5153,13 +5242,14 @@ define([
                     "float dimY = dimensions.y;",
                     "float dimZ = dimensions.z;",
                     "float posX = pos.x;",
-                    "float posY = pos.z;",
+                    "float posY = mod(pos.z, dimY);",
+                    "float levels = floor(pos.z / dimY);",
                     "float posZ = pos.y;",
                     "",
                     "// Paint windows",
                     "if (showWindows == 1) {",
                         "// Normalise height",
-                        "float height = posY / dimY;",
+                        "float height = 1.0 - posY / dimY;",
                         "if (height > bottomWindow && height < topWindow ) {",
                             "float p = 0.;",
                             "if (posX < (floor(dimX / 2.0) - 1.0) && posX > -(floor(dimX / 2.0) - 1.0)) {",
@@ -5181,7 +5271,7 @@ define([
                                     "colorise = true;",
                             "}",
                             "if (colorise) {",
-                                "col = vec4(mix(darkGrey, windowColor, pow( rand( vec2( p, floorLevel ) ), vMixin ) ), opacity);",
+                                "col = vec4(mix(darkGrey, windowColor, pow( rand( vec2( p, levels ) ), vMixin ) ), opacity);",
                             "}",
                         "} ",
                     "}",
