@@ -3141,7 +3141,7 @@ define([
                 var shaderMaterial = this.mesh.material;
                 for ( var i = 0; i < this.levels; i++ ) {
                     var r = Math.random() * 10;
-                    var chance = 0.1;
+                    var chance = fp.appConfig.buildingOptions.windowsFlickerRate;
                     if ( Math.random() < chance ) {
                         var v = i * verticesPerLevel;
                         for ( var j = v; j < v + verticesPerLevel; j++ ) {
@@ -3450,6 +3450,7 @@ define([
                 // Window parameters
                 showWindows: true,
                 windowsRandomise: false,
+                windowsFlickerRate: 0.05,
                 windowWidth: 15,
                 windowPercent: 60,
                 windowsStartY: 40,
@@ -3895,6 +3896,7 @@ define([
                     });
                 });
                 windows.add( fp.appConfig.buildingOptions, "windowsRandomise" );
+                windows.add( fp.appConfig.buildingOptions, "windowsFlickerRate", 0, 1).step( 0.01 );
                 windows.add( fp.appConfig.buildingOptions, "windowWidth", 1, 100).step(1 );
                 windows.add( fp.appConfig.buildingOptions, "windowPercent", 1, 100).step(1 );
                 windows.add( fp.appConfig.buildingOptions, "windowsStartY", 1, 100).step(1 );
