@@ -205,8 +205,8 @@
                             // "firstPersonView": false,
                             "cameraOverride": true,
                             "cameraX": 0,
-                            "cameraY": 1000,
-                            "cameraZ": 1000,
+                            "cameraY": 500,
+                            "cameraZ": 2250,
                             // "maximiseView": true,
                         },
                         // Color options
@@ -243,6 +243,12 @@
                             // "colorGraphPopulation": 0x4747b3,
                             // "colorGraphHealth": 0xb34747,
                             // "colorGraphPatchValues": 0x47b347,
+                            // 
+                            "colorLightHemisphereSky": 0xbfbfbf,
+                            "colorLightHemisphereGround": 0xbfbfbf,
+                            "colorLightHemisphereIntensity": 1.0,
+                            "colorLightDirectional": 0xffffff,
+                            "colorLightDirectionalIntensity": 1.0,
 
                         },
                         // Terrain options
@@ -279,6 +285,7 @@
                         this.positions.push( [ fp.camera.position.x, fp.camera.position.y, fp.camera.position.z ] );
                     },
                     tick: function() {
+                        /*
                         if ( fp.timescale.frameCounter % 500 == 0  ) {
                             for ( var i = 0; i < this.positions.length; i++ ) {
                                 var pos = this.positions[ i ];
@@ -301,6 +308,7 @@
                         if ( fp.timescale.frameCounter > 10000 ) {
                             fp.appConfig.Setup();
                         }
+                        */
                     }
                 }
 
