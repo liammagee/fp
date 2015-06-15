@@ -93,7 +93,7 @@
                         clashCounter: 0,
                         dim: 1000,
                         grid: 10,
-                        maxBuildings: 1,
+                        maxBuildings: 200,
                         setup: function() {
                             // Create a grid road structure
                             var i;
@@ -132,36 +132,16 @@
                                 //     length: fp.appConfig.buildingOptions.minLength
                                 // }
                                 var building = fp.buildingNetwork.createBuilding( position, dimensions );
-                                // if ( typeof( building ) !== "undefined" ) {
-                                //     var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
-                                //     for (var i = 0; i < height; i++) {
-                                //         while ( building.canAddFloor() )
-                                //             building.addFloor();
-                                //     }
-                                // }
-                                // else
-                                //     this.counter++;
-                            }
-                            var minHeight = 30, maxHeight = 100;
-                            fp.buildingNetwork.buildings.forEach(function(building) {
                                 if ( typeof( building ) !== "undefined" ) {
-                                    // while ( building.canAddFloor() ) {
-                                    //     var base = building.levels * fp.appConfig.buildingOptions.levelHeight;
-                                    //     var points = fp.BUILDING_FORMS[ building.buildingForm ]( building.localWidth, building.localLength, base );
-                                    //     building.shadedShape( points );
-                                    //     building.levels++;
-                                    //     // building.addFloor();
-
-                                    //     var t = new Date().getTime();
-                                    //     while ( new Date().getTime() < t + 20 ) {}
-                                    // }
-                                    if ( building.canAddFloor() ) {
-                                        // building.addFloor();
+                                    var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
+                                    for (var i = 0; i < height; i++) {
+                                        while ( building.canAddFloor() )
+                                            building.addFloor();
                                     }
                                 }
                                 else
                                     this.counter++;
-                            })
+                            }
                         }
                     };
 

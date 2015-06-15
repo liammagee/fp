@@ -496,7 +496,7 @@ define([
                 this.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
                 this.particles.dynamic = true;
                 this.particles.sortParticles = true;
-                fp.scene.add( this.particles );
+                // fp.scene.add( this.particles );
             };
 
             /**
@@ -2160,104 +2160,6 @@ define([
 
 
             /**
-             * Generates directions and weights, given an agent's existing direction.
-             */
-            this.generateDirectionVectorsAndWeights = function( seed ) {
-                var xl = this.lastPosition.x,
-                    yl = this.lastPosition.y,
-                    zl = this.lastPosition.z,
-                    xd = this.direction.x,
-                    yd = this.direction.y,
-                    zd = this.direction.z,
-                    isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
-
-                // Logic for handling pre-determined paths
-                if ( _.isUndefined( this.pathComputed ) || this.pathComputed.length < 2 ) {
-                    if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToHome )  {
-                        this.pathComputed = fp.pathNetwork.findPathHome( this );
-                        this.pathPosition = 0;
-                    }
-                    else if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToOtherAgentHome ) {
-                        this.pathComputed = fp.pathNetwork.findPathToOtherAgentsHome( this );
-                        this.pathPosition = 0;
-                    }
-                }
-
-                // Work out if we have a precomputed path
-                var dir = this.nextComputedDirection();
-                if ( !_.isUndefined( dir ) )
-                    return [ [dir, 1.0] ];
-
-                var directionCount = 8,
-                     directions = new Array( directionCount  );
-
-                // Weight variables
-                var weight = 1.0, weightForRoadIsSet = false;
-
-                // Pre-calculate speed and current angle
-                var newSpeed = Math.random() * this.speed / 2,
-                    angle = Math.atan2( zd, xd ),
-                    hyp = Math.sqrt( xd * xd + zd * zd ),
-                    divisor = directionCount / 2;
-
-                for ( var i = 0; i < directionCount; i++ ) {
-                    // Slight rounding errors using above calculation
-                    var newAngle = angle + ( i * Math.PI / divisor );
-                    xd = Math.cos( newAngle ) * hyp;
-                    yd = 0;
-                    zd = Math.sin( newAngle ) * hyp;
-
-                    // Calculate new position
-                    var xn = xl + xd, yn = yl + yd, zn = zl + zd,
-                        isRoad = ( fp.roadNetwork.indexValues.indexOf( fp.getIndex(xn, zn)) > -1);
-
-                    // Work out weights - should be
-                    switch( i ) {
-                        case 0:
-                            weight = Math.pow( seed, 1 );
-                            break;
-                        case 1:
-                        case 7:
-                            weight = Math.pow( seed, 3 );
-                            break;
-                        case 2:
-                        case 4:
-                        case 6:
-                            weight = Math.pow( seed, 4 );
-                            break;
-                        case 3:
-                        case 5:
-                            weight = Math.pow( seed, 5 );
-                            break;
-                    }
-
-                    yn = fp.getHeight( xn, zn );
-
-                    // Smooth the transition between heights
-                    yd = ( fp.appConfig.agentOptions.terrainOffset + yn - yl ) / fp.terrain.ratioExtentToPoint;
-
-                    // If the new y position is zero, set the weight to zero
-                    if ( yn === null ) {
-                        continue;
-                    }
-
-                    // If the new y position is zero, set the weight to zero
-                    if ( yn <= 0 )
-                        weight = 0;
-
-                    // Set the direction
-                    directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
-                }
-                directions = _.chain(directions).
-                                compact().
-                                shuffle().
-                                sort(function(a,b) { return (a[1] > b[1]) ? 1 : (a[1] < b [1]? -1 : 0); }).
-                                value();
-
-                return directions;
-            };
-
-            /**
              * Generates candicate directions from an existing direction.
              * @memberof Agent
              */
@@ -2389,6 +2291,104 @@ define([
             };
 
             /**
+             * Generates directions and weights, given an agent's existing direction.
+             */
+            this.generateDirectionVectorsAndWeights = function( seed ) {
+                var xl = this.lastPosition.x,
+                    yl = this.lastPosition.y,
+                    zl = this.lastPosition.z,
+                    xd = this.direction.x,
+                    yd = this.direction.y,
+                    zd = this.direction.z,
+                    isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
+
+                // Logic for handling pre-determined paths
+                if ( _.isUndefined( this.pathComputed ) || this.pathComputed.length < 2 ) {
+                    if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToHome )  {
+                        this.pathComputed = fp.pathNetwork.findPathHome( this );
+                        this.pathPosition = 0;
+                    }
+                    else if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToOtherAgentHome ) {
+                        this.pathComputed = fp.pathNetwork.findPathToOtherAgentsHome( this );
+                        this.pathPosition = 0;
+                    }
+                }
+
+                // Work out if we have a precomputed path
+                var dir = this.nextComputedDirection();
+                if ( !_.isUndefined( dir ) )
+                    return [ [dir, 1.0] ];
+
+                var directionCount = 8,
+                     directions = new Array( directionCount  );
+
+                // Weight variables
+                var weight = 1.0, weightForRoadIsSet = false;
+
+                // Pre-calculate speed and current angle
+                var newSpeed = Math.random() * this.speed / 2,
+                    angle = Math.atan2( zd, xd ),
+                    hyp = Math.sqrt( xd * xd + zd * zd ),
+                    divisor = directionCount / 2;
+
+                for ( var i = 0; i < directionCount; i++ ) {
+                    // Slight rounding errors using above calculation
+                    var newAngle = angle + ( i * Math.PI / divisor );
+                    xd = Math.cos( newAngle ) * hyp;
+                    yd = 0;
+                    zd = Math.sin( newAngle ) * hyp;
+
+                    // Calculate new position
+                    var xn = xl + xd, yn = yl + yd, zn = zl + zd,
+                        isRoad = ( fp.roadNetwork.indexValues.indexOf( fp.getIndex(xn, zn)) > -1);
+
+                    // Work out weights - should be
+                    switch( i ) {
+                        case 0:
+                            weight = Math.pow( seed, 1 );
+                            break;
+                        case 1:
+                        case 7:
+                            weight = Math.pow( seed, 3 );
+                            break;
+                        case 2:
+                        case 4:
+                        case 6:
+                            weight = Math.pow( seed, 4 );
+                            break;
+                        case 3:
+                        case 5:
+                            weight = Math.pow( seed, 5 );
+                            break;
+                    }
+
+                    yn = fp.getHeight( xn, zn );
+
+                    // Smooth the transition between heights
+                    yd = ( fp.appConfig.agentOptions.terrainOffset + yn - yl ) / fp.terrain.ratioExtentToPoint;
+
+                    // If the new y position is zero, set the weight to zero
+                    if ( yn === null ) {
+                        continue;
+                    }
+
+                    // If the new y position is zero, set the weight to zero
+                    if ( yn <= 0 )
+                        weight = 0;
+
+                    // Set the direction
+                    directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
+                }
+                directions = _.chain(directions).
+                                compact().
+                                shuffle().
+                                sort(function(a,b) { return (a[1] > b[1]) ? 1 : (a[1] < b [1]? -1 : 0); }).
+                                value();
+
+                return directions;
+            };
+
+            /**
              * @memberof Agent
              */
             this.bestCandidate = function() {
@@ -2426,7 +2426,7 @@ define([
                 }
 
                 try {
-                    return directions[index][0];
+                    return directions[ index ][ 0 ];
                 }
                 catch (e) {
                     return this.randomDirection();
@@ -3088,7 +3088,6 @@ define([
                             b.receiveShadow = true;
                         } );
                         newMesh.rotation.set( -Math.PI / 2, 0, 0 );
-                        // var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                         var newHeight = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                         newMesh.position.set( this.highResMeshContainer.position.x, newHeight, this.highResMeshContainer.position.z );
                         newMesh.updateMatrix();
@@ -3096,10 +3095,6 @@ define([
                         fp.buildingNetwork.networkMesh.remove( this.mesh );
                         this.mesh = newMesh;
                         fp.buildingNetwork.networkMesh.add( this.mesh );
-                        console.log("got here")
-                        this.highResMeshContainer.add( floorMesh.clone() )
-                        // fp.buildingNetwork.networkMesh.children[ len ].geometry.mergeMesh( floorMesh );
-                        // fp.buildingNetwork.networkMesh.children[ len ].geometry.verticesNeedUpdate = true;
                     }
                 }
             };
@@ -3671,6 +3666,8 @@ define([
             this.Setup = function() {
                 fp.appConfig.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
+                if ( fp.appConfig.displayOptions.agentsShow )
+                    fp.scene.add( fp.agentNetwork.particles );
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 if ( fp.appConfig.displayOptions.buildingsShow )
