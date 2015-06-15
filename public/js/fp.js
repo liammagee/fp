@@ -64,6 +64,8 @@ define([
         this.trailNetwork = null;
         this.cursor = null;
         this.sim = null;
+        this.lightHemisphere = null;
+        this.lightDirectional = null;
 
         /**
          * Represents a network of agents. Also provides factory and utility methods.
@@ -1735,7 +1737,7 @@ define([
 
                 if ( fp.appConfig.displayOptions.patchesShow )
                     fp.patchNetwork.buildPatchMesh();
-                fp.terrain.createTerrainColors();
+                // fp.terrain.createTerrainColors();
                 fp.toggleDayNight();
                 fp.pathNetwork.setupAStarGraph();
 
@@ -3577,6 +3579,12 @@ define([
                 colorGraphPopulation: 0x4747b3,
                 colorGraphHealth: 0xb34747,
                 colorGraphPatchValues: 0x47b347,
+
+                colorLightHemisphereSky: 0xbfbfbf,
+                colorLightHemisphereGround: 0xbfbfbf,
+                colorLightHemisphereIntensity: 1.0,
+                colorLightDirectional: 0xffffff,
+                colorLightDirectionalIntensity: 0.5,
             };
             this.buildingOptions.maxHeight = (this.buildingOptions.minHeight > this.buildingOptions.maxHeight) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
             this.buildingOptions.maxWidth = (this.buildingOptions.minWidth > this.buildingOptions.maxWidth) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
@@ -3952,13 +3960,13 @@ define([
                 displayFolder.add( fp.appConfig.displayOptions, "waterShow").onFinishChange( fp.toggleWaterState );
                 displayFolder.add( fp.appConfig.displayOptions, "networkShow").onFinishChange( fp.toggleAgentNetwork );
                 displayFolder.add( fp.appConfig.displayOptions, "networkCurve" );
-                displayFolder.add( fp.appConfig.displayOptions, "networkCurvePoints", 4, 20).step(1 );
+                displayFolder.add( fp.appConfig.displayOptions, "networkCurvePoints", 4, 20).step( 1 );
                 displayFolder.add( fp.appConfig.displayOptions, "patchesUpdate" );
                 displayFolder.add( fp.appConfig.displayOptions, "patchesShow").onFinishChange( fp.togglePatchesState );
                 displayFolder.add( fp.appConfig.displayOptions, "patchesUseShader" );
                 displayFolder.add( fp.appConfig.displayOptions, "trailsShow").onFinishChange( fp.toggleTrailState );
                 displayFolder.add( fp.appConfig.displayOptions, "trailsShowAsLines").onFinishChange( fp.toggleTrailState );
-                displayFolder.add( fp.appConfig.displayOptions, "trailLength", 1, 10000).step(1 );
+                displayFolder.add( fp.appConfig.displayOptions, "trailLength", 1, 10000).step( 1 );
                 displayFolder.add( fp.appConfig.displayOptions, "cursorShow").onFinishChange( fp.removeCursor );
                 displayFolder.add( fp.appConfig.displayOptions, "statsShow").onFinishChange( fp.toggleStatsState );
                 displayFolder.add( fp.appConfig.displayOptions, "hudShow").onFinishChange( fp.toggleHUDState );
@@ -4010,6 +4018,12 @@ define([
                 colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPopulation").onChange( fp.updateChartColors );
                 colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphHealth").onChange( fp.updateChartColors );
                 colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPatchValues").onChange( fp.updateChartColors );
+                var colorLightingFolder = colorFolder.addFolder("Lighting Colors");
+                colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereSky").onChange( fp.updateLighting );
+                colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereGround").onChange( fp.updateLighting );
+                colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightHemisphereIntensity", 0, 1).step( 0.01 ).onChange( fp.updateLighting );
+                colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightDirectional").onChange( fp.updateLighting );
+                colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightDirectionalIntensity", 0, 1).step( 0.01 ).onChange( fp.updateLighting );
                 var colorOtherFolder = colorFolder.addFolder("Other Colors");
                 colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayBackground" );
                 colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightBackground" );
@@ -4218,31 +4232,56 @@ define([
          * @memberof fp
          */
         this.setupLighting = function() {
-            var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 1.0 );
-            // var hemiLight = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
-            // var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
-            // var hemiLight = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
-            hemiLight.position.set( 0, 1000, 0 );
-            fp.scene.add( hemiLight );
+            // Remove existing lights
+            fp.scene.remove( fp.lightHemisphere );
+            fp.scene.remove( fp.lightDirectional );
+            
+            fp.lightHemisphere = new THREE.HemisphereLight( 
+                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky ), 
+                fp.appConfig.colorOptions.colorLightHemisphereGround, 
+                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereIntensity ) 
+            );
+            // var fp.lightHemisphere = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
+            // var fp.lightHemisphere = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+            // var fp.lightHemisphere = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
+            fp.lightHemisphere.position.set( 0, 1000, 0 );
+            // fp.scene.add( fp.lightHemisphere );
 
-            var dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-            // var dirLight = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
-            dirLight.position.set( 40000, 40000, 40000 );
-            dirLight.shadowDarkness = 0.25;
-            dirLight.castShadow = true;
+            fp.lightDirectional = new THREE.DirectionalLight( 
+                new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ), 
+                fp.appConfig.colorOptions.colorLightDirectionalIntensity 
+            );
+            // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
+            fp.lightDirectional.position.set( 40000, 40000, 40000 );
+            fp.lightDirectional.shadowDarkness = 0.25;
+            fp.lightDirectional.castShadow = true;
             // these six values define the boundaries of the yellow box seen above
-            dirLight.shadowCameraNear = 250;
-            dirLight.shadowCameraFar = 80000;
-            dirLight.shadowMapWidth = 4096;
-            dirLight.shadowMapHeight = 4096;
+            fp.lightDirectional.shadowCameraNear = 250;
+            fp.lightDirectional.shadowCameraFar = 80000;
+            fp.lightDirectional.shadowMapWidth = 4096;
+            fp.lightDirectional.shadowMapHeight = 4096;
             var d = 4000;
-            dirLight.shadowCameraLeft = -d;
-            dirLight.shadowCameraRight = d;
-            dirLight.shadowCameraTop = d;
-            dirLight.shadowCameraBottom = -d;
-            dirLight.shadowBias = -0.0001;
-            //dirLight.shadowCameraVisible = true; // for debugging
-            fp.scene.add( dirLight );
+            fp.lightDirectional.shadowCameraLeft = -d;
+            fp.lightDirectional.shadowCameraRight = d;
+            fp.lightDirectional.shadowCameraTop = d;
+            fp.lightDirectional.shadowCameraBottom = -d;
+            fp.lightDirectional.shadowBias = -0.0001;
+            //fp.lightDirectional.shadowCameraVisible = true; // for debugging
+            fp.scene.add( fp.lightDirectional );
+        };
+
+        /**
+         * @memberof fp
+         */
+        this.updateLighting = function() {
+            if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.colorLightDirectional ) )
+                return null;
+
+            fp.lightHemisphere.color = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky );
+            fp.lightHemisphere.groundColor = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereGround );
+            fp.lightHemisphere.intensity = fp.appConfig.colorOptions.colorLightHemisphereIntensity;
+            fp.lightDirectional.color = new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional );
+            fp.lightDirectional.intensity = fp.appConfig.colorOptions.colorLightDirectionalIntensity;
         };
 
         /**
@@ -5175,10 +5214,10 @@ define([
          */
         this.loadTerrain = function( callback ) {
             var terrainLoader = new THREE.TerrainLoader();
-            terrainLoader.load( fp.TERRAIN_MAPS[fp.terrain.terrainMapIndex], function(data) {
+            terrainLoader.load( fp.TERRAIN_MAPS[fp.terrain.terrainMapIndex], function( data ) {
                 fp.terrain.initTerrain( data );
                 fp.animate(); // Kick off the animation loop
-                if ( !_.isUndefined(callback) )
+                if ( _.isFunction( callback ) )
                     callback(); // Run the callback
            });
         };

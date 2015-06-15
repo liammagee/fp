@@ -50,7 +50,14 @@
                         	"minWidth": 41.0,
                         	"maxWidth": 80.0,
                         	"minLength": 41.0,
-                        	"maxLength": 80.0
+                        	"maxLength": 80.0,
+                            "roads": 0.0,
+                            "water": 0.0,
+                            "otherBuildings": 0.01,
+                            "distanceFromOtherBuildingsMin": 1500,
+                            "distanceFromOtherBuildingsMax": 5000,
+                            "buildingHeight": 0.0,
+                            "detectBuildingCollisions": true,
                         },
                         "3": { 
                         	"create": false },
@@ -61,11 +68,49 @@
                             "patchesShow": false,
                             "cameraOverride": true,
                             "cameraX": 0,
-                            "cameraY": 1000,
-                            "cameraZ": 1000,
+                            "cameraY": 500,
+                            "cameraZ": 2250,
                         },
                         "5": {
-                            "coloriseAgentsByHealth": false
+                            "coloriseAgentsByHealth": true,
+                            // "colorDayBackground": 0x000000,
+                            // "colorDayRoad": 0x474747,
+                            // "colorDayAgent": 0x4747b3,
+                            // "colorDayNetwork": 0x474747,
+                            // "colorDayTrail": 0x474747,
+                            // "colorDayPath": 0x474747,
+                            // "colorDayBuildingFill": 0xb1abab,
+                            // "colorDayBuildingLine": 0x222222,
+                            // "colorDayBuildingWindow": 0x222222,
+                            // "colorDayTerrainSea": 0x969696,
+                            // "colorDayTerrainLowland1": 0x2d5828,
+                            // "colorDayTerrainLowland2": 0x6d915b,
+                            // "colorDayTerrainMidland": 0x89450e,
+                            // "colorDayTerrainHighland": 0x8c8c8c,
+
+                            "colorNightBackground": 0x030303,
+                            "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
+                            "colorNightAgent": 0xbbbbbb,
+                            "colorNightNetwork": 0xffffff,
+                            // "colorNightTrail": 0x47b347,
+                            "colorNightPath": 0xffffff,
+                            "colorNightBuildingFill": 0xFFFFFF,
+                            // "colorNightBuildingLine": 0x838383,
+                            "colorNightBuildingWindow": 0xffffff,
+                            // "colorNightTerrainSea": 0x000000,
+                            "colorNightTerrainLowland1": 0x000000,
+                            "colorNightTerrainLowland2": 0x040404,
+                            "colorNightTerrainMidland": 0x080808,
+                            "colorNightTerrainHighland": 0x0c0c0c,
+                            // "colorGraphPopulation": 0x4747b3,
+                            // "colorGraphHealth": 0xb34747,
+                            // "colorGraphPatchValues": 0x47b347,
+                            // 
+                            "colorLightHemisphereSky": 0xFFFFFF,
+                            "colorLightHemisphereGround": 0xFFFFFF,
+                            "colorLightHemisphereIntensity": 0.75,
+                            "colorLightDirectional": 0xffffff,
+                            "colorLightDirectionalIntensity": 1.0,                        
                         },
                         "6": { "multiplier": 2 },
                     }
@@ -75,6 +120,7 @@
                     counter: 0,
 
                     setup: function() {
+                        fp.timescale.framesToYear = 1;
                     },
                     tick: function() {
                     }
@@ -82,6 +128,7 @@
 
                 fp.init( config, sim, function() {
                     fp.appConfig.Setup();
+                    fp.appConfig.Run();
                 } );
             }
         );
