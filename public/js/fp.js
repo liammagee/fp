@@ -2406,31 +2406,19 @@ define([
                 var weightsNormed = _.chain(directions).
                     map(function(d) { return d[ 1 ] / total; } ).
                     sort().
+                    reverse().
                     value();
-                // This convoluted expression simply generates a set of intervals from the normalised weights
-                // e.g. [0.25, 0.25, 0.25 ,0.25] => [0, 0.25, 0.5, 0.75, 1.0]
-                var intervals = _.reduce(weightsNormed,
-                    function(a, b) {
-                        var v = _.reduce(a, function(x, y) { return y;}, 1);
-                        return a.concat(v + b);
-                    }, [0]);
-                var r = Math.random() * intervals[ intervals.length - 1 ];
-                var index = 0;
+                var r = Math.random();
+                var index = 0, runningTotal = 0, len = directions.length - 1;
                 // Note the interval array is initialisaed with an addition zero
-                for (var i = 0; i < intervals.length - 1; i++) {
-                    var a = intervals[ i ], b = intervals[ i + 1 ];
-                    if (r >= a && r < b) {
-                        index = i;
-                        break;
+                for (var i = 0; i < weightsNormed.length; i++) {
+                    var a = weightsNormed[ i ];
+                    runningTotal += a;
+                    if ( r < runningTotal && i < directions.length ) {
+                        return directions[ len - i ][ 0 ];
                     }
                 }
-
-                try {
-                    return directions[ index ][ 0 ];
-                }
-                catch (e) {
-                    return this.randomDirection();
-                }
+                return this.randomDirection();
             };
 
             /**
