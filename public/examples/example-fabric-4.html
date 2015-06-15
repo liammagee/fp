@@ -43,7 +43,7 @@
                     "Default": {
                         // Agent options
                         "1": {
-                            "initialPopulation": 1000,
+                            "initialPopulation": 1,
                             "initialExtent": 100,
                             // "maxExtent": 100,
                             // "initialX": 50,
@@ -75,7 +75,7 @@
                             "buildingHeight": 0.0,
                             "detectBuildingCollisions": true,
 
-                            // "create": true,
+                            "create": true,
 
                             // "maxNumber": 250,
 
@@ -98,15 +98,16 @@
                             // // Visualisation
                             // "turning": false,
                             // "falling": false,
-                            // "riseRate": 10,
+                            "riseRate": 1,
 
                             // // Dimensions
-                            // "minHeight": 10,
-                            // "maxHeight": 70,
+                            "minHeight": 10,
+                            "maxHeight": 70,
                             // "minWidth": 40,
                             // "maxWidth": 200,
                             // "minLength": 40,
                             // "maxLength": 200,
+                            // "maxLevels": 0,
                             // "maxLevels": 0,
                             // "width": 0,
                             // "length": 0,
@@ -171,11 +172,12 @@
                         },
                         // Display options
                         "4": {
-                            // "buildingsShow": true,
+                            "buildingsShow": true,
                             // "roadsShow": true,
                             "waterShow": false,
                             "networkShow": false,
                             "networkCurve": false,
+                            "agentsShow": false,
                             // "networkCurvePoints": 20,
                             // "patchesShow": false,
                             // "patchesUpdate": true,
@@ -282,7 +284,7 @@
                         */
 
                         // Default
-                        this.positions.push( [ fp.camera.position.x, fp.camera.position.y, fp.camera.position.z ] );
+                        //this.positions.push( [ fp.camera.position.x, fp.camera.position.y, fp.camera.position.z ] );
                     },
                     tick: function() {
                         /*

@@ -350,7 +350,6 @@ define([
                     // Depending on the speed of the simulation, determine whether this agent needs to move
                     var timeToMove = Math.floor( ( i / this.agents.length) * fp.timescale.framesToYear );
                     var interval = fp.timescale.frameCounter % fp.timescale.framesToYear;
-
                     if ( timeToMove == interval )  {
                         var underConstruction = agent.build() || agent.buildRoad();
 
@@ -736,7 +735,7 @@ define([
                     var building = fp.buildingNetwork.buildings[i];
                     var likelihoodToGrow = Math.random();
                     if ( likelihoodToGrow > fp.likelihoodOfGrowth() )
-                        building.update();
+                        building.updateBuilding();
                 }
             };
 
@@ -2547,7 +2546,7 @@ define([
 
                 if ( fp.buildingNetwork.buildings.length === 0 ) { // If there are no buildings, build an initial "seed"
                     this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
-                    return ( !_.isUndefined(this.home) );
+                    return ( !_.isUndefined( this.home ) );
                 }
                 else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber )
                     return false;
@@ -2754,7 +2753,6 @@ define([
             this.addFloor = function () {
                 var base = this.levels * fp.appConfig.buildingOptions.levelHeight;
                 var points = fp.BUILDING_FORMS[this.buildingForm]( this.localWidth, this.localLength, base );
-
                 if ( !fp.appConfig.buildingOptions.useShader ) {
                     if (fp.appConfig.buildingOptions.showLines) {
                         this.geometry.dynamic = true;
@@ -2767,15 +2765,7 @@ define([
                         this.generateWindows(points);
                 }
                 else {
-                        this.shadedShape( points );
-                        /*
-                    if ( this.levels == 0 ) {
-                        this.shadedShape( points );
-                    }
-                    else {
-                        this.shadedShapeExtension( points );
-                    }
-                    */
+                    this.shadedShape( points );
                 }
 
                 this.levels++;
@@ -2973,22 +2963,28 @@ define([
                 return null;
             };
 
+            this.shadedShapeGeometry = function( points ) {
+                var shape = new THREE.Shape();
+                shape.moveTo(points[0].x, points[0].z);
+                for ( var i = 1; i < points.length; i++ )
+                    shape.lineTo(points[i].x, points[i].z);
+                shape.lineTo(points[0].x, points[0].z);
+                return shape;
+            };
+
             this.shadedShape = function( points ) {
                 var base = points[0].y;
                 var height = base;// + this.lod.position.y;
                 var offset = fp.getOffset( this.levels, points.length );
-                var shape = new THREE.Shape();
-                shape.moveTo(points[0].x, points[0].z);
-                for (var i = 1; i < points.length; i ++)
-                    shape.lineTo(points[i].x, points[i].z);
-                shape.lineTo(points[0].x, points[0].z);
+                var shape = this.shadedShapeGeometry( points );
                 var extrudeSettings = { amount: fp.appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
                 var shapeGeometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
                 shapeGeometry.computeBoundingBox();
 
                 if ( shapeGeometry.boundingBox ) {
                     // if ( this.highResMeshContainer.children.length == 0 ) {
-                    if ( this.levels == 0 ) {
+                    // if ( this.levels < 1000 ) {
+                    if ( this.levels === 0 ) {
                         var fc, lc, wc;
                         if (fp.appConfig.displayOptions.dayShow) {
                             fc = fp.buildColorVector(fp.appConfig.colorOptions.colorDayBuildingFill);
@@ -3024,7 +3020,7 @@ define([
                             fillRooves: { type: "i", value: fp.appConfig.buildingOptions.fillRooves ? 1 : 0 }
                         };
                         var attributes = { mixin: { type: "f", value: [] } };
-                        for (i = 0; i < shapeGeometry.vertices.length; i++)
+                        for ( var i = 0; i < shapeGeometry.vertices.length; i++ )
                             attributes.mixin.value[i] = Math.random() * 10;
 
                         var shaderMaterial = new THREE.ShaderMaterial( {
@@ -3056,6 +3052,7 @@ define([
                         var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
+                        // fp.buildingNetwork.networkMesh.add( this.highResMeshContainer );
                         fp.buildingNetwork.networkMesh.add( this.mesh );
                         this.highResMeshContainer.add( this.mesh.clone() );
                         /*
@@ -3078,13 +3075,31 @@ define([
                     else {
                         var dumbMaterial = new THREE.MeshBasicMaterial({ color: "#ff0000" });
                         var floorMesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
-                        // this.mesh.matrixAutoUpdate = false;
-                        // this.highResMeshContainer.children[0].geometry.merge( this.mesh.geometry, this.mesh.matrix );
-                        var len = fp.buildingNetwork.networkMesh.children.length - 1;
                         floorMesh.position.set( 0, 0, height );
                         floorMesh.updateMatrix();
-                        fp.buildingNetwork.networkMesh.children[ len ].geometry.mergeMesh( floorMesh );
-                        fp.buildingNetwork.networkMesh.children[ len ].geometry.verticesNeedUpdate = true;
+                        var newGeom = this.mesh.geometry.clone()
+                        newGeom.mergeMesh( floorMesh )
+                        newGeom.verticesNeedUpdate = true;
+                        var newMesh = new THREE.Mesh( newGeom, this.mesh.material );
+                        newMesh.castShadow = true;
+                        newMesh.receiveShadow = true;
+                        newMesh.children.forEach( function(b) {
+                            b.castShadow = true;
+                            b.receiveShadow = true;
+                        } );
+                        newMesh.rotation.set( -Math.PI / 2, 0, 0 );
+                        // var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                        var newHeight = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                        newMesh.position.set( this.highResMeshContainer.position.x, newHeight, this.highResMeshContainer.position.z );
+                        newMesh.updateMatrix();
+                        newMesh.geometry.verticesNeedUpdate = true;
+                        fp.buildingNetwork.networkMesh.remove( this.mesh );
+                        this.mesh = newMesh;
+                        fp.buildingNetwork.networkMesh.add( this.mesh );
+                        console.log("got here")
+                        this.highResMeshContainer.add( floorMesh.clone() )
+                        // fp.buildingNetwork.networkMesh.children[ len ].geometry.mergeMesh( floorMesh );
+                        // fp.buildingNetwork.networkMesh.children[ len ].geometry.verticesNeedUpdate = true;
                     }
                 }
             };
@@ -3097,11 +3112,12 @@ define([
             /**
              * Updates the building's state.
              */
-            this.update = function() {
+            this.updateBuilding = function() {
                 if ( this.canAddFloor() ) {
                     this.counter ++;
-                    if (this.counter % fp.appConfig.buildingOptions.riseRate === 0 )
+                    if ( this.counter % fp.appConfig.buildingOptions.riseRate === 0 || this.levels === 0 ) {
                         this.addFloor();
+                    }
 
                     if (fp.appConfig.buildingOptions.falling) {
                         var y = - ( this.levelHeight /  (2 * fp.appConfig.buildingOptions.riseRate));
@@ -3137,8 +3153,10 @@ define([
 
             /**
              * Updates the building's shader.
-                 */
+             */
             this.updateBuildingShader = function() {
+                if ( _.isUndefined( this.mesh ) || _.isNull( this.mesh ) )
+                    return;
                 var verticesPerLevel = this.mesh.geometry.vertices.length / this.levels;
                 var shaderMaterial = this.mesh.material;
                 for ( var i = 0; i < this.levels; i++ ) {
@@ -3150,8 +3168,8 @@ define([
                             shaderMaterial.attributes.mixin.value[ j ] = r;
                         }
                     }
-                    shaderMaterial.attributes.mixin.needsUpdate = true; // important!
                 };
+                shaderMaterial.attributes.mixin.needsUpdate = true; // important!
             };
 
             this.updateSimpleBuilding = function () {
@@ -3490,6 +3508,7 @@ define([
                 flattenLift: 20
             };
             this.displayOptions = {
+                agentsShow: true,
                 buildingsShow: true,
                 roadsShow: true,
                 waterShow: true,
@@ -3955,6 +3974,7 @@ define([
 
             if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
                 var displayFolder = fp.gui.addFolder("Display Options");
+                displayFolder.add( fp.appConfig.displayOptions, "agentsShow").onFinishChange( fp.toggleAgentState );
                 displayFolder.add( fp.appConfig.displayOptions, "buildingsShow").onFinishChange( fp.toggleBuildingState );
                 displayFolder.add( fp.appConfig.displayOptions, "roadsShow").onFinishChange( fp.toggleRoadState );
                 displayFolder.add( fp.appConfig.displayOptions, "waterShow").onFinishChange( fp.toggleWaterState );
@@ -4994,6 +5014,18 @@ define([
                     p1 = p2 = undefined;
                 }
             }
+        };
+
+
+        /**
+         * Toggles the visibility of the agent network.
+         * @memberof fp
+         */
+        this.toggleAgentState = function() {
+            if ( !fp.appConfig.displayOptions.agentsShow )
+                fp.scene.remove(  fp.agentNetwork.particles  );
+            else
+                fp.scene.add(  fp.agentNetwork.particles  );
         };
 
         /**

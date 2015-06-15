@@ -93,7 +93,7 @@
                         clashCounter: 0,
                         dim: 1000,
                         grid: 10,
-                        maxBuildings: 200,
+                        maxBuildings: 1,
                         setup: function() {
                             // Create a grid road structure
                             var i;
@@ -117,11 +117,10 @@
                                     p2 = new THREE.Vector3(x2, y2, z);
                                 fp.roadNetwork.addRoad(p1, p2, 10);
                             }
-
                         },
                         tick: function() {
+                            var minHeight = 30, maxHeight = 100;
                             if ( fp.buildingNetwork.buildings.length < this.maxBuildings  ) {
-                                var minHeight = 30, maxHeight = 100;
                                 var x = Math.floor(Math.random() * this.dim * 2) - this.dim,
                                     z = Math.floor(Math.random() * this.dim * 2) - this.dim,
                                     y = fp.getHeight(x, z) + fp.appConfig.terrainOptions.defaultHeight;
@@ -133,16 +132,36 @@
                                 //     length: fp.appConfig.buildingOptions.minLength
                                 // }
                                 var building = fp.buildingNetwork.createBuilding( position, dimensions );
+                                // if ( typeof( building ) !== "undefined" ) {
+                                //     var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
+                                //     for (var i = 0; i < height; i++) {
+                                //         while ( building.canAddFloor() )
+                                //             building.addFloor();
+                                //     }
+                                // }
+                                // else
+                                //     this.counter++;
+                            }
+                            var minHeight = 30, maxHeight = 100;
+                            fp.buildingNetwork.buildings.forEach(function(building) {
                                 if ( typeof( building ) !== "undefined" ) {
-                                    var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
-                                    for (var i = 0; i < height; i++) {
-                                        if ( building.canAddFloor() )
-                                            building.addFloor();
+                                    // while ( building.canAddFloor() ) {
+                                    //     var base = building.levels * fp.appConfig.buildingOptions.levelHeight;
+                                    //     var points = fp.BUILDING_FORMS[ building.buildingForm ]( building.localWidth, building.localLength, base );
+                                    //     building.shadedShape( points );
+                                    //     building.levels++;
+                                    //     // building.addFloor();
+
+                                    //     var t = new Date().getTime();
+                                    //     while ( new Date().getTime() < t + 20 ) {}
+                                    // }
+                                    if ( building.canAddFloor() ) {
+                                        // building.addFloor();
                                     }
                                 }
                                 else
                                     this.counter++;
-                            }
+                            })
                         }
                     };
 
