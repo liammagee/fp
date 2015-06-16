@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <base href="/">
+        <link rel="stylesheet" type="text/css" href="../css/fp.css">
+        <script src="../js/require.js"></script>
+        <script>
+        requirejs.config({
+            baseUrl: '../js',
+            "shim": {
+                "underscore": { exports: "_" },
+                "dat.gui": { exports: "dat.gui" },
+                "smoothie": { exports: "SmoothieChart" },
+                "stats.min": { exports: "Stats" },
+                "jstat.min": { exports: "jStat" },
+                "three": { exports: "THREE" },
+                "Mirror": ["three"],
+                "WaterShader": ["three"],
+                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
+                "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
+                "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
+            }
+        })
+        requirejs([
+                "fp",
+                "dat.gui",
+                "smoothie",
+                "csscolorparser",
+                "stats.min",
+                "jstat.min",
+                "javascript.util",
+                "jsts",
+                "Mirror",
+                "TerrainLoader",
+                "THREEx.KeyboardState",
+                "TrackballControls",
+                "PointerLockControls",
+            ],
+            function() {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        "1": {
+                            "initialPopulation": 100
+                        },
+                        "2": {
+                            "maxNumber": 100,
+                            "rotateRandomly": false,
+                            "rotateRandomly": false,
+                            "showLines": false
+                        },
+                        "3": {
+                            "create": false
+                        },
+                      "4": {
+                            "buildingsShow": false,
+                            "networkShow": true,
+                            "networkCurve": false,
+                            "terrainShow": true,
+                            "dayShow": false,
+                            "waterShow": false,
+                            "skyboxShow": false,
+                            "cameraOverride": true,
+                            "cameraY": 200,
+                            "cameraZ": 800
+                        },
+                      "5": {
+                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
+                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
+                            "coloriseAgentsByHealth": false,
+                        },
+                      "6": {
+                        "loadHeights": false,
+                        "shaderUse": false,
+                        "multiplier": 1
+                    },
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+                    setup: function() {
+                        counter = 0;
+                        console.log("Custom set up")
+                    },
+                    tick: function() {
+                        // console.log("Custom tick: " + (++ this.counter))
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
+                    var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
+                    var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
+                    fp.agentNetwork.networks = [ network1, network2, network3 ];
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>

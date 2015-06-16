@@ -1,0 +1,106 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <base href="/">
+        <link rel="stylesheet" type="text/css" href="../css/fp.css">
+        <script src="../js/require.js"></script>
+        <script>
+        requirejs.config({
+            baseUrl: '../js',
+            "shim": {
+                "underscore": { exports: "_" },
+                "dat.gui": { exports: "dat.gui" },
+                "smoothie": { exports: "SmoothieChart" },
+                "stats.min": { exports: "Stats" },
+                "jstat.min": { exports: "jStat" },
+                "three": { exports: "THREE" },
+                "Mirror": ["three"],
+                "WaterShader": ["three"],
+                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
+                "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
+                "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
+            }
+        })
+        requirejs([
+                "fp",
+                "dat.gui",
+                "smoothie",
+                "stats.min",
+                "jstat.min",
+                "javascript.util",
+                "jsts",
+                "Mirror",
+                "WaterShader",
+                "TerrainLoader",
+                "THREEx.KeyboardState",
+                "TrackballControls",
+                "PointerLockControls",
+            ],
+            function() {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        // Agent options
+                        "1": { 
+                            "initialPopulation": 2000, 
+                            "initialExtent": 50, 
+                            "maxExtent": 50 
+                        },
+                        // Buildings options
+                        "2": { 
+                            "create": true 
+                        },
+                        // Roads options
+                        "3": { 
+                            "create": false 
+                        },
+                        // Display options
+                        "4": {
+                            "waterShow": false,
+                            "terrainShow": true,
+                            "dayShow": false,
+                            "patchesShow": true,
+                            "wireframeShow": false,
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 2000,
+                            "cameraZ": 2000,
+                        },
+                        // Color options
+                        "5": {
+                            "coloriseAgentsByHealth": false,
+                        },
+                        // Terrain options
+                        "6": { 
+                            "loadHeights": false,
+                            "patchSize": 160,
+                            "gridExtent": 16000,
+                            "gridPoints": 16000,
+                            "multiplier": 1
+                        },
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+
+                    setup: function() {
+                    },
+                    tick: function() {
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    fp.appConfig.Setup();
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>

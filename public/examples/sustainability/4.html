@@ -1,0 +1,184 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <base href="/">
+        <link rel="stylesheet" type="text/css" href="../css/fp.css">
+        <script src="../js/require.js"></script>
+        <script>
+        requirejs.config({
+            baseUrl: '../js',
+            "shim": {
+                "underscore": { exports: "_" },
+                "dat.gui": { exports: "dat.gui" },
+                "smoothie": { exports: "SmoothieChart" },
+                "stats.min": { exports: "Stats" },
+                "jstat.min": { exports: "jStat" },
+                "three": { exports: "THREE" },
+                "Mirror": ["three"],
+                "WaterShader": ["three"],
+                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
+                "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
+                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
+                "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
+            }
+        })
+        requirejs([
+                "fp",
+                "dat.gui",
+                "smoothie",
+                "stats.min",
+                "jstat.min",
+                "javascript.util",
+                "jsts",
+                "Mirror",
+                "WaterShader",
+                "TerrainLoader",
+                "THREEx.KeyboardState",
+                "TrackballControls",
+                "PointerLockControls",
+            ],
+            function() {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        "1": { "initialPopulation": 250, "initialExtent": 80, "maxExtent": 80 },
+                        "2": { "create": false },
+                        "3": { "create": false },
+                        "4": {
+                            "waterShow": false,
+                            "terrainShow": true,
+                            "dayShow": false,
+                            "patchesShow": true,
+
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 1000,
+                            "guiShowColorFolder": false
+                        },
+                        "5": {
+                            "coloriseAgentsByHealth": false,
+                        },
+                        "6": { "multiplier": 0.25, "loadHeights": true, "patchSize": 16 },
+                    }
+                  }
+                };
+                var sim =  {
+                    counter: 0,
+
+                    setup: function() {
+                        counter = 0;
+
+                        // Set up an agent class that can exercise, consume, reproduce and die
+                        fp.Agent.prototype.exercise = function() {
+                            if (this.health > 0)
+                                this.health -= fp.appConfig.malthusOptions.energyLoss;
+                        }
+
+                        fp.Agent.prototype.consume = function() {
+                            var index = fp.getPatchIndex( this.position.x, this.position.z );
+                            var patch = fp.patchNetwork.patches[index];
+                            if ( !_.isUndefined( patch ) ) {
+                                var agentsOnPatch = patch.length;
+                                var patchValue = fp.patchNetwork.patchValues[index];
+                                var availableYield = patchValue.value / agentsOnPatch;
+                                patchValue.updatePatchValue( - fp.appConfig.malthusOptions.patchConsumptionRate );
+                                this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
+                                this.health = (this.health > 100) ? 100 : this.health;
+                            }
+                        };
+
+                        fp.Agent.prototype.die = function() {
+                            fp.scene.remove( fp.agentNetwork.particles );
+                            var index = fp.agentNetwork.agents.indexOf(this);
+                            fp.agentNetwork.agents.splice(index, 1);
+                            fp.agentNetwork.updateAgentParticleSystem();
+                            fp.scene.add( fp.agentNetwork.particles );
+                        };
+
+                        fp.Agent.prototype.reproduce = function() {
+                            // Crude set of assumptions about conditions for reproduction
+                            var current = fp.agentNetwork.agents.length;
+                            var initial = fp.appConfig.agentOptions.initialPopulation;
+                            var popCorrection = Math.pow( ( current / initial ), 2 );
+                            if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
+                                 this.children.length < fp.appConfig.malthusOptions.maxChildren &&
+                                 this.gender == "f" &&
+                                 Math.random() * this.health > 50 && 
+                                 this.age > 15 && this.age < 50 )  {
+                                fp.scene.remove( fp.agentNetwork.particles );
+                                var agent = fp.agentNetwork.createAgent();
+                                agent.mother = this;
+                                agent.color = this.color;
+                                this.children.push(agent);
+                                fp.agentNetwork.agents.push(agent);
+                                fp.agentNetwork.updateAgentParticleSystem();
+                            }
+                        };
+
+
+                        // Override PatchNetwork methods
+                        fp.PatchNetwork.prototype.reviseValues = function() {
+                            fp.patchNetwork.patchMeanValue = 0;
+                            for (var i = 0; i < fp.patchNetwork.patchValues.length; i++) {
+                                var patch = fp.patchNetwork.patchValues[i];
+                                // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
+                                if ( patch.value < patch.initialValue ) { // Recover
+                                    patch.updatePatchValue( fp.appConfig.malthusOptions.patchRecoveryRate );
+                                }
+                                fp.patchNetwork.patchMeanValue += patch.value;
+                            }
+                            fp.patchNetwork.patchMeanValue /= fp.patchNetwork.patchValues.length;
+                        };
+
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            // Set up a random age
+                            if ( fp.appConfig.agentOptions.randomAge ) {
+                                // Sample a beta distribution with alpha = 2 and beta = 5
+                                // This produces a large population at roughly a reproductive age.
+                                agent.age = Math.floor( jStat.beta.sample( 2, 5 ) * 100 );
+                                agent.health = 100 - agent.age;
+                            }
+                        });
+
+                    },
+                    tick: function() {
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            agent.exercise();
+                            agent.consume();
+                            agent.reproduce();
+                            if (agent.health <= 0)
+                                agent.die();
+                        } );
+                        //fp.patchNetwork.reviseValues();
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    fp.appConfig.malthusOptions = {};
+                    fp.appConfig.malthusOptions.reproductionChance = 0.25;
+                    fp.appConfig.malthusOptions.maxChildren = 10;
+                    fp.appConfig.malthusOptions.energyLoss = 0.1;
+                    fp.appConfig.malthusOptions.energyGain = 2;
+                    fp.appConfig.malthusOptions.patchConsumptionRate = 0.1;
+                    fp.appConfig.malthusOptions.patchRecoveryRate = 0.005;
+                    var malthusFolder = fp.gui.addFolder( "Malthusian Options" );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "reproductionChance", 0, 1).step( 0.01 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "maxChildren", 1, 10).step( 1 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyLoss", 0, 1).step( 0.05 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 10).step( 0.1 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "patchConsumptionRate", 0, 1).step( 0.005 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "patchRecoveryRate", 0, 0.1).step( 0.005 );
+                    fp.appConfig.Setup();
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
+1

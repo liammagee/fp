@@ -463,9 +463,9 @@ define([
                     color: { type: "c", value: [] }
                 };
 
-                var discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/stickman_180.png" );
+                var discTexture = THREE.ImageUtils.loadTexture( "/images/sprites/stickman_180.png" );
                 if ( !fp.appConfig.agentOptions.useStickman )
-                    discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/disc.png" );
+                    discTexture = THREE.ImageUtils.loadTexture( "/images/sprites/disc.png" );
 
                 // uniforms
                 var agentParticleSystemUniforms = {
@@ -1599,7 +1599,7 @@ define([
             };
         };
 
-        this.TERRAIN_MAPS = [ "../assets/syd2.bin", "../assets/mel2.bin" ];
+        this.TERRAIN_MAPS = [ "/assets/syd2.bin", "/assets/mel2.bin" ];
 
         /**
          * Represents the fp.terrain of the world.
@@ -4303,7 +4303,7 @@ define([
                 param: 4,
                 filterparam: 1
             };
-            var waterNormals = new THREE.ImageUtils.loadTexture( "../textures/waternormals.jpg" );
+            var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
             waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
             fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
                 textureWidth: 512,
@@ -4337,10 +4337,10 @@ define([
             cubeMap.format = THREE.RGBFormat;
             cubeMap.flipY = false;
             var loader = new THREE.ImageLoader();
-            var skies = [   ["../textures/skyboxsun25degtest.png", 1024, 0],
-                            ["../textures/skyboxsun5deg.png", 1024, 0],
-                            ["../textures/skyboxsun5deg2.png", 1024, 0],
-                            ["../textures/skyboxsun45deg.png", 1024, 0]
+            var skies = [   ["/textures/skyboxsun25degtest.png", 1024, 0],
+                            ["/textures/skyboxsun5deg.png", 1024, 0],
+                            ["/textures/skyboxsun5deg2.png", 1024, 0],
+                            ["/textures/skyboxsun45deg.png", 1024, 0]
             ]; // Skies courtesy of http://reije081.home.xs4all.nl/skyboxes/
             var skyI = Math.floor(Math.random() * skies.length);
             loader.load( skies[skyI][0], function ( image ) {

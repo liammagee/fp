@@ -10,6 +10,7 @@
     <meta name="author" content="">
 
     <title>Fierce Planet</title>
+        <base href="/">
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -40,34 +41,37 @@
                     <a class="links" id="example-overview" href="/">Overview</a>
                 </li>
                 <li>
-                    <a class="links" id="example-basic" href="#">Examples</a>
+                    <a class="links" id="example-usage" href="#">Examples</a>
                     <ul>
                         <li>
-                            <a class="links" id="example-basic" href="#">Basic Usage</a>
+                            <a class="links" id="example-usage-basic" href="#">Basic Usage</a>
                         </li>
                         <li>
-                            <a class="links" id="example-custom-day" href="#">Daytime</a>
+                            <a class="links" id="example-usage-day" href="#">Daytime</a>
                         </li>
                         <li>
-                            <a class="links" id="example-custom-colorised" href="#">Colorised</a>
+                            <a class="links" id="example-usage-colorised" href="#">Colorised</a>
                         </li>
                         <li>
-                            <a class="links" id="example-basic-static-grid" href="#">Streetscape</a>
+                            <a class="links" id="example-usage-grid" href="#">Streetscape</a>
                         </li>
                         <li>
-                            <a class="links" id="example-custom-networks" href="#">Networks</a>
+                            <a class="links" id="example-usage-networks" href="#">Networks</a>
                         </li>
                         <li>
-                            <a class="links" id="example-custom-multiple" href="#">Multiple</a>
+                            <a class="links" id="example-usage-multiple-screens" href="#">Multiple</a>
                         </li>
                         <li>
-                            <a class="links" id="example-custom-melbourne" href="#">Melbourne</a>
+                            <a class="links" id="example-usage-melbourne" href="#">Melbourne</a>
                         </li>
                         <li>
                             <a class="links" id="intro-sustainability-model" href="#">Sustainability</a>
                         </li>
                         <li>
                             <a class="links" id="intro-fabric-model" href="#">Urban Fabric</a>
+                        </li>
+                        <li>
+                            <a class="links" id="intro-geolanguagegames-model" href="#">Geo Language Games</a>
                         </li>
                     </ul>
                 </li>
@@ -94,13 +98,13 @@
                     <div class="col-lg-12">
                         <div id="heading">
                             <h1 class="heading" id="heading-overview">Fierce Planet</h1>
-                            <h1 class="heading" id="heading-example-basic">Basic Usage</h1>
-                            <h1 class="heading" id="heading-example-custom-day">Custom - Daytime</h1>
-                            <h1 class="heading" id="heading-example-custom-colorised">Custom - Colorised</h1>
-                            <h1 class="heading" id="heading-example-basic-static-grid">Grid Streetscape</h1>
-                            <h1 class="heading" id="heading-example-custom-networks">Multiple Networks</h1>
-                            <h1 class="heading" id="heading-example-custom-multiple">Multiple Simulations</h1>
-                            <h1 class="heading" id="heading-example-custom-melbourne">Alternative map - Melbourne</h1>
+                            <h1 class="heading" id="heading-example-usage-basic">Basic Usage</h1>
+                            <h1 class="heading" id="heading-example-usage-day">Custom - Daytime</h1>
+                            <h1 class="heading" id="heading-example-usage-colorised">Custom - Colorised</h1>
+                            <h1 class="heading" id="heading-example-usage-grid">Grid Streetscape</h1>
+                            <h1 class="heading" id="heading-example-usage-networks">Multiple Networks</h1>
+                            <h1 class="heading" id="heading-example-usage-multiple">Multiple Simulations</h1>
+                            <h1 class="heading" id="heading-example-usage-melbourne">Alternative map - Melbourne</h1>
                             <h1 class="heading" id="heading-intro-sustainability-model">Sustainability Models</h1>
                             <h1 class="heading" id="heading-intro-fabric-model">Urban Fabric Models</h1>
                             <h1 class="heading" id="heading-contact">Contact</h1>
@@ -124,7 +128,7 @@
                                 </div>
                             </div>
 
-                            <div class="content" id="content-example-basic">
+                            <div class="content" id="content-example-usage">
                                 <div>The scene below shows the default configuration of <em>Fierce Planet</em>.
                                 Once the scene below has loaded, click on the <em>Setup</em> button to populate it with agents. Then click <em>Run</em> to begin the simulation.
                                 </div>
@@ -150,29 +154,29 @@
                                 </ul>
                                 </div>
                                 <div>
-                                    <a href="examples/example-basic.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/basic.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
-                            <div class="content" id="content-example-basic">
+                            <div class="content" id="content-example-usage-basic">
                                 <h3>Basic Configuration</h3>
                                 <div>Shows <em>Fierce Planet</em> in its default configuration.</div>
                             </div>
-                            <div class="content" id="content-example-custom-day">
+                            <div class="content" id="content-example-usage-day">
                                 <div>The same configuration as the default, but with the day time option turned on.</div>
                                 <div>
-                                    <a href="examples/example-custom-day.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/day.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
-                            <div class="content" id="content-example-custom-colorised">
+                            <div class="content" id="content-example-usage-colorised">
                                 <div>
                                     Demonstrates a stylised color scheme, loosely modelled on the work of
                                     <a href="http://www.gappenap.com/">Remko Heemskerk</a>.
                                 </div>
                                 <div>
-                                    <a href="examples/example-custom-colorised.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/colorised.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
-                            <div class="content" id="content-example-basic-static-grid">
+                            <div class="content" id="content-example-usage-grid">
                                 <div>
                                     Demonstrates a procedural city builder (no agents!).
                                 </div>
@@ -182,31 +186,31 @@
                                     either roads or other buildings.
                                 </div>
                                 <div>
-                                    <a href="examples/example-basic-static-grid.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/grid.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
-                            <div class="content" id="content-example-custom-networks">
+                            <div class="content" id="content-example-usage-networks">
                                 <div>
                                     Showcases the creation of multiple networks (shown in red, green and blue).
                                 </div>
                                 <div>
-                                    <a href="examples/example-custom-networks.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/networks.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
-                            <div class="content" id="content-example-custom-multiple">
+                            <div class="content" id="content-example-usage-multiple">
                                 <div>
                                     Showcases multiple simulations (day and night) running on the same page.
                                 </div>
                                 <div>
-                                    <a href="examples/example-custom-multiple.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/multiple-screens.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
-                            <div class="content" id="content-example-custom-melbourne">
+                            <div class="content" id="content-example-usage-melbourne">
                                 <div>
                                     Showcases using a different starting map.
                                 </div>
                                 <div>
-                                    <a href="examples/example-custom-melbourne.html" target="_blank">Open in a new window</a>
+                                    <a href="examples/usage/melbourne.html" target="_blank">Open in a new window</a>
                                 </div>
                             </div>
                             <div class="content" id="content-intro-sustainability-model">
@@ -224,7 +228,7 @@
                                     <div>As agents move over the terrain, patches lose health.</div>
                                     <div>Patches regain health once the agent has moved.</div>
                                     <div>
-                                        <a href="examples/example-sustainability-1.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/sustainability/1.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                                 <div>
@@ -234,7 +238,7 @@
                                         <em>Description: </em> as above but including the vagaries of terrain (water and topographical variation).
                                     </div>
                                     <div>
-                                        <a href="examples/example-sustainability-2.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/sustainability/2.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                                 <div>
@@ -244,7 +248,7 @@
                                         <em>Description: </em> again including all the assumptions of the previous two scenarios but introducing settlement patterns and the path dependency (in terms of agent behaviour) that this implies.
                                     </div>
                                     <div>
-                                        <a href="examples/example-sustainability-3.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/sustainability/3.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                                 <div>
@@ -254,7 +258,7 @@
                                         <em>Description: </em> this scenario again builds on the previous one by introducing the dynamic of population growth as directly connected to resource consumption and availability.
                                     </div>
                                     <div>
-                                        <a href="examples/example-sustainability-4.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/sustainability/4.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                                 <div>
@@ -264,7 +268,7 @@
                                         <em>Description: </em> builds upon (and critiques) the classic Malthusian scenario by acknowledging the role of technological advances in increasing both the effectiveness and efficiency of resource utilisation and the availability of new resource sources.
                                     </div>
                                     <div>
-                                        <!-- <a href="examples/example-sustainability-5.html" target="_blank">Open in a new window</a> -->
+                                        <!-- <a href="examples/sustainability/5.html" target="_blank">Open in a new window</a> -->
                                     </div>
                                 </div>
                                 <div>
@@ -274,7 +278,7 @@
                                         <em>Description: </em> this scenario introduces a simplified suite of assumptions from the 1972 (rereleased in 2004) report of the Club of Rome to again demonstrate the concept of limits to growth.
                                     </div>
                                     <div>
-                                        <!-- <a href="examples/example-sustainability-6.html" target="_blank">Open in a new window</a> -->
+                                        <!-- <a href="examples/sustainability/6.html" target="_blank">Open in a new window</a> -->
                                     </div>
                                 </div>
                                 <div>
@@ -284,7 +288,7 @@
                                         <em>Description: </em> further applies the assumptions of the concept of TBL accounting.
                                     </div>
                                     <div>
-                                        <!-- <a href="examples/example-sustainability-7.html" target="_blank">Open in a new window</a> -->
+                                        <!-- <a href="examples/sustainability/7.html" target="_blank">Open in a new window</a> -->
                                     </div>
                                 </div>
                                 <div>
@@ -294,7 +298,7 @@
                                         <em>Description: </em> as above it includes the assumptions of these two related approaches to sustainability.
                                     </div>
                                     <div>
-                                        <!-- <a href="examples/example-sustainability-8.html" target="_blank">Open in a new window</a> -->
+                                        <!-- <a href="examples/sustainability/8.html" target="_blank">Open in a new window</a> -->
                                     </div>
                                 </div>
                                 <div>
@@ -304,13 +308,13 @@
                                         <em>Description: </em> finally introduces the dynamic of geographic/spatial inequality in terms of growth (reflecting the insights of Harvey and development studies more generally).
                                     </div>
                                     <div>
-                                        <!-- <a href="examples/example-sustainability-9.html" target="_blank">Open in a new window</a> -->
+                                        <!-- <a href="examples/sustainability/9.html" target="_blank">Open in a new window</a> -->
                                     </div>
                                 </div>
                                 <div>
                                     <h2>A Synthetic Model</h2>
                                     <div>
-                                        <!-- <a href="examples/example-sustainability-9.html" target="_blank">Open in a new window</a> -->
+                                        <!-- <a href="examples/sustainability/9.html" target="_blank">Open in a new window</a> -->
                                     </div>
                                 </div>
                             </div>
@@ -320,21 +324,38 @@
                                     <h2>Basic Agent Movement</h2>
 
                                     <div>
-                                        <a href="examples/example-fabric-1.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/fabric/1.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                                 <div>
                                     <h2>Synchronised 'threads'</h2>
 
                                     <div>
-                                        <a href="examples/example-fabric-2.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/fabric/2.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                                 <div>
                                     <h2>Interwoven model</h2>
 
                                     <div>
-                                        <a href="examples/example-fabric-3.html" target="_blank">Open in a new window</a>
+                                        <a href="examples/fabric/3.html" target="_blank">Open in a new window</a>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h2>Interwoven model 2</h2>
+
+                                    <div>
+                                        <a href="examples/fabric/4.html" target="_blank">Open in a new window</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="content" id="content-intro-geolanguagegames-model">
+                                <div></div>
+                                <div>
+                                    <h2>Basic Geo Language Game Model</h2>
+
+                                    <div>
+                                        <a href="examples/geolanguagegames/basic.html" target="_blank">Open in a new window</a>
                                     </div>
                                 </div>
                             </div>
