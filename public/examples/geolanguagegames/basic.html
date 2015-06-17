@@ -44,8 +44,8 @@
                     "Default": {
                         // Agent options
                         "1": {
-                            "initialPopulation": 1000,
-                            "initialExtent": 100,
+                            "initialPopulation": 20,
+                            "initialExtent": 10,
                             // "maxExtent": 100,
                             // "initialX": 50,
                             // "initialY": 50,
@@ -176,11 +176,11 @@
                             // "agentsShow": true,
                             "buildingsShow": true,
                             // "roadsShow": true,
-                            "waterShow": false,
+                            "waterShow": true,
                             "networkShow": false,
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
-                            // "patchesShow": false,
+                            "patchesShow": true,
                             // "patchesUpdate": true,
                             // "patchesUseShader": true,
                             // "trailsShow": false,
@@ -260,7 +260,7 @@
                             "loadHeights": true ,
                             "gridExtent": 8000,
                             "gridPoints": 400,
-                            // "maxTerrainHeight": 400,
+                            "maxTerrainHeight": 400,
                             // "shaderUse": true,
                             "multiplier": 2,
                             // "mapIndex": 0,
@@ -269,23 +269,148 @@
                          },
                     }
                   }
-                }
+                };
+                var GeoLanguageAgent = function() {
+                    fp.Agent.call( this );
+                    this.lexicon = 0.0;
+                    this.origState = null;
+                    this.spokenState = null;
+                    this.age = 20 + Math.floor( Math.random() * 20 );
+                    this.sex = Math.floor( Math.random() * 2 );
+                    this.ticksSinceReproduction = 0;
+                    this.motherNode = null;
+                    this.wordList = _.range( 10 ).map( function () { return 0.0 } );
+
+                    // Set up an agent class that can exercise, consume, reproduce and die
+                    this.exercise = function() {
+                        if (this.health > 0)
+                            this.health -= fp.appConfig.malthusOptions.energyLoss;
+                    }
+
+                    this.consume = function() {
+                        var index = fp.getPatchIndex( this.position.x, this.position.z );
+                        var patch = fp.patchNetwork.patches[index];
+                        if ( !_.isUndefined( patch ) ) {
+                            var agentsOnPatch = patch.length;
+                            var patchValue = fp.patchNetwork.patchValues[index];
+                            var availableYield = patchValue.value / agentsOnPatch;
+                            patchValue.updatePatchValue( - fp.appConfig.malthusOptions.patchConsumptionRate );
+                            this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
+                            this.health = (this.health > 100) ? 100 : this.health;
+                        }
+                    };
+
+                    this.die = function() {
+                        fp.scene.remove( fp.agentNetwork.particles );
+                        var index = fp.agentNetwork.agents.indexOf(this);
+                        fp.agentNetwork.agents.splice(index, 1);
+                        fp.agentNetwork.updateAgentParticleSystem();
+                        fp.scene.add( fp.agentNetwork.particles );
+                    };
+
+                    this.reproduce = function() {
+                        // Crude set of assumptions about conditions for reproduction
+                        var current = fp.agentNetwork.agents.length;
+                        var initial = fp.appConfig.agentOptions.initialPopulation;
+                        var popCorrection = Math.pow( ( current / initial ), 2 );
+                        if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
+                             this.children.length < fp.appConfig.malthusOptions.maxChildren &&
+                             this.gender == "f" &&
+                             Math.random() * this.health > 50 && 
+                             this.age > 15 && this.age < 50 )  {
+                            fp.scene.remove( fp.agentNetwork.particles );
+                            var agent = fp.agentNetwork.createAgent();
+                            agent.mother = this;
+                            agent.color = this.color;
+                            this.children.push(agent);
+                            fp.agentNetwork.agents.push(agent);
+                            fp.agentNetwork.updateAgentParticleSystem();
+                        }
+                    };
+
+                };
+                GeoLanguageAgent.prototype = Object.create( fp.Agent.prototype );
+
+                // Override PatchNetwork methods
+                fp.PatchNetwork.prototype.elev;
+                fp.PatchNetwork.prototype.attractiveness;
+                fp.PatchNetwork.prototype.reviseValues = function() {
+                    fp.patchNetwork.patchMeanValue = 0;
+                    for (var i = 0; i < fp.patchNetwork.patchValues.length; i++) {
+                        var patch = fp.patchNetwork.patchValues[i];
+                        // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
+                        if ( patch.value < patch.initialValue ) { // Recover
+                            patch.updatePatchValue( fp.appConfig.malthusOptions.patchRecoveryRate );
+                        }
+                        fp.patchNetwork.patchMeanValue += patch.value;
+                    }
+                    fp.patchNetwork.patchMeanValue /= fp.patchNetwork.patchValues.length;
+                };
+
+
                 var sim =  {
                     counter: 0,
                     positions: [],
-                    setup: function() {
-                        fp.timescale.framesToYear = 1;
-                        /*
-                        for ( var i = 0; i < 5; i++ ) {
-                            var x = Math.floor( Math.random() * 2000 );
-                            var y = Math.floor( Math.random() * 2000 );
-                            var z = Math.floor( Math.random() * 2000 );
-                            this.positions.push( [ x, y, z ] );
-                        }
-                        */
 
-                        // Default
-                        //this.positions.push( [ fp.camera.position.x, fp.camera.position.y, fp.camera.position.z ] );
+
+                    report: function() {
+                        if (agents.length > 0)
+                        {
+                            LanguageChange.aveLanguageChange = jStat.mean(_.map(agents, function(a) { return a.lexicon; }       ));
+                            if (LanguageChange.aveLanguageChange != LanguageChange.prevAveLanguageChange)
+                                console.log(LanguageChange.aveLanguageChange)
+                            LanguageChange.prevAveLanguageChange = LanguageChange.aveLanguageChange;
+                        }
+                    },
+
+                    updateAgentColor: function( agent ) {
+                        agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')'; 
+                    },
+
+                    distributeGrammars: function() {
+                        var sim = this;
+                        fp.agentNetwork.agents.forEach(function(agent) {
+                            var chance = Math.random();
+                            if (chance > fp.appConfig.geoGamesOptions.percentageLanguage1 )
+                                agent.lexicon = 0.0;
+                            else
+                                agent.lexicon = 1.0;
+                            agent.originalState = agent.lexicon;
+                            agent.spokenState = agent.lexicon;
+                            agent.wordList = _.range(10).map(function () { return agent.originalState });
+                            sim.updateAgentColor(agent)
+                        });
+                        fp.agentNetwork.updateAgentShader();
+
+                        // Shorthand to count agent lexicons
+                        //_.reduce(_.map(fp.agentNetwork.agents, function(a){return a.lexicon}), function(memo, num) {return num + memo;}, 0);
+                    },
+
+                    redistribute: function() {
+                        LanguageChange.distributeGrammars();
+                    },
+
+                    setup: function() {
+                        fp.timescale.framesToYear = 16;
+
+                        this.marsters = null;
+                        this.elevation = null;
+                        this.slope = null;
+                        this.aspect = null;
+
+                        this.distributeGrammars();
+
+                        /*
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            // Set up a random age
+                            if ( fp.appConfig.agentOptions.randomAge ) {
+                                // Sample a beta distribution with alpha = 2 and beta = 5
+                                // This produces a large population at roughly a reproductive age.
+                                agent.age = Math.floor( jStat.beta.sample( 2, 5 ) * 100 );
+                                agent.health = 100 - agent.age;
+                            }
+                        });
+*/
                     },
                     tick: function() {
                         /*
@@ -316,8 +441,33 @@
                 }
 
                 fp.init( config, sim, function() {
+                    // Set up custom parameters
+                    fp.appConfig.geoGamesOptions = {};
+                    fp.appConfig.geoGamesOptions.percentageLanguage1 = 0.4;
+                    fp.appConfig.geoGamesOptions.rate = 0.3;
+                    fp.appConfig.geoGamesOptions.childrensLanguage = 1;
+                    fp.appConfig.geoGamesOptions.historicallyAccurage = true;
+                    fp.appConfig.geoGamesOptions.marstersDoesntChange = false;
+                    fp.appConfig.geoGamesOptions.reproductionRate = true;
+                    fp.appConfig.geoGamesOptions.languageSplitByGender = true;
+                    fp.appConfig.geoGamesOptions.leavingRate = 0.15;
+                    fp.appConfig.geoGamesOptions.ticksPerYear = 100;
+                    var geoLangGamesFolder = fp.gui.addFolder( "GeoLang Games Options" );
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "percentageLanguage1", 0, 1).step( 0.01 );
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "rate", 0, 1).step( 0.01 );
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "childrensLanguage", 1, 3).step( 1 );
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "historicallyAccurage");
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "marstersDoesntChange");
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "reproductionRate");
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "languageSplitByGender");
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "leavingRate", 0, 0.3).step( 0.01 );
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "ticksPerYear", 1, 1000).step( 1 );
+
+                    // Add custom class
+                    fp.agentNetwork.agentClass = GeoLanguageAgent;
+                    fp.patchNetwork.initialisePatchFunction = function() { return 0.5; };
+
                     fp.appConfig.Setup();
-                    fp.appConfig.Run();
                 } );
             }
         );

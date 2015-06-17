@@ -86,7 +86,7 @@ define([
                 this.networkColor = color;
                 this.networkMesh = null;
 
-                this.AgentNetworkNetworkLink = function(agent1, agent2) {
+                this.AgentNetworkNetworkLink = function( agent1, agent2 ) {
                     this.agent1 = agent1;
                     this.agent2 = agent2;
                 };
@@ -277,7 +277,8 @@ define([
                 position.y = y;
                 position.z = z;
 
-                var agent = new fp.Agent();
+                // Allow for the class to be overridden
+                var agent = new fp.agentNetwork.agentClass();
                 agent.setPosition( position );
                 agent.setRandomDirection();
 
@@ -508,6 +509,7 @@ define([
                 this.updateAgentShader();
             };
 
+            this.agentClass = fp.Agent;
             this.agents = [];
             this.networks = [];
             this.networks.push( new this.AgentNetworkNetwork() );
@@ -1068,12 +1070,13 @@ define([
          * @memberof fp
          * @inner
          */
-        this.PatchNetwork = function() {
+        this.PatchNetwork = function( func ) {
             this.plane = null;
             this.patches = {};
             this.patchValues = [];
             this.patchMeanValue = 0;
             this.patchSize = fp.appConfig.terrainOptions.patchSize;
+            this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
             /**
              * Initialises each patch value with a random value.
@@ -1082,7 +1085,7 @@ define([
                 var dim = ( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
                 fp.patchNetwork.patchValues = new Array(dim * dim);
                 for (var i = 0; i < fp.patchNetwork.patchValues.length; i++ ) {
-                    fp.patchNetwork.patchValues[i] = new fp.Patch( Math.random() );
+                    fp.patchNetwork.patchValues[i] = new fp.Patch( this.initialisePatchFunction() );
                 }
             };
 
