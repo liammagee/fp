@@ -1090,12 +1090,78 @@ define([
             };
 
             /**
+             * Construct a geometry with closed spaces.
+             */
+            this.cloneGeometry = function() {
+                var clone = fp.terrain.plane.geometry.clone();
+                var vertices = fp.terrain.plane.geometry.attributes.position.array;
+                var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
+                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                var newPoints = fp.terrain.gridPoints + dim;
+                var geometry = new THREE.PlaneBufferGeometry( size, size, newPoints - 1, newPoints - 1 );
+                var patchSizeOffset = fp.patchNetwork.patchSize + 1;
+                var newOffset = 0, oldOffset = 0;
+                for ( var i = 0; i < newPoints; i++ ) {
+                    for ( var j = 0; j < newPoints; j++ ) {
+                        if (  ( i + j > 0 ) && ( ( i % patchSizeOffset == 0 ) || ( j % patchSizeOffset == 0 ) ) ) {
+                            oldOffset -= 3;
+                        }
+                        if ( i == newPoints - 1 && j == newPoints - 1 ) {
+                            oldOffset -= 3;
+                        }
+                        geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
+                        geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
+                        geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                        newOffset += 3;
+                        oldOffset += 3;
+                        // if ( ( i > 0 && i % patchSizeOffset == 0 ) || ( j > 0 && j % patchSizeOffset == 0) ) {
+                        //     oldOffset -= 3;
+                        // }
+                    }
+                }
+                var len = geometry.attributes.position.array.length / 3,
+                    heights = new Float32Array(len),
+                    trailPoints = new Float32Array(len),
+                    patchPoints = new Float32Array(len);
+                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
+                var patchAttributes = {
+                    height: { type: "f", value: null },
+                    trail: { type: "f", value: null },
+                    patch: { type: "f", value: null },
+                };
+                for ( i = 0; i < len; i++ ) {
+                    heights[i] = vertices[ i * 3 + 2 ];
+                    trailPoints[i] = 0;
+                    patchPoints[i] = 0;
+                }
+                var richTerrainMaterial = new THREE.ShaderMaterial({
+                    uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
+                    attributes: patchAttributes,
+                    vertexShader:   fp.ShaderUtils.lambertShaderVertex(
+                        fp.ShaderUtils.terrainVertexShaderParams(),
+                        fp.ShaderUtils.terrainVertexShaderMain()
+                    ),
+                    fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                        fp.ShaderUtils.terrainFragmentShaderParams(),
+                        fp.ShaderUtils.terrainFragmentShaderMain()
+                    ),
+                    lights: true
+                });                
+                return new THREE.Mesh( geometry, richTerrainMaterial );
+            };
+
+            /**
              * Builds a plane mesh based on the current terrain geometry, but with its own material.
              */
             this.buildPatchMesh = function() {
-                var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
-                this.plane = new THREE.Mesh( fp.terrain.plane.geometry.clone(), patchMaterial );
+                // var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
+                this.plane = this.cloneGeometry();
                 this.plane.rotation.set( -Math.PI / 2, 0, 0);
+                this.plane.castShadow = true;
+                this.plane.receiveShadow = true;
+                this.updateTerrainPatchAttributes();
                 fp.scene.add( this.plane );
             };
 
@@ -1209,18 +1275,23 @@ define([
                     return;
                 var pl = Math.sqrt(this.patchValues.length);
 
+                var counter = 0;
+                var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
+                var newPoints = fp.terrain.gridPoints + dim;
                 for (var i = 0; i < this.patchValues.length; i++) {
                     var val = this.patchValues[i].value;
                     for (var j = 0; j <= this.patchSize + 1; j++) {
-                        var rows = (this.patchSize * Math.floor(i / pl)) * fp.terrain.gridPoints + j * fp.terrain.gridPoints;
-                        for (var k = 0; k <= this.patchSize + 1; k++) {
-                            var cols = (i % pl) * (this.patchSize) + k;
+                        // var rows = ( this.patchSize * Math.floor(i / pl)) * fp.terrain.gridPoints + j * fp.terrain.gridPoints;
+                        var rows = ( ( this.patchSize + 1 ) * Math.floor(i / pl)) * newPoints + j * newPoints;
+                        for (var k = 0; k <= this.patchSize + 1 ; k++) {
+                            var cols = (i % pl) * ( this.patchSize + 1 ) + k;
                             var cell = rows + cols;
-                            fp.terrain.plane.geometry.attributes.patch.array[cell] = val;
+                            counter++;
+                            this.plane.geometry.attributes.patch.array[cell] = val;
                         }
                     }
                 }
-                fp.terrain.plane.geometry.attributes.patch.needsUpdate = true;
+                this.plane.geometry.attributes.patch.needsUpdate = true;
             };
 
             /**
@@ -1229,14 +1300,22 @@ define([
              */
             this.togglePatchesStateWithShader = function() {
                 if (! fp.appConfig.displayOptions.patchesShow) {
-                    for (var i = 0; i < fp.terrain.plane.geometry.attributes.patch.array.length; i++)
-                        fp.terrain.plane.geometry.attributes.patch.array[i] = 0.0;
-                    fp.terrain.plane.geometry.attributes.patch.needsUpdate = true;
+                    fp.scene.remove( this.plane );
+
+                    // for (var i = 0; i < fp.terrain.plane.geometry.attributes.patch.array.length; i++)
+                    //     this.plane.geometry.attributes.patch.array[i] = 0.0;
+                    // this.plane.geometry.attributes.patch.needsUpdate = true;
+
                     // fp.terrain.richTerrainMaterial.uniforms = fp.terrain.nightTerrainUniforms;
                     // fp.terrain.richTerrainMaterial.needsUpdate = true; // important!
+
                 }
-                else
-                    this.updateTerrainPatchAttributes();
+                else {
+                    this.buildPatchMesh();
+                    // this.updateTerrainPatchAttributes();
+                    // fp.scene.add( this.plane );
+
+                }
             };
 
             this.togglePatchesStateWithoutShader = function() {
@@ -3957,7 +4036,7 @@ define([
                 terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse").onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10).step(0.1).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1).step(1).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 10).step(1).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100).step(1).onFinishChange( fp.loadTerrain );
             }
 
             if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
@@ -5072,10 +5151,11 @@ define([
          * @memberof fp
          */
         this.togglePatchesState = function() {
-            if ( fp.appConfig.displayOptions.patchesUseShader )
-                fp.patchNetwork.togglePatchesStateWithShader();
-            else
-                fp.patchNetwork.togglePatchesStateWithoutShader();
+            // if ( fp.appConfig.displayOptions.patchesUseShader )
+            //     fp.patchNetwork.togglePatchesStateWithShader();
+            // else
+            //     fp.patchNetwork.togglePatchesStateWithoutShader();
+            fp.patchNetwork.togglePatchesStateWithoutShader();
         };
 
         /**

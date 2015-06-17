@@ -176,13 +176,13 @@
                             // "agentsShow": true,
                             "buildingsShow": true,
                             // "roadsShow": true,
-                            "waterShow": true,
+                            "waterShow": false,
                             "networkShow": false,
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
-                            "patchesShow": true,
+                            "patchesShow": false,
                             // "patchesUpdate": true,
-                            // "patchesUseShader": true,
+                            "patchesUseShader": false,
                             // "trailsShow": false,
                             // "trailsShowAsLines": false,
                             // "trailLength": 10000,
@@ -203,7 +203,7 @@
                             // "guiShowDisplayFolder": true,
                             // "guiShowColorFolder": true,
                             // "pathsShow": true,
-                            // "terrainShow": true,
+                            "terrainShow": false,
                             // "coloriseAgentsByHealth": false,
                             // "firstPersonView": false,
                             "cameraOverride": true,
@@ -262,9 +262,9 @@
                             "gridPoints": 400,
                             "maxTerrainHeight": 400,
                             // "shaderUse": true,
-                            "multiplier": 2,
+                            "multiplier": 1,
                             // "mapIndex": 0,
-                            // "patchSize": 4
+                            "patchSize": 20
 
                          },
                     }
@@ -380,6 +380,14 @@
                             agent.wordList = _.range(10).map(function () { return agent.originalState });
                             sim.updateAgentColor(agent)
                         });
+
+                        // the next bit deals with making one node William Marsters so he can not change his lexicon and be historically accurate with age at death
+                        var agentsWithOne = _.select(fp.agentNetwork.agents, function( a ) { return a.lexicon == 1.0 } );
+                        var index = Math.floor( Math.random() * agentsWithOne.length );
+                        // For debugging: fp.sim.marsters
+                        this.marsters = agentsWithOne[ index ];
+                        agentsWithOne[ index ].age = 40;
+
                         fp.agentNetwork.updateAgentShader();
 
                         // Shorthand to count agent lexicons
@@ -465,7 +473,8 @@
 
                     // Add custom class
                     fp.agentNetwork.agentClass = GeoLanguageAgent;
-                    fp.patchNetwork.initialisePatchFunction = function() { return 0.5; };
+                    fp.patchNetwork.initialisePatchFunction = function() { return Math.random(); };
+                    // fp.patchNetwork.initialisePatchFunction = function() { return 0.5; };
 
                     fp.appConfig.Setup();
                 } );
