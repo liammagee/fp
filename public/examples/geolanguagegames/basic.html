@@ -246,7 +246,7 @@
                             // "colorGraphPopulation": 0x4747b3,
                             // "colorGraphHealth": 0xb34747,
                             // "colorGraphPatchValues": 0x47b347,
-                            // 
+                            //
                             "colorLightHemisphereSky": 0xbfbfbf,
                             "colorLightHemisphereGround": 0xbfbfbf,
                             "colorLightHemisphereIntensity": 1.0,
@@ -264,7 +264,7 @@
                             // "shaderUse": true,
                             "multiplier": 1,
                             // "mapIndex": 0,
-                            "patchSize": 20
+                            "patchSize": 100
 
                          },
                     }
@@ -316,7 +316,7 @@
                         if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
                              this.children.length < fp.appConfig.malthusOptions.maxChildren &&
                              this.gender == "f" &&
-                             Math.random() * this.health > 50 && 
+                             Math.random() * this.health > 50 &&
                              this.age > 15 && this.age < 50 )  {
                             fp.scene.remove( fp.agentNetwork.particles );
                             var agent = fp.agentNetwork.createAgent();
@@ -364,7 +364,7 @@
                     },
 
                     updateAgentColor: function( agent ) {
-                        agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')'; 
+                        agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')';
                     },
 
                     distributeGrammars: function() {
@@ -419,6 +419,8 @@
                             }
                         });
 */
+                        fp.appConfig.displayOptions.patchesShow = true;
+                        fp.patchNetwork.togglePatchesStateWithShader();
                     },
                     tick: function() {
                         /*

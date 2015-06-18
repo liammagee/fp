@@ -1148,7 +1148,7 @@ define([
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
                     lights: true
-                });                
+                });
                 return new THREE.Mesh( geometry, richTerrainMaterial );
             };
 
@@ -1280,14 +1280,14 @@ define([
                 var newPoints = fp.terrain.gridPoints + dim;
                 for (var i = 0; i < this.patchValues.length; i++) {
                     var val = this.patchValues[i].value;
-                    for (var j = 0; j <= this.patchSize + 1; j++) {
+                    for (var j = 0; j < this.patchSize + 1; j++) {
                         // var rows = ( this.patchSize * Math.floor(i / pl)) * fp.terrain.gridPoints + j * fp.terrain.gridPoints;
                         var rows = ( ( this.patchSize + 1 ) * Math.floor(i / pl)) * newPoints + j * newPoints;
-                        for (var k = 0; k <= this.patchSize + 1 ; k++) {
+                        for (var k = 0; k < this.patchSize + 1 ; k++) {
                             var cols = (i % pl) * ( this.patchSize + 1 ) + k;
                             var cell = rows + cols;
                             counter++;
-                            this.plane.geometry.attributes.patch.array[cell] = val;
+                            this.plane.geometry.attributes.patch.array[ cell ] = val;
                         }
                     }
                 }
@@ -4322,11 +4322,11 @@ define([
             // Remove existing lights
             fp.scene.remove( fp.lightHemisphere );
             fp.scene.remove( fp.lightDirectional );
-            
-            fp.lightHemisphere = new THREE.HemisphereLight( 
-                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky ), 
-                fp.appConfig.colorOptions.colorLightHemisphereGround, 
-                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereIntensity ) 
+
+            fp.lightHemisphere = new THREE.HemisphereLight(
+                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky ),
+                fp.appConfig.colorOptions.colorLightHemisphereGround,
+                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereIntensity )
             );
             // var fp.lightHemisphere = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
             // var fp.lightHemisphere = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
@@ -4334,9 +4334,9 @@ define([
             fp.lightHemisphere.position.set( 0, 1000, 0 );
             // fp.scene.add( fp.lightHemisphere );
 
-            fp.lightDirectional = new THREE.DirectionalLight( 
-                new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ), 
-                fp.appConfig.colorOptions.colorLightDirectionalIntensity 
+            fp.lightDirectional = new THREE.DirectionalLight(
+                new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
+                fp.appConfig.colorOptions.colorLightDirectionalIntensity
             );
             // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
             fp.lightDirectional.position.set( 40000, 40000, 40000 );
