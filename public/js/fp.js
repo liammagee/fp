@@ -1082,8 +1082,8 @@ define([
              * Initialises each patch value with a random value.
              */
             this.initialisePatches = function() {
-                var dim = ( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
-                fp.patchNetwork.patchValues = new Array(dim * dim);
+                var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
+                fp.patchNetwork.patchValues = new Array( dim * dim );
                 for (var i = 0; i < fp.patchNetwork.patchValues.length; i++ ) {
                     fp.patchNetwork.patchValues[i] = new fp.Patch( this.initialisePatchFunction() );
                 }
@@ -1095,28 +1095,45 @@ define([
             this.cloneGeometry = function() {
                 var clone = fp.terrain.plane.geometry.clone();
                 var vertices = fp.terrain.plane.geometry.attributes.position.array;
-                var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
+                var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
+                var patchSize = fp.patchNetwork.patchSize;
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
                 var newPoints = fp.terrain.gridPoints + dim;
                 var geometry = new THREE.PlaneBufferGeometry( size, size, newPoints - 1, newPoints - 1 );
+                // var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
                 var patchSizeOffset = fp.patchNetwork.patchSize + 1;
                 var newOffset = 0, oldOffset = 0;
-                for ( var i = 0; i < newPoints; i++ ) {
-                    for ( var j = 0; j < newPoints; j++ ) {
-                        if (  ( i + j > 0 ) && ( ( i % patchSizeOffset == 0 ) || ( j % patchSizeOffset == 0 ) ) ) {
-                            oldOffset -= 3;
-                        }
-                        if ( i == newPoints - 1 && j == newPoints - 1 ) {
-                            oldOffset -= 3;
-                        }
+                var counter = 0;
+                for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
+                    for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
                         geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                         geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                         geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                        if ( i % patchSize == 0 ) {
+                            newOffset += newPoints * 3 ;
+                            geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
+                            geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
+                            geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                            if ( j % patchSize == 0 ) {
+                                newOffset += 3;
+                                geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
+                                geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
+                                geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                                newOffset -= 3;
+                            }
+                            newOffset -= newPoints * 3;
+                        }
+                        if ( j % patchSize == 0 ) {
+                            newOffset += 3;
+                            geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
+                            geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
+                            geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                        }
                         newOffset += 3;
                         oldOffset += 3;
-                        // if ( ( i > 0 && i % patchSizeOffset == 0 ) || ( j > 0 && j % patchSizeOffset == 0) ) {
-                        //     oldOffset -= 3;
-                        // }
+                    }
+                    if ( i % patchSize == 0 ) {
+                        newOffset += newPoints * 3;
                     }
                 }
                 var len = geometry.attributes.position.array.length / 3,
@@ -1149,6 +1166,7 @@ define([
                     ),
                     lights: true
                 });
+                // richTerrainMaterial.wireframe = true;
                 return new THREE.Mesh( geometry, richTerrainMaterial );
             };
 
@@ -1248,10 +1266,10 @@ define([
                         var arrayX = x * fp.terrain.gridSize * 2;
                         var arrayY = y * fp.terrain.gridSize * 2;
                         var geoIndex = (( fp.terrain.gridPoints - 1) * arrayY) + arrayX;
-                        if (geometry.faces[geoIndex] === null)
+                        if ( geometry.faces[ geoIndex ] === null)
                             return;
-                        for (var i = arrayY; i < arrayY + ( fp.terrain.gridSize * 2); i += 2) {
-                            for (var j = arrayX; j < arrayX + ( fp.terrain.gridSize * 2); j ++) {
+                        for ( var i = arrayY; i < arrayY + ( fp.terrain.gridSize * 2); i += 2 ) {
+                            for ( var j = arrayX; j < arrayX + ( fp.terrain.gridSize * 2); j ++ ) {
                                 var index = (( fp.terrain.gridPoints - 1) * i) + j;
                                 if ( geometry.faces[index] ) {
                                     var c = geometry.faces[index].color;
@@ -1276,17 +1294,35 @@ define([
                 var pl = Math.sqrt(this.patchValues.length);
 
                 var counter = 0;
-                var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
-                var newPoints = fp.terrain.gridPoints + dim;
-                for (var i = 0; i < this.patchValues.length; i++) {
-                    var val = this.patchValues[i].value;
-                    for (var j = 0; j < this.patchSize + 1; j++) {
-                        // var rows = ( this.patchSize * Math.floor(i / pl)) * fp.terrain.gridPoints + j * fp.terrain.gridPoints;
-                        var rows = ( ( this.patchSize + 1 ) * Math.floor(i / pl)) * newPoints + j * newPoints;
-                        for (var k = 0; k < this.patchSize + 1 ; k++) {
-                            var cols = (i % pl) * ( this.patchSize + 1 ) + k;
-                            var cell = rows + cols;
+                var gridPoints = fp.terrain.gridPoints;
+                var patchSize = fp.patchNetwork.patchSize;
+                var dim = Math.ceil( gridPoints / patchSize );
+                var newPoints = gridPoints + dim;
+                var oldVal = 0;
+                for ( var i = 0; i < this.patchValues.length; i++ ) {
+                    var val = this.patchValues[ i ].value;
+                    var patchCol = i % ( dim - 1 );
+                    var patchRow = Math.floor( i / ( dim - 1 ) );
+                    for ( var j = 0; j < patchSize + 3; j++ ) {
+                        for ( var k = 0; k < patchSize + 3 ; k++ ) {
+                            if ( j == 0 && patchRow != 0 )
+                                continue;
+                            if ( k == 0 && patchCol != 0 )
+                                continue;
+                            if ( j == this.patchSize + 2 && patchRow < ( dim - 2 ) )
+                                continue;
+                            if ( k == this.patchSize + 2 && patchCol < ( dim - 2 ) )
+                                continue;
+                            var colOffset = patchCol * ( patchSize + 1 ) + k;
+                            var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newPoints;
+                            var cell = rowOffset + colOffset;
+                            // var rows = ( ( this.patchSize + 1 ) * Math.floor( i / pl ) ) * newPoints + j * newPoints;
+                            // var cols = (i % pl) * ( this.patchSize + 1 ) + k;
+                            // var cell = rows + cols;
                             counter++;
+                            if ( oldVal != val ) {
+                                oldVal = val;
+                            }
                             this.plane.geometry.attributes.patch.array[ cell ] = val;
                         }
                     }
@@ -3134,7 +3170,6 @@ define([
                         }
                         else {
                             // this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
-                            console.log(this.highResMeshContainer.position)
                             this.mesh.position.set( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z, height );
                             this.mesh.updateMatrix();
                             fp.buildingNetwork.networkMesh.children[0].geometry.mergeMesh( this.mesh );
@@ -4031,7 +4066,7 @@ define([
                 var terrainFolder = fp.gui.addFolder("Terrain Options");
                 terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights").onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000).step( 1000 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse").onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10).step(0.1).onFinishChange( fp.loadTerrain );
