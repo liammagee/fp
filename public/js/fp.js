@@ -1196,10 +1196,10 @@ define([
                 var popAgent = fp.agentNetwork.agents.length;
                 var r = popAgent / popPatch;
                 for (var i = 0; i < this.patchValues.length; i++) {
-                    var patch = this.patchValues[i];
-                    if ( !_.isUndefined( this.patches[i] ) ) {
-                        var len = this.patches[i].length;
-                        var change = - len * ( 1 / ( Math.pow( r, 2 ) ) );
+                    var patch = this.patchValues[ i ];
+                    if ( !_.isUndefined( this.patches[ i ] ) ) {
+                        var len = this.patches[ i ].length;
+                        var change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
                         patch.updatePatchValue( change );
                     }
                     else { // if ( patch.value < patch.initialValue ) { // Recover
@@ -1219,9 +1219,9 @@ define([
                 for (var i = 0; i < fp.agentNetwork.agents.length; i++) {
                     var agent =  fp.agentNetwork.agents[i];
                     var index = fp.getPatchIndex( agent.position.x, agent.position.z );
-                    if ( !this.patches[index] )
-                        this.patches[index] = [];
-                    this.patches[index].push( agent );
+                    if ( !this.patches[ index ] )
+                        this.patches[ index ] = [];
+                    this.patches[ index ].push( agent );
                 }
             };
 
@@ -4691,12 +4691,14 @@ define([
         };
 
         /**
+         * Obtains the patch index for a given plane coordinate.
          * @memberof fp
          */
-        this.getPatchIndex = function(x, y) {
-            x = Math.floor( x / fp.appConfig.terrainOptions.multiplier );
-            y = Math.floor( y / fp.appConfig.terrainOptions.multiplier );
-            var dim = fp.terrain.gridPoints / fp.patchNetwork.patchSize;
+        this.getPatchIndex = function( x, y ) {
+            var multiplier = fp.appConfig.terrainOptions.multiplier;
+            x = Math.floor( x / multiplier );
+            y = Math.floor( y / multiplier );
+            var dim = ( fp.terrain.gridPoints - 1 ) / fp.patchNetwork.patchSize;
             var halfGrid = fp.terrain.gridExtent / 2;
             var pX = Math.floor( dim * ( x + halfGrid ) / fp.terrain.gridExtent );
             var pY = Math.floor( dim * ( y + halfGrid ) / fp.terrain.gridExtent );
