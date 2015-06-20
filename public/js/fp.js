@@ -272,7 +272,9 @@ define([
                 var point = this.randomPointForAgent();
                 var x = point.x;
                 var z = point.z;
-                var y = fp.getHeight(x, z) + fp.appConfig.agentOptions.terrainOffset;
+                var y = fp.getHeight( x, z ) + 
+                        fp.appConfig.agentOptions.terrainOffset + 
+                        fp.appConfig.agentOptions.size / 2;
                 position.x = x;
                 position.y = y;
                 position.z = z;
@@ -2427,9 +2429,11 @@ define([
                     }
 
                     yn = fp.getHeight( xn, zn );
+                    yn += fp.appConfig.agentOptions.terrainOffset;
+                    yn += fp.appConfig.agentOptions.size / 2;
 
                     // Smooth the transition between heights
-                    yd = ( fp.appConfig.agentOptions.terrainOffset + yn - yl ) / fp.terrain.ratioExtentToPoint;
+                    yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;
 
                     // If the new y position is zero, set the weight to zero
                     if ( yn === null ) {
@@ -2446,7 +2450,7 @@ define([
                 directions = _.chain(directions).
                                 compact().
                                 shuffle().
-                                sort(function(a,b) { return (a[1] > b[1]) ? 1 : (a[1] < b [1]? -1 : 0); }).
+                                sort( function( a, b ) { return ( a[ 1 ] > b[ 1 ]) ? 1 : (a[ 1 ] < b [ 1 ]? -1 : 0 ); } ).
                                 value();
 
                 return directions;
