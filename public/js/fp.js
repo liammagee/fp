@@ -2429,8 +2429,8 @@ define([
                     }
 
                     yn = fp.getHeight( xn, zn );
-                    yn += fp.appConfig.agentOptions.terrainOffset;
-                    yn += fp.appConfig.agentOptions.size / 2;
+                    // yn += fp.appConfig.agentOptions.terrainOffset;
+                    // yn += fp.appConfig.agentOptions.size / 2;
 
                     // Smooth the transition between heights
                     yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;

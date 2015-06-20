@@ -44,7 +44,7 @@
                     "Default": {
                         // Agent options
                         "1": {
-                            "initialPopulation": 10,
+                            "initialPopulation": 100,
                             "initialExtent": 10,
                             // "maxExtent": 100,
                             // "initialX": 50,
@@ -260,9 +260,9 @@
                         // Terrain options
                         "6": {
                             // "renderAsSphere": true,
-                            "loadHeights": false,
+                            "loadHeights": true,
                             "gridExtent": 8000,
-                            "gridPoints": 40,
+                            "gridPoints": 400,
                             "maxTerrainHeight": 400,
                             // "shaderUse": true,
                             "multiplier": 1,
@@ -290,7 +290,7 @@
 
                 fp.init( config, sim, function() {
                     fp.appConfig.Setup();
-                    fp.appConfig.Run();
+                    // fp.appConfig.Run();
                 } );
             }
         );
