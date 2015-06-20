@@ -2439,6 +2439,8 @@ define( [
                     if ( yn <= 0 )
                         weight = 0;
 
+                    // yd = 0;
+
                     // Set the direction
                     directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
                 }
@@ -2489,7 +2491,9 @@ define( [
                 var patchSize = fp.appConfig.terrainOptions.patchSize *
                                 fp.appConfig.terrainOptions.multiplier *
                                 ( fp.appConfig.agentOptions.movementInPatch / 100 );
-                directionAtSpeed = directionAtSpeed.multiplyScalar( patchSize );
+                // directionAtSpeed = directionAtSpeed.multiplyScalar( patchSize );
+                directionAtSpeed.x *= patchSize;
+                directionAtSpeed.z *= patchSize;
                 var newPosition = this.position.clone().add( directionAtSpeed );
                 var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.gridExtent / 2;
                 // Simple check to ensure we're within terrain bounds
@@ -3949,6 +3953,7 @@ define( [
                 agentsFolder.add( fp.appConfig.agentOptions, "establishLinks" );
                 agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
                 agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
+                agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100  ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "movementRandom" );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 10 ).step( 1 );
