@@ -1074,6 +1074,8 @@ define([
             this.plane = null;
             this.patches = {};
             this.patchValues = [];
+            this.patchPlaneArray = [];
+            this.patchSphereArray = [];
             this.patchMeanValue = 0;
             this.patchSize = fp.appConfig.terrainOptions.patchSize;
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
@@ -1137,9 +1139,9 @@ define([
                     }
                 }
                 var len = geometry.attributes.position.array.length / 3,
-                    heights = new Float32Array(len),
-                    trailPoints = new Float32Array(len),
-                    patchPoints = new Float32Array(len);
+                    heights = new Float32Array( len ),
+                    trailPoints = new Float32Array( len ),
+                    patchPoints = new Float32Array( len );
                 geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
@@ -1167,6 +1169,8 @@ define([
                     lights: true
                 });
                 // richTerrainMaterial.wireframe = true;
+                this.patchPlaneArray = geometry.attributes.position.clone();
+                this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
                 return new THREE.Mesh( geometry, richTerrainMaterial );
             };
 
@@ -1860,7 +1864,7 @@ define([
 
                 // Construct the sphere, and switch it on
                 if ( fp.appConfig.terrainOptions.renderAsSphere ) {
-                    fp.terrain.constructSphere();
+                    fp.terrain.sphereArray = fp.terrain.constructSphere( fp.terrain.planeArray );
                     // fp.terrain.wrapTerrainIntoSphere( 100 );
                 }
             };
@@ -2047,18 +2051,19 @@ define([
             /**
              * Wraps a plane into a sphere
              */
-            this.constructSphere = function( ) {
-                fp.terrain.sphereArray = fp.terrain.planeArray.clone();//
-                var l = fp.terrain.sphereArray.array.length;
+            this.constructSphere = function( planeArray ) {
+                var sphereArray = planeArray.clone();//
+                var l = sphereArray.array.length;
                 for (var j = 0; j < l; j += 3 ) {
-                    var x = fp.terrain.plane.geometry.attributes.position.array[ j + 0 ];
-                    var z = fp.terrain.plane.geometry.attributes.position.array[ j + 1 ];
-                    var y = fp.terrain.plane.geometry.attributes.position.array[ j + 2 ];
+                    var x = planeArray.array[ j + 0 ];
+                    var z = planeArray.array[ j + 1 ];
+                    var y = planeArray.array[ j + 2 ];
                     var v = this.transformSpherePoint( x, y, z );
-                    fp.terrain.sphereArray.array[ j + 0 ] = v.x;
-                    fp.terrain.sphereArray.array[ j + 1 ] = v.y;
-                    fp.terrain.sphereArray.array[ j + 2 ] = v.z;
+                    sphereArray.array[ j + 0 ] = v.x;
+                    sphereArray.array[ j + 1 ] = v.y;
+                    sphereArray.array[ j + 2 ] = v.z;
                 }
+                return sphereArray;
             };
 
             /**
@@ -2074,7 +2079,15 @@ define([
                         var nv = pv + ( sv - pv ) * ( percent / 100 );
                         fp.terrain.plane.geometry.attributes.position.array[ i ] = nv;
                     }
-                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                    fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
+                    l = fp.patchNetwork.patchSphereArray.array.length;
+                    for ( var i = 0; i < l; i++ ) {
+                        var pv = fp.patchNetwork.patchPlaneArray.array[ i ];
+                        var sv = fp.patchNetwork.patchSphereArray.array[ i ];
+                        var nv = pv + ( sv - pv ) * ( percent / 100 );
+                        fp.patchNetwork.plane.geometry.attributes.position.array[ i ] = nv;
+                    }
+                    fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
                     fp.buildingNetwork.buildings.forEach( function( building ) {
                         building.lod.matrixAutoUpdate = false;
                         var cv = _.clone( building.originPosition );
