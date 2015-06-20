@@ -185,8 +185,7 @@
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
                             "patchesShow": false,
-                            "patchesUseShader": false,
-                            // "patchesUpdate": true,
+                            "patchesUpdate": false,
                             // "trailsShow": false,
                             // "trailsShowAsLines": false,
                             // "trailLength": 10000,
@@ -283,7 +282,7 @@
                         fp.timescale.framesToYear = 1;
 
                         fp.appConfig.displayOptions.patchesShow = true;
-                        fp.patchNetwork.togglePatchesStateWithShader();
+                        fp.patchNetwork.togglePatchesState();
                     },
                     tick: function() {
                     }

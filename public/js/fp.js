@@ -1240,54 +1240,10 @@ define([
                 }
 
                 if ( fp.appConfig.displayOptions.patchesShow ) {
-                    if ( fp.appConfig.displayOptions.patchesUseShader ) {
-                        if (this.plane !== null)
-                            fp.scene.remove(this.plane);
-                        this.updateTerrainPatchAttributes();
-                    }
-                    else
-                        this.updatePlaneGeometryColors();
+                    this.updateTerrainPatchAttributes();
                 }
             };
 
-            /**
-             * Updates the colours of the plane geometry.
-             */
-            this.updatePlaneGeometryColors = function() {
-                if (this.plane === null)
-                    return;
-                var geometry = this.plane.geometry;
-                if ( _.isUndefined( geometry.faces ) || geometry.faces[0] === null )
-                    return;
-
-                if (fp.scene.children.indexOf(this.plane) == -1)
-                    fp.scene.add(this.plane);
-                var dim = fp.terrain.gridPoints / this.patchSize;
-                for (var y = 0; y < dim; y++) {
-                    for (var x = 0; x < dim; x++) {
-                        var baseIndex = y * dim + x;
-                        var patch = this.patchValues[baseIndex];
-                        var arrayX = x * fp.terrain.gridSize * 2;
-                        var arrayY = y * fp.terrain.gridSize * 2;
-                        var geoIndex = (( fp.terrain.gridPoints - 1) * arrayY) + arrayX;
-                        if ( geometry.faces[ geoIndex ] === null)
-                            return;
-                        for ( var i = arrayY; i < arrayY + ( fp.terrain.gridSize * 2); i += 2 ) {
-                            for ( var j = arrayX; j < arrayX + ( fp.terrain.gridSize * 2); j ++ ) {
-                                var index = (( fp.terrain.gridPoints - 1) * i) + j;
-                                if ( geometry.faces[index] ) {
-                                    var c = geometry.faces[index].color;
-                                    c.r = patch.value;
-                                    c.g = patch.value;
-                                    c.b = patch.value;
-                                    geometry.faces[index].color = c;
-                                }
-                            }
-                        }
-                    }
-                }
-                geometry.colorsNeedUpdate = true;
-            };
 
             /**
              * Updates the terrain's colors based on its patch attributes.
@@ -1334,31 +1290,8 @@ define([
                 this.plane.geometry.attributes.patch.needsUpdate = true;
             };
 
-            /**
-             * Toggles
-             * @return {[type]} [description]
-             */
-            this.togglePatchesStateWithShader = function() {
-                if (! fp.appConfig.displayOptions.patchesShow) {
-                    fp.scene.remove( this.plane );
 
-                    // for (var i = 0; i < fp.terrain.plane.geometry.attributes.patch.array.length; i++)
-                    //     this.plane.geometry.attributes.patch.array[i] = 0.0;
-                    // this.plane.geometry.attributes.patch.needsUpdate = true;
-
-                    // fp.terrain.richTerrainMaterial.uniforms = fp.terrain.nightTerrainUniforms;
-                    // fp.terrain.richTerrainMaterial.needsUpdate = true; // important!
-
-                }
-                else {
-                    this.buildPatchMesh();
-                    // this.updateTerrainPatchAttributes();
-                    // fp.scene.add( this.plane );
-
-                }
-            };
-
-            this.togglePatchesStateWithoutShader = function() {
+            this.togglePatchesState = function() {
                 if ( fp.appConfig.displayOptions.patchesShow ) {
                     if ( this.plane === null )
                         this.buildPatchMesh();
@@ -3659,7 +3592,6 @@ define([
                 networkCurvePoints: 20,
                 patchesShow: false,
                 patchesUpdate: true,
-                patchesUseShader: true,
                 trailsShow: false,
                 trailsShowAsLines: false,
                 trailLength: 10000,
@@ -4133,7 +4065,6 @@ define([
                 displayFolder.add( fp.appConfig.displayOptions, "networkCurvePoints", 4, 20).step( 1 );
                 displayFolder.add( fp.appConfig.displayOptions, "patchesUpdate" );
                 displayFolder.add( fp.appConfig.displayOptions, "patchesShow").onFinishChange( fp.togglePatchesState );
-                displayFolder.add( fp.appConfig.displayOptions, "patchesUseShader" );
                 displayFolder.add( fp.appConfig.displayOptions, "trailsShow").onFinishChange( fp.toggleTrailState );
                 displayFolder.add( fp.appConfig.displayOptions, "trailsShowAsLines").onFinishChange( fp.toggleTrailState );
                 displayFolder.add( fp.appConfig.displayOptions, "trailLength", 1, 10000).step( 1 );
@@ -5238,11 +5169,7 @@ define([
          * @memberof fp
          */
         this.togglePatchesState = function() {
-            // if ( fp.appConfig.displayOptions.patchesUseShader )
-            //     fp.patchNetwork.togglePatchesStateWithShader();
-            // else
-            //     fp.patchNetwork.togglePatchesStateWithoutShader();
-            fp.patchNetwork.togglePatchesStateWithoutShader();
+            fp.patchNetwork.togglePatchesState();
         };
 
         /**
