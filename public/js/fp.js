@@ -2546,7 +2546,8 @@ define([
                                 ( fp.appConfig.agentOptions.movementInPatch / 100 );
                 directionAtSpeed = directionAtSpeed.multiplyScalar( patchSize );
                 var newPosition = this.position.clone().add( directionAtSpeed );
-                var bound = fp.terrain.gridExtent;
+                var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.gridExtent / 2;
+                // Simple check to ensure we're within terrain bounds
                 if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
                     this.setDirection( this.randomDirection() );
                 }
@@ -2564,6 +2565,20 @@ define([
             };
 
             /**
+             * Returns array of compass directions
+             */
+            this.compassDirections = function() {
+                var direction = 0, directions = [];
+                for ( var i = 0; i < 8; i++ ) {
+                    var x = Math.cos( direction ) / 2;
+                    var z = Math.sin( direction ) / 2;
+                    directions.push( [ x, z ] );
+                    direction += Math.PI / 4;
+                }
+                return directions;
+            };
+
+            /**
              * Genenerates a random vector.
              * @memberof Agent
              */
@@ -2572,13 +2587,7 @@ define([
                     return new THREE.Vector3( this.speed * ( Math.random() - 0.5 ), 0, this.speed * ( Math.random() - 0.5 ) );
                 }
                 else {
-                    var direction = 0, directions = [];
-                    for ( var i = 0; i < 8; i++ ) {
-                        var x = Math.cos( direction ) / 2;
-                        var z = Math.cos( direction ) / 2;
-                        directions.push( [ x, z ] );
-                        direction += Math.PI / 4;
-                    }
+                    var directions = this.compassDirections();
                     var index = Math.floor( Math.random() * 8 );
                     var pos = directions[ index ];
                     var vec = new THREE.Vector3( this.speed * pos[ 0 ], 0, this.speed * pos[ 1 ] )
