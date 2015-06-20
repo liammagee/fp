@@ -65,6 +65,13 @@
                             "size": 40,
                             "terrainOffset": 0,
                             "shuffle": true
+                            // "size": 40,
+                            // "terrainOffset": 20,
+                            "shuffle": true,
+                            "movementInPatch": 100,
+                            "movementRandom": false,
+                            "initialSpeed": 1,
+                            "initialPerturbBy": 0,
                          },
                         // Building options
                         "2": {
@@ -180,9 +187,8 @@
                             "networkShow": false,
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
-                            "patchesShow": false,
-                            "patchesUpdate": true,
-                            // "patchesUseShader": false,
+                            "patchesShow": true,
+                            // "patchesUpdate": true,
                             // "trailsShow": false,
                             // "trailsShowAsLines": false,
                             // "trailLength": 10000,
@@ -257,14 +263,14 @@
                         // Terrain options
                         "6": {
                             // "renderAsSphere": true,
-                            "loadHeights": true ,
+                            "loadHeights": false ,
                             "gridExtent": 8000,
-                            "gridPoints": 400, // Must be odd!
+                            "gridPoints": 400,
                             "maxTerrainHeight": 400,
                             // "shaderUse": true,
                             "multiplier": 1,
                             // "mapIndex": 0,
-                            "patchSize": 21
+                            "patchSize": 21 // Must be: N * patchSize = gridPoints - 1
 
                          },
                     }
@@ -367,6 +373,7 @@
 
                     updateAgentColor: function( agent ) {
                         agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')';
+                        // agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')';
                     },
 
                     distributeGrammars: function() {
@@ -409,8 +416,6 @@
                         this.aspect = null;
 
                         this.distributeGrammars();
-                        fp.appConfig.displayOptions.patchesShow = true;
-                        fp.patchNetwork.togglePatchesStateWithShader();
 
 
                         /*
@@ -482,6 +487,7 @@
                     // fp.patchNetwork.initialisePatchFunction = function() { return 0.5; };
 
                     fp.appConfig.Setup();
+                    fp.appConfig.Run();
                 } );
             }
         );
