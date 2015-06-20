@@ -44,7 +44,7 @@
                     "Default": {
                         // Agent options
                         "1": {
-                            "initialPopulation": 20,
+                            "initialPopulation": 1,
                             "initialExtent": 10,
                             // "maxExtent": 100,
                             // "initialX": 50,
@@ -62,9 +62,13 @@
                             // "visitHomeBuilding": 0.02,
                             // "visitOtherBuilding": 0.002,
                             "establishLinks": true,
-                            // "size": 40,
+                            "size": 400,
                             // "terrainOffset": 20,
-                            "shuffle": true
+                            "shuffle": true,
+                            "movementInPatch": 100,
+                            "movementRandom": false,
+                            "initialSpeed": 1,
+                            "initialPerturbBy": 0,
                          },
                         // Building options
                         "2": {
@@ -231,7 +235,7 @@
 
                             "colorNightBackground": 0x030303,
                             "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
-                            "colorNightAgent": 0xffffff,
+                            "colorNightAgent": 0x00ff00,
                             "colorNightNetwork": 0xffffff,
                             // "colorNightTrail": 0x47b347,
                             "colorNightPath": 0xffffff,
@@ -259,12 +263,12 @@
                             // "renderAsSphere": true,
                             "loadHeights": false,
                             "gridExtent": 8000,
-                            "gridPoints": 6, // Must modul0 patchSize == 1
+                            "gridPoints": 40,
                             "maxTerrainHeight": 400,
                             // "shaderUse": true,
                             "multiplier": 1,
                             // "mapIndex": 0,
-                            "patchSize": 3
+                            "patchSize": 13 // Try for a divisor of 399 (gridPoints - 1)
 
                          },
                     }
@@ -276,7 +280,7 @@
                     counter: 0,
 
                     setup: function() {
-                        fp.timescale.framesToYear = 16;
+                        fp.timescale.framesToYear = 1;
 
                         fp.appConfig.displayOptions.patchesShow = true;
                         fp.patchNetwork.togglePatchesStateWithShader();

@@ -382,7 +382,7 @@ define([
                     // Move the agent
                     agent.move();
 
-                    this.particles.geometry.vertices[i] = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                    this.particles.geometry.vertices[ i ] = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                 }
                 this.particles.geometry.verticesNeedUpdate = true;
             };
@@ -2511,12 +2511,8 @@ define([
              */
             this.bestCandidate = function() {
                 var directions = this.generateDirectionVectorsAndWeights( 0.1 );
-                // var directions = this.candidateDirections();
 
-                // Simple version - highest weight wins
-                // var bestCandidate = _.chain(directions).sortBy(function(a) {return a[1];} ).last().value()[0];
-
-                // Alternative approach - a direction is pulled from a weighted list of possibilities
+                // A direction is pulled from a weighted list of possibilities
                 var total = _.chain( directions ).
                     map(function(d) { return d[ 1 ]; } ).
                     reduce(function(memo, num) { return memo + num; }, 0).
@@ -2544,6 +2540,11 @@ define([
              */
             this.move = function() {
                 var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
+                // Multiply relative to patch size
+                var patchSize = fp.appConfig.terrainOptions.patchSize *
+                                fp.appConfig.terrainOptions.multiplier *
+                                ( fp.appConfig.agentOptions.movementInPatch / 100 );
+                directionAtSpeed = directionAtSpeed.multiplyScalar( patchSize );
                 var newPosition = this.position.clone().add( directionAtSpeed );
                 var bound = fp.terrain.gridExtent;
                 if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
@@ -2567,7 +2568,22 @@ define([
              * @memberof Agent
              */
             this.randomDirection = function() {
-                return new THREE.Vector3( this.speed * ( Math.random() - 0.5 ), 0, this.speed * ( Math.random() - 0.5 ) );
+                if ( fp.appConfig.agentOptions.movementRandom ) {
+                    return new THREE.Vector3( this.speed * ( Math.random() - 0.5 ), 0, this.speed * ( Math.random() - 0.5 ) );
+                }
+                else {
+                    var direction = 0, directions = [];
+                    for ( var i = 0; i < 8; i++ ) {
+                        var x = Math.cos( direction ) / 2;
+                        var z = Math.cos( direction ) / 2;
+                        directions.push( [ x, z ] );
+                        direction += Math.PI / 4;
+                    }
+                    var index = Math.floor( Math.random() * 8 );
+                    var pos = directions[ index ];
+                    var vec = new THREE.Vector3( this.speed * pos[ 0 ], 0, this.speed * pos[ 1 ] )
+                    return vec;
+                }
             };
 
             /**
@@ -2753,8 +2769,8 @@ define([
             this.vertex = null;
             this.position = null;
             this.direction = null;
-            this.speed = 2.0;
-            this.perturbBy = 0.05;
+            this.speed = fp.appConfig.agentOptions.initialSpeed;
+            this.perturbBy = fp.appConfig.agentOptions.initialPerturbBy;
             this.lastPosition = null;
             this.grounded = true;
             this.alpha =  0.5 + (Math.random() / 2);
@@ -3506,7 +3522,11 @@ define([
                 establishLinks: false,
                 size: 40,
                 terrainOffset: 20,
-                shuffle: false
+                shuffle: false,
+                movementInPatch: 1,
+                movementRandom: false,
+                initialSpeed: 2,
+                initialPerturbBy: 0.05
             };
             this.buildingOptions = {
                 create: true,
@@ -3974,6 +3994,11 @@ define([
                 agentsFolder.add( fp.appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0).step(0.001 );
                 agentsFolder.add( fp.appConfig.agentOptions, "establishLinks");
                 agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
+                agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
+                agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100  ).step( 1 );
+                agentsFolder.add( fp.appConfig.agentOptions, "movementRandom" );
+                agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 10).step( 1 );
+                agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1).step( 0.05 );
             }
 
             if ( fp.appConfig.displayOptions.guiShowBuildingsFolder ) {
@@ -4065,14 +4090,14 @@ define([
 
             if ( fp.appConfig.displayOptions.guiShowTerrainFolder ) {
                 var terrainFolder = fp.gui.addFolder("Terrain Options");
-                terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights").onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000).step( 1000 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000).step( 100 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse").onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10).step(0.1).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1).step(1).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100).step(1).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step(0.1 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step(1 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100 ).step(1 ).onFinishChange( fp.loadTerrain );
             }
 
             if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
