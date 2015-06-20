@@ -342,8 +342,8 @@ define( [
             this.updateAgents = function() {
                 if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ) )
                     return;
-                var agents = this.agents;
 
+                var agents = this.agents;
                 if ( fp.appConfig.agentOptions.shuffle )
                     agents = _.shuffle( this.agents );
 
@@ -384,8 +384,13 @@ define( [
                     // Move the agent
                     agent.move();
 
+                }
+                for ( var i = 0; i < agents.length; i++ ) {
+                    // Must be the original unshuffled collection
+                    var agent = this.agents[ i ];
                     this.particles.geometry.vertices[ i ] = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                 }
+
                 this.particles.geometry.verticesNeedUpdate = true;
             };
 
@@ -2424,8 +2429,8 @@ define( [
                     }
 
                     yn = fp.getHeight( xn, zn );
-                    // yn += fp.appConfig.agentOptions.terrainOffset;
-                    // yn += fp.appConfig.agentOptions.size / 2;
+                    yn += fp.appConfig.agentOptions.terrainOffset;
+                    yn += fp.appConfig.agentOptions.size / 2;
 
                     // Smooth the transition between heights
                     yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;
@@ -2438,8 +2443,6 @@ define( [
                     // If the new y position is zero, set the weight to zero
                     if ( yn <= 0 )
                         weight = 0;
-
-                    // yd = 0;
 
                     // Set the direction
                     directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];

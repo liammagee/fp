@@ -62,9 +62,8 @@
                             // "visitHomeBuilding": 0.02,
                             // "visitOtherBuilding": 0.002,
                             "establishLinks": true,
-                            "size": 40,
-                            "terrainOffset": 0,
-                            "shuffle": true
+                            "size": 400,
+                            "terrainOffset": 20,
                             // "size": 40,
                             // "terrainOffset": 20,
                             "shuffle": true,
@@ -188,7 +187,7 @@
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
                             "patchesShow": true,
-                            // "patchesUpdate": true,
+                            "patchesUpdate": true,
                             // "trailsShow": false,
                             // "trailsShowAsLines": false,
                             // "trailLength": 10000,
@@ -263,12 +262,12 @@
                         // Terrain options
                         "6": {
                             // "renderAsSphere": true,
-                            "loadHeights": false ,
+                            "loadHeights": true ,
                             "gridExtent": 8000,
                             "gridPoints": 400,
                             "maxTerrainHeight": 400,
                             // "shaderUse": true,
-                            "multiplier": 1,
+                            "multiplier": 2,
                             // "mapIndex": 0,
                             "patchSize": 21 // Must be: N * patchSize = gridPoints - 1
 
@@ -342,6 +341,7 @@
                 // Override PatchNetwork methods
                 fp.PatchNetwork.prototype.elev;
                 fp.PatchNetwork.prototype.attractiveness;
+                /*
                 fp.PatchNetwork.prototype.reviseValues = function() {
                     fp.patchNetwork.patchMeanValue = 0;
                     for (var i = 0; i < fp.patchNetwork.patchValues.length; i++) {
@@ -354,6 +354,7 @@
                     }
                     fp.patchNetwork.patchMeanValue /= fp.patchNetwork.patchValues.length;
                 };
+                */
 
 
                 var sim =  {
