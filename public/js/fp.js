@@ -1752,8 +1752,8 @@ define( [
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
                     lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
                     midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland ) },
-                    // highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
-                    //size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
                 };
                 fp.terrain.nightTerrainUniforms = {
@@ -1761,9 +1761,9 @@ define( [
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
                     lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
                     midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland ) },
-                    // highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
-                    //size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
-                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier + 1 }
                 };
                 fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial( {
                     uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
@@ -2017,15 +2017,17 @@ define( [
                         var nv = pv + ( sv - pv ) * ( percent / 100 );
                         fp.terrain.plane.geometry.attributes.position.array[ i ] = nv;
                     }
-                    fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
-                    l = fp.patchNetwork.patchSphereArray.array.length;
-                    for ( var i = 0; i < l; i++ ) {
-                        var pv = fp.patchNetwork.patchPlaneArray.array[ i ];
-                        var sv = fp.patchNetwork.patchSphereArray.array[ i ];
-                        var nv = pv + ( sv - pv ) * ( percent / 100 );
-                        fp.patchNetwork.plane.geometry.attributes.position.array[ i ] = nv;
+                    if ( !_.isNull( fp.patchNetwork.plane ) ) {
+                        fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
+                        l = fp.patchNetwork.patchSphereArray.array.length;
+                        for ( var i = 0; i < l; i++ ) {
+                            var pv = fp.patchNetwork.patchPlaneArray.array[ i ];
+                            var sv = fp.patchNetwork.patchSphereArray.array[ i ];
+                            var nv = pv + ( sv - pv ) * ( percent / 100 );
+                            fp.patchNetwork.plane.geometry.attributes.position.array[ i ] = nv;
+                        }
+                        fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
                     }
-                    fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
                     fp.buildingNetwork.buildings.forEach( function( building ) {
                         building.lod.matrixAutoUpdate = false;
                         var cv = _.clone( building.originPosition );

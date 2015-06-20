@@ -45,7 +45,7 @@
                         // Agent options
                         "1": {
                             "initialPopulation": 20,
-                            "initialExtent": 10,
+                            "initialExtent": 100,
                             // "maxExtent": 100,
                             // "initialX": 50,
                             // "initialY": 50,
@@ -63,9 +63,10 @@
                             // "visitOtherBuilding": 0.002,
                             "establishLinks": true,
                             "size": 400,
-                            "terrainOffset": 20,
+                            "terrainOffset": 0,
                             // "size": 40,
                             // "terrainOffset": 20,
+                            "useStickman": false,
                             "shuffle": true,
                             "movementInPatch": 100,
                             "movementRandom": false,
@@ -186,7 +187,7 @@
                             "networkShow": false,
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
-                            "patchesShow": true,
+                            "patchesShow": false,
                             "patchesUpdate": true,
                             // "trailsShow": false,
                             // "trailsShowAsLines": false,
@@ -208,12 +209,12 @@
                             // "guiShowDisplayFolder": true,
                             // "guiShowColorFolder": true,
                             // "pathsShow": true,
-                            "terrainShow": false,
+                            "terrainShow": true,
                             // "coloriseAgentsByHealth": false,
                             // "firstPersonView": false,
                             "cameraOverride": true,
                             "cameraX": 0,
-                            "cameraY": 500,
+                            "cameraY": 2500,
                             "cameraZ": 2250,
                             // "maximiseView": true,
                         },
@@ -244,10 +245,10 @@
                             // "colorNightBuildingLine": 0x838383,
                             "colorNightBuildingWindow": 0xffffff,
                             // "colorNightTerrainSea": 0x000000,
-                            "colorNightTerrainLowland1": 0x000000,
-                            "colorNightTerrainLowland2": 0x040404,
-                            "colorNightTerrainMidland": 0x080808,
-                            "colorNightTerrainHighland": 0x0c0c0c,
+                            "colorNightTerrainLowland1": 0x00cc00,
+                            "colorNightTerrainLowland2": 0x44cc44,
+                            "colorNightTerrainMidland": 0x88cc88,
+                            "colorNightTerrainHighland": 0xcccccc,
                             // "colorGraphPopulation": 0x4747b3,
                             // "colorGraphHealth": 0xb34747,
                             // "colorGraphPatchValues": 0x47b347,
@@ -262,14 +263,14 @@
                         // Terrain options
                         "6": {
                             // "renderAsSphere": true,
-                            "loadHeights": true ,
+                            "loadHeights": false ,
                             "gridExtent": 8000,
-                            "gridPoints": 400,
-                            "maxTerrainHeight": 400,
+                            "gridPoints": 195,
+                            "maxTerrainHeight": 1400,
                             // "shaderUse": true,
-                            "multiplier": 2,
+                            "multiplier": 1,
                             // "mapIndex": 0,
-                            "patchSize": 21 // Must be: N * patchSize = gridPoints - 1
+                            "patchSize": 4 // Must be: N * patchSize = gridPoints - 1
 
                          },
                     }
@@ -409,7 +410,7 @@
                     },
 
                     setup: function() {
-                        fp.timescale.framesToYear = 16;
+                        fp.timescale.framesToYear = 1;
 
                         this.marsters = null;
                         this.elevation = null;
@@ -482,13 +483,38 @@
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "leavingRate", 0, 0.3).step( 0.01 );
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "ticksPerYear", 1, 1000).step( 1 );
 
+
                     // Add custom class
                     fp.agentNetwork.agentClass = GeoLanguageAgent;
                     fp.patchNetwork.initialisePatchFunction = function() { return Math.random(); };
                     // fp.patchNetwork.initialisePatchFunction = function() { return 0.5; };
 
-                    fp.appConfig.Setup();
-                    fp.appConfig.Run();
+
+                    // Hack around using TerrainLoader, which assumes binary data type
+                    var wholeFile;
+                    fp.scene.remove( fp.terrain.plane );
+                    fp.terrain = new fp.Terrain();
+                    $.get("assets/local-elevation.asc", function( data) {
+                        wholeFile = data;
+                        var lines = wholeFile.split( '\n' );
+                        var cols = lines[ 0 ].split( ' ' )[ 1 ];
+                        var rows = lines[ 1 ].split( ' ' )[ 1 ];
+                        var len = lines.length;
+                        var heights = lines.slice(6, lines.length - 1).join( ' ' ).split( ' ' );
+                        fp.wholeFile = wholeFile;
+                        fp.heights = heights;
+                        // Get data into a scale initTerrain expects
+                        heights = _.chain( heights).map( function( h ) { var v = parseFloat( h ); return isNaN( v ) ? null : v; } ).compact().value();
+
+                        var max = _.max( heights );
+                        var min = _.min( heights );
+                        heights = _.map( heights, function( h ) { return 65535 * ( ( h - min ) / ( max - min ) ); } );
+                        console.log(cols, rows, heights.length, min, max )
+                        fp.appConfig.terrainOptions.loadHeights  = true;
+                        fp.terrain.initTerrain( heights );
+                        fp.appConfig.Setup();
+                        // fp.appConfig.Run();
+                    } )
                 } );
             }
         );
