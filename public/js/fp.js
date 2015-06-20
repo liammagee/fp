@@ -3726,6 +3726,7 @@ define([
              * Resets the state of the fp object.
              */
             this.Reset = function() {
+                // First coerce grid points to some multiple of patchSize, + 1
                 fp.scene.remove(  fp.agentNetwork.particles  );
                 fp.agentNetwork.agents = [];
                 fp.agentNetwork.agentParticleSystemAttributes = null;
@@ -4248,10 +4249,14 @@ define([
             return count;
         };
 
+        /**
+         * Sets up the basic sim objects
+         */
         this.setupSimObjects = function() {
             // Set up root objects
             fp.terrain = new fp.Terrain();
             fp.terrain.gridExtent = fp.appConfig.terrainOptions.gridExtent;
+
             fp.agentNetwork = new fp.AgentNetwork();
             fp.buildingNetwork = new fp.BuildingNetwork();
             fp.roadNetwork = new fp.RoadNetwork();
