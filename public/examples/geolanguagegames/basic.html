@@ -439,16 +439,6 @@
                     positions: [],
 
 
-                    report: function() {
-                        if (agents.length > 0)
-                        {
-                            LanguageChange.aveLanguageChange = jStat.mean(_.map(agents, function(a) { return a.lexicon; }       ));
-                            if (LanguageChange.aveLanguageChange != LanguageChange.prevAveLanguageChange)
-                                console.log(LanguageChange.aveLanguageChange)
-                            LanguageChange.prevAveLanguageChange = LanguageChange.aveLanguageChange;
-                        }
-                    },
-
                     updateAgentColor: function( agent ) {
                         var lexicon = agent.lexicon;
                         var redComponent = Math.floor( 256 * (agent.lexicon) + 64 );
@@ -691,7 +681,8 @@
                         this.distributeGrammars();
                     },
                     tick: function() {
-
+                        if ( fp.timescale.frameCounter % fp.appConfig.geoGamesOptions.ticksPerYear == 0 )
+                            console.log( "Years: " + fp.timescale.frameCounter / 100  );
                         var sim = this;
                         this.interact();
                         fp.agentNetwork.agents.forEach( function( agent ) {
@@ -757,21 +748,29 @@
                         fp.appConfig.terrainOptions.loadHeights  = true;
                         fp.terrain.initTerrain( heights );
 
-                        // Update chart
+                        // Update chart - keep population
                         var series = fp.chart.seriesSet;
+                        fp.chart.removeTimeSeries( series[ 2 ].timeSeries );
+                        fp.chart.removeTimeSeries( series[ 1 ].timeSeries );
                         for ( var i = series.length - 1; i >= 0 ; i-- ) {
                             var timeSeries = series[ i ].timeSeries;
                             fp.chart.removeTimeSeries( timeSeries );
                         }
-                        var lexiconSeries = new TimeSeries();
+                        var colorPop = "#ff0000", colorLexicon= "#0000ff";
+                        var popSeries = new TimeSeries( { strokeStyle: colorPop } );
+                        var lexiconSeries = new TimeSeries( { strokeStyle: colorLexicon } );
+                        var initPop = fp.appConfig.agentOptions.initialPopulation;
+
                         setInterval( function() {
                             if ( fp.AppState.runSimulation ) {
+                                var popProportion = fp.agentNetwork.agents.length / ( initPop * 2 );
                                 var lexiconMean = jStat.mean( _.map( fp.agentNetwork.agents, function( agent ) { return agent.lexicon; } ) );
-                                console.log( "mean lexicon: " + lexiconMean );
+                                popSeries.append( new Date().getTime(), popProportion );
                                 lexiconSeries.append( new Date().getTime(), lexiconMean );
                             }
                         }, 500 );
-                        fp.chart.addTimeSeries( lexiconSeries, { fillStyle: "rgba( 0, 0, 255, 0.2 )", lineWidth: 4 } );
+                        fp.chart.addTimeSeries( popSeries, { strokeStyle: colorPop, fillStyle: "rgba( 255, 0, 0, 0.2 )", lineWidth: 4 } );
+                        fp.chart.addTimeSeries( lexiconSeries, { strokeStyle: colorLexicon, fillStyle: "rgba( 0, 0, 255, 0.2 )", lineWidth: 4 } );
                         // Force new min / max values
                         fp.chart.options = _.extend( { minValue: 0.0, maxValue: 1.0 }, SmoothieChart.defaultChartOptions );
                         fp.chart.updateValueRange();
