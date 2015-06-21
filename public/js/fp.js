@@ -2017,8 +2017,8 @@ define( [
                         var nv = pv + ( sv - pv ) * ( percent / 100 );
                         fp.terrain.plane.geometry.attributes.position.array[ i ] = nv;
                     }
+                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
                     if ( !_.isNull( fp.patchNetwork.plane ) ) {
-                        fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
                         l = fp.patchNetwork.patchSphereArray.array.length;
                         for ( var i = 0; i < l; i++ ) {
                             var pv = fp.patchNetwork.patchPlaneArray.array[ i ];

@@ -735,8 +735,6 @@
                         var rows = lines[ 1 ].split( ' ' )[ 1 ];
                         var len = lines.length;
                         var heights = lines.slice(6, lines.length - 1).join( ' ' ).split( ' ' );
-                        fp.wholeFile = wholeFile;
-                        fp.heights = heights;
                         // Get data into a scale initTerrain expects
                         heights = _.chain( heights).map( function( h ) { var v = parseFloat( h ); return isNaN( v ) ? null : v; } ).compact().value();
 
@@ -745,6 +743,7 @@
                         heights = _.map( heights, function( h ) { return 65535 * ( ( h - min ) / ( max - min ) ); } );
                         fp.appConfig.terrainOptions.loadHeights  = true;
                         fp.terrain.initTerrain( heights );
+                        fp.animate(); // Kick off the animation loop
 
                         // Update chart - keep population
                         var series = fp.chart.seriesSet;
