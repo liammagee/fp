@@ -405,25 +405,6 @@
                     };
 
 
-                    // Set up an agent class that can exercise, consume, reproduce and die
-                    this.interact = function() {
-                        if (this.health > 0)
-                            this.health -= fp.appConfig.malthusOptions.energyLoss;
-                    }
-
-                    this.consume = function() {
-                        var index = fp.getPatchIndex( this.position.x, this.position.z );
-                        var patch = fp.patchNetwork.patches[index];
-                        if ( !_.isUndefined( patch ) ) {
-                            var agentsOnPatch = patch.length;
-                            var patchValue = fp.patchNetwork.patchValues[index];
-                            var availableYield = patchValue.value / agentsOnPatch;
-                            patchValue.updatePatchValue( - fp.appConfig.malthusOptions.patchConsumptionRate );
-                            this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
-                            this.health = (this.health > 100) ? 100 : this.health;
-                        }
-                    };
-
                     this.die = function() {
                         fp.scene.remove( fp.agentNetwork.particles );
                         var index = fp.agentNetwork.agents.indexOf(this);
@@ -431,27 +412,6 @@
                         fp.agentNetwork.updateAgentParticleSystem();
                         fp.scene.add( fp.agentNetwork.particles );
                     };
-
-                    this.reproduce = function() {
-                        // Crude set of assumptions about conditions for reproduction
-                        var current = fp.agentNetwork.agents.length;
-                        var initial = fp.appConfig.agentOptions.initialPopulation;
-                        var popCorrection = Math.pow( ( current / initial ), 2 );
-                        if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
-                             this.children.length < fp.appConfig.malthusOptions.maxChildren &&
-                             this.gender == "f" &&
-                             Math.random() * this.health > 50 &&
-                             this.age > 15 && this.age < 50 )  {
-                            fp.scene.remove( fp.agentNetwork.particles );
-                            var agent = fp.agentNetwork.createAgent();
-                            agent.mother = this;
-                            agent.color = this.color;
-                            this.children.push(agent);
-                            fp.agentNetwork.agents.push(agent);
-                            fp.agentNetwork.updateAgentParticleSystem();
-                        }
-                    };
-
                 };
                 GeoLanguageAgent.prototype = Object.create( fp.Agent.prototype );
 
@@ -625,6 +585,98 @@
                         }
                     },
 
+                    updateTicks: function() {
+                        var rate = fp.appConfig.geoGamesOptions.rate;
+                        for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+                            var agent = fp.agentNetwork.agents[ i ];
+                            agent.ticksSinceReproduction++;
+                        }
+                    },
+
+
+                    haveBaby: function( agent ) {  
+                        // i.e. if a year or more has passed since her previous baby was born
+                        if ( agent.ticksSinceReproduction > fp.timescale.framesToYear ) {
+
+                            var eligibleHusbands = _.select( fp.agentNetwork.agents, function( male ) { 
+                                return ( male.sex == 0 && male.age > 18 && male.motherNode != agent.motherNode );
+                            } );
+                            var husband = _.chain( eligibleHusbands ).shuffle().first().value();
+
+                            // ;; this needs to equal approximately 30% chance over a year, but it's going to depend on ticks-per-year rate.
+                            if ( Math.random() * 100 <= ( 300 * fp.timescale.framesToYear ) ) {
+                                var child = new GeoLanguageAgent();
+                                child.sex = Math.floor( Math.random() * 2 );
+                                child.size = 2;
+                                child.age = 0;
+                                child.ticksSinceReproduction = 0;
+                                child.motherNode = agent;
+
+                                if ( fp.appConfig.agentOptions.childrensLanguage == "bilingual" ) {
+                                    child.lexicon = ( agent.lexicon + husband.lexicon ) / 2;
+                                    child.wordList = _.range( 10 ).map( function () { return 0.0 } );
+                                    for ( var i = 0; i < 10; i++ ) {
+                                        child.wordList[ i ] = ( agent.wordList[ i ] + husband.wordList[ i ] ) / 2;
+                                    }
+                                }
+                                else if ( fp.appConfig.agentOptions.childrensLanguage == "bilingual" ) {
+                                    child.lexicon = husband.lexicon;
+                                    child.wordList = husband.wordList;
+                                }
+
+                                agent.ticksSinceReproduction = 0;
+                            }
+                        }
+                    },
+
+                    reproduce: function() {
+                        var reproducibles = _.select( fp.agentNetwork.agents, function( agent ) { 
+                            return ( agent.size == 2 && agent.sex == 1 && agent.age > 18 && agent < 40 );
+                        } );
+                        for ( var i = 0; i < reproducibles.length; i++ ) {
+                            var agent = reproducibles[ i ];
+                            this.haveBaby( agent );
+                        }
+                        //;; import extra woman
+                        var importedWoman = new GeoLanguageAgent();
+                        importedWoman.size = 1;
+                        importedWoman.sex = 1;
+                        importedWoman.age = 18 + Math.floor( Math.random() * 20 );
+                        importedWoman.ticksSinceReproduction = 0;
+                        importedWoman.motherNode = importedWoman;
+                        importedWoman.lexicon = 0.0;
+                        importedWoman.wordList = _.range( 10 ).map( function () { return 0.0 } );
+                        importedWoman.origState = 0;
+                        this.haveBaby( importedWoman );
+                    },
+
+                    checkBirthDeath: function() {
+                        if ( fp.timescale.frameCounter % fp.timescale.framesToYear == 0 ) {
+
+                            var rate = fp.appConfig.geoGamesOptions.rate;
+                            for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+                                var agent = fp.agentNetwork.agents[ i ];
+                                agent.age++;
+                                if ( agent.marsters && fp.appConfig.geoGamesOptions.historicallyAccurate ) {
+                                    if ( agent.age == 82 )
+                                        agent.die();
+                                }
+                                else {
+                                    // ;; equation mattias wrote to approximate a shifted bell curve where at age 100 you have 1, and two std devs bring you to 60 years old.
+                                    var prob = Math.pow( Math.E, ( -Math.pow( ( agent.age - 100 ), 2 ) ) / ( 2 * Math.pow( 20, 2 ) ) );
+                                    if ( Math.random() < prob )
+                                        agent.die();
+                                }
+                                if ( agent.age > 14 && agent.age < 30 ) {
+                                    if ( Math.random() < fp.appConfig.geoGamesOptions.leavingRate )
+                                        agent.die();
+                                }
+
+                            }
+                            this.reproduce();
+                        }
+                    },
+
 
                     setup: function() {
                         fp.timescale.framesToYear = 1;
@@ -635,21 +687,17 @@
                         this.aspect = null;
 
                         this.distributeGrammars();
-
-                        /*
-                        fp.agentNetwork.agents.forEach( function( agent ) {
-                            // Set up a random age
-                            if ( fp.appConfig.agentOptions.randomAge ) {
-                                // Sample a beta distribution with alpha = 2 and beta = 5
-                                // This produces a large population at roughly a reproductive age.
-                                agent.age = Math.floor( jStat.beta.sample( 2, 5 ) * 100 );
-                                agent.health = 100 - agent.age;
-                            }
-                        });
-*/
                     },
                     tick: function() {
+                        var sim = this;
                         this.interact();
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            sim.updateAgentColor( agent );    
+                        });
+                        this.updateTicks();
+                        if ( fp.appConfig.agentOptions.reproduction == true ) {
+                            this.checkBirthDeath();
+                        }
 
                     }
                 }
@@ -660,7 +708,7 @@
                     fp.appConfig.geoGamesOptions.percentageLanguage1 = 0.4;
                     fp.appConfig.geoGamesOptions.rate = 0.3;
                     fp.appConfig.geoGamesOptions.childrensLanguage = 1;
-                    fp.appConfig.geoGamesOptions.historicallyAccurage = true;
+                    fp.appConfig.geoGamesOptions.historicallyAccurate = true;
                     fp.appConfig.geoGamesOptions.marstersDoesntChange = false;
                     fp.appConfig.geoGamesOptions.reproductionRate = true;
                     fp.appConfig.geoGamesOptions.languageSplitByGender = true;
@@ -670,7 +718,7 @@
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "percentageLanguage1", 0, 1).step( 0.01 );
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "rate", 0, 1).step( 0.01 );
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "childrensLanguage", 1, 3).step( 1 );
-                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "historicallyAccurage");
+                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "historicallyAccurate");
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "marstersDoesntChange");
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "reproductionRate");
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "languageSplitByGender");
