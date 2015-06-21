@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>Fierce Planet</title>
-        <base href="/">
+        <base href="../">
         <link rel="stylesheet" type="text/css" href="../css/fp.css">
         <script src="../js/require.js"></script>
         <script>
@@ -66,7 +66,7 @@
                             "terrainOffset": 0,
                             // "size": 40,
                             // "terrainOffset": 20,
-                            "useStickman": false,
+                            "useStickman": true,
                             "shuffle": true,
                             "movementInPatch": 100,
                             "movementRandom": false,
@@ -183,7 +183,7 @@
                             // "agentsShow": true,
                             "buildingsShow": true,
                             // "roadsShow": true,
-                            "waterShow": false,
+                            "waterShow": true,
                             "networkShow": false,
                             "networkCurve": false,
                             // "networkCurvePoints": 20,
@@ -197,8 +197,8 @@
                             // "statsShow": true,
                             // "hudShow": true,
                             // "wireframeShow": false,
-                            // "dayShow": false,
-                            // "skyboxShow": true,
+                             "dayShow": false,
+//                             "skyboxShow": false,
                             // "chartShow": true,
                             // "guiShow": true,
                             // "guiShowControls": true,
@@ -214,8 +214,8 @@
                             // "firstPersonView": false,
                             "cameraOverride": true,
                             "cameraX": 0,
-                            "cameraY": 2500,
-                            "cameraZ": 2250,
+                            "cameraY": 10000,
+                            "cameraZ": 9000,
                             // "maximiseView": true,
                         },
                         // Color options
@@ -229,13 +229,13 @@
                             // "colorDayBuildingFill": 0xb1abab,
                             // "colorDayBuildingLine": 0x222222,
                             // "colorDayBuildingWindow": 0x222222,
-                            // "colorDayTerrainSea": 0x969696,
-                            // "colorDayTerrainLowland1": 0x2d5828,
-                            // "colorDayTerrainLowland2": 0x6d915b,
-                            // "colorDayTerrainMidland": 0x89450e,
-                            // "colorDayTerrainHighland": 0x8c8c8c,
+                             "colorDayTerrainSea": 0x969696,
+                            "colorNightTerrainLowland1": 0x004400,
+                            "colorNightTerrainLowland2": 0x008800,
+                            "colorNightTerrainMidland": 0x44bb44,
+                            "colorNightTerrainHighland": 0x88ff88,
 
-                            "colorNightBackground": 0x030303,
+                            "colorNightBackground": 0x033303,
                             "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
                             "colorNightAgent": 0xffffff,
                             "colorNightNetwork": 0xffffff,
@@ -244,20 +244,20 @@
                             "colorNightBuildingFill": 0xd3d3d3,
                             // "colorNightBuildingLine": 0x838383,
                             "colorNightBuildingWindow": 0xffffff,
-                            // "colorNightTerrainSea": 0x000000,
-                            "colorNightTerrainLowland1": 0x00cc00,
-                            "colorNightTerrainLowland2": 0x44cc44,
-                            "colorNightTerrainMidland": 0x88cc88,
-                            "colorNightTerrainHighland": 0xcccccc,
+                             "colorNightTerrainSea": 0x000000,
+                            "colorNightTerrainLowland1": 0x004400,
+                            "colorNightTerrainLowland2": 0x008800,
+                            "colorNightTerrainMidland": 0x44bb44,
+                            "colorNightTerrainHighland": 0x88ff88,
                             // "colorGraphPopulation": 0x4747b3,
                             // "colorGraphHealth": 0xb34747,
                             // "colorGraphPatchValues": 0x47b347,
                             //
-                            "colorLightHemisphereSky": 0xbfbfbf,
-                            "colorLightHemisphereGround": 0xbfbfbf,
-                            "colorLightHemisphereIntensity": 1.0,
+                            "colorLightHemisphereSky": 0xffffff,
+                            "colorLightHemisphereGround": 0xffffff,
+                            "colorLightHemisphereIntensity": 0.6,
                             "colorLightDirectional": 0xffffff,
-                            "colorLightDirectionalIntensity": 1.0,
+                            "colorLightDirectionalIntensity": 0.6,
 
                         },
                         // Terrain options
@@ -270,7 +270,7 @@
                             // "shaderUse": true,
                             "multiplier": 1,
                             // "mapIndex": 0,
-                            "patchSize": 4 // Must be: N * patchSize = gridPoints - 1
+                            "patchSize": 4 // Should be: N * patchSize = gridPoints - 1
 
                          },
                     }
@@ -684,15 +684,14 @@
                         if ( fp.timescale.frameCounter % fp.appConfig.geoGamesOptions.ticksPerYear == 0 )
                             console.log( "Years: " + fp.timescale.frameCounter / 100  );
                         var sim = this;
-                        this.interact();
-                        fp.agentNetwork.agents.forEach( function( agent ) {
-                            sim.updateAgentColor( agent );
-                        });
-                        this.updateTicks();
-                        if ( fp.appConfig.geoGamesOptions.reproduction == true ) {
-                            this.checkBirthDeath();
-                        }
-
+                         this.interact();
+                         fp.agentNetwork.agents.forEach( function( agent ) {
+                             sim.updateAgentColor( agent );
+                         });
+                         this.updateTicks();
+                         if ( fp.appConfig.geoGamesOptions.reproduction == true ) {
+                             this.checkBirthDeath();
+                         }
                     }
                 }
 
@@ -719,7 +718,6 @@
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "leavingRate", 0, 0.3).step( 0.01 );
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "ticksPerYear", 1, 1000).step( 1 );
 
-
                     // Add custom class
                     fp.agentNetwork.agentClass = GeoLanguageAgent;
                     fp.patchNetwork.initialisePatchFunction = function() { return Math.random(); };
@@ -730,7 +728,7 @@
                     var wholeFile;
                     fp.scene.remove( fp.terrain.plane );
                     fp.terrain = new fp.Terrain();
-                    $.get("assets/local-elevation.asc", function( data) {
+                    $.get("../assets/local-elevation.asc", function( data) {
                         wholeFile = data;
                         var lines = wholeFile.split( '\n' );
                         var cols = lines[ 0 ].split( ' ' )[ 1 ];
