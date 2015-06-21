@@ -2394,14 +2394,17 @@ define( [
                 var weight = 1.0, weightForRoadIsSet = false;
 
                 // Pre-calculate speed and current angle
-                var newSpeed = Math.random() * this.speed / 2,
-                    angle = Math.atan2( zd, xd ),
-                    hyp = Math.sqrt( xd * xd + zd * zd ),
+                var patchSize = fp.appConfig.terrainOptions.patchSize *
+                    fp.appConfig.terrainOptions.multiplier *
+                    ( fp.appConfig.agentOptions.movementInPatch / 100 );
+                var angle = Math.atan2( zd, xd ),
+                    hyp = Math.sqrt( xd * xd + zd * zd ) * patchSize,
                     divisor = directionCount / 2;
 
                 for ( var i = 0; i < directionCount; i++ ) {
                     // Slight rounding errors using above calculation
                     var newAngle = angle + ( i * Math.PI / divisor );
+                    // directionAtSpeed = directionAtSpeed.multiplyScalar( patchSize );
                     xd = Math.cos( newAngle ) * hyp;
                     yd = 0;
                     zd = Math.sin( newAngle ) * hyp;
@@ -2496,7 +2499,6 @@ define( [
                 var patchSize = fp.appConfig.terrainOptions.patchSize *
                                 fp.appConfig.terrainOptions.multiplier *
                                 ( fp.appConfig.agentOptions.movementInPatch / 100 );
-                // directionAtSpeed = directionAtSpeed.multiplyScalar( patchSize );
                 directionAtSpeed.x *= patchSize;
                 directionAtSpeed.z *= patchSize;
                 var newPosition = this.position.clone().add( directionAtSpeed );

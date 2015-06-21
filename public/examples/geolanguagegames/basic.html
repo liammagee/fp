@@ -280,7 +280,7 @@
                     fp.Agent.call( this );
                     this.lexicon = 0.0;
                     this.origState = null;
-                    this.spokenState = null;
+                    this.spokenState = 0;
                     this.age = 20 + Math.floor( Math.random() * 20 );
                     this.sex = Math.floor( Math.random() * 2 );
                     this.ticksSinceReproduction = 0;
@@ -288,9 +288,125 @@
                     this.wordList = _.range( 10 ).map( function () { return 0.0 } );
 
 
+                    /**
+                     * Overrides the Agent implementation.
+                     */
+                    this.generateDirectionVectorsAndWeights = function( seed ) {
+                        var xl = this.lastPosition.x,
+                                yl = this.lastPosition.y,
+                                zl = this.lastPosition.z,
+                                xd = this.direction.x,
+                                yd = this.direction.y,
+                                zd = this.direction.z,
+                                isAlreadyOnRoad = fp.roadNetwork.indexValues.indexOf( fp.getIndex( xl, zl ) ) > -1;
+
+                        // Logic for handling pre-determined paths
+                        if ( _.isUndefined( this.pathComputed ) || this.pathComputed.length < 2 ) {
+                            if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToHome )  {
+                                this.pathComputed = fp.pathNetwork.findPathHome( this );
+                                this.pathPosition = 0;
+                            }
+                            else if ( Math.random() < fp.appConfig.agentOptions.chanceToFindPathToOtherAgentHome ) {
+                                this.pathComputed = fp.pathNetwork.findPathToOtherAgentsHome( this );
+                                this.pathPosition = 0;
+                            }
+                        }
+
+                        // Work out if we have a precomputed path
+                        var dir = this.nextComputedDirection();
+                        if ( !_.isUndefined( dir ) )
+                            return [ [ dir, 1.0 ] ];
+
+                        var directionCount = 8,
+                                directions = new Array( directionCount  );
+
+                        // Weight variables
+                        var weight = 1.0, weightForRoadIsSet = false;
+
+                        // Pre-calculate speed and current angle
+                        var patchSize = fp.appConfig.terrainOptions.patchSize *
+                                fp.appConfig.terrainOptions.multiplier *
+                                ( fp.appConfig.agentOptions.movementInPatch / 100 );
+                        var angle = Math.atan2( zd, xd ),
+                                hyp = Math.sqrt( xd * xd + zd * zd ),
+                                divisor = directionCount / 2;
+
+                        // First obtain heights from the surrounding points
+                        var newDirections = [];
+                        for ( var i = 0; i < directionCount; i++ ) {
+                            // Slight rounding errors using above calculation
+                            var newAngle = angle + ( i * Math.PI / divisor );
+                            xd = Math.cos( newAngle ) * hyp;
+                            yd = 0;
+                            zd = Math.sin( newAngle ) * hyp;
+
+                            // Calculate new position
+                            var xn = xl + xd, yn = yl + yd, zn = zl + zd;
+
+                            yn = fp.getHeight( xn, zn );
+                            yn += fp.appConfig.agentOptions.terrainOffset;
+                            yn += fp.appConfig.agentOptions.size / 2;
+
+                            yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;
+                            newDirections.push( new THREE.Vector3( xd, yd, zd ) );
+
+                            // Set the direction
+                            directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), 0 ];
+                        }
+
+                        newDirections = _.chain( newDirections ).
+                                shuffle(). // To disorder duplicate values before sort
+                                sortBy( function( vec ) { return Math.abs( vec.y ); } ).
+                                reverse().
+                                value();
+
+                        for ( var i = 0; i < newDirections.length; i++ ) {
+                            var direction = newDirections[ i ];
+                            var weight = Math.pow( seed, 0.125 );
+                            // For proper randomness, set all weights tot he same value
+                            switch( i ) {
+                                case 0:
+                                    weight = 0.3;
+                                    break;
+                                case 1:
+                                    weight = 0.2;
+                                    break;
+                                case 2:
+                                    weight = 0.15;
+                                    break;
+                                case 3:
+                                    weight = 0.1;
+                                    break;
+                                case 4:
+                                    weight = 0.1;
+                                    break;
+                                case 5:
+                                    weight = 0.05;
+                                    break;
+                                case 6:
+                                    weight = 0.05;
+                                    break;
+                                case 7:
+                                    weight = 0.05;
+                                    0.1;
+                                    break;
+                            }
+
+                            directions[ i ] = [ direction, weight ];
+                        }
+
+                        directions = _.chain( directions ).
+                                compact().
+                                shuffle().
+                                sort( function( a, b ) { return ( a[ 1 ] > b[ 1 ] ) ? 1 : ( a[ 1 ] < b [ 1 ]? -1 : 0 ); } ).
+                                value();
+
+                        return directions;
+                    };
+
 
                     // Set up an agent class that can exercise, consume, reproduce and die
-                    this.exercise = function() {
+                    this.interact = function() {
                         if (this.health > 0)
                             this.health -= fp.appConfig.malthusOptions.energyLoss;
                     }
@@ -374,7 +490,12 @@
                     },
 
                     updateAgentColor: function( agent ) {
-                        agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')';
+                        var lexicon = agent.lexicon;
+                        var redComponent = 256 * (agent.lexicon) + 32;
+                        redComponent = (redComponent > 255) ? 255 : redComponent;
+                        var blueComponent = 256 * (agent.lexicon);
+                        var greenComponent = 256 * (agent.lexicon);
+                        agent.color = 'rgb(' + redComponent + ', ' + greenComponent + ', ' + blueComponent + ')';
                         // agent.color = 'rgb(' + Math.floor(256 * (1.0 - agent.lexicon)) + ', 0, ' + Math.floor(256 * agent.lexicon) + ')';
                     },
 
@@ -389,7 +510,7 @@
                             agent.originalState = agent.lexicon;
                             agent.spokenState = agent.lexicon;
                             agent.wordList = _.range(10).map(function () { return agent.originalState });
-                            sim.updateAgentColor(agent)
+                            sim.updateAgentColor( agent );
                         });
 
                         // the next bit deals with making one node William Marsters so he can not change his lexicon and be historically accurate with age at death
@@ -409,6 +530,102 @@
                         LanguageChange.distributeGrammars();
                     },
 
+                    chooseLanguage: function( agent, index ) {
+                        var modifier = agent.wordList[ index ];
+                        if ( modifier < Math.random() )
+                            agent.spokenState = 0;
+                        else
+                            agent.spokenState = 1;
+                    },
+
+                    // ;;this is where the "self" agent updates its wordlist on the basis of the interaction. ;;CHECK DO I HAVE TO USE "OF MYSELF" HERE TO REF SELF?
+                    updateSelf: function( agent, result, wordIndex ) {
+                        var rate = fp.appConfig.geoGamesOptions.rate;
+                        if ( result == 0 ) { //;; i.e. situation where agent used 0 and succeeded
+                            var newValue = agent.wordList[ wordIndex ] - rate; //;; so they are encouraged in their use of 0 for that item by decreasing likelihood of using 1 by whatever the rate has been set to in the slider.
+                            newValue = newValue < 0 ? 0 : newValue;
+                            agent.wordList[ wordIndex ] = newValue;
+                        }
+                        else if ( result == 1 ) { //;; ie. situation where agent (self) used 1 and failed
+                            var newValue = agent.wordList[ wordIndex ] - rate; 
+                            newValue = newValue < 0 ? 0 : newValue;
+                            agent.wordList[ wordIndex ] = newValue;
+                        }
+                        else if ( result == 2 ) { //;; so they are encouraged and increase chance of using 1 again
+                            var newValue = agent.wordList[ wordIndex ] + rate;
+                            newValue = newValue > 1 ? 1 : newValue;
+                            agent.wordList[ wordIndex ] = newValue;
+                        }
+                        else if ( result == 3 ) { //;; i.e. situation where agent used 0 and failed.
+                            var newValue = agent.wordList[ wordIndex ] + rate;
+                            newValue = newValue > 1 ? 1 : newValue;
+                            agent.wordList[ wordIndex ] = newValue;
+                        }
+                        if ( agent.marsters == true && fp.appConfig.geoGamesOptions.marstersDoesntChange == true ) {
+                            agent.lexicon = 1;
+                            agent.wordList = _.range( 10 ).map( function () { return 1.0 } );
+                        }
+                    },
+
+                    interact: function() {
+                        var sim = this;
+                        var rate = fp.appConfig.geoGamesOptions.rate;
+                        for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+                            var agent = fp.agentNetwork.agents[ i ];
+
+                            var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
+                            if ( _.isUndefined( agents ) )
+                                continue;
+                            if ( agents.length <= 1 )
+                                continue;
+                            var wordIndex = Math.floor( Math.random() * 10 );
+                            var result = 5;
+                            // Pick a partner at random
+                            var otherAgent = agents[ Math.floor( Math.random() * agents.length ) ]
+                            if ( otherAgent == agent )
+                                continue;
+                            var otherWordIndex = Math.floor( Math.random() * 10 );
+                            this.chooseLanguage( otherAgent, otherWordIndex );
+                            if ( otherAgent.spokenState == 0 ) { // i.e. if partner uses language 0
+                                if ( agent.spokenState == 0 ) { // and self-agent also choose language 0 then success
+                                    // so they are encouraged in their use of 0 for that item by decreasing likelihood of using 1 by whatever the rate has been set to in the slider.
+                                    var newValue = otherAgent.wordList[ otherWordIndex ] - rate; 
+                                    newValue = newValue < 0 ? 0 : newValue;
+                                    otherAgent.wordList[ otherWordIndex ] = newValue;
+                                    result = 0;
+                                }
+                                else {
+                                    var newValue = otherAgent.wordList[ otherWordIndex ] + rate; 
+                                    newValue = newValue > 1 ? 1 : newValue;
+                                    otherAgent.wordList[ otherWordIndex ] = newValue;
+                                    result = 1;
+                                }
+                            }
+                            else {
+                                if ( agent.spokenState == 1 ) { 
+                                    var newValue = otherAgent.wordList[ otherWordIndex ] + rate; 
+                                    newValue = newValue > 1 ? 1 : newValue;
+                                    otherAgent.wordList[ otherWordIndex ] = newValue;
+                                    result = 2;
+                                }
+                                else {
+                                    var newValue = otherAgent.wordList[ otherWordIndex ] - rate; 
+                                    newValue = newValue < 0 ? 0 : newValue;
+                                    otherAgent.wordList[ otherWordIndex ] = newValue;
+                                    result = 3;
+                                }
+                            }
+                            otherAgent.lexicon = jStat.mean( otherAgent.wordList );
+                            this.updateSelf( agent, result, wordIndex );
+                            agent.lexicon = jStat.mean( agent.wordList );
+                            if ( otherAgent.marsters == true && fp.appConfig.geoGamesOptions.marstersDoesntChange == true ) {
+                                otherAgent.lexicon = 1;
+                                otherAgent.wordList = _.range( 10 ).map( function () { return 1.0 } );
+                            }
+                        }
+                    },
+
+
                     setup: function() {
                         fp.timescale.framesToYear = 1;
 
@@ -418,7 +635,6 @@
                         this.aspect = null;
 
                         this.distributeGrammars();
-
 
                         /*
                         fp.agentNetwork.agents.forEach( function( agent ) {
@@ -433,30 +649,8 @@
 */
                     },
                     tick: function() {
-                        /*
-                        if ( fp.timescale.frameCounter % 500 == 0  ) {
-                            for ( var i = 0; i < this.positions.length; i++ ) {
-                                var pos = this.positions[ i ];
-                                var x = pos[ 0 ];
-                                var y = pos[ 1 ];
-                                var z = pos[ 2 ];
-                                fp.camera.position.x = x;
-                                fp.camera.position.y = y;
-                                fp.camera.position.z = z;
+                        this.interact();
 
-                                var mimetype = mimetype  || "image/png";
-                                var url = fp.renderer.domElement.toDataURL( mimetype );
-                                var anchor = $( "<img>" ).attr( "src", url );
-                                anchor.attr( "src", url )
-                                anchor.attr( "id",  "img-" + fp.timescale.frameCounter + "-" + i )
-                                $( "#links" ).append( anchor );
-                                console.log( fp.timescale.frameCounter );
-                            }
-                        }
-                        if ( fp.timescale.frameCounter > 10000 ) {
-                            fp.appConfig.Setup();
-                        }
-                        */
                     }
                 }
 
@@ -512,8 +706,9 @@
                         console.log(cols, rows, heights.length, min, max )
                         fp.appConfig.terrainOptions.loadHeights  = true;
                         fp.terrain.initTerrain( heights );
+
                         fp.appConfig.Setup();
-                        // fp.appConfig.Run();
+                        fp.appConfig.Run();
                     } )
                 } );
             }
