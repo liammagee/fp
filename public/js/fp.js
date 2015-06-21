@@ -3896,7 +3896,7 @@ define( [
                 fp.chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba( 0, 0, 255, 0.2 )", lineWidth: 4 } );
                 fp.chart.addTimeSeries( agentHealthSeries, { fillStyle: "rgba( 255, 0, 0, 0.2 )", lineWidth: 4 } );
                 fp.chart.addTimeSeries( patchValuesSeries, { fillStyle: "rgba( 0, 255, 0, 0.2 )", lineWidth: 4 } );
-                fp.updateChartColors();
+                // fp.updateChartColors();
                 fp.chart.streamTo( chartCanvas, 500 );
                 this.updateGraph();
             },
@@ -4211,13 +4211,18 @@ define( [
             }
         };
 
+        /**
+         * Update the series colours, if they change
+         */
         this.updateChartColors = function() {
-            var colorPop = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPopulation ).getHexString(),
-                colorHealth = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphHealth ).getHexString(),
-                colorPatches = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPatchValues ).getHexString();
-            _.extend( fp.chart.seriesSet[ 0 ].options, { strokeStyle: colorPop } );
-            _.extend( fp.chart.seriesSet[ 1 ].options, { strokeStyle: colorHealth } );
-            _.extend( fp.chart.seriesSet[ 2 ].options, { strokeStyle: colorPatches } );
+            if ( fp.chart.seriesSet.length == 3 ) {
+                var colorPop = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPopulation ).getHexString(),
+                    colorHealth = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphHealth ).getHexString(),
+                    colorPatches = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPatchValues ).getHexString();
+                _.extend( fp.chart.seriesSet[ 0 ].options, { strokeStyle: colorPop } );
+                _.extend( fp.chart.seriesSet[ 1 ].options, { strokeStyle: colorHealth } );
+                _.extend( fp.chart.seriesSet[ 2 ].options, { strokeStyle: colorPatches } );
+            }
         };
 
         this.mostVisited = function() {
@@ -4650,8 +4655,10 @@ define( [
          * @memberof fp
          */
         this.updateGraph = function() {
-            if ( fp.chart.options.maxValue <= fp.agentNetwork.agents.length )
+            if ( fp.chart.seriesSet.length == 3 &&
+                fp.chart.options.maxValue <= fp.agentNetwork.agents.length ) {
                 fp.chart.options.maxValue *= 2;
+            }
         };
 
         /**
