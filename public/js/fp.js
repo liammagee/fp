@@ -2031,9 +2031,12 @@ define( [
                     fp.buildingNetwork.buildings.forEach( function( building ) {
                         building.lod.matrixAutoUpdate = false;
                         var cv = _.clone( building.originPosition );
+                        // var cv = _.clone( building.mesh );
                         var nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
                         var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
                         nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
+                        building.mesh.rotation.set( v.x, v.y, v.z );
+                        building.mesh.position.set( nv.x, nv.y, nv.z );
                         building.lod.rotation.set( v.x, v.y, v.z );
                         building.lod.position.set( nv.x, nv.y, nv.z );
                         building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
@@ -2803,6 +2806,7 @@ define( [
                 this.geometry.verticesNeedUpdate = true;
 
                 // Set up containers
+                this.mesh = new THREE.Object3D();
                 this.highResMeshContainer = new THREE.Object3D();
                 this.lowResMeshContainer = new THREE.Object3D();
 
@@ -3334,6 +3338,7 @@ define( [
                     this.lowResMeshContainer.position.set( position.x, posY, position.z );
                 }
                 if ( !_.isUndefined( rotation ) ) {
+                    this.mesh.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.lod.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.highResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.lowResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
