@@ -2397,11 +2397,8 @@ define( [
                 var weight = 1.0, weightForRoadIsSet = false;
 
                 // Pre-calculate speed and current angle
-                var patchSize = fp.appConfig.terrainOptions.patchSize *
-                    fp.appConfig.terrainOptions.multiplier *
-                    ( fp.appConfig.agentOptions.movementInPatch / 100 );
                 var angle = Math.atan2( zd, xd ),
-                    hyp = Math.sqrt( xd * xd + zd * zd ) * patchSize,
+                    hyp = Math.sqrt( xd * xd + zd * zd ),
                     divisor = directionCount / 2;
 
                 for ( var i = 0; i < directionCount; i++ ) {
@@ -2499,11 +2496,13 @@ define( [
             this.move = function() {
                 var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
                 // Multiply relative to patch size
-                var patchSize = fp.appConfig.terrainOptions.patchSize *
-                                fp.appConfig.terrainOptions.multiplier *
+                var factor = fp.appConfig.terrainOptions.multiplier;
+                if ( fp.appConfig.agentOptions.movementRelativeToPatch ) {
+                    factor *= fp.appConfig.terrainOptions.patchSize *
                                 ( fp.appConfig.agentOptions.movementInPatch / 100 );
-                directionAtSpeed.x *= patchSize;
-                directionAtSpeed.z *= patchSize;
+                }
+                directionAtSpeed.x *= factor;
+                directionAtSpeed.z *= factor;
                 var newPosition = this.position.clone().add( directionAtSpeed );
                 var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.gridExtent / 2;
                 // Simple check to ensure we're within terrain bounds
@@ -2542,7 +2541,7 @@ define( [
              * @memberof Agent
              */
             this.randomDirection = function() {
-                if ( fp.appConfig.agentOptions.movementRandom ) {
+                if ( fp.appConfig.agentOptions.movementStrictlyIntercardinal ) {
                     return new THREE.Vector3( this.speed * ( Math.random() - 0.5 ), 0, this.speed * ( Math.random() - 0.5 ) );
                 }
                 else {
@@ -3494,9 +3493,12 @@ define( [
                 terrainOffset: 20,
                 shuffle: false,
                 movementInPatch: 1,
-                movementRandom: false,
+                movementStrictlyIntercardinal: false,
                 initialSpeed: 2,
-                initialPerturbBy: 0.05
+                initialPerturbBy: 0.05,
+                movementRelativeToPatch: false,
+                movementInPatch: 1,
+                movementStrictlyIntercardinal: false
             };
             this.buildingOptions = {
                 create: true,
@@ -3966,10 +3968,11 @@ define( [
                 agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
                 agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
                 agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100  ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "movementRandom" );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 10 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1 ).step( 0.05 );
+                agentsFolder.add( fp.appConfig.agentOptions, "movementRelativeToPatch" );
+                agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100 ).step( 1 );
+                agentsFolder.add( fp.appConfig.agentOptions, "movementStrictlyIntercardinal" );
             }
 
             if ( fp.appConfig.displayOptions.guiShowBuildingsFolder ) {
