@@ -1735,8 +1735,8 @@ define( [
                     patchPoints = new Float32Array( len );
                 for ( i = 0; i < len; i++ ) {
                     heights[ i ] = vertices[ i * 3 + 2 ];
-                    trailPoints[ i ] = 0;
-                    patchPoints[ i ] = 0;
+                    trailPoints[ i ] = 0.0;
+                    patchPoints[ i ] = 0.0;
                 }
                 var terrainAttributes = {
                     height: { type: "f", value: null },
@@ -5615,6 +5615,9 @@ define( [
 
                 "#endif",
 
+                // Needed for three.js r71
+                THREE.ShaderChunk[ "common" ],
+
                 THREE.ShaderChunk[ "map_pars_vertex" ],
                 THREE.ShaderChunk[ "lightmap_pars_vertex" ],
                 THREE.ShaderChunk[ "envmap_pars_vertex" ],
@@ -5628,6 +5631,7 @@ define( [
                 "void main() {",
 
                     customCode,
+
 
                     THREE.ShaderChunk[ "map_vertex" ],
                     THREE.ShaderChunk[ "lightmap_vertex" ],
@@ -5668,6 +5672,9 @@ define( [
 
                 "#endif",
 
+                // Needed for three.js r71
+                THREE.ShaderChunk[ "common" ],
+
                 THREE.ShaderChunk[ "color_pars_fragment" ],
                 THREE.ShaderChunk[ "map_pars_fragment" ],
                 THREE.ShaderChunk[ "alphamap_pars_fragment" ],
@@ -5680,6 +5687,8 @@ define( [
 
                 "void main() {",
 
+                    "vec3 outgoingLight = vec3( 0.0 );", 
+                    
                     customCode, // must set gl_FragColor!
                     //"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
 
@@ -5691,8 +5700,8 @@ define( [
 
                 "   #ifdef DOUBLE_SIDED",
 
-                        //"float isFront = float( gl_FrontFacing );",
-                        //"gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;",
+                        "float isFront = float( gl_FrontFacing );",
+                        "gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;",
 
                 "       if ( gl_FrontFacing )",
                 "           gl_FragColor.xyz *= vLightFront;",
