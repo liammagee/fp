@@ -5556,7 +5556,8 @@ define( [
                             "col = mix( midland, highland, ( elevation - 0.5 ) * 4.0 );",
                         "}",
                     "}",
-                    "gl_FragColor = col;",
+                    "outgoingLight = vec3( col.r, col.g, col.b );",
+                    "diffuseColor = vec4( col.r, col.g, col.b, col.a );",
 
                 ].join( "\n" );
             },
@@ -5662,6 +5663,9 @@ define( [
                 var fragmentShader = [
 
                 customParams,
+
+                "uniform vec3 diffuse;",
+                "uniform vec3 emissive;",
                 "uniform float opacity;",
 
                 "varying vec3 vLightFront;",
@@ -5687,41 +5691,44 @@ define( [
 
                 "void main() {",
 
-                    "vec3 outgoingLight = vec3( 0.0 );", 
-                    
+                "   vec3 outgoingLight = vec3( 0.0 );", // outgoing light does not have an alpha, the surface does
+                "   vec4 diffuseColor = vec4( diffuse, opacity );",
+
                     customCode, // must set gl_FragColor!
                     //"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
 
                     THREE.ShaderChunk[ "logdepthbuf_fragment" ],
                     THREE.ShaderChunk[ "map_fragment" ],
+                    THREE.ShaderChunk[ "color_fragment" ],
                     THREE.ShaderChunk[ "alphamap_fragment" ],
                     THREE.ShaderChunk[ "alphatest_fragment" ],
                     THREE.ShaderChunk[ "specularmap_fragment" ],
 
                 "   #ifdef DOUBLE_SIDED",
 
-                        "float isFront = float( gl_FrontFacing );",
-                        "gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;",
+                        //"float isFront = float( gl_FrontFacing );",
+                        //"gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;",
 
                 "       if ( gl_FrontFacing )",
-                "           gl_FragColor.xyz *= vLightFront;",
+                "           outgoingLight += diffuseColor.rgb * vLightFront + emissive;",
                 "       else",
-                "           gl_FragColor.xyz *= vLightBack;",
+                "           outgoingLight += diffuseColor.rgb * vLightBack + emissive;",
 
                 "   #else",
 
-                "       gl_FragColor.xyz *= vLightFront;",
+                "       outgoingLight += diffuseColor.rgb * vLightFront + emissive;",
 
                 "   #endif",
 
                     THREE.ShaderChunk[ "lightmap_fragment" ],
-                    THREE.ShaderChunk[ "color_fragment" ],
                     THREE.ShaderChunk[ "envmap_fragment" ],
                     THREE.ShaderChunk[ "shadowmap_fragment" ],
 
                     THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
                     THREE.ShaderChunk[ "fog_fragment" ],
+
+                "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );", // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
 
                 "}"
 
@@ -5742,7 +5749,6 @@ define( [
                         THREE.UniformsLib[ "lights" ],
                         THREE.UniformsLib[ "shadowmap" ],
                         {
-                            "ambient"  : { type: "c", value: new THREE.Color( 0xffffff ) },
                             "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
                             "wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
                         }
