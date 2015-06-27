@@ -1757,6 +1757,8 @@ define( [
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
                 };
                 fp.terrain.nightTerrainUniforms = {
+                    opacity: { type: "f", value: 1.0 },
+
                     seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainSea ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
                     lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
@@ -1776,7 +1778,7 @@ define( [
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
-                    lights: true
+                    lights: true, transparent: true
                 } );
 
                 // Only use the shader material if we have variable heights
@@ -3124,7 +3126,7 @@ define( [
                                 fp.ShaderUtils.buildingFragmentShaderParams(),
                                 fp.ShaderUtils.buildingFragmentShaderMain()
                             ),
-                            lights: true
+                            lights: true, transparent: true
                         } );
 
                         shaderMaterial.side = THREE.DoubleSide;
@@ -4369,7 +4371,7 @@ define( [
 
             fp.lightHemisphere = new THREE.HemisphereLight(
                 new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky ),
-                fp.appConfig.colorOptions.colorLightHemisphereGround,
+                new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereGround ),
                 new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereIntensity )
             );
             // var fp.lightHemisphere = new THREE.HemisphereLight( 0xbfbfbf, 0xbfbfbf, 0.8 );
@@ -4397,7 +4399,7 @@ define( [
             fp.lightDirectional.shadowCameraTop = d;
             fp.lightDirectional.shadowCameraBottom = -d;
             fp.lightDirectional.shadowBias = -0.0001;
-            //fp.lightDirectional.shadowCameraVisible = true; // for debugging
+            // fp.lightDirectional.shadowCameraVisible = true; // for debugging
             fp.scene.add( fp.lightDirectional );
         };
 
@@ -5483,7 +5485,8 @@ define( [
                                     "col = vec4( lineColor, opacity );",
                         "}",
                     "}",
-                    "gl_FragColor = col;",
+                    "outgoingLight = vec3( col.r, col.g, col.b );",
+                    "diffuseColor = vec4( col.r, col.g, col.b, col.a );",
 
 
                 ].join( "\n" );
@@ -5729,6 +5732,7 @@ define( [
                     THREE.ShaderChunk[ "fog_fragment" ],
 
                 "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );", // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
+                // "   gl_FragColor = vec4( 0.0, 0.0, 0.0, 0.1 );", // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
 
                 "}"
 
