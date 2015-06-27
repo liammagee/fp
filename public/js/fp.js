@@ -5532,10 +5532,10 @@ define( [
             terrainFragmentShaderMain: function() {
                 return [
                     "vec4 sea = vec4( seaColor, 1.0 );",
-                    "vec4 lowland1 = vec4( lowland1Color, 0.75 );",
-                    "vec4 lowland2 = vec4( lowland2Color, 0.75 );",
-                    "vec4 midland = vec4( midlandColor, 0.75 );",
-                    "vec4 highland = vec4( highlandColor, 0.75 );",
+                    "vec4 lowland1 = vec4( lowland1Color, 1.0 );",
+                    "vec4 lowland2 = vec4( lowland2Color, 1.0 );",
+                    "vec4 midland = vec4( midlandColor, 1.0 );",
+                    "vec4 highland = vec4( highlandColor, 1.0 );",
                     "vec4 col;",
                     "",
                     "float elevation = vHeight / maxHeight;",
