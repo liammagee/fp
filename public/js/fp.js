@@ -1748,22 +1748,40 @@ define( [
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
                 fp.terrain.dayTerrainUniforms = {
-                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainSea ) },
+                    opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
+
+                    groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
                     lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
-                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland ) },
+                    midland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland1 ) },
+                    midland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland2 ) },
                     highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
+
+                    stop1: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop1 },
+                    stop2: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop2 },
+                    stop3: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop3 },
+                    stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
+                    stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
+
                     size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
                 };
                 fp.terrain.nightTerrainUniforms = {
-                    opacity: { type: "f", value: 1.0 },
+                    opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
 
-                    seaColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainSea ) },
+                    groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
                     lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
-                    midlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland ) },
+                    midland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland1 ) },
+                    midland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland2 ) },
                     highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
+
+                    stop1: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop1 },
+                    stop2: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop2 },
+                    stop3: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop3 },
+                    stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
+                    stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
+
                     size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier + 1 }
                 };
@@ -3663,15 +3681,6 @@ define( [
                 colorDayBuildingFill: 0xb1abab,
                 colorDayBuildingLine: 0x222222,
                 colorDayBuildingWindow: 0x222222,
-                colorDayTerrainSea: 0x969696,
-                colorDayTerrainLowland1: 0x2d5828,
-                colorDayTerrainLowland2: 0x6d915b,
-                colorDayTerrainMidland: 0x89450e,
-                colorDayTerrainHighland: 0x8c8c8c,
-                // colorDayTerrainLowland1: 0x4d7848,
-                // colorDayTerrainLowland2: 0x8db17b,
-                // colorDayTerrainMidland: 0xa9752e,
-                // colorDayTerrainHighland: 0xacacac,
 
                 colorNightBackground: 0x636363,
                 colorNightRoad: 0x474747,
@@ -3684,11 +3693,7 @@ define( [
                 colorNightBuildingFill: 0x838383,
                 colorNightBuildingLine: 0x838383,
                 colorNightBuildingWindow: 0xffff8f,
-                colorNightTerrainSea: 0x000000,
-                colorNightTerrainLowland1: 0x000000,
-                colorNightTerrainLowland2: 0x181818,
-                colorNightTerrainMidland: 0x282828,
-                colorNightTerrainHighland: 0x4c4c4c,
+
                 colorGraphPopulation: 0x4747b3,
                 colorGraphHealth: 0xb34747,
                 colorGraphPatchValues: 0x47b347,
@@ -3698,6 +3703,31 @@ define( [
                 colorLightHemisphereIntensity: 1.0,
                 colorLightDirectional: 0xffffff,
                 colorLightDirectionalIntensity: 0.5,
+
+                colorDayTerrainGroundLevel: 0x969696,
+                colorDayTerrainLowland1: 0x2d5828,
+                colorDayTerrainLowland2: 0x6d915b,
+                colorDayTerrainMidland1: 0x89450e,
+                colorDayTerrainMidland2: 0x89450e,
+                colorDayTerrainHighland: 0x8c8c8c,
+                // colorDayTerrainLowland1: 0x4d7848,
+                // colorDayTerrainLowland2: 0x8db17b,
+                // colorDayTerrainMidland1: 0xa9752e,
+                // colorDayTerrainHighland: 0xacacac,
+                colorNightTerrainGroundLevel: 0x000000,
+                colorNightTerrainLowland1: 0x000000,
+                colorNightTerrainLowland2: 0x181818,
+                colorNightTerrainMidland1: 0x282828,
+                colorNightTerrainMidland2: 0x3a3a3a,
+                colorNightTerrainHighland: 0x4c4c4c,
+
+                colorTerrainStop1: 0.2,
+                colorTerrainStop2: 0.4,
+                colorTerrainStop3: 0.6,
+                colorTerrainStop4: 0.8,
+                colorTerrainStop5: 1.0,
+
+                colorTerrainOpacity: 1.0,
             };
             this.buildingOptions.maxHeight = ( this.buildingOptions.minHeight > this.buildingOptions.maxHeight ) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
             this.buildingOptions.maxWidth = ( this.buildingOptions.minWidth > this.buildingOptions.maxWidth ) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
@@ -4121,16 +4151,24 @@ define( [
             if ( fp.appConfig.displayOptions.guiShowColorFolder ) {
                 var colorFolder = fp.gui.addFolder( "Color Options" );
                 var colorTerrainFolder = colorFolder.addFolder( "Terrain Colors" );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainSea" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainSea" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainGroundLevel" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainGroundLevel" ).onChange( fp.loadTerrain );
                 colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland1" ).onChange( fp.loadTerrain );
                 colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland1" ).onChange( fp.loadTerrain );
                 colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland2" ).onChange( fp.loadTerrain );
                 colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland2" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland1" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland1" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland2" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland2" ).onChange( fp.loadTerrain );
                 colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainHighland" ).onChange( fp.loadTerrain );
                 colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainHighland" ).onChange( fp.loadTerrain );
+                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop1", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop2", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop3", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop4", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop5", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainOpacity", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
                 var colorBuildingFolder = colorFolder.addFolder( "Building Colors" );
                 colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingFill" );
                 colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingFill" );
@@ -5522,24 +5560,28 @@ define( [
                     "varying float vTrail;",
                     "varying float vPatch;",
                     "// Terrain colors",
-                    "uniform vec3 seaColor;",
+                    "uniform vec3 groundLevelColor;",
                     "uniform vec3 lowland1Color;",
                     "uniform vec3 lowland2Color;",
-                    "uniform vec3 midlandColor;",
+                    "uniform vec3 midland1Color;",
+                    "uniform vec3 midland2Color;",
                     "uniform vec3 highlandColor;",
+                    "uniform float stop1;",
+                    "uniform float stop2;",
+                    "uniform float stop3;",
+                    "uniform float stop4;",
+                    "uniform float stop5;",
                 ].join( "\n" );
             },
             terrainFragmentShaderMain: function() {
                 return [
-                    "vec4 sea = vec4( seaColor, 1.0 );",
-                    "vec4 lowland1 = vec4( lowland1Color, 1.0 );",
-                    "vec4 lowland2 = vec4( lowland2Color, 1.0 );",
-                    "vec4 midland = vec4( midlandColor, 1.0 );",
-                    "vec4 highland = vec4( highlandColor, 1.0 );",
-                    "float stop1 = 0.01;",
-                    "float stop2 = 0.5;",
-                    "float stop3 = 0.85;",
-                    "float stop4 = 1.0;",
+                    "vec4 groundLevel = vec4( groundLevelColor, opacity );",
+                    "vec4 lowland1 = vec4( lowland1Color, opacity );",
+                    "vec4 lowland2 = vec4( lowland2Color, opacity );",
+                    "vec4 midland1 = vec4( midland1Color, opacity );",
+                    "vec4 midland2 = vec4( midland2Color, opacity );",
+                    "vec4 highland = vec4( highlandColor, opacity );",
+                    "float range;",
                     "vec4 col;",
                     "",
                     "float elevation = vHeight / maxHeight;",
@@ -5551,19 +5593,27 @@ define( [
                     "}",
                     "else{",
                         "if ( elevation < stop1 ) {",
-                            "col = mix( sea, lowland1, elevation );",
+                            "range = ( elevation - 0.0 ) * ( 1.0 / stop1 );",
+                            "col = mix( groundLevel, lowland1, range );",
                         "}",
                         "else if ( elevation < stop2 ) {",
-                            "col = mix( lowland1, lowland2, elevation );",
+                            "range = ( elevation - stop1 ) * ( 1.0 / ( stop2 - stop1 ) );",
+                            "col = mix( lowland1, lowland2, range );",
                         "}",
                         "else if ( elevation < stop3 ) {",
-                            "col = mix( lowland2, midland, elevation );",
+                            "range = ( elevation - stop2 ) * ( 1.0 / ( stop3 - stop2 ) );",
+                            "col = mix( lowland2, midland1, range );",
                         "}",
                         "else if ( elevation < stop4 ) { ",
-                            "col = mix( midland, highland, 0.1 );",
+                            "range = ( elevation - stop3 ) * ( 1.0 / ( stop4 - stop3 ) );",
+                            "col = mix( midland1, midland2, range );",
+                        "}",
+                        "else if ( elevation < stop5 ) { ",
+                            "range = ( elevation - stop4 ) * ( 1.0 / ( stop5 - stop4 ) );",
+                            "col = mix( midland2, highland, range );",
                         "}",
                         "else  { ",
-                            "col = mix( midland, highland, 0.5 );",
+                            "col = highland;",
                         "}",
                     "}",
                     "outgoingLight = vec3( col.r, col.g, col.b );",
