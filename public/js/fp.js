@@ -3979,7 +3979,7 @@ define( [
 
             if ( fp.appConfig.displayOptions.guiShowAgentFolder ) {
                 var agentsFolder = fp.gui.addFolder( "Agent Options" );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 10000 ).step( 1 );
+                agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 1000 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialExtent", 1, 100 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1, 100 ).step( 1 );
                 agentsFolder.add( fp.appConfig.agentOptions, "initialX",  0, 100 ).step( 1 );
@@ -4423,8 +4423,8 @@ define( [
                 fp.appConfig.colorOptions.colorLightDirectionalIntensity
             );
             // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
-            fp.lightDirectional.position.set( 40000, 40000, 40000 );
-            fp.lightDirectional.shadowDarkness = 0.25;
+            fp.lightDirectional.position.set( -40000, 40000, -40000 );
+            fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
             fp.lightDirectional.castShadow = true;
             // these six values define the boundaries of the yellow box seen above
             fp.lightDirectional.shadowCameraNear = 250;
@@ -4453,6 +4453,8 @@ define( [
             fp.lightHemisphere.intensity = fp.appConfig.colorOptions.colorLightHemisphereIntensity;
             fp.lightDirectional.color = new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional );
             fp.lightDirectional.intensity = fp.appConfig.colorOptions.colorLightDirectionalIntensity;
+            fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
+
         };
 
         /**
