@@ -1185,11 +1185,18 @@ define( [
             this.buildPatchMesh = function() {
                 // var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
                 this.plane = this.cloneGeometry();
+                // Rotate 90 degrees on X axis, to be the "ground"
                 this.plane.rotation.set( -Math.PI / 2, 0, 0 );
+                // Lift by 1, to ensure shaders doesn't clash with water
+                this.plane.position.set( 0, -10, 0 );
                 this.plane.castShadow = true;
                 this.plane.receiveShadow = true;
                 this.updateTerrainPatchAttributes();
-                fp.scene.add( this.plane );
+
+                // Toggle patches state 
+                this.togglePatchesState();
+                // fp.scene.add( this.plane );
+
             };
 
             /**
@@ -1297,7 +1304,7 @@ define( [
 
 
             this.togglePatchesState = function() {
-                if ( fp.appConfig.displayOptions.patchesShow ) {
+                if ( fp.appConfig.displayOptions.patchesShow  ) {
                     if ( this.plane === null )
                         this.buildPatchMesh();
                     else
@@ -1810,7 +1817,10 @@ define( [
                 fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
                 fp.terrain.plane.castShadow = true;
                 fp.terrain.plane.receiveShadow = true;
+                // Rotate 90 degrees on X axis, to be the "ground"
                 fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0 );
+                // Lift by 1, to ensure shaders doesn't clash with water
+                fp.terrain.plane.position.set( 0, 10, 0 );
                 if ( fp.appConfig.displayOptions.terrainShow )
                     fp.scene.add( fp.terrain.plane );
 
@@ -5593,8 +5603,11 @@ define( [
                     "else if ( vTrail > 0.0 ) {",
                         "col = vec4( vTrail, vTrail, vTrail, 1.0 );",
                     "}",
-                    "else{",
-                        "if ( elevation < stop1 ) {",
+                    "else {",
+                        "if ( elevation == 0.0 ) {",
+                            "col = vec4( 0.0, 0.0, 0.0, 0.0 );",
+                        "}",
+                        "else if ( elevation < stop1 ) {",
                             "range = ( elevation - 0.0 ) * ( 1.0 / stop1 );",
                             "col = mix( groundLevel, lowland1, range );",
                         "}",
