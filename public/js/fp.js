@@ -179,7 +179,7 @@ define( [
                         this.networkMesh = new THREE.Line(
                             this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
                             this.friendNetworkMaterial(),
-                            THREE.LinePieces
+                            THREE.LineSegments
                         );
                     }
                     fp.scene.add( this.networkMesh );
@@ -1357,7 +1357,7 @@ define( [
                     blending: THREE.AdditiveBlending,
                     transparent: true
                 } );
-                fp.trailNetwork.globalTrailLine = new THREE.Line( geom, trailMaterial, THREE.LinePieces );
+                fp.trailNetwork.globalTrailLine = new THREE.Line( geom, trailMaterial, THREE.LineSegments );
                 if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
                 }
@@ -2844,7 +2844,7 @@ define( [
                 this.lowResMeshContainer = new THREE.Object3D();
 
                 if ( ! fp.appConfig.buildingOptions.useShader ) {
-                    this.mesh = new THREE.Line( this.geometry, this.lineMaterial, THREE.LinePieces );
+                    this.mesh = new THREE.Line( this.geometry, this.lineMaterial, THREE.LineSegments );
                     this.highResMeshContainer.add( this.mesh );
 
                     this.windowsOutlineContainer = new THREE.Object3D();
@@ -3847,7 +3847,7 @@ define( [
                     blending: THREE.NormalBlending,
                     transparent: true
                 } );
-                fp.trailNetwork.globalTrailLine = new THREE.Line( fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LinePieces );
+                fp.trailNetwork.globalTrailLine = new THREE.Line( fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LineSegments );
                 if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
                 }
