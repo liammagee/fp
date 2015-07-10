@@ -41,3 +41,6 @@ node_modules
 *.iml
 .idea/**
 .idea/*.xml
+
+# Compiled ES6 files
+*-compiled.*

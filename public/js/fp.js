@@ -9,7 +9,7 @@ define( [
     "stats.min",
     "jstat.min",
     "Mirror",
-    "WaterShader",
+    "objects/water-material",
     "TerrainLoader",
     "THREEx.KeyboardState",
     "TrackballControls",
@@ -1217,7 +1217,7 @@ define( [
                 this.plane.receiveShadow = true;
                 this.updateTerrainPatchAttributes();
 
-                // Toggle patches state 
+                // Toggle patches state
                 this.togglePatchesState();
                 // fp.scene.add( this.plane );
 
@@ -4536,7 +4536,7 @@ define( [
             );
             fp.waterMesh.add( fp.water );
             fp.waterMesh.rotation.x = - Math.PI * 0.5;
-            fp.waterMesh.position.y = 2;
+            fp.waterMesh.position.y = -10;
             if ( fp.appConfig.displayOptions.waterShow )
                 fp.scene.add( fp.waterMesh );
         };

@@ -16,7 +16,7 @@
                 "jsts": [ "javascript.util" ],
                 "three": { exports: "THREE" },
                 "Mirror": [ "three" ],
-                "WaterShader": [ "three", "Mirror" ],
+                "objects/water-material": { exports: "THREE.Water", deps: [ "three", "Mirror" ] },
                 "TerrainLoader": { deps: [ "three" ] },
                 "TrackballControls": {  deps: [ "three" ] },
                 "OrbitControls": {  deps: [ "three" ] },
@@ -32,7 +32,7 @@
                 "javascript.util",
                 "jsts",
                 "Mirror",
-                "WaterShader",
+                "objects/water-material",
                 "TerrainLoader",
                 "THREEx.KeyboardState",
                 "TrackballControls",
@@ -43,10 +43,10 @@
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                        "1": { 
-                            "initialPopulation": 250, 
-                            "initialExtent": 80, 
-                            "maxExtent": 80 
+                        "1": {
+                            "initialPopulation": 250,
+                            "initialExtent": 80,
+                            "maxExtent": 80
                         },
                         "2": { "create": false },
                         "3": { "create": false },
@@ -68,20 +68,20 @@
                             // "guiShowColorFolder": false
                         },
                         "5": {
-                            "colorNightTerrainGroundLevel": 0x000000, 
-                            "colorNightTerrainLowland1": 0x272727, 
-                            "colorNightTerrainLowland2": 0x3F3F3F, 
-                            "colorNightTerrainMidland1": 0x696969, 
+                            "colorNightTerrainGroundLevel": 0x000000,
+                            "colorNightTerrainLowland1": 0x272727,
+                            "colorNightTerrainLowland2": 0x3F3F3F,
+                            "colorNightTerrainMidland1": 0x696969,
                             "colorNightTerrainMidland2": 0xA2A2A2,
                             "colorNightTerrainHighland": 0xFDFDFD,
 
 
                             "coloriseAgentsByHealth": false,
                         },
-                        "6": { 
-                            "multiplier": 2, 
-                            "loadHeights": true, 
-                            "patchSize": 21 
+                        "6": {
+                            "multiplier": 2,
+                            "loadHeights": true,
+                            "patchSize": 21
                         },
                     }
                   }
@@ -105,7 +105,7 @@
                                 var agentsOnPatch = patch.length;
                                 var patchValue = fp.patchNetwork.patchValues[index];
                                 if ( _.isUndefined( patchValue ) )
-                                    console.log( this.position.x, this.position.z, index );   
+                                    console.log( this.position.x, this.position.z, index );
                                 var availableYield = patchValue.value / agentsOnPatch;
                                 patchValue.updatePatchValue( - fp.appConfig.malthusOptions.patchConsumptionRate );
                                 this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
@@ -129,7 +129,7 @@
                             if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
                                  this.children.length < fp.appConfig.malthusOptions.maxChildren &&
                                  this.gender == "f" &&
-                                 Math.random() * this.health > 50 && 
+                                 Math.random() * this.health > 50 &&
                                  this.age > 15 && this.age < 50 )  {
                                 fp.scene.remove( fp.agentNetwork.particles );
                                 var agent = fp.agentNetwork.createAgent();
