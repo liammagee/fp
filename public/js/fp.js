@@ -1188,7 +1188,7 @@ define( [
                 // Rotate 90 degrees on X axis, to be the "ground"
                 this.plane.rotation.set( -Math.PI / 2, 0, 0 );
                 // Lift by 1, to ensure shaders doesn't clash with water
-                this.plane.position.set( 0, -10, 0 );
+                this.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 this.plane.castShadow = true;
                 this.plane.receiveShadow = true;
                 this.updateTerrainPatchAttributes();
@@ -1728,7 +1728,7 @@ define( [
                 }
                 else {
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
-                        geometry.attributes.position.array[ j + 2 ] = fp.appConfig.terrainOptions.defaultHeight;
+                        geometry.attributes.position.array[ j + 2 ] = 0;
                     }
                 }
 
@@ -1820,7 +1820,7 @@ define( [
                 // Rotate 90 degrees on X axis, to be the "ground"
                 fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0 );
                 // Lift by 1, to ensure shaders doesn't clash with water
-                fp.terrain.plane.position.set( 0, 10, 0 );
+                fp.terrain.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 if ( fp.appConfig.displayOptions.terrainShow )
                     fp.scene.add( fp.terrain.plane );
 
@@ -2464,20 +2464,24 @@ define( [
                     }
 
                     yn = fp.getHeight( xn, zn );
+
+                    // If the new y position is zero, set the weight to zero
+                    if ( yn === null )
+                        continue;
+
+                    // If the new y position is zero, set the weight to zero
+                    if ( yn <= fp.appConfig.terrainOptions.defaultHeight )
+                        weight = 0;
+
+                    // Set to the height of the terrain
+                    yn += fp.appConfig.terrainOptions.defaultHeight;
+                    // Offset relative to the terrain
                     yn += fp.appConfig.agentOptions.terrainOffset;
+                    // Add half the agent's own size
                     yn += fp.appConfig.agentOptions.size / 2;
 
                     // Smooth the transition between heights
                     yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;
-
-                    // If the new y position is zero, set the weight to zero
-                    if ( yn === null ) {
-                        continue;
-                    }
-
-                    // If the new y position is zero, set the weight to zero
-                    if ( yn <= 0 )
-                        weight = 0;
 
                     // Set the direction
                     directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
@@ -3679,7 +3683,7 @@ define( [
                 multiplier: 1,
                 mapIndex: 0,
                 patchSize: 4,
-                defaultHeight: 4
+                defaultHeight: 10
             };
             this.colorOptions = {
                 colorDayBackground: 0x000000,
@@ -4782,7 +4786,7 @@ define( [
             var halfGrid = fp.terrain.gridExtent / 2;
             var pX = Math.floor( dim * ( x + halfGrid ) / fp.terrain.gridExtent );
             var pY = Math.floor( dim * ( y + halfGrid ) / fp.terrain.gridExtent );
-            var index = pY * dim + pX;
+            var index = Math.floor( pY * dim + pX );
             index = ( index < 0 ) ? 0 : index;
             index = ( index >= fp.patchNetwork.patchValues.length ) ? fp.patchNetwork.patchValues.length - 1 : index;
             return index;
