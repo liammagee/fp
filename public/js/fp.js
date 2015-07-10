@@ -1195,7 +1195,9 @@ define( [
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
-                    lights: true
+                    lights: true,
+                    transparent: true
+
                 } );
                 // richTerrainMaterial.wireframe = true;
                 this.patchPlaneArray = geometry.attributes.position.clone();
@@ -1827,7 +1829,8 @@ define( [
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
-                    lights: true, transparent: true
+                    lights: true,
+                    transparent: true
                 } );
 
                 // Only use the shader material if we have variable heights
@@ -3446,9 +3449,9 @@ define( [
             this.mesh = null;
             this.position = null;
             this.setupRoad = function( _x, _y, _z ) {
-                x = _x || 0;
-                y = _y || 0;
-                z = _z || 0;
+                this.x = _x || 0;
+                this.y = _y || 0;
+                this.z = _z || 0;
             };
             this.shadedShape = function ( points ) {};
             this.update = function() { };
@@ -3551,8 +3554,6 @@ define( [
                 size: 40,
                 terrainOffset: 20,
                 shuffle: false,
-                movementInPatch: 1,
-                movementStrictlyIntercardinal: false,
                 initialSpeed: 2,
                 initialPerturbBy: 0.05,
                 movementRelativeToPatch: false,
@@ -3729,7 +3730,6 @@ define( [
                 colorNightNetwork: 0x47b347,
                 colorNightTrail: 0x47b347,
                 colorNightNetworPath: 0x47b347,
-                colorNightTrail: 0x47b347,
                 colorNightPath: 0x47b347,
                 colorNightBuildingFill: 0x838383,
                 colorNightBuildingLine: 0x838383,
@@ -5474,26 +5474,26 @@ define( [
 
         this.ShaderUtils = {
             buildingVertexShaderParams: function() {
-                return
+                var shader =
                     `
                         varying vec3 pos;
                         varying float vMixin;
                         attribute float mixin;
                         uniform float time;
                     `;
+                return shader;
             },
             buildingVertexShaderMain: function() {
-                return
-                    `
+                var shader = `
                         pos = position;
                         vMixin = mixin;
                         gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
                     `;
+                return shader;
             },
 
             buildingFragmentShaderParams: function() {
-                return
-                    `
+                var shader = `
                         uniform float time;
                         uniform vec2 location;
                         uniform vec2 resolution;
@@ -5521,10 +5521,10 @@ define( [
                             return fract( sin( dot( co.xy ,vec2( 12.9898,78.233 )) ) * 43758.5453 );
                         }
                     `;
+                return shader;
             },
             buildingFragmentShaderMain: function() {
-                return
-                    `
+                var shader = `
                         vec3 darkGrey = vec3( 0.1,0.1,0.1 );
                         vec4 col = vec4( darkGrey, 1. );
                         float opacity = 1.;
@@ -5595,11 +5595,11 @@ define( [
                         outgoingLight = vec3( col.r, col.g, col.b );
                         diffuseColor = vec4( col.r, col.g, col.b, col.a );
                     `;
+                return shader;
             },
 
             terrainVertexShaderParams: function() {
-                return
-                    `
+                var shader = `
                     uniform float size;
                     uniform float maxHeight;
                     attribute float height;
@@ -5609,20 +5609,20 @@ define( [
                     varying float vTrail;
                     varying float vPatch;
                     `;
+                return shader;
             },
             terrainVertexShaderMain: function() {
-                return
-                    `
+                var shader = `
                         vHeight = height;
                         vTrail = trail;
                         vPatch = patch;
                         gl_Position = projectionMatrix * modelViewMatrix * vec4( position,1.0 );
                     `;
+                return shader;
             },
 
             terrainFragmentShaderParams: function() {
-                return
-                    `
+                var shader = `
                         uniform float size;
                         uniform float maxHeight;
                         varying float vHeight;
@@ -5641,67 +5641,67 @@ define( [
                         uniform float stop4;
                         uniform float stop5;
                     `;
+                return shader;
             },
             terrainFragmentShaderMain: function() {
-                return
-                    `
-                        vec4 groundLevel = vec4( groundLevelColor, opacity );
-                        vec4 lowland1 = vec4( lowland1Color, opacity );
-                        vec4 lowland2 = vec4( lowland2Color, opacity );
-                        vec4 midland1 = vec4( midland1Color, opacity );
-                        vec4 midland2 = vec4( midland2Color, opacity );
-                        vec4 highland = vec4( highlandColor, opacity );
-                        float range;
-                        vec4 col;
+                var shader = `
+                    vec4 groundLevel = vec4( groundLevelColor, opacity );
+                    vec4 lowland1 = vec4( lowland1Color, opacity );
+                    vec4 lowland2 = vec4( lowland2Color, opacity );
+                    vec4 midland1 = vec4( midland1Color, opacity );
+                    vec4 midland2 = vec4( midland2Color, opacity );
+                    vec4 highland = vec4( highlandColor, opacity );
+                    float range;
+                    vec4 col;
 
-                        float elevation = vHeight / maxHeight;
-                        if ( vPatch > 0.0 ) {
-                            if ( elevation <=  0.0 ) {
-                                col = vec4( vPatch, vPatch, vPatch, 0.0 );
-                            }
-                            else {
-                                col = vec4( vPatch, vPatch, vPatch, 1.0 );
-                            }
-                        }
-                        else if ( vTrail > 0.0 ) {
-                            col = vec4( vTrail, vTrail, vTrail, 1.0 );
+                    float elevation = vHeight / maxHeight;
+                    if ( vPatch > 0.0 ) {
+                        if ( elevation <=  0.0 ) {
+                            col = vec4( 0.0, 0.0, 0.0, 0.0 );
                         }
                         else {
-                            if ( elevation == 0.0 ) {
-                                col = vec4( 0.0, 0.0, 0.0, 0.0 );
-                            }
-                            else if ( elevation < stop1 ) {
-                                range = ( elevation - 0.0 ) * ( 1.0 / stop1 );
-                                col = mix( groundLevel, lowland1, range );
-                            }
-                            else if ( elevation < stop2 ) {
-                                range = ( elevation - stop1 ) * ( 1.0 / ( stop2 - stop1 ) );
-                                col = mix( lowland1, lowland2, range );
-                            }
-                            else if ( elevation < stop3 ) {
-                                range = ( elevation - stop2 ) * ( 1.0 / ( stop3 - stop2 ) );
-                                col = mix( lowland2, midland1, range );
-                            }
-                            else if ( elevation < stop4 ) {
-                                range = ( elevation - stop3 ) * ( 1.0 / ( stop4 - stop3 ) );
-                                col = mix( midland1, midland2, range );
-                            }
-                            else if ( elevation < stop5 ) {
-                                range = ( elevation - stop4 ) * ( 1.0 / ( stop5 - stop4 ) );
-                                col = mix( midland2, highland, range );
-                            }
-                            else  {
-                                col = highland;
-                            }
+                            col = vec4( vPatch, vPatch, vPatch, 1.0 );
                         }
-                        outgoingLight = vec3( col.r, col.g, col.b );
-                        diffuseColor = vec4( col.r, col.g, col.b, col.a );
+                    }
+                    else if ( vTrail > 0.0 ) {
+                        col = vec4( vTrail, vTrail, vTrail, 1.0 );
+                    }
+                    else {
+                        if ( elevation == 0.0 ) {
+                            col = vec4( 0.0, 0.0, 0.0, 0.0 );
+                        }
+                        else if ( elevation < stop1 ) {
+                            range = ( elevation - 0.0 ) * ( 1.0 / stop1 );
+                            col = mix( groundLevel, lowland1, range );
+                        }
+                        else if ( elevation < stop2 ) {
+                            range = ( elevation - stop1 ) * ( 1.0 / ( stop2 - stop1 ) );
+                            col = mix( lowland1, lowland2, range );
+                        }
+                        else if ( elevation < stop3 ) {
+                            range = ( elevation - stop2 ) * ( 1.0 / ( stop3 - stop2 ) );
+                            col = mix( lowland2, midland1, range );
+                        }
+                        else if ( elevation < stop4 ) {
+                            range = ( elevation - stop3 ) * ( 1.0 / ( stop4 - stop3 ) );
+                            col = mix( midland1, midland2, range );
+                        }
+                        else if ( elevation < stop5 ) {
+                            range = ( elevation - stop4 ) * ( 1.0 / ( stop5 - stop4 ) );
+                            col = mix( midland2, highland, range );
+                        }
+                        else  {
+                            col = highland;
+                        }
+                    }
+                    outgoingLight = vec3( col.r, col.g, col.b );
+                    diffuseColor = vec4( col.r, col.g, col.b, col.a );
                     `;
+                return shader;
             },
 
             agentVertexShader: function() {
-                return
-                    `
+                var shader = `
                     uniform float size;
                     attribute float alpha;
                     attribute vec3 color;
@@ -5719,10 +5719,10 @@ define( [
                         gl_Position = projectionMatrix * mvPosition;
                     }
                     `;
+                return shader;
             },
             agentFragmentShader: function() {
-                return
-                    `
+                var shader = `
                     varying vec3 vColor;
                     uniform sampler2D texture;
                     varying float vAlpha;
@@ -5733,6 +5733,7 @@ define( [
                         gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
                     }
                     `;
+                return shader;
             },
 
             // LAMBERT SHADER OVERRIDE FOR SHADOWS
@@ -5753,7 +5754,7 @@ define( [
                            varying vec3 vLightBack;
 
                         #endif
-                    `
+                    `,
 
                     // Needed for three.js r71
                     THREE.ShaderChunk[ "common" ],
@@ -5865,11 +5866,14 @@ define( [
                     THREE.ShaderChunk[ "lightmap_fragment" ],
                     THREE.ShaderChunk[ "envmap_fragment" ],
                     THREE.ShaderChunk[ "shadowmap_fragment" ],
+
                     THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+
                     THREE.ShaderChunk[ "fog_fragment" ],
 
                     `
                         gl_FragColor = vec4( outgoingLight, diffuseColor.a ); // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
+                        //gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 ); // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
                     }
                     `
 
