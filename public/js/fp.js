@@ -337,6 +337,36 @@ define( [
             };
 
             /**
+             * Updates the agent network shader at runtime.
+             */
+            this.updateAgentShader = function() {
+                if ( !_.isNull( this.agentParticleSystemAttributes ) &&
+                    typeof( this.agentParticleSystemAttributes.color ) !== "undefined" &&
+                    this.agentParticleSystemAttributes.color.value.length > 0 ) {
+                    for( var i = 0; i < this.agents.length; i ++ ) {
+                        if ( fp.appConfig.displayOptions.coloriseAgentsByHealth ) {
+                            var agent = this.agents[ i ];
+                            var health = this.agents[ i ].health;
+                            var r = 0;
+                            var g = fp.appConfig.displayOptions.dayShow ? 0.0 : 1.0;
+                            var b = fp.appConfig.displayOptions.dayShow ? 1.0 : 0.0;
+                            g *= ( health / 100.0 );
+                            b *= ( health / 100.0 );
+                            r = ( 100 - health ) / 100.0;
+                            var col = new THREE.Color( r, g, b );
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = 0.75;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( col );
+                        }
+                        else {
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[ i ].color );
+                        }
+                    }
+                    this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
+                }
+            };
+
+            /**
              * Updates all agents belonging to this network.
              */
             this.updateAgents = function() {
@@ -385,53 +415,45 @@ define( [
                     agent.move();
 
                 }
-                for ( var i = 0; i < agents.length; i++ ) {
+                for ( var offset = 0, i = 0; i < agents.length; i++ ) {
                     // Must be the original unshuffled collection
                     var agent = this.agents[ i ];
-                    this.particles.geometry.vertices[ i ] = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                    var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                    // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
+                    // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
+                    // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
+                    this.particles.geometry.vertices[ i ] = posVec; // r071
                 }
 
-                this.particles.geometry.verticesNeedUpdate = true;
-            };
-
-            /**
-             * Updates the agent network shader at runtime.
-             */
-            this.updateAgentShader = function() {
-                if ( !_.isNull( this.agentParticleSystemAttributes ) &&
-                    typeof( this.agentParticleSystemAttributes.color ) !== "undefined" &&
-                    this.agentParticleSystemAttributes.color.value.length > 0 ) {
-                    for( var i = 0; i < this.agents.length; i ++ ) {
-                        if ( fp.appConfig.displayOptions.coloriseAgentsByHealth ) {
-                            var agent = this.agents[ i ];
-                            var health = this.agents[ i ].health;
-                            var r = 0;
-                            var g = fp.appConfig.displayOptions.dayShow ? 0.0 : 1.0;
-                            var b = fp.appConfig.displayOptions.dayShow ? 1.0 : 0.0;
-                            g *= ( health / 100.0 );
-                            b *= ( health / 100.0 );
-                            r = ( 100 - health ) / 100.0;
-                            var col = new THREE.Color( r, g, b );
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = 0.75;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( col );
-                        }
-                        else {
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[ i ].color );
-                        }
-                    }
-                    this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
-                }
+                this.particles.geometry.verticesNeedUpdate = true; // r071
+                // this.particles.geometry.attributes.position.needsUpdate = true; // r072
             };
 
             /**
              * Updates the particle system representing this agent network.
              */
             this.updateAgentParticleSystem = function() {
+                // Needs to be updated for r072
+                /*
+                var agentGeometry = new THREE.BufferGeometry();
+                var positions = new THREE.Float32Attribute( this.agents.length * 3, 3 );
+                for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
+                    var agent = this.agents[i];
+                    var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                    positions.array[ offset++ ] = posVec.x;
+                    positions.array[ offset++ ] = posVec.y;
+                    positions.array[ offset++ ] = posVec.z;
+                };
+                agentGeometry.addAttribute( 'position', positions );
+                */
+                // r071 and earlier
                 var agentGeometry = new THREE.Geometry();
-                this.agents.forEach( function( agent ) {
-                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent ) );
-                } );
+                for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
+                    var agent = this.agents[i];
+                    var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                    agentGeometry.vertices.push( posVec );
+                };
+                /**/
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -439,7 +461,7 @@ define( [
                     color: { type: "c", value: [ ] }
                 };
 
-                for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
+                for( var i = 0; i < this.agents.length; i ++ ) {
                     this.agentParticleSystemAttributes.alpha.value[ i ] = ( fp.agentNetwork.agents[ i ].health * 0.0075 ) + 0.025;
                     this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[ i ].color );
                 }
@@ -473,11 +495,12 @@ define( [
                 var discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/stickman_180.png" );
                 if ( !fp.appConfig.agentOptions.useStickman )
                     discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/disc.png" );
+                discTexture.minFilter = THREE.LinearFilter;
 
                 // uniforms
                 var agentParticleSystemUniforms = {
                     texture:   { type: "t", value: discTexture },
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )}
+                    size:      { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )}
                 };
 
                 for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
@@ -1821,8 +1844,9 @@ define( [
                 fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0 );
                 // Lift by 1, to ensure shaders doesn't clash with water
                 fp.terrain.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
-                if ( fp.appConfig.displayOptions.terrainShow )
-                    fp.scene.add( fp.terrain.plane );
+                fp.toggleTerrainPlane();
+                // if ( fp.appConfig.displayOptions.terrainShow )
+                //     fp.scene.add( fp.terrain.plane );
 
                 if ( fp.appConfig.displayOptions.patchesShow )
                     fp.patchNetwork.buildPatchMesh();
@@ -3665,6 +3689,8 @@ define( [
                 guiShowColorFolder: true,
                 pathsShow: true,
                 terrainShow: true,
+                lightHemisphereShow: false,
+                lightDirectionalShow: true,
                 coloriseAgentsByHealth: false,
                 firstPersonView: false,
                 cameraOverride: false,
@@ -4144,6 +4170,8 @@ define( [
                 displayFolder.add( fp.appConfig.displayOptions, "chartShow" ).onFinishChange( fp.updateGraph );
                 displayFolder.add( fp.appConfig.displayOptions, "pathsShow" ).onFinishChange( fp.togglePathsState );
                 displayFolder.add( fp.appConfig.displayOptions, "terrainShow" ).onFinishChange( fp.toggleTerrainPlane );
+                displayFolder.add( fp.appConfig.displayOptions, "lightHemisphereShow" ).onFinishChange( fp.toggleLights );
+                displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShow" ).onFinishChange( fp.toggleLights );
                 displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
                 displayFolder.add( fp.appConfig.displayOptions, "firstPersonView" ).onFinishChange( fp.resetControls );
                 displayFolder.add( fp.appConfig.displayOptions, "cameraOverride" ).onFinishChange( fp.resetControls );
@@ -4430,7 +4458,8 @@ define( [
             // var fp.lightHemisphere = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
             // var fp.lightHemisphere = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
             fp.lightHemisphere.position.set( 0, 1000, 0 );
-            // fp.scene.add( fp.lightHemisphere );
+            if ( fp.appConfig.displayOptions.lightHemisphereShow )
+                fp.scene.add( fp.lightHemisphere );
 
             fp.lightDirectional = new THREE.DirectionalLight(
                 new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
@@ -4443,16 +4472,17 @@ define( [
             // these six values define the boundaries of the yellow box seen above
             fp.lightDirectional.shadowCameraNear = 250;
             fp.lightDirectional.shadowCameraFar = 80000;
-            fp.lightDirectional.shadowMapWidth = 4096;
-            fp.lightDirectional.shadowMapHeight = 4096;
-            var d = 4000;
+            var d = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+            fp.lightDirectional.shadowMapWidth = d;
+            fp.lightDirectional.shadowMapHeight = d;
             fp.lightDirectional.shadowCameraLeft = -d;
             fp.lightDirectional.shadowCameraRight = d;
             fp.lightDirectional.shadowCameraTop = d;
             fp.lightDirectional.shadowCameraBottom = -d;
             fp.lightDirectional.shadowBias = -0.0001;
             // fp.lightDirectional.shadowCameraVisible = true; // for debugging
-            fp.scene.add( fp.lightDirectional );
+            if ( fp.appConfig.displayOptions.lightDirectionalShow )
+                fp.scene.add( fp.lightDirectional );
         };
 
         /**
@@ -5294,6 +5324,25 @@ define( [
             else
                 fp.scene.add( fp.terrain.plane );
         };
+
+
+        /**
+         * Toggles the visibility of the lights.
+         * @memberof fp
+         */
+        this.toggleLights = function() {
+            if ( !fp.appConfig.displayOptions.lightHemisphereShow )
+                fp.scene.remove( fp.lightHemisphere );
+            else
+                fp.scene.add( fp.lightHemisphere );
+            if ( !fp.appConfig.displayOptions.lightDirectionalShow )
+                fp.scene.remove( fp.lightDirectional );
+            else
+                fp.scene.add( fp.lightDirectional );
+        };
+
+
+
         /**
          * Removes cursor.
          * @memberof fp
