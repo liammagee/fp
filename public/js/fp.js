@@ -33,6 +33,7 @@ define( [
     };
 
 
+
     /**
      * Overall Fierce Planet object.
      * @module fp
@@ -5762,7 +5763,7 @@ define( [
                 THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
                 THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
 
-                "void main() {",
+                `void main() {`,
 
                     customCode,
 
@@ -5786,7 +5787,7 @@ define( [
                     THREE.ShaderChunk[ "lights_lambert_vertex" ],
                     THREE.ShaderChunk[ "shadowmap_vertex" ],
 
-                "}"
+                `}`
 
                 ].join( "\n" );
 
@@ -5797,17 +5798,19 @@ define( [
 
                 customParams,
 
-                "uniform vec3 diffuse;",
-                "uniform vec3 emissive;",
-                "uniform float opacity;",
+                `
+                uniform vec3 diffuse;
+                uniform vec3 emissive;
+                uniform float opacity;
 
-                "varying vec3 vLightFront;",
+                varying vec3 vLightFront;
 
-                "#ifdef DOUBLE_SIDED",
+                #ifdef DOUBLE_SIDED
 
-                "   varying vec3 vLightBack;",
+                   varying vec3 vLightBack;
 
-                "#endif",
+                #endif
+                `,
 
                 // Needed for three.js r71
                 THREE.ShaderChunk[ "common" ],
@@ -5822,11 +5825,12 @@ define( [
                 THREE.ShaderChunk[ "specularmap_pars_fragment" ],
                 THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
 
-                "void main() {",
+                `
+                void main() {
 
-                "   vec3 outgoingLight = vec3( 0.0 );", // outgoing light does not have an alpha, the surface does
-                "   vec4 diffuseColor = vec4( diffuse, opacity );",
-
+                   vec3 outgoingLight = vec3( 0.0 ); // outgoing light does not have an alpha, the surface does
+                   vec4 diffuseColor = vec4( diffuse, opacity );
+                `,
                     customCode, // must set gl_FragColor!
                     //"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
 
@@ -5837,21 +5841,23 @@ define( [
                     THREE.ShaderChunk[ "alphatest_fragment" ],
                     THREE.ShaderChunk[ "specularmap_fragment" ],
 
-                "   #ifdef DOUBLE_SIDED",
+                    `
+                   #ifdef DOUBLE_SIDED
 
-                        //"float isFront = float( gl_FrontFacing );",
-                        //"gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;",
+                        //float isFront = float( gl_FrontFacing );
+                        //gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;
 
-                "       if ( gl_FrontFacing )",
-                "           outgoingLight += diffuseColor.rgb * vLightFront + emissive;",
-                "       else",
-                "           outgoingLight += diffuseColor.rgb * vLightBack + emissive;",
+                       if ( gl_FrontFacing )
+                           outgoingLight += diffuseColor.rgb * vLightFront + emissive;
+                       else
+                           outgoingLight += diffuseColor.rgb * vLightBack + emissive;
 
-                "   #else",
+                   #else
 
-                "       outgoingLight += diffuseColor.rgb * vLightFront + emissive;",
+                       outgoingLight += diffuseColor.rgb * vLightFront + emissive;
 
-                "   #endif",
+                   #endif
+                   `,
 
                     THREE.ShaderChunk[ "lightmap_fragment" ],
                     THREE.ShaderChunk[ "envmap_fragment" ],
