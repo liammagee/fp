@@ -1179,7 +1179,7 @@ define( [
                     patch: { type: "f", value: null },
                 };
                 for ( i = 0; i < len; i++ ) {
-                    heights[ i ] = vertices[ i * 3 + 2 ];
+                    heights[ i ] = geometry.attributes.position.array[ i * 3 + 2 ];
                     trailPoints[ i ] = 0;
                     patchPoints[ i ] = 0;
                 }
@@ -5651,7 +5651,12 @@ define( [
                     "",
                     "float elevation = vHeight / maxHeight;",
                     "if ( vPatch > 0.0 ) {",
-                        "col = vec4( vPatch, vPatch, vPatch, 1.0 );",
+                        "if ( elevation <=  0.0 ) {",
+                            "col = vec4( 0.0, 0.0, 0.0, 0.0 );",
+                        "}",
+                        "else {",
+                            "col = vec4( vPatch, vPatch, vPatch, 1.0 );",
+                        "}",
                     "}",
                     "else if ( vTrail > 0.0 ) {",
                         "col = vec4( vTrail, vTrail, vTrail, 1.0 );",
