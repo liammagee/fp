@@ -5,39 +5,39 @@
         <link rel="stylesheet" type="text/css" href="../css/fp.css">
         <script src="../js/require.js"></script>
         <script>
-        requirejs.config({
-            baseUrl: '../js',
-            "shim": {
-                "underscore": { exports: "_" },
-                "dat.gui": { exports: "dat.gui" },
-                "smoothie": { exports: "SmoothieChart" },
-                "stats.min": { exports: "Stats" },
-                "jstat.min": { exports: "jStat" },
-                "three": { exports: "THREE" },
-                "Mirror": ["three"],
-                "jsts": { deps: ["javascript.util" ] },
-                "WaterShader": { deps: ["three", "Mirror" ] },
-                "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
-                "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
-                "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
-                "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
-            }
-        })
-        requirejs([
-                "fp",
-                "dat.gui",
-                "smoothie",
-                "stats.min",
-                "jstat.min",
-                "javascript.util",
-                "jsts",
-                "Mirror",
-                "WaterShader",
-                "TerrainLoader",
-                "THREEx.KeyboardState",
-                "TrackballControls",
-                "PointerLockControls",
-            ],
+            requirejs.config({
+                baseUrl: '../js',
+                "shim": {
+                    "underscore": { exports: "_" },
+                    "dat.gui": { exports: "dat.gui" },
+                    "smoothie": { exports: "SmoothieChart" },
+                    "stats.min": { exports: "Stats" },
+                    "jstat.min": { exports: "jStat" },
+                    "jsts": [ "javascript.util" ],
+                    "three": { exports: "THREE" },
+                    "Mirror": [ "three" ],
+                    "objects/water-material": { exports: "THREE.Water", deps: [ "three", "Mirror" ] },
+                    "TerrainLoader": { deps: [ "three" ] },
+                    "TrackballControls": {  deps: [ "three" ] },
+                    "OrbitControls": {  deps: [ "three" ] },
+                    "PointerLockControls": {  deps: [ "three" ] },
+                }
+            })
+            requirejs([
+                        "fp-compiled",
+                        "dat.gui",
+                        "smoothie",
+                        "stats.min",
+                        "jstat.min",
+                        "javascript.util",
+                        "jsts",
+                        "Mirror",
+                        "objects/water-material",
+                        "TerrainLoader",
+                        "THREEx.KeyboardState",
+                        "TrackballControls",
+                        "PointerLockControls",
+                    ],
             function() {
                 var config = {
                   "preset": "Default",
@@ -278,7 +278,7 @@
                             "colorTerrainStop4": 0.9,
                             "colorTerrainStop5": 1.0,
 
-                            "colorTerrainOpacity": 0.99,
+                            "colorTerrainOpacity": 1.0,
                         },
                         // Terrain options
                         "6": {
