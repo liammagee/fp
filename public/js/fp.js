@@ -1,20 +1,43 @@
 "use strict";
+require.config({
+    baseUrl: '../js',
+    paths: {
+        jquery: "utils/jquery"
+    },
+    shim: {
+        jquery: { exports: "$" },
+        "utils/underscore": { exports: "_" },
+        "utils/jstat.min": { exports: "jStat" },
+        "utils/jsts": [ "utils/javascript.util" ],
+        "ux/dat.gui": { exports: "dat.gui" },
+        "ux/smoothie": { exports: "SmoothieChart" },
+        "ux/stats.min": { exports: "Stats" },
+        "three": { exports: "THREE" },
+        "objects/Mirror": [ "three" ],
+        "objects/water-material": { exports: "THREE.Water", deps: [ "three", "objects/Mirror" ] },
+        "loaders/TerrainLoader": { deps: [ "three" ] },
+        "controls/TrackballControls": {  deps: [ "three" ] },
+        "controls/OrbitControls": {  deps: [ "three" ] },
+        "controls/PointerLockControls": {  deps: [ "three" ] },
+    }
+});
+
 define( [
     "jquery",
     "three",
-    "underscore",
-    "astar",
-    "dat.gui",
-    "smoothie",
-    "stats.min",
-    "jstat.min",
-    "Mirror",
+    "utils/underscore",
+    "utils/astar",
+    "utils/jstat.min",
+    "ux/dat.gui",
+    "ux/smoothie",
+    "ux/stats.min",
+    "loaders/TerrainLoader",
+    "objects/Mirror",
     "objects/water-material",
-    "TerrainLoader",
-    "THREEx.KeyboardState",
-    "TrackballControls",
-    "OrbitControls",
-    "PointerLockControls",
+    "controls/THREEx.KeyboardState",
+    "controls/TrackballControls",
+    "controls/OrbitControls",
+    "controls/PointerLockControls",
     ], function( $, THREE, _, astar ) {
 
     /**
