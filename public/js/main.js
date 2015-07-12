@@ -1,4 +1,4 @@
-requirejs.config({
+require.config({
 	"shim": {
         "underscore": { exports: "_" },
         "dat.gui": { exports: "dat.gui" },
@@ -22,7 +22,7 @@ requirejs.config({
         },
     }
 })
-requirejs([
+require([
         "dat.gui",
         "smoothie",
         "stats.min",
@@ -34,6 +34,6 @@ requirejs([
         "javascripts/controls/TrackballControls.js",
         "javascripts/controls/PointerLockControls.js",
 ]);
-requirejs([
+require([
     "app/main"
 ])
