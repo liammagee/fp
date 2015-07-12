@@ -21,7 +21,6 @@ require.config({
         "controls/PointerLockControls": {  deps: [ "three" ] },
     }
 });
-
 define( [
     "jquery",
     "three",
@@ -442,7 +441,7 @@ define( [
 
                 }
 
-                if ( !_.isUndefined( this.particles ) ) {
+                if ( !_.isNull( this.particles ) ) {
                     for ( var offset = 0, i = 0; i < agents.length; i++ ) {
                         // Must be the original unshuffled collection
                         var agent = this.agents[ i ];
@@ -5959,12 +5958,14 @@ define( [
 
         }
     }
+
     var fp = new FiercePlanet();
     if ( typeof( window ) !== "undefined" ) {
         window.FiercePlanet = FiercePlanet;
         window.fp = new FiercePlanet();
     }
     return fp;
+
 } );
 
 
