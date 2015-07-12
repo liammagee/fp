@@ -1,4 +1,3 @@
-
 $(document).ready(function() {
 	$('.links').click(function(e) {
 		var id = e.target.id;
