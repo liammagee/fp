@@ -59,7 +59,7 @@ define( [
 
     /**
      * Overall Fierce Planet object.
-     * 
+     *
      * @module fp
      * @namespace fp
      */
@@ -94,7 +94,7 @@ define( [
 
         /**
          * Represents a network of agents. Also provides factory and utility methods.
-         * 
+         *
          * @constructor
          * @memberof fp
          * @inner
@@ -103,7 +103,7 @@ define( [
 
             /**
              * Represents a specific network within the overall network configuration. Also provides factory and utility methods.
-             * 
+             *
              * @constructor
              * @memberof fp.AgentNetwork
              * @inner
@@ -120,7 +120,7 @@ define( [
 
                 /**
                  * Generates a set of vertices for connected agents.
-                 * 
+                 *
                  * @return {vertices}
                  */
                 this.generateFriendNetworkVertices = function() {
@@ -141,7 +141,7 @@ define( [
 
                 /**
                  * Generates a curved geometry to represent the agent network.
-                 * 
+                 *
                  * @param  {Array} vertices
                  * @return {THREE.Geometry}
                  */
@@ -161,7 +161,7 @@ define( [
 
                 /**
                  * Generates a geometry ( curved or straight ) to represent the agent network.
-                 * 
+                 *
                  * @param  {Array} vertices
                  * @return {THREE.Geometry}
                  */
@@ -177,7 +177,7 @@ define( [
 
                 /**
                  * Returns a material for the network.
-                 * 
+                 *
                  * @return {THREE.LineBasicMaterial}
                  */
                 this.friendNetworkMaterial = function() {
@@ -192,7 +192,7 @@ define( [
 
                 /**
                  * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
-                 * 
+                 *
                  * @return {THREE.Line}
                  */
                 this.renderFriendNetwork = function() {
@@ -219,7 +219,7 @@ define( [
 
                 /**
                  * Establish a link between two agents.
-                 * 
+                 *
                  * @param  {fp.Agent} agent1
                  * @param  {fp.Agent} agent2
                  */
@@ -262,7 +262,7 @@ define( [
 
                 /**
                  * Tries to enlist an agent in this network.
-                 * 
+                 *
                  * @param {fp.Agent} agent
                  */
                 this.enlistAgent = function( agent ) {
@@ -846,6 +846,8 @@ define( [
                     var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
                     v.y = rotateY;
                     nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
+                    building.mesh.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
+                    building.lod.position.set( nv.x, nv.y, nv.z );
                     building.lod.rotation.set( v.x, v.y, v.z );
                     building.lod.position.set( nv.x, nv.y, nv.z );
                     building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
@@ -2131,13 +2133,13 @@ define( [
                         var nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
                         var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
                         nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
-                        building.mesh.rotation.set( v.x, v.y, v.z );
+                        building.mesh.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
                         building.mesh.position.set( nv.x, nv.y, nv.z );
-                        building.lod.rotation.set( v.x, v.y, v.z );
+                        building.lod.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
                         building.lod.position.set( nv.x, nv.y, nv.z );
-                        building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
+                        building.highResMeshContainer.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
                         building.highResMeshContainer.position.set( nv.x, nv.y, nv.z );
-                        building.lowResMeshContainer.rotation.set( v.x, v.y, v.z );
+                        building.lowResMeshContainer.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     } );
                     // Alter roards
