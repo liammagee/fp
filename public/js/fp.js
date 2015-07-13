@@ -41,7 +41,7 @@ define( [
     ], function( $, THREE, _, astar ) {
 
     /**
-     * Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/
+     * Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/ .
      */
     $.urlParam = function( name ){
         var results = new RegExp( "[ \\?& ]" + name + "=( [ ^&# ]* )" ).exec( window.location.href );
@@ -59,6 +59,7 @@ define( [
 
     /**
      * Overall Fierce Planet object.
+     * 
      * @module fp
      * @namespace fp
      */
@@ -93,6 +94,7 @@ define( [
 
         /**
          * Represents a network of agents. Also provides factory and utility methods.
+         * 
          * @constructor
          * @memberof fp
          * @inner
@@ -101,6 +103,7 @@ define( [
 
             /**
              * Represents a specific network within the overall network configuration. Also provides factory and utility methods.
+             * 
              * @constructor
              * @memberof fp.AgentNetwork
              * @inner
@@ -117,6 +120,7 @@ define( [
 
                 /**
                  * Generates a set of vertices for connected agents.
+                 * 
                  * @return {vertices}
                  */
                 this.generateFriendNetworkVertices = function() {
@@ -137,6 +141,7 @@ define( [
 
                 /**
                  * Generates a curved geometry to represent the agent network.
+                 * 
                  * @param  {Array} vertices
                  * @return {THREE.Geometry}
                  */
@@ -156,6 +161,7 @@ define( [
 
                 /**
                  * Generates a geometry ( curved or straight ) to represent the agent network.
+                 * 
                  * @param  {Array} vertices
                  * @return {THREE.Geometry}
                  */
@@ -171,6 +177,7 @@ define( [
 
                 /**
                  * Returns a material for the network.
+                 * 
                  * @return {THREE.LineBasicMaterial}
                  */
                 this.friendNetworkMaterial = function() {
@@ -185,6 +192,7 @@ define( [
 
                 /**
                  * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
+                 * 
                  * @return {THREE.Line}
                  */
                 this.renderFriendNetwork = function() {
@@ -210,7 +218,10 @@ define( [
                 };
 
                 /**
-                 * Establish a link between two agents
+                 * Establish a link between two agents.
+                 * 
+                 * @param  {fp.Agent} agent1
+                 * @param  {fp.Agent} agent2
                  */
                 this.establishLink = function( agent1, agent2 ) {
                     // Introduce more variability by squaring the probability
@@ -250,7 +261,8 @@ define( [
                 };
 
                 /**
-                 * Tries to enlist an agent in this network
+                 * Tries to enlist an agent in this network.
+                 * 
                  * @param {fp.Agent} agent
                  */
                 this.enlistAgent = function( agent ) {
@@ -1700,7 +1712,6 @@ define( [
 
             /**
              * Update the visualisation of all agent paths.
-             * @return {[ type ]} [ description ]
              */
             this.updatePath = function() {
                 if ( !fp.AppState.runSimulation )
@@ -1928,7 +1939,6 @@ define( [
 
             /**
              * Flattens out the terrain.
-             * @return {[ type ]} [ description ]
              */
             this.flattenTerrain = function() {
                 if ( !fp.appConfig.displayOptions.cursorShow )

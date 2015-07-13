@@ -6,7 +6,7 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "jsdoc": "*",
+    "jsdoc": ">= 3.3.0",
     "express": "3.4.4",
     "jade": "*",
     "babel": "*"

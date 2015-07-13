@@ -11,7 +11,8 @@ For more information, visit:
 
 ## Generating JavaDocs
 
-    jsdoc -d public/api -R README.md public/js/fp.js
+    jsdoc -d public/api --package package.json --readme README.md public/js/fp.js
+
 
 ## Running Babel to convert ES6 code to ES5
 
