@@ -12,3 +12,7 @@ For more information, visit:
 ## Generating JavaDocs
 
     jsdoc -d public/api -R README.md public/js/fp.js
+
+## Running Babel to convert ES6 code to ES5
+
+	babel -w public/js/fp.js --out-file public/js/fp-compiled.js

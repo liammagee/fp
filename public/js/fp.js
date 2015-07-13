@@ -21,13 +21,13 @@ require.config({
         "controls/PointerLockControls": {  deps: [ "three" ] },
     }
 });
-
 define( [
     "jquery",
     "three",
     "utils/underscore",
     "utils/astar",
     "utils/jstat.min",
+    "utils/jsts",
     "ux/dat.gui",
     "ux/smoothie",
     "ux/stats.min",
@@ -319,6 +319,7 @@ define( [
              *
              * @return {coordinate}
              */
+            this.counter  = 0;
             this.randomPointForAgent = function() {
                 var extent = fp.appConfig.terrainOptions.gridExtent;
                 var initExtent = ( fp.appConfig.agentOptions.initialExtent / 100 ) * extent * fp.appConfig.terrainOptions.multiplier;
@@ -331,7 +332,7 @@ define( [
                 if ( fp.appConfig.agentOptions.initialCircle ) {
                     var normX = x - initX, normZ = z - initY;
                     var radius = Math.sqrt( normX * normX + normZ * normZ );
-                    while ( radius > initExtent  / 2 ) {
+                    while ( radius > initExtent / 2 ) {
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
@@ -350,7 +351,7 @@ define( [
 
                 if ( fp.appConfig.agentOptions.noWater ) {
                     var y = fp.getHeight( x, z );
-                    while ( y <= 0 ) {
+                    while ( y < 0 ) {
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
@@ -439,18 +440,22 @@ define( [
                     agent.move();
 
                 }
-                for ( var offset = 0, i = 0; i < agents.length; i++ ) {
-                    // Must be the original unshuffled collection
-                    var agent = this.agents[ i ];
-                    var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
-                    // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
-                    // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
-                    // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
-                    this.particles.geometry.vertices[ i ] = posVec; // r071
+
+                if ( !_.isNull( this.particles ) ) {
+                    for ( var offset = 0, i = 0; i < agents.length; i++ ) {
+                        // Must be the original unshuffled collection
+                        var agent = this.agents[ i ];
+                        var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                        // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
+                        // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
+                        // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
+                        this.particles.geometry.vertices[ i ] = posVec; // r071
+                    }
+
+                    this.particles.geometry.verticesNeedUpdate = true; // r071
+                    // this.particles.geometry.attributes.position.needsUpdate = true; // r072
                 }
 
-                this.particles.geometry.verticesNeedUpdate = true; // r071
-                // this.particles.geometry.attributes.position.needsUpdate = true; // r072
             };
 
             /**
@@ -5953,12 +5958,14 @@ define( [
 
         }
     }
+
     var fp = new FiercePlanet();
     if ( typeof( window ) !== "undefined" ) {
         window.FiercePlanet = FiercePlanet;
         window.fp = new FiercePlanet();
     }
     return fp;
+
 } );
 
 
