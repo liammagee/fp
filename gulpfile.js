@@ -24,20 +24,6 @@ gulp.task( 'babel', [ 'clean-compiled' ], function() {
         .pipe( gulp.dest( paths.fpOutput ) );
 } );
 
-// var babelFunc = function( obj ) {
-//     return gulp.src( obj.path )
-//         .pipe( sourcemaps.init() )
-//         .pipe( babel( { filename: paths.fpCompiled } ) )
-//         // .pipe( rename( paths.fpCompiled ) )
-//         // .pipe( concat('all.js') )
-//         .pipe( sourcemaps.write( '.' ) )
-//         .pipe( gulp.dest( '.' ) );
-// }
-
-// gulp.task( 'babel', [ 'clean-compiled' ], function() {
-//     return gulp.task( paths.fp, babelFunc );
-// } );
-
 gulp.task( 'watch', [ 'clean-compiled' ], function() {
     return gulp.watch( paths.fp, [ 'babel' ] );
 } );
