@@ -847,7 +847,7 @@ define( [
                     v.y = rotateY;
                     nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
                     building.mesh.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
-                    building.lod.position.set( nv.x, nv.y, nv.z );
+                    building.mesh.position.set( nv.x, nv.y, nv.z );
                     building.lod.rotation.set( v.x, v.y, v.z );
                     building.lod.position.set( nv.x, nv.y, nv.z );
                     building.highResMeshContainer.rotation.set( v.x, v.y, v.z );
@@ -908,10 +908,10 @@ define( [
                 var xd = p2.x - xLast, zd = p2.z - zLast;
                 var distance = Math.sqrt( xd * xd + zd * zd ) / fp.appConfig.roadOptions.roadSegments,
                     remaining = distance;
-                p1 = new THREE.Vector3( p1.x, fp.getHeight( p1.x, p1.z ), p1.z );
-                p2 = new THREE.Vector3( p2.x, fp.getHeight( p2.x, p2.z ), p2.z );
+                var yOffset = fp.appConfig.terrainOptions.defaultHeight + 20; //fp.appConfig.buildingOptions.levelHeight - 10;
+                p1 = new THREE.Vector3( p1.x, fp.getHeight( p1.x, p1.z ) + yOffset, p1.z );
+                p2 = new THREE.Vector3( p2.x, fp.getHeight( p2.x, p2.z ) + yOffset, p2.z );
                 points.push( p1 );
-                var yOffset = -10;
                 for ( var i = 0; i < distance; i++ ) {
                     var angle = Math.atan2( zd, xd ),
                         angleLeft = angle - Math.PI / 2,
