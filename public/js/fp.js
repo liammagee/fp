@@ -5634,7 +5634,7 @@ define( [
                         if ( showLines == 1 ) {
                             // Rules for horizontal lines
                             // IGNORE BOTTOM LINE FOR NOW:  || posY > dimY - lineWidth
-                            if ( posY === 0.0 && fillRooves == 1 )  {
+                            if ( posY == 0.0 && fillRooves == 1 )  {
                                 col = vec4( mix( windowColor, darkGrey, 0.5 ), opacity );
                             }
                             else if ( posY < lineWidth ) {
@@ -5729,7 +5729,7 @@ define( [
                         col = vec4( vTrail, vTrail, vTrail, 1.0 );
                     }
                     else {
-                        if ( elevation === 0.0 ) {
+                        if ( elevation == 0.0 ) {
                             col = vec4( 0.0, 0.0, 0.0, 0.0 );
                         }
                         else if ( elevation < stop1 ) {
