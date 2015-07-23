@@ -469,8 +469,10 @@ define( [
                 }
 
                 if ( !_.isNull( this.particles ) ) {
-                    for ( var k = 0; i < agents.length; k++ ) {
-                    // for ( var offset = 0, k = 0; i < agents.length; k++ ) {
+
+                    for ( var k = 0; k < agents.length; k++ ) {
+                    // for ( var offset = 0, k = 0; k < agents.length; k++ ) {
+
                         // Must be the original unshuffled collection
                         var particleAgent = this.agents[ k ];
                         var posVec = fp.terrain.transformPointFromPlaneToSphere( particleAgent.position, fp.terrain.wrappedPercent );
@@ -478,12 +480,13 @@ define( [
                         // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
                         // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
                         this.particles.geometry.vertices[ k ] = posVec; // r071
+
                     }
 
                     this.particles.geometry.verticesNeedUpdate = true; // r071
                     // this.particles.geometry.attributes.position.needsUpdate = true; // r072
-                }
 
+                }
             };
 
             /**
@@ -507,11 +510,12 @@ define( [
                 var agentGeometry = new THREE.Geometry();
                 // for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
                 for (var i = 0; i < this.agents.length - 1; i++ ) {
+
                     var agent = this.agents[i];
                     var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                     agentGeometry.vertices.push( posVec );
+
                 }
-                /**/
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
@@ -5864,6 +5868,7 @@ define( [
             lambertShaderFragment: function ( customParams, customCode ) {
 
                 var fragmentShader = [
+
                     customParams,
 
                     `
@@ -5935,13 +5940,13 @@ define( [
 
                     `
                         gl_FragColor = vec4( outgoingLight, diffuseColor.a ); // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
-                        //gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 ); // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects
                     }
                     `
 
                 ].join( "\n" );
 
                 return fragmentShader;
+
             },
 
             /**
@@ -5950,6 +5955,7 @@ define( [
              * @return {Array} Merged array of uniforms
              */
             lambertUniforms: function( otherUniforms ) {
+
                 var uniforms = THREE.UniformsUtils.merge( [
                         THREE.UniformsLib[ "common" ],
                         THREE.UniformsLib[ "fog" ],
@@ -5961,6 +5967,7 @@ define( [
                         }
                     ] );
                 return _.extend( uniforms, otherUniforms );
+
             },
 
             /**
@@ -5968,6 +5975,7 @@ define( [
              * @return {string} all the shaders
              */
             allShaders: function() {
+
                 return [
                     fp.ShaderUtils.lambertShaderVertex(
                         fp.ShaderUtils.buildingVertexShaderParams(),
@@ -5988,16 +5996,20 @@ define( [
                     fp.ShaderUtils.agentVertexShader(),
                     fp.ShaderUtils.agentFragmentShader(),
                 ].join( "\n" )
-            }
 
+            }
         }
     }
 
     var fp = new FiercePlanet();
+
     if ( typeof ( window ) !== "undefined" ) {
+
         window.FiercePlanet = FiercePlanet;
         window.fp = new FiercePlanet();
+
     }
+
     return fp;
 
 } );
