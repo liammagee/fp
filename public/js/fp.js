@@ -58,7 +58,6 @@ define( [
     };
 
 
-
     /**
      * Overall Fierce Planet object.
      *
