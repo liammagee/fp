@@ -1,4 +1,3 @@
-"use strict";
 require.config({
     baseUrl: '../js',
     paths: {
@@ -39,6 +38,7 @@ define( [
     "controls/OrbitControls",
     "controls/PointerLockControls",
     ], function( $, THREE, _, astar ) {
+    "use strict";
 
     /**
      * Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/ .
@@ -228,31 +228,32 @@ define( [
                     var chance = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetwork, 2 );
                     var chanceWithHome = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithHome, 2 );
                     var chanceWithBothHomes = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithBothHomes, 2 );
+                    var link1, link2;
                     if ( Math.random() < chance ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
-                        var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
-                        var link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+                        link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
+                        link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
                         if ( this.links.indexOf( link1 ) == -1 &&
                              this.links.indexOf( link2 ) == -1 ) {
                             this.links.push( link1 );
                         }
                     }
-                    if ( Math.random() < chanceWithHome && ( agent1.home != null || agent2.home != null ) ) {
+                    if ( Math.random() < chanceWithHome && ( agent1.home !== null || agent2.home !== null ) ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
-                        var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
-                        var link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+                        link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
+                        link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
                         if ( this.links.indexOf( link1 ) == -1 &&
                              this.links.indexOf( link2 ) == -1 ) {
                             this.links.push( link1 );
                         }
                     }
-                    if ( Math.random() < chanceWithBothHomes && agent1.home != null && agent2.home != null ) {
+                    if ( Math.random() < chanceWithBothHomes && agent1.home !== null && agent2.home !== null ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
-                        var link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
-                        var link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+                        link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
+                        link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
                         if ( this.links.indexOf( link1 ) == -1 &&
                              this.links.indexOf( link2 ) == -1 ) {
                             this.links.push( link1 );
@@ -431,9 +432,10 @@ define( [
 
                         // Enlist the agent in available networks
                         if ( fp.appConfig.agentOptions.establishLinks ) {
-                            this.networks.forEach( function( network ) {
+                            for (var j = this.networkShow.length - 1; j >= 0; j--) {
+                                var network = this.networkShow[ j ];
                                 network.enlistAgent( agent );
-                            } );
+                            }
                         }
 
                         // Then add the position to this agent's trail
@@ -454,14 +456,14 @@ define( [
                 }
 
                 if ( !_.isNull( this.particles ) ) {
-                    for ( var offset = 0, i = 0; i < agents.length; i++ ) {
+                    for ( var offset = 0, k = 0; i < agents.length; k++ ) {
                         // Must be the original unshuffled collection
-                        var agent = this.agents[ i ];
-                        var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+                        var particleAgent = this.agents[ k ];
+                        var posVec = fp.terrain.transformPointFromPlaneToSphere( particleAgent.position, fp.terrain.wrappedPercent );
                         // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
                         // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
                         // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
-                        this.particles.geometry.vertices[ i ] = posVec; // r071
+                        this.particles.geometry.vertices[ k ] = posVec; // r071
                     }
 
                     this.particles.geometry.verticesNeedUpdate = true; // r071
@@ -493,7 +495,7 @@ define( [
                     var agent = this.agents[i];
                     var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                     agentGeometry.vertices.push( posVec );
-                };
+                }
                 /**/
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
@@ -502,9 +504,9 @@ define( [
                     color: { type: "c", value: [ ] }
                 };
 
-                for( var i = 0; i < this.agents.length; i ++ ) {
-                    this.agentParticleSystemAttributes.alpha.value[ i ] = ( fp.agentNetwork.agents[ i ].health * 0.0075 ) + 0.025;
-                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( fp.agentNetwork.agents[ i ].color );
+                for( var j = 0; j < this.agents.length; j++ ) {
+                    this.agentParticleSystemAttributes.alpha.value[ j ] = ( fp.agentNetwork.agents[ j ].health * 0.0075 ) + 0.025;
+                    this.agentParticleSystemAttributes.color.value[ j ] = new THREE.Color( fp.agentNetwork.agents[ j ].color );
                 }
 
                 // point cloud material
@@ -574,7 +576,7 @@ define( [
              */
             this.updateAgentNetwork = function() {
                 this.updateAgents();
-                this.networks.forEach( function( network ) { network.updateAgentNetworkRendering() } );
+                this.networks.forEach( function( network ) { network.updateAgentNetworkRendering(); } );
                 this.updateAgentShader();
             };
 
@@ -861,7 +863,7 @@ define( [
                 var index = fp.getIndex( position.x, position.z );
                 fp.buildingNetwork.buildingHash[ index ] = building;
                 // Add all ground floor vertices to hash, as crude collision detection
-                // if ( fp.buildingNetwork.networkMesh.children.length == 0 ) {
+                // if ( fp.buildingNetwork.networkMesh.children.length === 0 ) {
                 //     fp.buildingNetwork.networkMesh.add( clone );
                 // }
                 // else {
@@ -1039,9 +1041,9 @@ define( [
                 // Transform vertices
                 var percent = fp.terrain.wrappedPercent;
                 if ( percent > 0 ) {
-                    var transformedVertices = [ ];
-                    for ( var i = 0; i < vertices.length; i ++ ) {
-                        transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                    var transformedVertices = [];
+                    for ( var k = 0; k < vertices.length; k++ ) {
+                        transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ k ], percent ) );
                     }
                     roadGeom.vertices = transformedVertices;
                 }
@@ -1182,12 +1184,12 @@ define( [
                         geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                         geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                         geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
-                        if ( i % patchSize == 0 ) {
+                        if ( i % patchSize === 0 ) {
                             newOffset += newPoints * 3 ;
                             geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                             geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                             geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
-                            if ( j % patchSize == 0 ) {
+                            if ( j % patchSize === 0 ) {
                                 newOffset += 3;
                                 geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                                 geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
@@ -1196,7 +1198,7 @@ define( [
                             }
                             newOffset -= newPoints * 3;
                         }
-                        if ( j % patchSize == 0 ) {
+                        if ( j % patchSize === 0 ) {
                             newOffset += 3;
                             geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                             geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
@@ -1205,7 +1207,7 @@ define( [
                         newOffset += 3;
                         oldOffset += 3;
                     }
-                    if ( i % patchSize == 0 ) {
+                    if ( i % patchSize === 0 ) {
                         newOffset += newPoints * 3;
                     }
                 }
@@ -1275,15 +1277,16 @@ define( [
                 var popPatch = fp.patchNetwork.patchValues.length;
                 var popAgent = fp.agentNetwork.agents.length;
                 var r = popAgent / popPatch;
+                var change;
                 for ( var i = 0; i < this.patchValues.length; i++ ) {
                     var patch = this.patchValues[ i ];
                     if ( !_.isUndefined( this.patches[ i ] ) ) {
                         var len = this.patches[ i ].length;
-                        var change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
+                        change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
                         patch.updatePatchValue( change );
                     }
                     else { // if ( patch.value < patch.initialValue ) { // Recover
-                        var change = Math.pow( r, 2 );
+                        change = Math.pow( r, 2 );
                         patch.updatePatchValue( Math.pow( r, 3 ) );
                     }
                     this.patchMeanValue += patch.value;
@@ -1345,9 +1348,9 @@ define( [
                     var patchRow = Math.floor( i / ( dim - 1 ) );
                     for ( var j = 0; j < patchSize + 3; j++ ) {
                         for ( var k = 0; k < patchSize + 3 ; k++ ) {
-                            if ( j == 0 && patchRow != 0 )
+                            if ( j === 0 && patchRow !== 0 )
                                 continue;
-                            if ( k == 0 && patchCol != 0 )
+                            if ( k === 0 && patchCol !== 0 )
                                 continue;
                             if ( j == this.patchSize + 2 && patchRow < ( dim - 2 ) )
                                 continue;
@@ -1445,7 +1448,7 @@ define( [
                             // Creates a cycle of trail 'pieces'
                             var len = fp.appConfig.displayOptions.trailLength;
                             var offset = agent.ticks * 2 % len;
-                            if ( offset == 0 ) {
+                            if ( offset === 0 ) {
                                 for ( var j = 0; j < len; j++ ) {
                                     fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + j ] = agent.lastPosition;
                                 }
@@ -1457,8 +1460,8 @@ define( [
                     }
                     else {
                         var weightMax = _.chain( fp.trailNetwork.trails ).values().max().value();
-                        for ( var j in fp.trailNetwork.trails ) {
-                            var weight = fp.trailNetwork.trails[ j ];
+                        for ( var k in fp.trailNetwork.trails ) {
+                            var weight = fp.trailNetwork.trails[ k ];
                             var weightNormed = weight / weightMax;
                             var weightAdjusted = Math.pow( weightNormed, 0.2 );
                             fp.terrain.plane.geometry.attributes.trail.array[ k ] = weightAdjusted;
@@ -1466,8 +1469,8 @@ define( [
                     }
                 }
                 else if ( fp.appConfig.displayOptions.trailsUpdate ) {
-                    for ( var k in fp.trailNetwork.trails )  {
-                        fp.terrain.plane.geometry.attributes.trail.array[ k ] = 0.0;
+                    for ( var l in fp.trailNetwork.trails )  {
+                        fp.terrain.plane.geometry.attributes.trail.array[ l ] = 0.0;
                     }
                     fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
                 }
@@ -1701,7 +1704,7 @@ define( [
                     }
                     */
 
-                    var transformedPoint3d = fp.terrain.transformPointFromPlaneToSphere( point3d, wrapPercent )
+                    var transformedPoint3d = fp.terrain.transformPointFromPlaneToSphere( point3d, wrapPercent );
                     pathGeom.vertices.push( transformedPoint3d );
                 } );
 
@@ -1932,9 +1935,9 @@ define( [
                 var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints ) - 1;
                 var reversedIndex = y * fp.terrain.gridPoints + x;
                 if ( reversedIndex >= 0 && !_.isUndefined( fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ] ) ) {
-                    var x = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ];
-                    var z = fp.terrain.planeArray.array[ reversedIndex * 3 + 1 ];
-                    return [ x, z ];
+                    var xCoord = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ];
+                    var zCoord = fp.terrain.planeArray.array[ reversedIndex * 3 + 1 ];
+                    return [ xCoord, zCoord ];
                 }
                 return null;
             };
@@ -1997,7 +2000,7 @@ define( [
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = new THREE.Vector3( 0, - radius, 0 );
                 return origin;
-            }
+            };
 
             /**
              * Retrieves the angle to the origin of the terrain sphere.
@@ -2107,30 +2110,33 @@ define( [
              */
             this.wrapTerrainIntoSphere = function( percent ) {
                 this.wrappedPercent = percent;
+                var i, j, k;
+                var pv, sv, nv, cv;
+                var transformedVertices, vertices;
                 if ( !_.isUndefined( percent ) && percent <= 100 && percent >= 0 ) {
                     var l = fp.terrain.sphereArray.array.length;
-                    for ( var i = 0; i < l; i++ ) {
-                        var pv = fp.terrain.planeArray.array[ i ];
-                        var sv = fp.terrain.sphereArray.array[ i ];
-                        var nv = pv + ( sv - pv ) * ( percent / 100 );
+                    for ( i = 0; i < l; i++ ) {
+                        pv = fp.terrain.planeArray.array[ i ];
+                        sv = fp.terrain.sphereArray.array[ i ];
+                        nv = pv + ( sv - pv ) * ( percent / 100 );
                         fp.terrain.plane.geometry.attributes.position.array[ i ] = nv;
                     }
                     fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
                     if ( !_.isNull( fp.patchNetwork.plane ) ) {
                         l = fp.patchNetwork.patchSphereArray.array.length;
-                        for ( var i = 0; i < l; i++ ) {
-                            var pv = fp.patchNetwork.patchPlaneArray.array[ i ];
-                            var sv = fp.patchNetwork.patchSphereArray.array[ i ];
-                            var nv = pv + ( sv - pv ) * ( percent / 100 );
-                            fp.patchNetwork.plane.geometry.attributes.position.array[ i ] = nv;
+                        for ( j = 0; j < l; j++ ) {
+                            pv = fp.patchNetwork.patchPlaneArray.array[ j ];
+                            sv = fp.patchNetwork.patchSphereArray.array[ j ];
+                            nv = pv + ( sv - pv ) * ( percent / 100 );
+                            fp.patchNetwork.plane.geometry.attributes.position.array[ j ] = nv;
                         }
                         fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
                     }
                     fp.buildingNetwork.buildings.forEach( function( building ) {
                         building.lod.matrixAutoUpdate = false;
-                        var cv = _.clone( building.originPosition );
+                        cv = _.clone( building.originPosition );
                         // var cv = _.clone( building.mesh );
-                        var nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
+                        nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
                         var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
                         nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
                         building.mesh.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
@@ -2143,46 +2149,46 @@ define( [
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     } );
                     // Alter roards
-                    for ( var j = 0; j < fp.roadNetwork.planeVertices.length; j ++ ) {
-                        var transformedVertices = [ ];
-                        var vertices = fp.roadNetwork.planeVertices[ j ];
-                        for ( var i = 0; i < vertices.length; i ++ ) {
-                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                    for ( k = 0; k < fp.roadNetwork.planeVertices.length; k ++ ) {
+                        transformedVertices = [ ];
+                        vertices = fp.roadNetwork.planeVertices[ k ];
+                        for ( var m = 0; m < vertices.length; m ++ ) {
+                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ m ], percent ) );
                         }
-                        fp.roadNetwork.networkMesh.children[ j ].geometry.vertices = transformedVertices;
-                        fp.roadNetwork.networkMesh.children[ j ].geometry.verticesNeedUpdate = true;
+                        fp.roadNetwork.networkMesh.children[ k ].geometry.vertices = transformedVertices;
+                        fp.roadNetwork.networkMesh.children[ k ].geometry.verticesNeedUpdate = true;
                     }
                     // Alter paths
-                    for ( var j = 0; j < fp.pathNetwork.networkMesh.children.length; j ++ ) {
-                        var transformedVertices = [ ];
-                        var vertices = fp.pathNetwork.networkMesh.children[ j ];
-                        for ( var i = 0; i < vertices.length; i ++ ) {
-                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                    for (var n = 0; n < fp.pathNetwork.networkMesh.children.length; n ++ ) {
+                        transformedVertices = [ ];
+                        vertices = fp.pathNetwork.networkMesh.children[ n ];
+                        for ( var o = 0; o < vertoces.length; o ++ ) {
+                            transformedVertoces.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ o ], percent ) );
                         }
-                        fp.pathNetwork.networkMesh.children[ j ].geometry.vertices = transformedVertices;
-                        fp.pathNetwork.networkMesh.children[ j ].geometry.verticesNeedUpdate = true;
+                        fp.pathNetwork.networkMesh.children[ n ].geometry.vertices = transformedVertices;
+                        fp.pathNetwork.networkMesh.children[ n ].geometry.verticesNeedUpdate = true;
                     }
-                    for ( var j = 0; j < fp.agentNetwork.agents.length; j ++ ) {
-                        var agent = fp.agentNetwork.agents[ j ];
-                        var nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
-                        fp.agentNetwork.particles.geometry.vertices[ j ] = nv;
+                    for ( var p = 0; p < fp.agentNetwork.agents.length; p ++ ) {
+                        var agent = fp.agentNetwork.agents[ p ];
+                        nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
+                        fp.agentNetwork.particles.geometry.vertices[ p ] = nv;
                     }
                     if ( !_.isNull( fp.agentNetwork.particles ) )
                         fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
-                    for ( var j = 0; j < fp.agentNetwork.networks.length; j ++ ) {
-                        var transformedVertices = [ ];
-                        var network = fp.agentNetwork.networks[ j ];
+                    for ( var r = 0; r < fp.agentNetwork.networks.length; r ++ ) {
+                        transformedVertices = [ ];
+                        var network = fp.agentNetwork.networks[ r ];
                         if ( !_.isNull( network.networkMesh ) ) {
-                            var vertices = network.networkMesh.geometry.vertices;
-                            for ( var i = 0; i < vertices.length; i ++ ) {
-                                transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
+                            vertices = network.networkMesh.geometry.vertices;
+                            for ( var s = 0; s < vertices.length; s ++ ) {
+                                transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ s ], percent ) );
                             }
                             network.networkMesh.geometry.vertices = transformedVertices;
                             network.networkMesh.geometry.verticesNeedUpdate = true;
                         }
                     }
                 }
-            }
+            };
 
             /**
              * Updates terrain.
@@ -2419,7 +2425,7 @@ define( [
                         weight *= yl / yn;
 
                     // If currect direction is moving to water, set the preference low
-                    if ( i == 0 && yn <= 0 && fp.appConfig.agentOptions.noWater )
+                    if ( i === 0 && yn <= 0 && fp.appConfig.agentOptions.noWater )
                         weight = 0.0;
 
                     // If inside a building, adjust weights
@@ -2650,7 +2656,7 @@ define( [
                     var directions = this.compassDirections();
                     var index = Math.floor( Math.random() * 8 );
                     var pos = directions[ index ];
-                    var vec = new THREE.Vector3( this.speed * pos[ 0 ], 0, this.speed * pos[ 1 ] )
+                    var vec = new THREE.Vector3( this.speed * pos[ 0 ], 0, this.speed * pos[ 1 ] );
                     return vec;
                 }
             };
@@ -2671,7 +2677,7 @@ define( [
                     if ( ! ignoreHeight ) {
                         len = Math.sqrt( Math.pow( len, 2 ) + Math.pow( oy - y, 2 ) );
                     }
-                    if ( leastLen == 0 || len < leastLen ) {
+                    if ( leastLen === 0 || len < leastLen ) {
                         nearest = agent;
                         leastLen = len;
                     }
@@ -2707,9 +2713,9 @@ define( [
                     var response = func.apply( fp, _.union( [ index ], values ) );
                     if ( response )
                         return true;
-                };
+                }
                 return false;
-            }
+            };
 
             /**
              * Builds a building on the agent's current position.
@@ -3126,7 +3132,7 @@ define( [
 
 
             this.shadedShapeMock = function() {
-                var base = this.levels * fp.appConfig.buildingOptions.levelHeight + fp.appConfig.terrainOptions.defaultHeight;
+                // var base = this.levels * fp.appConfig.buildingOptions.levelHeight + fp.appConfig.terrainOptions.defaultHeight;
                 var points = fp.BUILDING_FORMS[ this.buildingForm ]( this.localWidth, this.localLength, base );
                 var base = points[ 0 ].y;
                 var height = base;// + this.lod.position.y;
@@ -3147,7 +3153,7 @@ define( [
 
                     mesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
                     mesh.rotation.set( -Math.PI / 2, 0, 0 );
-                    var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                    height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                     mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                     mesh.updateMatrix();
                     return mesh;
@@ -3174,7 +3180,7 @@ define( [
                 shapeGeometry.computeBoundingBox();
 
                 if ( shapeGeometry.boundingBox ) {
-                    // if ( this.highResMeshContainer.children.length == 0 ) {
+                    // if ( this.highResMeshContainer.children.length === 0 ) {
                     // if ( this.levels < 1000 ) {
                     if ( this.levels === 0 ) {
                         var fc, lc, wc;
@@ -3241,14 +3247,14 @@ define( [
                             b.receiveShadow = true;
                         } );
                         this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
-                        var height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                        height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
                         // fp.buildingNetwork.networkMesh.add( this.highResMeshContainer );
                         fp.buildingNetwork.networkMesh.add( this.mesh );
                         this.highResMeshContainer.add( this.mesh.clone() );
                         /*
-                        if ( fp.buildingNetwork.networkMesh.children.length == 0 ) {
+                        if ( fp.buildingNetwork.networkMesh.children.length === 0 ) {
                             this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
                             this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                             this.mesh.updateMatrix();
@@ -3268,8 +3274,8 @@ define( [
                         var floorMesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
                         floorMesh.position.set( 0, 0, height );
                         floorMesh.updateMatrix();
-                        var newGeom = this.mesh.geometry.clone()
-                        newGeom.mergeMesh( floorMesh )
+                        var newGeom = this.mesh.geometry.clone();
+                        newGeom.mergeMesh( floorMesh );
                         newGeom.verticesNeedUpdate = true;
                         var newMesh = new THREE.Mesh( newGeom, this.mesh.material );
                         newMesh.castShadow = true;
@@ -3354,7 +3360,7 @@ define( [
                             shaderMaterial.attributes.mixin.value[ j ] = r;
                         }
                     }
-                };
+                }
                 shaderMaterial.attributes.mixin.needsUpdate = true; // important!
             };
 
@@ -4702,7 +4708,7 @@ define( [
          * @memberof fp
          */
         this.animate = function() {
-            if ( fp.AppState.halt == true )
+            if ( fp.AppState.halt )
                 return;
             // Must call this first!
             fp.patchNetwork.updatePatchAgents();
@@ -4958,7 +4964,7 @@ define( [
             var testValue = buildingNeighbours / totalNeighbours;
             var chance = Math.pow( testValue, Math.random() );
             // Return true if the probability is greater than 1 minus the target value
-            return ( chance > ( 1 - threshold ) )
+            return ( chance > ( 1 - threshold ) );
         };
 
         /**
@@ -4990,7 +4996,7 @@ define( [
                 var squaredDistance = Math.pow( bx - x, 2 ) + Math.pow( bz - z, 2 );
                 if ( minSquaredDistance == -1 || squaredDistance < minSquaredDistance )
                     minSquaredDistance = squaredDistance;
-            };
+            }
             return Math.sqrt( minSquaredDistance );
         };
 
@@ -5612,7 +5618,7 @@ define( [
                         if ( showLines == 1 ) {
                             // Rules for horizontal lines
                             // IGNORE BOTTOM LINE FOR NOW:  || posY > dimY - lineWidth
-                            if ( posY == 0.0 && fillRooves == 1 )  {
+                            if ( posY === 0.0 && fillRooves == 1 )  {
                                 col = vec4( mix( windowColor, darkGrey, 0.5 ), opacity );
                             }
                             else if ( posY < lineWidth ) {
@@ -5707,7 +5713,7 @@ define( [
                         col = vec4( vTrail, vTrail, vTrail, 1.0 );
                     }
                     else {
-                        if ( elevation == 0.0 ) {
+                        if ( elevation === 0.0 ) {
                             col = vec4( 0.0, 0.0, 0.0, 0.0 );
                         }
                         else if ( elevation < stop1 ) {
