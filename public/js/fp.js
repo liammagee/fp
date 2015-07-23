@@ -543,6 +543,7 @@ define( [
              * Creates a set of attributes to represent each agent in the network.
              */
             this.buildAgentParticleSystem = function() {
+
                 var agentGeometry = new THREE.Geometry();
                 this.agents.forEach( function( agent ) {
                     agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent ) );
@@ -550,8 +551,8 @@ define( [
 
                 // Shader approach from http://jsfiddle.net/8mrH7/3/
                 this.agentParticleSystemAttributes = {
-                    alpha: { type: "f", value: [ ] },
-                    color: { type: "c", value: [ ] }
+                    alpha: { type: "f", value: [] },
+                    color: { type: "c", value: [] }
                 };
 
                 var discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/stickman_180.png" );
@@ -1807,19 +1808,27 @@ define( [
                 var i, j, l = vertices.length,
                     n = Math.sqrt( l ),
                     k = l + 1;
-                // Simple function to return the sign of a number - http://stackoverflow.com/questions/7624920/number-sign-in-javascript
+
                 if ( fp.appConfig.terrainOptions.loadHeights ) {
+
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
+
                         geometry.attributes.position.array[ j + 2 ] =
                             data[ i ] / 65535 *
                             fp.terrain.maxTerrainHeight *
                             fp.appConfig.terrainOptions.multiplier;
+
                     }
+
                 }
                 else {
+
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
+
                         geometry.attributes.position.array[ j + 2 ] = 0;
+
                     }
+
                 }
 
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( { color: 0x666666, wireframe: fp.appConfig.displayOptions.wireframeShow } );
@@ -1864,6 +1873,9 @@ define( [
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
                 };
                 fp.terrain.nightTerrainUniforms = {
+                    // Lambert settings
+                    // emissive: { type: "c", value: new THREE.Color( 1.0, 0.0, 0.0 ) },
+                    diffuse: { type: "c", value: new THREE.Color( 0.0, 0.0, 1.0 ) },
                     opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
 
                     groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) },
@@ -1894,11 +1906,13 @@ define( [
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
                     lights: true,
+                    fog: false,
                     transparent: true
                 } );
 
                 // Only use the shader material if we have variable heights
                 if ( fp.appConfig.terrainOptions.shaderUse ) {
+                    geometry.computeVertexNormals();
                     fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
                 }
                 else {
@@ -1913,8 +1927,6 @@ define( [
                 // Lift by 1, to ensure shaders doesn't clash with water
                 fp.terrain.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 fp.toggleTerrainPlane();
-                // if ( fp.appConfig.displayOptions.terrainShow )
-                //     fp.scene.add( fp.terrain.plane );
 
                 if ( fp.appConfig.displayOptions.patchesShow )
                     fp.patchNetwork.buildPatchMesh();
@@ -1925,7 +1937,6 @@ define( [
                 // Construct the sphere, and switch it on
                 if ( fp.appConfig.terrainOptions.renderAsSphere ) {
                     fp.terrain.sphereArray = fp.terrain.constructSphere( fp.terrain.planeArray );
-                    // fp.terrain.wrapTerrainIntoSphere( 100 );
                 }
             };
 
@@ -3218,6 +3229,11 @@ define( [
                         var showLines = ( fp.buildingNetwork.buildings.length > 1 && fp.appConfig.buildingOptions.showLines );
                         var showWindows = fp.appConfig.buildingOptions.showWindows;
                         this.uniforms = {
+
+                            // Standard Lambert uniforms
+                            //opacity: { type: "f", value: fp.appConfig.buildingOptions.opacity },
+                            // emissive: { type: "v3", value: fc },
+
                             time: { type: "f", value: 1.0 },
                             location: { type: "v2", value: new THREE.Vector2( this.lod.position.x, this.lod.position.z ) },
                             resolution: { type: "v2", value: new THREE.Vector2() },
@@ -3227,7 +3243,6 @@ define( [
                             windowWidth: { type: "f", value: this.windowWidth },
                             windowPercent: { type: "f", value: this.windowPercent },
                             floorLevel: { type: "f", value: this.levels },
-                            //opacity: { type: "f", value: fp.appConfig.buildingOptions.opacity },
                             lineColor: { type: "v3", value: lc },
                             lineWidth: { type: "f", value: fp.appConfig.buildingOptions.linewidth },
                             fillColor: { type: "v3", value: fc },
@@ -3236,10 +3251,13 @@ define( [
                             showFill: { type: "i", value: fp.appConfig.buildingOptions.showFill ? 1 : 0 },
                             showWindows: { type: "i", value: showWindows ? 1 : 0 },
                             fillRooves: { type: "i", value: fp.appConfig.buildingOptions.fillRooves ? 1 : 0 }
+
                         };
+
                         var attributes = { mixin: { type: "f", value: [ ] } };
-                        for ( var i = 0; i < shapeGeometry.vertices.length; i++ )
+                        for ( var i = 0; i < shapeGeometry.vertices.length; i++ ) {
                             attributes.mixin.value[ i ] = Math.random() * 10;
+                        }
 
                         var shaderMaterial = new THREE.ShaderMaterial( {
                             uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
@@ -3252,7 +3270,8 @@ define( [
                                 fp.ShaderUtils.buildingFragmentShaderParams(),
                                 fp.ShaderUtils.buildingFragmentShaderMain()
                             ),
-                            lights: true, transparent: true
+                            lights: true,
+                            transparent: true
                         } );
 
                         shaderMaterial.side = THREE.DoubleSide;
@@ -4703,8 +4722,13 @@ define( [
         this.init = function( config, sim, callback ) {
             fp.container = $( "#container" )[ 0 ] || config.container;
             fp.scene = new THREE.Scene();
+
+            // Add helpers and plugins here
             // fp.scene.add( new THREE.AxisHelper( 100 ));
             // fp.scene.add( new THREE.GridHelper( 100,10 ));
+            // fp.scene.fog = new THREE.FogExp2( 0xefd1b5, 0.0025 );
+
+            // Do the rest of the setup
             fp.sim = sim || fp.simDefault();
             fp.setupGUI( config );
             fp.setupSimObjects();
@@ -5903,7 +5927,6 @@ define( [
                        vec4 diffuseColor = vec4( diffuse, opacity );
                     `,
                     customCode, // must set gl_FragColor!
-                    //"gl_FragColor = vec4( vec3 ( 1.0 ), opacity );",
 
                     THREE.ShaderChunk[ "logdepthbuf_fragment" ],
                     THREE.ShaderChunk[ "map_fragment" ],
