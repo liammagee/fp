@@ -444,8 +444,8 @@ define( [
 
                         // Enlist the agent in available networks
                         if ( fp.appConfig.agentOptions.establishLinks ) {
-                            for (var j = this.networkShow.length - 1; j >= 0; j--) {
-                                var network = this.networkShow[ j ];
+                            for (var j = this.networks.length - 1; j >= 0; j--) {
+                                var network = this.networks[ j ];
                                 network.enlistAgent( agent );
                             }
                         }
