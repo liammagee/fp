@@ -50,7 +50,7 @@ Uses a grid structure with:
  - Each cell to represent a square (rectangular?) habitable 'block'. Approx 100m^2^. (Consult urban planning literature for more details - 
 [insula](http://en.wikipedia.org/wiki/Urban_planning)).
  - World therefore has 1600 patchs (= (4000 / 100)^2^).
- - Cell\es have a series of heightmaps (corresponding to imported terrain). 
+ - Cells have a series of heightmaps (corresponding to imported terrain). 
  - If average heightmap is below 1m, it is assumed to be **water**.
  - ASSUMPTION: For now, no other natural features (e.g. trees)
 

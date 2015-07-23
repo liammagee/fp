@@ -22,6 +22,7 @@
     "gulp-rename": "~1.2.2",
     "jshint-stylish": "~2.0.1",
     "gulp-eslint": "~0.15.0",
-    "gulp-shell": "~0.4.2"
+    "gulp-shell": "~0.4.2",
+    "gulp-pandoc": "~0.2.1"
   }
 }

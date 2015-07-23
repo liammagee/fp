@@ -76,3 +76,22 @@ model > iframe {
 .link-text {
     font-size: 80%;
 }
+
+/*
+For custom documentation.
+ */
+.fp-docs-sidebar {
+    font-size: 130%;
+}
+.fp-docs-sidebar.affix {
+    top: 20px;
+}
+
+.fp-docs-sidebar ul {
+    padding-left:1em;
+    list-style-position: inside;
+    list-style-type: none;
+    display: block;
+    font-size: 92%;
+}
+

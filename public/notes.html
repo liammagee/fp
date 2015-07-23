@@ -1,0 +1,813 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <!-- Pandoc Start -->
+  <meta name="generator" content="pandoc" />
+      <meta name="author" content="Liam Magee" />
+      <title>Fierce Planet Redesign</title>
+  <!-- Pandoc End -->
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Pandoc Start -->
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="css/docs.css" />
+  <script src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <!-- Pandoc End -->
+
+</head>
+<body>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+                  <div id="header">
+          <h1 class="title">Fierce Planet Redesign</h1>
+                    <h2 class="author">Liam Magee</h2>
+                              <h3 class="date">20 June, 2014</h3>
+                    </div>
+              </div>
+    </div>
+
+  <div class="container">
+    <div class="row">
+       <div class="col-md-9" role="main">
+        <!--
+        v1.0: 4 July, 2014
+        -->
+        <h1 id="overview">Overview</h1>
+        <h1 id="components">Components</h1>
+        <h2 id="world">World</h2>
+        <h3 id="time">Time</h3>
+        <ul>
+        <li><em>Origin time</em> (<span class="math">\(t_0\)</span>)</li>
+        <li><em>Time increment</em> (<span class="math">\(i\)</span>)</li>
+        <li><em>End time</em> (<span class="math">\(t_n\)</span>)</li>
+        <li><em>Current time</em> (<span class="math">\(t_i = t_0 + i\)</span>)</li>
+        </ul>
+        <p><em>Origin time</em> defaults to <strong>0</strong>; <em>Time increment</em> to <strong>1</strong>; <em>End time</em> to <strong>infinity</strong>.</p>
+        <h3 id="space">Space</h3>
+        <p>Uses a grid structure with:</p>
+        <ul>
+        <li><em>Width</em></li>
+        <li><em>Height</em></li>
+        <li><em>Cell</em> (depends on cell size)</li>
+        <li><em>Terrain</em></li>
+        </ul>
+        <h4 id="notes">Notes:</h4>
+        <ul>
+        <li>Terrain extracted from SRTM (see addendum below).</li>
+        <li><a href="http://dds.cr.usgs.gov/srtm/version2_1/Documentation/Quickstart.pdf">SRTM3 Dimensions</a>
+        <ul>
+        <li>Each tile is a 3-arc second</li>
+        <li>1201x1201 pixels</li>
+        <li>Each pixel is 90m (tile = 108,090m = 108km<sup>2</sup>)</li>
+        </ul></li>
+        <li>DECISION: Needs to re-rendered in world as 4km<sup>2</sup>? Too big, the world is unnavigable (and unrenderable - though check with Unreal)</li>
+        </ul>
+        <h2 id="cell">Cell</h2>
+        <ul>
+        <li>Each cell to represent a square (rectangular?) habitable ‘block’. Approx 100m<sup>2</sup>. (Consult urban planning literature for more details - <a href="http://en.wikipedia.org/wiki/Urban_planning">insula</a>).</li>
+        <li>World therefore has 1600 patchs (= (4000 / 100)<sup>2</sup>).</li>
+        <li>Cells have a series of heightmaps (corresponding to imported terrain).</li>
+        <li>If average heightmap is below 1m, it is assumed to be <strong>water</strong>.</li>
+        <li>ASSUMPTION: For now, no other natural features (e.g. trees)</li>
+        </ul>
+        <p>Further notes:</p>
+        <ul>
+        <li>See Unreal / Unity docs on terrain for better terminology.</li>
+        </ul>
+        <h2 id="agents">Agents</h2>
+        <ul>
+        <li>A <strong>World</strong> has <span class="math">\(\{0,...,m\}\)</span> Agents</li>
+        <li>Agents are (humanoid?) objects that exhibit (minimally):
+        <ul>
+        <li><a href="#life">Life</a></li>
+        <li><a href="#spatiality">Spatiality</a></li>
+        <li><a href="#motility">Motility</a></li>
+        </ul></li>
+        <li>Might also have:
+        <ul>
+        <li><a href="#vitality">Vitality</a></li>
+        <li><a href="#relationality">Relationality</a></li>
+        <li><a href="#physicality">Physicality</a></li>
+        <li><a href="#mind">Mind</a>
+        <ul>
+        <li><a href="#cognition">Cognition</a></li>
+        <li><a href="#affect">Affect</a></li>
+        <li><a href="#conation">Conation</a></li>
+        </ul></li>
+        </ul></li>
+        </ul>
+        <h3 id="life">Life</h3>
+        <ul>
+        <li><em>Birth</em>: year (month and day?) or <span class="math">\(b = t_x\)</span></li>
+        <li><em>Death</em>: year (month and day?) or <span class="math">\(d = t_y\)</span></li>
+        <li><em>Life elapsed</em> (<span class="math">\(d - b\)</span>)</li>
+        <li><em>Alive</em> (<span class="math">\(t_i &gt; b \&amp;\&amp; t_i &lt; d\)</span>)</li>
+        </ul>
+        <h3 id="spatiality">Spatiality</h3>
+        <p>For rendering purposes, agents have three-dimensional spatial extension.</p>
+        <ul>
+        <li><em>Position</em></li>
+        <li><em>Rotation</em></li>
+        <li><em>Scale</em></li>
+        </ul>
+        <p>In common rendering environments, these are represented by:</p>
+        <table>
+        <colgroup>
+        <col style="width: 30%" />
+        <col style="width: 23%" />
+        </colgroup>
+        <thead>
+        <tr class="header">
+        <th style="text-align: left;">Unreal Editor</th>
+        <th style="text-align: left;">Unity 4</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="odd">
+        <td style="text-align: left;">Position Rotation Scale</td>
+        <td style="text-align: left;">Position Rotation Scale</td>
+        </tr>
+        </tbody>
+        </table>
+        <p>This should further relate to <a href="#place">place</a>.</p>
+        <h3 id="motility">Motility</h3>
+        <p><strong>Notes:</strong></p>
+        <ul>
+        <li>Spontaneous movement (with or without a Goal)</li>
+        <li>Movement is in 3 dimensional space (has X, Y, Z co-ordinates)</li>
+        <li>Examine <em>direct</em> (XYZ-transforms) vs <em>indirect</em> (using game engine physics, forces - preferred but semi-deterministic?)</li>
+        </ul>
+        <p>TODO: - Examine AI movement algoriths (e.g. A^*^ in <strong>Unity</strong>)</p>
+        <h3 id="relationality">Relationality</h3>
+        <ul>
+        <li><em>Mother</em> (<span class="math">\(mother\)</span>)</li>
+        <li><em>Father</em> (<span class="math">\(father\)</span>)</li>
+        <li><em>Children</em> (<span class="math">\(children_{1..m}\)</span>)</li>
+        <li><em>Friends</em> (<span class="math">\(friends_{1..n}\)</span>)</li>
+        </ul>
+        <p>Consider 1st class <em>Relation</em>: - Kinds of relations: + Bonding + Bridging - Type (one of: {familial, professional, social}?) - Strength - Duration - Frequency</p>
+        <p>[NOTE: <strong>Just</strong> modelling relations would be of interest.]</p>
+        <h3 id="mind">Mind</h3>
+        <p><em>An Overview of the Conative Domain</em> <span class="citation" data-cites="huitt2005overview">(Huitt and Cain 2005)</span>:</p>
+        <blockquote>
+        <p>Psychology has traditionally identified and studied three components of mind: cognition, affect, and conation (Hilgard, 1980; Huitt, 1996; Tallon, 1997).</p>
+        </blockquote>
+        <blockquote>
+        <p>Cognition refers to the process of coming to know and understand; of encoding, perceiving, storing, processing, and retrieving information. It is generally associated with the question of “what” (e.g., what happened, what is going on now, what is the meaning of that information.)</p>
+        </blockquote>
+        <blockquote>
+        <p>Affect refers to the emotional interpretation of perceptions, information, or knowledge. It is generally associated with one’s attachment (positive or negative) to people, objects, ideas, etc. and is associated with the question “How do I feel about this knowledge or information?”</p>
+        </blockquote>
+        <blockquote>
+        <p>Conation refers to the connection of knowledge and affect to behavior and is associated with the issue of “why.” It is the personal, intentional, planful, deliberate, goal-oriented, or striving component of motivation, the proactive (as opposed to reactive or habitual) aspect of behavior (Baumeister, Bratslavsky, Muraven &amp; Tice, 1998; Emmons, 1986). Atman (1987) defined conation as “vectored energy: i.e., personal energy that has both direction and magnitude” (p. 15). It is closely associated with the concepts of intrinsic motivation, volition, agency, self-direction, and self-regulation (Kane, 1985; Mischel, 1996).</p>
+        </blockquote>
+        <ul>
+        <li>Relates to behaviour and action?</li>
+        </ul>
+        <h4 id="cognition">Cognition / Belief</h4>
+        <p>Refers to the general possesion of <em>cognition</em>.</p>
+        <ul>
+        <li><em>Memory</em> (<span class="math">\(memories_{1..n}\)</span>)</li>
+        <li><em>Reasoning</em> [cf. <a href="#ontology">Ontology</a>]</li>
+        </ul>
+        <p>In <em>BDI</em> frameworks, this corresponds to <em>Beliefs</em>?</p>
+        <p>TODO: <em>Reasoning</em> implies separate logical thread for computation?</p>
+        <h5 id="memory-belief">Memory / Belief</h5>
+        <ul>
+        <li><em>Subject</em></li>
+        <li><em>Predicate</em></li>
+        <li><em>Object</em>. Can be one of:
+        <ul>
+        <li><em>Agent</em></li>
+        <li><em>Place</em></li>
+        </ul></li>
+        <li><em>Date</em></li>
+        <li><em>Strength</em> of memory or belief</li>
+        </ul>
+        <h4 id="affectivity">Affectivity / Desire</h4>
+        <p>Refers to the emotional affects experienced. In <em>BDI</em> frameworks, this corresponds to <em>Desires</em>.</p>
+        <ul>
+        <li><em>Affect</em> (from range of emotional states?)</li>
+        </ul>
+        <p>In <em>BDI</em> frameworks, this corresponds to <em>Desires</em>?</p>
+        <h4 id="conation">Conation / Intention</h4>
+        <p>Refers to the proactive intention to accomplish a <em>Goal</em>, based on a series of planned <em>Actions</em>, to satisfy a <em>Desire</em> based on current <em>Beliefs</em>.</p>
+        <ul>
+        <li><em>Plans</em> (from range of emotional states?)</li>
+        </ul>
+        <p>In <em>BDI</em> frameworks, this corresponds to <em>Intentions</em> (or both <em>Desires</em> and <em>Intentions</em>)?</p>
+        <h5 id="plan">Plan</h5>
+        <ul>
+        <li><em>Goal</em></li>
+        <li><em>Action</em> (<span class="math">\(actions_{1..n}\)</span>)</li>
+        </ul>
+        <h5 id="goal">Goal</h5>
+        <p>Achieved when:</p>
+        <ul>
+        <li>Some change in the world is effected
+        <ul>
+        <li>Change in state, position… of an <em>Object</em></li>
+        </ul></li>
+        <li>Some <em>Belief</em> is modified?</li>
+        <li>Some <em>Desire</em> is satisfied</li>
+        <li>Some <em>Intention</em> is carried out</li>
+        </ul>
+        <h5 id="action">Action</h5>
+        <p>One of:</p>
+        <ul>
+        <li><em>Movement Act</em></li>
+        <li><p><em>Speech Act</em></p></li>
+        <li><p>Exercises a <em>Capability</em></p></li>
+        </ul>
+        <h6 id="movement-act">Movement Act</h6>
+        <h3 id="physicality">Physicality</h3>
+        <p>Includes: - <em>Shape</em> - <em>Color</em></p>
+        <p>TODO: UNSPECIFIED - relate to Unreal/ Unity properties</p>
+        <table>
+        <colgroup>
+        <col style="width: 30%" />
+        <col style="width: 23%" />
+        </colgroup>
+        <thead>
+        <tr class="header">
+        <th style="text-align: left;">Unreal Editor</th>
+        <th style="text-align: left;">Unity 4</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="odd">
+        <td style="text-align: left;">TBD</td>
+        <td style="text-align: left;"></td>
+        </tr>
+        </tbody>
+        </table>
+        <h2 id="social_system">Social Systems</h2>
+        <h3 id="institutions">Institutions</h3>
+        <ul>
+        <li>Law
+        <ul>
+        <li>Legislative</li>
+        <li>Judicial</li>
+        <li>Executive</li>
+        </ul></li>
+        <li>Economy</li>
+        <li>Governance</li>
+        <li>Knowledge
+        <ul>
+        <li>Science</li>
+        <li>Culture</li>
+        </ul></li>
+        </ul>
+        <h4 id="legal">Legal</h4>
+        <p>Wikipedia links: - <a href="http://en.wikipedia.org/wiki/Legal_doctrine">Legal doctrine</a> - <a href="http://en.wikipedia.org/wiki/Constitutionalism">Constitutionalism</a></p>
+        <h3 id="technoscience">Technoscience</h3>
+        <h4 id="explaining-technoscience-as-a-concept">Explaining technoscience as a concept</h4>
+        <h4 id="categories">Categories</h4>
+        <ul>
+        <li>Power</li>
+        <li>Building</li>
+        <li></li>
+        </ul>
+        <h4 id="history">History</h4>
+        <ul>
+        <li>Steam power</li>
+        <li></li>
+        </ul>
+        <h2 id="place">Place</h2>
+        <ul>
+        <li><em>Name</em></li>
+        <li><em>Location</em></li>
+        <li><em>Extent</em>
+        <ul>
+        <li><em>Width</em></li>
+        <li><em>Height</em></li>
+        </ul></li>
+        <li><em>Designation</em>, one of {<em>Home</em>, <em>Neighbourhood</em>, <em>City</em> or <em>District</em>, <em>Region</em>, <em>Country</em>}</li>
+        </ul>
+        <h2 id="culture">Cultures</h2>
+        <ul>
+        <li><em>Name</em></li>
+        <li>Set of <em>Capabilities</em> (<span class="math">\(capabilities_{1..n}\)</span>)</li>
+        </ul>
+        <h2 id="institutions">Institutions</h2>
+        <ul>
+        <li><em>Name</em></li>
+        <li><em>Location</em></li>
+        <li><em>Type</em> (one of: )</li>
+        </ul>
+        <h2 id="built-environment">Built environment</h2>
+        <ul>
+        <li>Patches can have <span class="math">\(\{0,...,n\}\)</span> Buildings.</li>
+        <li>Patches can have Roads, Alleys, Pavements</li>
+        </ul>
+        <h3 id="urban-morphology">Urban morphology</h3>
+        <h4 id="links">Links</h4>
+        <p>Wikipedia:</p>
+        <ul>
+        <li><a href="http://en.wikipedia.org/wiki/Urban_morphology">Wikipedia:Urban Morphology</a></li>
+        <li><a href="http://en.wikipedia.org/wiki/Urban_area">Wikipedia:Urban area</a></li>
+        <li><a href="http://en.wikipedia.org/wiki/Global_City">Global City</a></li>
+        <li><a href="http://en.wikipedia.org/wiki/Index_of_urban_studies_articles">Index of urban studies articles</a></li>
+        </ul>
+        <p>General:</p>
+        <ul>
+        <li><a href="https://www.google.com.co/search?q=urban+morphology&amp;espv=2&amp;biw=1018&amp;bih=557&amp;tbm=isch&amp;tbo=u&amp;source=univ&amp;sa=X&amp;ei=aEavU_2GE8Ss0QXk-oDoAg&amp;ved=0CDUQsAQ">Google Images</a></li>
+        <li><a href="http://www.urbanmorphologyinstitute.org/">Urban Morphology &amp; Complex Systems Institute</a>
+        <ul>
+        <li><a href="http://www.urbanmorphologyinstitute.org/research/papers/">Papers</a></li>
+        </ul></li>
+        <li><a href="http://urbanmorphology.org/">International Seminar on Urban Form / Urban Morphology Journal</a></li>
+        <li><a href="http://emergenturbanism.com/">Emergent Urbanism</a></li>
+        <li><a href="http://historiccitiesrules.com/">Historic Cities Rules</a></li>
+        <li><a href="http://www.patternlanguage.com/">Pattern Language</a></li>
+        <li><a href="http://carfree.com/">Carfree</a></li>
+        <li><a href="http://www.humantransit.org/">Human Transit</a></li>
+        <li><a href="http://katarxis3.com/">Katarxis</a></li>
+        <li><a href="http://intbau.org/">International Network for Traditional Building, Architecture &amp; Urbanism</a></li>
+        <li><a href="http://kunstlercast.com/">KunstlerCast</a></li>
+        <li><a href="http://zeta.math.utsa.edu/~yxk833/">Nikos A. Salingaros</a></li>
+        <li><a href="http://www.pps.org/">Project for Public Spaces</a></li>
+        <li><a href="http://wolframscience.com/">Wolfram Science</a></li>
+        <li><a href="http://codesproject.asu.edu/">The Codes Project</a></li>
+        <li><a href="http://www.esri.com/software/cityengine">ESRI</a></li>
+        <li><a href="http://www.spacesyntax.net/">Space Syntax Network</a></li>
+        <li><a href="http://leav.versailles.archi.fr/#/equipes-de-recherche/axes-de-recherche-2014-2019/%C3%A9nergie-climat-environnement">Laboratoire de Recherche del l’Ecole Nationale Superieure d’Architecture de Versailles</a></li>
+        <li><a href="http://www.stadtbaukunst.org/english/institute/index.html">Institut der Stadtbaukunst (A Forum for Architecture and Urban Design)</a>
+        <ul>
+        <li><a href="http://www.stadtbaukunst.org/english/texts-about-urban-design/index.html">Publications</a></li>
+        </ul></li>
+        <li><a href="http://www.newurbanism.org/">New Urbanism</a></li>
+        <li>Amazon
+        <ul>
+        <li>Serge Salat: <a href="http://www.amazon.com/Cities-Forms-On-Sustainable-Urbanism/dp/2705681116">Cities and Forms: On Sustainable Urbanism</a></li>
+        <li>Spiro Kostof: <a href="http://www.amazon.com/The-City-Assembled-Elements-Through/dp/0821219308/ref=pd_sim_b_1?ie=UTF8&amp;refRID=19Z04ZAV2K0Z7784G86A">The City Assembled: The Elements of Urban Form Through History</a></li>
+        <li>Lydia Otero: <a href="http://www.amazon.com/La-Calle-Spatial-Conflicts-Southwest/dp/0816528888/ref=pd_sim_b_4?ie=UTF8&amp;refRID=0GDA25RHFDPF2QQDMR0C">La Calle: Spatial Conflicts and Urban Renewal in a Southwest City</a></li>
+        <li><a href="http://www.amazon.com/Battle-Life-Beauty-Earth-World-Systems/dp/0199898073/ref=la_B000AQ4JVU_1_3?ie=UTF8&amp;qid=1369782219&amp;sr=1-3">The Battle for the Life and Beauty of the Earth: A Struggle Between Two World-Systems</a></li>
+        <li><a href="http://www.amazon.com/Carfree-Design-Manual-J-Crawford/dp/9057270609/ref=pd_sim_b_1?ie=UTF8&amp;refRID=0R5CVQM8RRWQ5SM5QDM1">Carfree Design Manual</a></li>
+        <li><a href="http://www.amazon.com/exec/obidos/ASIN/9057270420/">Carfree Cities</a></li>
+        <li><a href="http://www.amazon.com/Human-Transit-Clearer-Thinking-Communities-ebook/dp/B008LVR1KM/ref=tmm_kin_title_0?ie=UTF8&amp;qid=1402344064&amp;sr=1-1">Human Transit: How Clearer Thinking about Public Transit Can Enrich Our Communities and Our Lives</a></li>
+        </ul></li>
+        </ul>
+        <p>Authors:</p>
+        <ul>
+        <li>Lewis Mumford</li>
+        <li>Peter Hall</li>
+        <li>Michael Batty</li>
+        <li>Saskia Sassen</li>
+        <li>Jan Gehl</li>
+        <li>Serge Salat</li>
+        <li>Nikos A. Salingaros</li>
+        <li>Spiro Kostof</li>
+        <li>Patrick Geddes</li>
+        </ul>
+        <h4 id="links-1">Links</h4>
+        <ul>
+        <li><a href="http://vimeo.com/88794901">Houdini Engine for Unity</a></li>
+        <li><a href="http://vterrain.org/Culture/BldCity/Proc/">Procedural Building Implementations</a></li>
+        </ul>
+        <h4 id="procedural-building">Procedural Building</h4>
+        <ul>
+        <li>ASSUMPTION: Buildings should be procedurally generated.</li>
+        </ul>
+        <p>For <code>Fierce Planet</code>, procedural building should develop a pseudo-realistic urban environment.</p>
+        <p>Procedure:</p>
+        <ul>
+        <li>Has floor, ceiling, walls, levels (staircases between them)</li>
+        <li>Quality of construction</li>
+        <li>Rendering (textures, materials)</li>
+        </ul>
+        <h5 id="v1">v1</h5>
+        <p>We assume:</p>
+        <ul>
+        <li><span class="math">\(1..m\)</span> motile <em>Agents</em> (<span class="math">\(Agents\)</span>)</li>
+        <li><span class="math">\(1..n\)</span> <em>Buildings</em> (<span class="math">\(Buildings\)</span>)</li>
+        <li>some <em>World</em> with <em>Terrain</em> with suitable heightmap characterstics for building</li>
+        <li>A <em>Centre point</em> (<span class="math">\(Origin = {x, y}\)</span>) (based on the origin of the world)</li>
+        <li>a series of rectangular <em>Cells</em> (determined by <em>World</em> patch size)</li>
+        <li>a <span class="math">\(WorldRadius\)</span>, the distance from the world to the boundaries</li>
+        </ul>
+        <p>Then we calculate, for any given <span class="math">\(cell\)</span>, the likelihood of growing a building at time <span class="math">\(t\)</span>:</p>
+        <ul>
+        <li>Whether agents exist in the cell at <span class="math">\(t\)</span>: <span class="math">\(\sum(agents_{cell_t}) &gt; 0\)</span></li>
+        <li>The Euclidean distance (<span class="math">\(RelativeEd\)</span>) of the cell from the origin, relative to the boundary (<span class="math">\(WorldRadius\)</span>)</li>
+        <li>The building-to-agent ratio (<span class="math">\(baRatio\)</span>) of the <em>World</em></li>
+        <li>The chance to build as a product of the Euclidean distance and 1 minus the ratio (<span class="math">\(ChanceToBuild = RelativeEd (1 - baRatio)\)</span>)</li>
+        </ul>
+        <p>In Ruby pseudo-code:</p>
+        <pre class="sourceCode ruby"><code class="sourceCode ruby">
+        agents_at_cell = cell.agents.length
+        <span class="kw">if</span> (agents_at_cell &gt; <span class="dv">0</span>) 
+            ed = (cell.x - origin.x + cell.y - origin.y).abs
+            relative_ed = (euclidean_distance / world_radius).abs
+            ba_ratio = buildings.length / agents.length
+            chance_to_build = relative_ed * (<span class="dv">1</span> - ba_ratio)
+        <span class="kw">end</span>
+        <span class="kw">if</span> (rand() &lt; chance_to_build)
+            createBuilding()
+        <span class="kw">end</span></code></pre>
+        <h5 id="v2-an-agent-based-procedural-city-engine">v2: An agent-based procedural city engine</h5>
+        <ul>
+        <li>Focus on modularity - different urban forms &amp; morphologies</li>
+        <li>Types:
+        <ul>
+        <li>Chaotic</li>
+        <li>Geometric</li>
+        </ul></li>
+        <li>Principles:
+        <ul>
+        <li>Respect geography:
+        <ul>
+        <li>Terrain gradient</li>
+        <li>Sea level</li>
+        <li>Ground surface - habitable status indicator?
+        <ul>
+        <li>Rock</li>
+        <li>Forest</li>
+        <li>Field</li>
+        <li>Marsh</li>
+        <li>Wetlands</li>
+        <li>Desert</li>
+        </ul></li>
+        <li>Proximity to necessities:
+        <ul>
+        <li>Water</li>
+        <li>Food</li>
+        </ul></li>
+        </ul></li>
+        <li>Construction technologies
+        <ul>
+        <li>Materials
+        <ul>
+        <li>Timber (and quality)</li>
+        <li>Metals</li>
+        </ul></li>
+        <li>Tools</li>
+        <li>Know-how (design)</li>
+        <li>Cultural preferences</li>
+        </ul></li>
+        </ul></li>
+        <li>Agent activity
+        <ul>
+        <li>Repeated traversal: creates pathways, trails, roads</li>
+        <li>Evolutionary movement - improved strategies</li>
+        </ul></li>
+        <li>Vehicles - technology</li>
+        </ul>
+        <h6 id="references">References</h6>
+        <ul>
+        <li><a href="http://www.shamusyoung.com/twentysidedtale/?p=2940">Procedural City, Part 1: Introduction</a></li>
+        <li><a href="http://learningthreejs.com/blog/2013/08/02/how-to-do-a-procedural-city-in-100lines/">How to Do a Procedural City in 100 Lines</a></li>
+        <li><a href="http://graphics.ethz.ch/Downloads/Publications/Papers/2001/p_Par01.pdf">Procedural Modeling of Cities</a></li>
+        <li><a href="http://www.vision.ee.ethz.ch/~pmueller/documents/procedural_modeling_of_cities__siggraph2001.pdf"></a></li>
+        </ul>
+        <h2 id="statistics">Statistics</h2>
+        <p>Minimally must consider:</p>
+        <ul>
+        <li>Net Migration
+        <ul>
+        <li>Immigration</li>
+        <li>Emigration</li>
+        </ul></li>
+        <li>Life expectancy</li>
+        <li>Fertility rates</li>
+        <li>Child morbidity</li>
+        </ul>
+        <p>Also consider DBPedia sources (TODO: what are common spatial fields?).</p>
+        <h3 id="indicators">Indicators</h3>
+        <ul>
+        <li><a href="http://en.wikipedia.org/wiki/Global_City">Global City</a>
+        <ul>
+        <li>GaWC</li>
+        <li>Global Cities Index</li>
+        <li>Global Economic Power Index</li>
+        <li>Global Power City Index</li>
+        <li>The Wealth Report</li>
+        <li>Global City Competitiveness Index</li>
+        </ul></li>
+        </ul>
+        <h4 id="landscape">Landscape</h4>
+        <ul>
+        <li><a href="https://docs.unrealengine.com/latest/INT/Engine/Landscape/Materials/index.html#landscape-specificmaterialnodes">Landscape Materials</a></li>
+        <li><a href="https://forums.epicgames.com/threads/915737-Landscape-and-Textures">Landscape and Textures</a></li>
+        <li><a href="https://wiki.unrealengine.com/Landscape_-_Sizes_and_Height_Guide">Sizes and Height Guide</a></li>
+        <li><a href="http://udn.epicgames.com/Three/TerrainAlphamaps.html">Terrain Alphamaps</a></li>
+        <li><a href="https://forums.unrealengine.com/showthread.php?3884-Heightmap-DTM-Landscape-Formats">Heightmap DTM Landscape Formats</a></li>
+        <li><a href="http://scrawkblog.com/2013/02/05/using-dem-data-to-create-height-maps/">Using DEM data to create height maps</a></li>
+        <li><a href="http://forum.world-machine.com/index.php?topic=1299.0">Importing DEM into World Machine</a></li>
+        <li><a href="http://www.world-machine.com/World%20Machine%20Help.pdf">WORLD MACHINE USERS GUIDE</a></li>
+        <li><a href="https://forums.unrealengine.com/showthread.php?1265-Tutorial-My-Workflow-for-Creating-Terrain">My Workflow for Creating Terrain</a></li>
+        <li><a href="https://www.youtube.com/watch?v=K9WTKK9f1b8">Unreal Engine - Getting World Machine Terrains in your game!</a></li>
+        <li><a href="https://www.youtube.com/watch?v=4SQPzgzAsfI">Unreal Engine 4: Terrains with World Machine &amp; Material Function Tutorial</a></li>
+        <li><a href="https://wiki.unrealengine.com/Using_Weightmaps_to_texture_a_Landscape">Using Weightmaps to texture a Landscape</a></li>
+        <li><a href="https://wiki.unrealengine.com/Landscape_Tool_-_Video">Landscape Tool</a></li>
+        <li><a href="http://www.world-machine.com/about.php?page=features">World Machine</a></li>
+        </ul>
+        <pre><code>
+        gdal_translate -scale 0 2470 0 255 -outsize 200 200 -of PNG syd2.tif syd.png
+        
+        gdal_translate -scale 0 400 0 65535 -ot UInt16 -outsize 1601 1601 -of ENVI syd2.tif syd2.bin
+        </code></pre>
+        <h3 id="world-machine">World Machine</h3>
+        <h2 id="artwork">Artwork</h2>
+        <ul>
+        <li><a href="http://gametextures.com">Game Textures</a></li>
+        </ul>
+        <h2 id="interface-design">Interface Design</h2>
+        <h3 id="inputs">Inputs</h3>
+        <h4 id="setup-inputs">Setup inputs:</h4>
+        <ul>
+        <li>Social
+        <ul>
+        <li>Population</li>
+        <li>Immigration / emigration / net migration rates</li>
+        <li>Fertility rate</li>
+        </ul></li>
+        <li>Geography
+        <ul>
+        <li>Terrain</li>
+        <li>Settlement area (bounds)</li>
+        </ul></li>
+        </ul>
+        <h4 id="simulation-actions">Simulation Actions:</h4>
+        <ul>
+        <li>Load world</li>
+        <li>Play / Pause</li>
+        <li>Restart</li>
+        <li>Step</li>
+        </ul>
+        <h4 id="viewing-actions">Viewing Actions:</h4>
+        <ul>
+        <li>Zoom</li>
+        <li>Pan</li>
+        <li>View (Agent / Top / Isometric)</li>
+        </ul>
+        <h4 id="visibility-toggles">Visibility toggles:</h4>
+        <ul>
+        <li>Landscape</li>
+        <li>Agents</li>
+        <li>Agent trails</li>
+        <li>Buildings - built environment</li>
+        <li>Networks</li>
+        <li>Cells</li>
+        <li>Grid</li>
+        </ul>
+        <h4 id="interactions">Interactions:</h4>
+        <ul>
+        <li>Rate of Time</li>
+        </ul>
+        <h4 id="built-environment-1">Built Environment:</h4>
+        <p>Components:</p>
+        <ul>
+        <li>Stocks
+        <ul>
+        <li>Building types:
+        <ul>
+        <li>Housing</li>
+        <li>Transport</li>
+        <li>Environment</li>
+        <li>Health</li>
+        <li>Finance</li>
+        <li>Commerce</li>
+        <li>Governance</li>
+        <li>Sport</li>
+        <li>Education</li>
+        <li>Culture</li>
+        </ul></li>
+        </ul></li>
+        <li>Flows (movement)
+        <ul>
+        <li>Human transport
+        <ul>
+        <li>Roads
+        <ul>
+        <li>Lanes</li>
+        <li>Streets</li>
+        <li>Major roads</li>
+        <li>Freeways</li>
+        <li>Highways</li>
+        </ul></li>
+        <li>Paths
+        <ul>
+        <li>Walking</li>
+        <li>Bike</li>
+        </ul></li>
+        <li>Nature strips</li>
+        <li>Gutters</li>
+        <li>Drains</li>
+        <li>Car parks</li>
+        <li>Train lines</li>
+        <li>Tram lines</li>
+        <li>Busways</li>
+        <li>Bridges</li>
+        <li>Tunnels</li>
+        <li>Overpasses</li>
+        <li>Roundabouts</li>
+        <li>Stops, stations</li>
+        </ul></li>
+        <li>Other transport
+        <ul>
+        <li>Waterways</li>
+        <li>Drains</li>
+        <li>Sewers</li>
+        <li>Power lines</li>
+        <li>Water pipes</li>
+        <li>Telecommunication cables</li>
+        </ul></li>
+        </ul></li>
+        </ul>
+        <p>Distinctions:</p>
+        <ul>
+        <li>Ownership
+        <ul>
+        <li>Public</li>
+        <li>Private</li>
+        </ul></li>
+        <li>Conditions of construction
+        <ul>
+        <li>Financial capital availability</li>
+        <li>Technological capacity</li>
+        <li>Demand</li>
+        <li>Regulatory framework</li>
+        <li>Legacy environment</li>
+        </ul></li>
+        </ul>
+        <h3 id="output">Output</h3>
+        <ul>
+        <li>Number of Agents (Population)</li>
+        <li>Average life of agents (Longevity)</li>
+        <li>Population density</li>
+        <li>Immigration / emigration / net migration</li>
+        <li>Fertility rate</li>
+        <li>Size of network</li>
+        <li>Number of buildings (housing capacity?)</li>
+        </ul>
+        <p>Hypothetical outputs:</p>
+        <ul>
+        <li>Environmental sustainability</li>
+        <li>Diversity</li>
+        <li>Economic output</li>
+        <li>Political stability</li>
+        </ul>
+        <h1 id="addenda">Addenda</h1>
+        <h2 id="generating-this-document">Generating this document</h2>
+        <p>To generate HTML of this guide:</p>
+        <!-- ../js/MathJax/unpacked/MathJax.js -->
+        <pre><code>pandoc -s -S --toc --toc-depth=2 --mathjax --bibliography=fp.bib --template=templates/bootstrap --css=../css/pandoc-bootstrap.css notes.md -o output/notes.html &amp;&amp; open output/notes.html</code></pre>
+        <p>To generate a PDF of this guide:</p>
+        <pre><code>pandoc -s -S --toc --bibliography=fp.bib notes.md -o output/notes.pdf &amp;&amp; open output/notes.pdf</code></pre>
+        <h3 id="relevant-references">Relevant references</h3>
+        <ul>
+        <li><a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics">WikiBooks:LaTeX/Mathematics</a></li>
+        <li><a href="http://johnmacfarlane.net/pandoc/README.html">Pandoc</a></li>
+        <li><a href="http://getbootstrap.com/">Bootstrap</a>
+        <ul>
+        <li><a href="http://getbootstrap.com/components/">Components</a></li>
+        </ul></li>
+        <li><a href="http://www.mathjax.org/">MathJax</a></li>
+        </ul>
+        <p>General document editing links: - <a href="http://drz.ac/2013/01/03/blogging-with-math/">Blogging with math</a> - <a href="http://stackoverflow.com/questions/4425198/markdown-target-blank">markdown target=“_blank”</a></p>
+        <h2 id="importing-tile-maps-into-3d-engines">Importing tile maps into 3D Engines</h2>
+        <p>Reference:</p>
+        <ul>
+        <li><a href="http://alastaira.wordpress.com/2013/11/12/importing-dem-terrain-heightmaps-for-unity-using-gdal/">Importing DEM into Unity</a></li>
+        <li><a href="http://forum.unity3d.com/threads/23851-importing-real-maps-(DEMs)-into-unity">Unity Notes</a></li>
+        </ul>
+        <p>Download <code>GDAL</code> utilities:</p>
+        <ul>
+        <li><a href="http://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries">General</a></li>
+        <li><a href="http://www.kyngchaos.com/software:frameworks">Mac</a></li>
+        <li><a href="http://www.gdal.org/gdal_translate.html">GDAL Docs</a></li>
+        <li><a href="https://github.com/dwtkns/gdal-cheat-sheet">GDAL Cheat Sheet</a></li>
+        </ul>
+        <p>Download tile maps from:</p>
+        <ul>
+        <li><a href="http://gdex.cr.usgs.gov/gdex/">Global Data Explorer</a></li>
+        <li><a href="http://dwtkns.com/srtm/">SRTM Tile Mapper</a></li>
+        <li><a href="http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/Australia/">USGS</a></li>
+        <li><a href="http://ws.csiss.gmu.edu/DEMExplorer/">DEM Explorer</a></li>
+        </ul>
+        <p>Merge multiple tiles (for Melbourne):</p>
+        <pre><code>gdal_merge.py -o Melbourne.hgt S38E144.hgt S38E145.hgt S39E144.hgt S39E145.hgt</code></pre>
+        <p>Translate to a TIF (DEM format):</p>
+        <pre><code>gdal_translate Melbourne.hgt Melbourne.tif</code></pre>
+        <p>Prepare for <code>Unity</code>:</p>
+        <pre><code>gdal_translate -ot UInt16 -scale -of ENVI -outsize 1025 1025 Melbourne.hgt Melbourne.raw</code></pre>
+        <p>Miscellaneous, from the <a href="https://github.com/dwtkns/gdal-cheat-sheet">GDAL Cheat Sheet</a></p>
+        <pre><code>gdal_merge.py -co &quot;PHOTOMETRIC=RGB&quot; -separate LC81690372014137LGN00_B{4,3,2}.tif -o LC81690372014137LGN00_rgb.tif
+        
+        gdaldem hillshade -of PNG S34E151.tif hillshade.png
+        
+        gdaldem color-relief S34E151.tif ramp.txt color-relief.tif
+        gdaldem color-relief -of PNG S34E151.tif ramp.txt color-relief.png
+        
+        
+        gdaldem slope S34E151.tif slope.tif 
+        
+        gdaldem color-relief slope.tif ramp2.txt slopeshade.tif
+        
+        gdaldem hillshade -of PNG slopeshade.tif hillshade.png</code></pre>
+        <h3 id="prepare-for-unreal">Prepare for <code id="terrain_unreal">Unreal</code></h3>
+        <p>Swapping little-endian to big-endian in Ruby <a href="http://stackoverflow.com/questions/16077885/how-to-convert-to-big-endian-in-ruby">from stackoverflow</a>. Alse see <a href="http://www.ruby-doc.org/core-2.1.2/String.html#method-i-unpack">Ruby String#unpack reference</a>.</p>
+        <pre class="sourceCode ruby"><code class="sourceCode ruby">
+        f = <span class="dt">File</span>.new(<span class="st">&quot;/Users/liam/Downloads/Melbourne.raw&quot;</span>)
+        bs = f.read()
+        bsr = bs.unpack(<span class="st">&quot;s&lt;*&quot;</span>).pack(<span class="st">&quot;s&gt;*&quot;</span>)
+        f2 = <span class="dt">File</span>.new(<span class="st">&quot;/Users/liam/Downloads/Melbourne2.raw&quot;</span>, <span class="st">&quot;w+&quot;</span>)
+        f2.write(bsr)</code></pre>
+        <h3 id="terrain_references">General Terrain mapping references</h3>
+        <ul>
+        <li><a href="https://lta.cr.usgs.gov/SRTM2">USGS Site: SRTM</a>
+        <ul>
+        <li><a href="http://dds.cr.usgs.gov/srtm/version2_1/Documentation/Quickstart.pdf">Quickstart</a></li>
+        <li><a href="http://en.wikipedia.org/wiki/Shuttle_Radar_Topography_Mission">Wikipedia</a></li>
+        </ul></li>
+        <li><a href="http://www.ga.gov.au/metadata-gateway/metadata/record/gcat_66006">Example data</a></li>
+        <li><a href="http://www.webgis.com/srtm3.html">WebGIS</a></li>
+        <li><a href="http://dds.cr.usgs.gov/srtm/version2_1/Documentation/Quickstart.pdf">Quickstart Guide</a></li>
+        <li>Miscellaneous
+        <ul>
+        <li><a href="http://stackoverflow.com/questions/357415/how-to-read-nasa-hgt-binary-files" class="uri">http://stackoverflow.com/questions/357415/how-to-read-nasa-hgt-binary-files</a></li>
+        <li><a href="http://www.soi.city.ac.uk/~jwo/landserf/landserf230/doc/howto/srtm.html" class="uri">http://www.soi.city.ac.uk/~jwo/landserf/landserf230/doc/howto/srtm.html</a></li>
+        <li><a href="http://lists.osgeo.org/pipermail/gdal-dev/2011-November/030817.html" class="uri">http://lists.osgeo.org/pipermail/gdal-dev/2011-November/030817.html</a></li>
+        <li><a href="http://vterrain.org/Elevation/global.html" class="uri">http://vterrain.org/Elevation/global.html</a></li>
+        </ul></li>
+        <li><a href="http://www.world-machine.com/">World Machine</a></li>
+        </ul>
+        <div class="references">
+        <h2 id="bibliography" class="unnumbered">Bibliography</h2>
+        <p>Huitt, William, and S Cain. 2005. “An Overview of the Conative Domain.” <em>Educational Psychology Interactive</em>, 1–20.</p>
+        </div>
+      </div>
+      <div class="col-md-3" >
+        <div class="fp-docs-sidebar" data-spy="affix" data-offset-top="200" data-offset-bottom="0">
+                  <div id="TOC">
+          <ul>
+          <li><a href="#overview">Overview</a></li>
+          <li><a href="#components">Components</a><ul>
+          <li><a href="#world">World</a></li>
+          <li><a href="#cell">Cell</a></li>
+          <li><a href="#agents">Agents</a></li>
+          <li><a href="#social_system">Social Systems</a></li>
+          <li><a href="#place">Place</a></li>
+          <li><a href="#culture">Cultures</a></li>
+          <li><a href="#institutions">Institutions</a></li>
+          <li><a href="#built-environment">Built environment</a></li>
+          <li><a href="#statistics">Statistics</a></li>
+          <li><a href="#artwork">Artwork</a></li>
+          <li><a href="#interface-design">Interface Design</a></li>
+          </ul></li>
+          <li><a href="#addenda">Addenda</a><ul>
+          <li><a href="#generating-this-document">Generating this document</a></li>
+          <li><a href="#importing-tile-maps-into-3d-engines">Importing tile maps into 3D Engines</a></li>
+          </ul></li>
+          </ul>
+          </div>
+                </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="../js/docs/jquery.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../js/docs/bootstrap.min.js"></script>
+
+    <!-- Convert links to target="_blank". Taken from: http://stackoverflow.com/questions/4425198/markdown-target-blank -->
+    <script type="text/javascript">
+      <!-- Double dollar sign because of Pandoc's processing template language -->
+      $(document.links).filter(function() {
+        return this.hostname != window.location.hostname;
+      }).attr('target', '_blank');
+    </script>
+
+
+
+</body>
+</html>
+

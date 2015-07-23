@@ -1,5 +1,5 @@
 require.config({
-    baseUrl: '../js',
+    baseUrl: "../js",
     paths: {
         jquery: "utils/jquery"
     },
@@ -15,9 +15,9 @@ require.config({
         "objects/Mirror": [ "three" ],
         "objects/water-material": { exports: "THREE.Water", deps: [ "three", "objects/Mirror" ] },
         "loaders/TerrainLoader": { deps: [ "three" ] },
-        "controls/TrackballControls": {  deps: [ "three" ] },
-        "controls/OrbitControls": {  deps: [ "three" ] },
-        "controls/PointerLockControls": {  deps: [ "three" ] },
+        "controls/TrackballControls": { deps: [ "three" ] },
+        "controls/OrbitControls": { deps: [ "three" ] },
+        "controls/PointerLockControls": { deps: [ "three" ] }
     }
 });
 define( [
@@ -36,7 +36,7 @@ define( [
     "controls/THREEx.KeyboardState",
     "controls/TrackballControls",
     "controls/OrbitControls",
-    "controls/PointerLockControls",
+    "controls/PointerLockControls"
     ], function( $, THREE, _, astar ) {
     "use strict";
 
@@ -45,14 +45,16 @@ define( [
      */
     $.urlParam = function( name ){
         var results = new RegExp( "[ \\?& ]" + name + "=( [ ^&# ]* )" ).exec( window.location.href );
-        if ( results === null )
+        if ( results === null ) {
            return undefined;
-        else
+        }
+        else {
            return results[ 1 ] || 0;
+        }
     };
 
     $.sign = function( x ) {
-        return typeof x === 'number' ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
+        return typeof x === "number" ? x ? x < 0 ? -1 : 1 : x === x ? 0 : NaN : NaN;
     };
 
 
@@ -80,7 +82,7 @@ define( [
         this.controls = null;
         this.gui = null;
         this.chart = null;
-        this.ray = new THREE.Raycaster( new THREE.Vector3( 0,0,0 ), new THREE.Vector3( 0,0,0 ) );
+        this.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
         this.skyBox = null;
         this.waterMesh = null;
         this.water = null;
@@ -149,10 +151,10 @@ define( [
                     var networkGeometry = new THREE.Geometry();
                     var len = vertices.length;
                     var spline = new THREE.Spline( vertices );
-                    var n_sub = fp.appConfig.displayOptions.networkCurvePoints;
+                    var subN = fp.appConfig.displayOptions.networkCurvePoints;
                     var position, index;
-                    for ( var i = 0; i < len * n_sub; i ++ ) {
-                        index = i / ( len * n_sub );
+                    for ( var i = 0; i < len * subN; i++ ) {
+                        index = i / ( len * subN );
                         position = spline.getPoint( index );
                         networkGeometry.vertices[ i ] = new THREE.Vector3( position.x, position.y, position.z );
                     }
@@ -171,8 +173,9 @@ define( [
                         networkGeometry.vertices = vertices;
                         return networkGeometry;
                     }
-                    else
+                    else {
                         return this.friendNetworkGeometryCurved( vertices );
+                    }
                 };
 
                 /**
@@ -196,11 +199,13 @@ define( [
                  * @return {THREE.Line}
                  */
                 this.renderFriendNetwork = function() {
-                    if ( !fp.AppState.runSimulation || !fp.appConfig.displayOptions.networkShow )
+                    if ( !fp.AppState.runSimulation || !fp.appConfig.displayOptions.networkShow ) {
                         return;
+                    }
 
-                    if ( !_.isUndefined( this.networkMesh ) )
+                    if ( !_.isUndefined( this.networkMesh ) ) {
                         fp.scene.remove( this.networkMesh );
+                    }
                     if ( fp.appConfig.displayOptions.networkCurve ) {
                         this.networkMesh = new THREE.Line(
                             this.friendNetworkGeometry( this.generateFriendNetworkVertices() ),
@@ -234,8 +239,8 @@ define( [
                         // either agent's existing connections
                         link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
                         link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
-                        if ( this.links.indexOf( link1 ) == -1 &&
-                             this.links.indexOf( link2 ) == -1 ) {
+                        if ( this.links.indexOf( link1 ) === -1 &&
+                             this.links.indexOf( link2 ) === -1 ) {
                             this.links.push( link1 );
                         }
                     }
@@ -244,8 +249,8 @@ define( [
                         // either agent's existing connections
                         link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
                         link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
-                        if ( this.links.indexOf( link1 ) == -1 &&
-                             this.links.indexOf( link2 ) == -1 ) {
+                        if ( this.links.indexOf( link1 ) === -1 &&
+                             this.links.indexOf( link2 ) === -1 ) {
                             this.links.push( link1 );
                         }
                     }
@@ -254,8 +259,8 @@ define( [
                         // either agent's existing connections
                         link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
                         link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
-                        if ( this.links.indexOf( link1 ) == -1 &&
-                             this.links.indexOf( link2 ) == -1 ) {
+                        if ( this.links.indexOf( link1 ) === -1 &&
+                             this.links.indexOf( link2 ) === -1 ) {
                             this.links.push( link1 );
                         }
                     }
@@ -268,13 +273,16 @@ define( [
                  */
                 this.enlistAgent = function( agent ) {
                     var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
-                    if ( _.isUndefined( agents ) )
+                    if ( _.isUndefined( agents ) ) {
                         return;
-                    if ( agents.length <= 1 )
+                    }
+                    if ( agents.length <= 1 ) {
                         return;
+                    }
                     for ( var i = 0; i < agents.length; i++ ) {
-                        if ( agents[ i ] == agent )
+                        if ( agents[ i ] === agent ) {
                             continue;
+                        }
                         var otherAgent = agents[ i ];
                         this.establishLink( agent, otherAgent );
                     }
@@ -284,8 +292,10 @@ define( [
                  * Updates the friend network at runtime, by building and rendering the network.
                  */
                 this.updateAgentNetworkRendering = function() {
-                    if ( !fp.AppState.runSimulation )
+                    if ( !fp.AppState.runSimulation ) {
                         return;
+                    }
+
                     this.renderFriendNetwork();
                 };
 
@@ -295,8 +305,9 @@ define( [
              * Creates an initial set of agents.
              */
             this.createInitialAgentPopulation = function() {
-                for ( var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++ )
+                for ( var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++ ) {
                     this.agents.push( this.createAgent() );
+                }
                 this.buildAgentParticleSystem();
             };
 
@@ -317,7 +328,7 @@ define( [
                 position.z = z;
 
                 // Allow for the class to be overridden
-                var agent = new fp.agentNetwork.agentClass();
+                var agent = new fp.agentNetwork.AgentClass();
                 agent.setPosition( position );
                 agent.setRandomDirection();
 
@@ -332,7 +343,6 @@ define( [
              *
              * @return {coordinate}
              */
-            this.counter  = 0;
             this.randomPointForAgent = function() {
                 var extent = fp.appConfig.terrainOptions.gridExtent;
                 var initExtent = ( fp.appConfig.agentOptions.initialExtent / 100 ) * extent * fp.appConfig.terrainOptions.multiplier;
@@ -356,7 +366,7 @@ define( [
                 }
 
                 var boundary = ( extent / 2 ) * fp.appConfig.terrainOptions.multiplier;
-                while ( ( x <  - boundary || x > boundary ) || ( z <  - boundary || z > boundary ) ) {
+                while ( ( x < -boundary || x > boundary ) || ( z < -boundary || z > boundary ) ) {
                     point = this.randomPointForAgent();
                     x = point.x;
                     z = point.z;
@@ -379,12 +389,12 @@ define( [
              */
             this.updateAgentShader = function() {
                 if ( !_.isNull( this.agentParticleSystemAttributes ) &&
-                    typeof( this.agentParticleSystemAttributes.color ) !== "undefined" &&
+                    typeof ( this.agentParticleSystemAttributes.color ) !== "undefined" &&
                     this.agentParticleSystemAttributes.color.value.length > 0 ) {
-                    for( var i = 0; i < this.agents.length; i ++ ) {
+                    for( var i = 0; i < this.agents.length; i++ ) {
+                        var agent = this.agents[ i ];
                         if ( fp.appConfig.displayOptions.coloriseAgentsByHealth ) {
-                            var agent = this.agents[ i ];
-                            var health = this.agents[ i ].health;
+                            var health = agent.health;
                             var r = 0;
                             var g = fp.appConfig.displayOptions.dayShow ? 0.0 : 1.0;
                             var b = fp.appConfig.displayOptions.dayShow ? 1.0 : 0.0;
@@ -396,8 +406,8 @@ define( [
                             this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( col );
                         }
                         else {
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[ i ].color );
+                            this.agentParticleSystemAttributes.alpha.value[ i ] = ( agent.health * 0.0075 ) + 0.025;
+                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agent.color );
                         }
                     }
                     this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
@@ -408,24 +418,27 @@ define( [
              * Updates all agents belonging to this network.
              */
             this.updateAgents = function() {
-                if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ) )
+                if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ) ) {
                     return;
+                }
 
                 var agents = this.agents;
-                if ( fp.appConfig.agentOptions.shuffle )
+                if ( fp.appConfig.agentOptions.shuffle ) {
                     agents = _.shuffle( this.agents );
+                }
 
                 for ( var i = 0; i < agents.length; i++ ) {
-                    var agent =  agents[ i ];
+                    var agent = agents[ i ];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
                     var timeToMove = Math.floor( ( i / this.agents.length ) * fp.timescale.framesToYear );
                     var interval = fp.timescale.frameCounter % fp.timescale.framesToYear;
-                    if ( timeToMove == interval )  {
+                    if ( timeToMove === interval ) {
                         var underConstruction = agent.build() || agent.buildRoad();
 
-                        if ( underConstruction )
+                        if ( underConstruction ) {
                             continue;
+                        }
 
                         // No water around or home built? Move on...
                         agent.evaluateDirection();
@@ -444,8 +457,9 @@ define( [
                             fp.trailNetwork.trails[ ai ] = ( fp.trailNetwork.trails[ ai ] ) ? fp.trailNetwork.trails[ ai ] + 1 : 1;
                         }
 
-                        if ( agent.grounded )
+                        if ( agent.grounded ) {
                             agent.perturbDirection();
+                        }
 
                         agent.updateTick();
                     }
@@ -456,7 +470,8 @@ define( [
                 }
 
                 if ( !_.isNull( this.particles ) ) {
-                    for ( var offset = 0, k = 0; i < agents.length; k++ ) {
+                    for ( var k = 0; i < agents.length; k++ ) {
+                    // for ( var offset = 0, k = 0; i < agents.length; k++ ) {
                         // Must be the original unshuffled collection
                         var particleAgent = this.agents[ k ];
                         var posVec = fp.terrain.transformPointFromPlaneToSphere( particleAgent.position, fp.terrain.wrappedPercent );
@@ -491,7 +506,8 @@ define( [
                 */
                 // r071 and earlier
                 var agentGeometry = new THREE.Geometry();
-                for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
+                // for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
+                for (var i = 0; i < this.agents.length - 1; i++ ) {
                     var agent = this.agents[i];
                     var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
                     agentGeometry.vertices.push( posVec );
@@ -536,17 +552,18 @@ define( [
                 };
 
                 var discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/stickman_180.png" );
-                if ( !fp.appConfig.agentOptions.useStickman )
+                if ( !fp.appConfig.agentOptions.useStickman ) {
                     discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/disc.png" );
+                }
                 discTexture.minFilter = THREE.LinearFilter;
 
                 // uniforms
                 var agentParticleSystemUniforms = {
-                    texture:   { type: "t", value: discTexture },
-                    size:      { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )}
+                    texture: { type: "t", value: discTexture },
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )}
                 };
 
-                for( var i = 0; i < agentGeometry.vertices.length; i ++ ) {
+                for( var i = 0; i < agentGeometry.vertices.length; i++ ) {
                     this.agentParticleSystemAttributes.alpha.value[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
                     this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[ i ].color );
                 }
@@ -556,7 +573,7 @@ define( [
                     size: fp.appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
                     attributes: this.agentParticleSystemAttributes,
-                    vertexShader:   fp.ShaderUtils.agentVertexShader(),
+                    vertexShader: fp.ShaderUtils.agentVertexShader(),
                     fragmentShader: fp.ShaderUtils.agentFragmentShader(),
                     sizeAttenuation: true,
                     fog: false,
@@ -580,7 +597,7 @@ define( [
                 this.updateAgentShader();
             };
 
-            this.agentClass = fp.Agent;
+            this.AgentClass = fp.Agent;
             this.agents = [ ];
             this.networks = [ ];
             this.networks.push( new this.AgentNetworkNetwork() );
@@ -735,7 +752,7 @@ define( [
                     position = building.highResMeshContainer.position,
                     vertices = firstFloor.geometry.vertices,
                     verticesOnBase = vertices.length;
-                for ( var i = 0; i < verticesOnBase / 2; i ++ ) {
+                for ( var i = 0; i < verticesOnBase / 2; i++ ) {
                     // Adjust for the vertex's rotation, and add its position
                     var point  = vertices[ i ].clone().applyMatrix4( firstFloor.matrix );//.add( position );
                     points.push( { x: point.x, y: point.z } );
@@ -776,7 +793,7 @@ define( [
                 if ( this.buildingHash[ fp.getIndex( building.lod.position.x, building.lod.position.z ) ] )
                     return true;
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
-                for ( var i = 0; i < this.networkJstsCache.length; i ++ ) {
+                for ( var i = 0; i < this.networkJstsCache.length; i++ ) {
                     var b = this.networkJstsCache[ i ];
                     if ( b.intersects( buildingGeometry ) ) {
                         return true;
@@ -804,7 +821,7 @@ define( [
             this.updateBuildings = function() {
                 if ( !fp.AppState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
                     return;
-                for ( var i = 0; i < fp.buildingNetwork.buildings.length; i ++ ) {
+                for ( var i = 0; i < fp.buildingNetwork.buildings.length; i++ ) {
                     var building = fp.buildingNetwork.buildings[ i ];
                     var likelihoodToGrow = Math.random();
                     if ( likelihoodToGrow > fp.likelihoodOfGrowth() )
@@ -952,7 +969,7 @@ define( [
                         if ( y != yLast ) {
                             var yDiff = y - yLast;
                             var shift = i - lastChange + 1;
-                            for ( k = lastChange + 1; k < i; k ++ ) {
+                            for ( k = lastChange + 1; k < i; k++ ) {
                                 var change = yDiff * ( (k - lastChange ) / shift );
                                 point.y += change;
                             }
@@ -1506,22 +1523,22 @@ define( [
                 } );
 
                 var i, geometry = new THREE.Geometry();
-                for ( i = 0; i < fp.terrain.gridSize; i ++ ) {
+                for ( i = 0; i < fp.terrain.gridSize; i++ ) {
                     geometry.vertices.push( new THREE.Vector3( ccX, ccY, ccZ ) );
                     ccX += Math.round( cellSize );
                     ccZ = fp.getHeight( ccX, ccY ) + 1;
                 }
-                for ( i = 0; i < fp.terrain.gridSize; i ++ ) {
+                for ( i = 0; i < fp.terrain.gridSize; i++ ) {
                     geometry.vertices.push( new THREE.Vector3( ccX, ccY, ccZ ) );
                     ccY += Math.round( cellSize );
                     ccZ = fp.getHeight( ccX, ccY ) + 1;
                 }
-                for ( i = 0; i < fp.terrain.gridSize; i ++ ) {
+                for ( i = 0; i < fp.terrain.gridSize; i++ ) {
                     geometry.vertices.push( new THREE.Vector3( ccX, ccY, ccZ ) );
                     ccX -= Math.round( cellSize );
                     ccZ = fp.getHeight( ccX, ccY ) + 1;
                 }
-                for ( i = 0; i < fp.terrain.gridSize; i ++ ) {
+                for ( i = 0; i < fp.terrain.gridSize; i++ ) {
                     geometry.vertices.push( new THREE.Vector3( ccX, ccY, ccZ ) );
                     ccY -= Math.round( cellSize );
                     ccZ = fp.getHeight( ccX, ccY ) + 1;
@@ -1566,8 +1583,8 @@ define( [
                     fp.scene.add( this.cell );
                 }
                 var halfCell = Math.round( fp.terrain.gridSize / 2 );
-                for ( var i = arrayY, counter = 0; i < arrayY + fp.terrain.gridSize + 1; i ++ ) {
-                    for ( var j = arrayX; j < arrayX + fp.terrain.gridSize + 1; j ++, counter++ ) {
+                for ( var i = arrayY, counter = 0; i < arrayY + fp.terrain.gridSize + 1; i++ ) {
+                    for ( var j = arrayX; j < arrayX + fp.terrain.gridSize + 1; j++, counter++ ) {
                         var index = 3 * ( arrayDim * ( i - halfCell ) + ( j - halfCell ));
                         this.cell.geometry.vertices[ counter ] = new THREE.Vector3(
                             vertices[ index ], vertices[ index + 1 ], vertices[ index + 2 ] + fp.appConfig.agentOptions.terrainOffset
@@ -1697,7 +1714,7 @@ define( [
                     var percent = fp.terrain.wrappedPercent;
                     if ( percent > 0 ) {
                         var transformedVertices = [ ];
-                        for ( var i = 0; i < vertices.length; i ++ ) {
+                        for ( var i = 0; i < vertices.length; i++ ) {
                             transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ i ], percent ) );
                         }
                         roadGeom.vertices = transformedVertices;
@@ -1976,7 +1993,7 @@ define( [
                         var arrayX = x * fp.terrain.gridSize * 2;
                         var arrayY = y * fp.terrain.gridSize * 2;
                         for ( var i = arrayY; i < arrayY + ( fp.terrain.gridSize * 2 ); i += 2 ) {
-                            for ( var j = arrayX; j < arrayX + ( fp.terrain.gridSize * 2 ); j ++ ) {
+                            for ( var j = arrayX; j < arrayX + ( fp.terrain.gridSize * 2 ); j++ ) {
                                 var index = ( ( fp.terrain.gridPoints - 1 ) * i ) + j;
                                 if ( fp.terrain.plane.geometry.attributes.uv.array[ index ] ) {
                                     fp.terrain.plane.geometry.attributes.uv.array[ index ] = color;
@@ -2149,38 +2166,38 @@ define( [
                         building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
                     } );
                     // Alter roards
-                    for ( k = 0; k < fp.roadNetwork.planeVertices.length; k ++ ) {
+                    for ( k = 0; k < fp.roadNetwork.planeVertices.length; k++ ) {
                         transformedVertices = [ ];
                         vertices = fp.roadNetwork.planeVertices[ k ];
-                        for ( var m = 0; m < vertices.length; m ++ ) {
+                        for ( var m = 0; m < vertices.length; m++ ) {
                             transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ m ], percent ) );
                         }
                         fp.roadNetwork.networkMesh.children[ k ].geometry.vertices = transformedVertices;
                         fp.roadNetwork.networkMesh.children[ k ].geometry.verticesNeedUpdate = true;
                     }
                     // Alter paths
-                    for (var n = 0; n < fp.pathNetwork.networkMesh.children.length; n ++ ) {
+                    for (var n = 0; n < fp.pathNetwork.networkMesh.children.length; n++ ) {
                         transformedVertices = [ ];
                         vertices = fp.pathNetwork.networkMesh.children[ n ];
-                        for ( var o = 0; o < vertoces.length; o ++ ) {
+                        for ( var o = 0; o < vertoces.length; o++ ) {
                             transformedVertoces.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ o ], percent ) );
                         }
                         fp.pathNetwork.networkMesh.children[ n ].geometry.vertices = transformedVertices;
                         fp.pathNetwork.networkMesh.children[ n ].geometry.verticesNeedUpdate = true;
                     }
-                    for ( var p = 0; p < fp.agentNetwork.agents.length; p ++ ) {
+                    for ( var p = 0; p < fp.agentNetwork.agents.length; p++ ) {
                         var agent = fp.agentNetwork.agents[ p ];
                         nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
                         fp.agentNetwork.particles.geometry.vertices[ p ] = nv;
                     }
                     if ( !_.isNull( fp.agentNetwork.particles ) )
                         fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
-                    for ( var r = 0; r < fp.agentNetwork.networks.length; r ++ ) {
+                    for ( var r = 0; r < fp.agentNetwork.networks.length; r++ ) {
                         transformedVertices = [ ];
                         var network = fp.agentNetwork.networks[ r ];
                         if ( !_.isNull( network.networkMesh ) ) {
                             vertices = network.networkMesh.geometry.vertices;
-                            for ( var s = 0; s < vertices.length; s ++ ) {
+                            for ( var s = 0; s < vertices.length; s++ ) {
                                 transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ s ], percent ) );
                             }
                             network.networkMesh.geometry.vertices = transformedVertices;
@@ -3006,7 +3023,7 @@ define( [
 
                 if ( this.levels === 0 ) {
                     this.geometry.vertices[ offset ] = points[ 0 ];
-                    for ( i = 1; i < points.length; i ++ ) {
+                    for ( i = 1; i < points.length; i++ ) {
                         this.geometry.vertices[ offset + i * 2 - 1 ] = points[ i ];
                         this.geometry.vertices[ offset + i * 2 ] = points[ i ];
                     }
@@ -3014,14 +3031,14 @@ define( [
                     offset += points.length * 2;
                 }
 
-                for ( i = 0; i < points.length; i ++ ) {
+                for ( i = 0; i < points.length; i++ ) {
                     this.geometry.vertices[ offset + i * 2 ] = points[ i ];
                     this.geometry.vertices[ offset + i * 2 + 1 ] = new THREE.Vector3( points[ i ].x, height, points[ i ].z );
                 }
                 offset += points.length * 2;
 
                 this.geometry.vertices[ offset ] = new THREE.Vector3( points[ 0 ].x, height, points[ 0 ].z );
-                for ( i = 1; i < points.length; i ++ ) {
+                for ( i = 1; i < points.length; i++ ) {
                     this.geometry.vertices[ offset + i * 2 - 1 ] = new THREE.Vector3( points[ i ].x, height, points[ i ].z );
                     this.geometry.vertices[ offset + i * 2 ] = new THREE.Vector3( points[ i ].x, height, points[ i ].z );
                 }
@@ -3036,7 +3053,7 @@ define( [
                 // EXTRUDED SHAPE FOR NON-BOX SHAPED BUILDINGS
                 var shape = new THREE.Shape();
                 shape.moveTo( points[ 0 ].x, points[ 0 ].z );
-                for ( var i = 1; i < points.length; i ++ ) {
+                for ( var i = 1; i < points.length; i++ ) {
                     shape.lineTo( points[ i ].x, points[ i ].z );
                 }
                 shape.lineTo( points[ 0 ].x, points[ 0 ].z );
@@ -3090,7 +3107,7 @@ define( [
                 var windowPoints = shape.createPointsGeometry();
                 var windowOutline = new THREE.Line( windowPoints, this.lineMaterial );
 
-                for ( var i = 0; i < points.length; i ++ ) {
+                for ( var i = 0; i < points.length; i++ ) {
                     var previousPoint;
                     if ( i === 0 )
                         previousPoint = points[ points.length - 1 ];
@@ -3139,7 +3156,7 @@ define( [
                 var offset = fp.getOffset( this.levels, points.length );
                 var shape = new THREE.Shape();
                 shape.moveTo( points[ 0 ].x, points[ 0 ].z );
-                for ( var i = 1; i < points.length; i ++ )
+                for ( var i = 1; i < points.length; i++ )
                     shape.lineTo( points[ i ].x, points[ i ].z );
                 shape.lineTo( points[ 0 ].x, points[ 0 ].z );
                 var extrudeSettings = { amount: fp.appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
@@ -3306,7 +3323,7 @@ define( [
              */
             this.updateBuilding = function() {
                 if ( this.canAddFloor() ) {
-                    this.counter ++;
+                    this.counter++;
                     if ( this.counter % fp.appConfig.buildingOptions.riseRate === 0 || this.levels === 0 ) {
                         this.addFloor();
                     }
@@ -3323,7 +3340,7 @@ define( [
                     this.destroying = true;
                 }
                 else if ( this.destroying && this.levels > 0 ) {
-                    this.counter ++;
+                    this.counter++;
                     if ( this.counter % fp.appConfig.buildingOptions.riseRate === 0 ) {
                         this.removeFloor();
                     }
@@ -4742,7 +4759,7 @@ define( [
             return {
                 counter: 0,
                 setup: function() { /* console.log( "Default sim set up" ); */ },
-                tick: function()  { /* console.log( "Default sim tick: " + ( ++ this.counter )); */ }
+                tick: function()  { /* console.log( "Default sim tick: " + (++ this.counter )); */ }
             };
         };
 
@@ -5978,7 +5995,7 @@ define( [
     }
 
     var fp = new FiercePlanet();
-    if ( typeof( window ) !== "undefined" ) {
+    if ( typeof ( window ) !== "undefined" ) {
         window.FiercePlanet = FiercePlanet;
         window.fp = new FiercePlanet();
     }
