@@ -1914,6 +1914,7 @@ define( [
 
                 // Only use the shader material if we have variable heights
                 if ( fp.appConfig.terrainOptions.shaderUse ) {
+                    // Necessary? Maybe for Phong
                     geometry.computeVertexNormals();
                     fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
                 }
