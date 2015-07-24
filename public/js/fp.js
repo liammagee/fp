@@ -1261,6 +1261,7 @@ define( [
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
                     lights: true,
+                    fog: false,
                     transparent: true
 
                 } );
@@ -1907,7 +1908,8 @@ define( [
                     ),
                     lights: true,
                     fog: false,
-                    transparent: true
+                    // transparent: true,
+                    alphaTest: 0.5
                 } );
 
                 // Only use the shader material if we have variable heights
