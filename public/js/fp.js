@@ -5941,9 +5941,6 @@ define( [
                     `
                     #ifdef DOUBLE_SIDED
 
-                        //float isFront = float( gl_FrontFacing );
-                        //gl_FragColor.xyz *= isFront * vLightFront + ( 1.0 - isFront ) * vLightBack;
-
                        if ( gl_FrontFacing )
                            outgoingLight += diffuseColor.rgb * vLightFront + emissive;
                        else
