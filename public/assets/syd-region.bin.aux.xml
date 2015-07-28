@@ -9,8 +9,8 @@
     <MDI key="file_type">ENVI Standard</MDI>
     <MDI key="header_offset">0</MDI>
     <MDI key="interleave">bsq</MDI>
-    <MDI key="lines">1500</MDI>
-    <MDI key="samples">1500</MDI>
+    <MDI key="lines">400</MDI>
+    <MDI key="samples">400</MDI>
   </Metadata>
   <Metadata>
     <MDI key="AREA_OR_POINT">Area</MDI>

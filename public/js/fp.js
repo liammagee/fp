@@ -1854,8 +1854,8 @@ define( [
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
-                // var map = new THREE.ImageUtils.loadTexture( "../assets/syd2.bin" );
-                // var bmap = new THREE.ImageUtils.loadTexture( "../assets/syd2.bin" );
+                var map = new THREE.ImageUtils.loadTexture( "../assets/b2.png" );
+                var bmap = new THREE.ImageUtils.loadTexture( "../assets/b2.png" );
                 fp.terrain.dayTerrainUniforms = {
                     // Lambert settings
                     emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
