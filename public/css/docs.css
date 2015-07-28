@@ -38,10 +38,11 @@ body {
 }
 
 .sidebar-nav li a:hover {
-    color: rgba(87,87,87,0.2);
+    color: rgba(87,87,87,0.5);
 }
     .sidebar-nav li a {
         line-height: 30px;
+        color: #666666;
     }
 #page-content-wrapper {
 	/*position: fixed;*/

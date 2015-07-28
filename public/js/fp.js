@@ -1896,13 +1896,13 @@ define( [
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier + 1 }
                 };
                 fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial( {
-                    uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
+                    uniforms: fp.ShaderUtils.phongUniforms( fp.terrain.nightTerrainUniforms ),
                     attributes: terrainAttributes,
-                    vertexShader:   fp.ShaderUtils.lambertShaderVertex(
+                    vertexShader:   fp.ShaderUtils.phongShaderVertex(
                         fp.ShaderUtils.terrainVertexShaderParams(),
                         fp.ShaderUtils.terrainVertexShaderMain()
                     ),
-                    fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                    fragmentShader: fp.ShaderUtils.phongShaderFragment(
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
@@ -5830,6 +5830,28 @@ define( [
             },
 
             // LAMBERT SHADER OVERRIDE FOR SHADOWS
+
+            /**
+             * Returns an array of Lambert uniforms.
+             * @param  {Array} otherUniforms
+             * @return {Array} Merged array of uniforms
+             */
+            lambertUniforms: function( otherUniforms ) {
+
+                var uniforms = THREE.UniformsUtils.merge( [
+                        THREE.UniformsLib[ "common" ],
+                        THREE.UniformsLib[ "fog" ],
+                        THREE.UniformsLib[ "lights" ],
+                        THREE.UniformsLib[ "shadowmap" ],
+                        {
+                            "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
+                            "wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
+                        }
+                    ] );
+                return _.extend( uniforms, otherUniforms );
+
+            },
+
             /**
              * Generates a vertex shader for a Lambert shader.
              */
@@ -5972,24 +5994,171 @@ define( [
 
             },
 
+
+            // PHONG SHADER OVERRIDE FOR SHADOWS
+
             /**
              * Returns an array of Lambert uniforms.
              * @param  {Array} otherUniforms
              * @return {Array} Merged array of uniforms
              */
-            lambertUniforms: function( otherUniforms ) {
+            phongUniforms: function( otherUniforms ) {
 
                 var uniforms = THREE.UniformsUtils.merge( [
-                        THREE.UniformsLib[ "common" ],
-                        THREE.UniformsLib[ "fog" ],
-                        THREE.UniformsLib[ "lights" ],
-                        THREE.UniformsLib[ "shadowmap" ],
-                        {
-                            "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
-                            "wrapRGB"  : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
-                        }
-                    ] );
+                    THREE.UniformsLib[ "common" ],
+                    THREE.UniformsLib[ "aomap" ],
+                    THREE.UniformsLib[ "lightmap" ],
+                    THREE.UniformsLib[ "emissivemap" ],
+                    THREE.UniformsLib[ "bump" ],
+                    THREE.UniformsLib[ "normalmap" ],
+                    THREE.UniformsLib[ "fog" ],
+                    THREE.UniformsLib[ "lights" ],
+                    THREE.UniformsLib[ "shadowmap" ],
+
+                    {
+                        "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
+                        "specular" : { type: "c", value: new THREE.Color( 0x111111 ) },
+                        "shininess": { type: "f", value: 30 }
+                    }
+                ] );
                 return _.extend( uniforms, otherUniforms );
+
+            },
+
+            /**
+             * Generates a vertex shader for a Lambert shader.
+             */
+            phongShaderVertex: function ( customParams, customCode ) {
+                var vertexShader = [
+                    customParams,
+
+                    "#define PHONG",
+
+                    "varying vec3 vViewPosition;",
+
+                    "#ifndef FLAT_SHADED",
+
+                    "   varying vec3 vNormal;",
+
+                    "#endif",
+
+                    THREE.ShaderChunk[ "common" ],
+                    THREE.ShaderChunk[ "uv_pars_vertex" ],
+                    THREE.ShaderChunk[ "uv2_pars_vertex" ],
+                    THREE.ShaderChunk[ "envmap_pars_vertex" ],
+                    THREE.ShaderChunk[ "lights_phong_pars_vertex" ],
+                    THREE.ShaderChunk[ "color_pars_vertex" ],
+                    THREE.ShaderChunk[ "morphtarget_pars_vertex" ],
+                    THREE.ShaderChunk[ "skinning_pars_vertex" ],
+                    THREE.ShaderChunk[ "shadowmap_pars_vertex" ],
+                    THREE.ShaderChunk[ "logdepthbuf_pars_vertex" ],
+
+
+                    `void main() {`,
+
+                    customCode,
+                    THREE.ShaderChunk[ "uv_vertex" ],
+                    THREE.ShaderChunk[ "uv2_vertex" ],
+                    THREE.ShaderChunk[ "color_vertex" ],
+
+                    THREE.ShaderChunk[ "morphnormal_vertex" ],
+                    THREE.ShaderChunk[ "skinbase_vertex" ],
+                    THREE.ShaderChunk[ "skinnormal_vertex" ],
+                    THREE.ShaderChunk[ "defaultnormal_vertex" ],
+
+                "#ifndef FLAT_SHADED", // Normal computed with derivatives when FLAT_SHADED
+
+                "   vNormal = normalize( transformedNormal );",
+
+                "#endif",
+
+                    THREE.ShaderChunk[ "morphtarget_vertex" ],
+                    THREE.ShaderChunk[ "skinning_vertex" ],
+                    THREE.ShaderChunk[ "default_vertex" ],
+                    THREE.ShaderChunk[ "logdepthbuf_vertex" ],
+
+                "   vViewPosition = - mvPosition.xyz;",
+
+                    THREE.ShaderChunk[ "worldpos_vertex" ],
+                    THREE.ShaderChunk[ "envmap_vertex" ],
+                    THREE.ShaderChunk[ "lights_phong_vertex" ],
+                    THREE.ShaderChunk[ "shadowmap_vertex" ],
+
+                "}"
+
+                ].join( "\n" );
+
+                return vertexShader;
+            },
+            phongShaderFragment: function ( customParams, customCode ) {
+
+                var fragmentShader = [
+
+                    customParams,
+
+                    "#define PHONG",
+
+                    "uniform vec3 diffuse;",
+                    "uniform vec3 emissive;",
+                    "uniform vec3 specular;",
+                    "uniform float shininess;",
+                    "uniform float opacity;",
+
+                    THREE.ShaderChunk[ "common" ],
+                    THREE.ShaderChunk[ "color_pars_fragment" ],
+                    THREE.ShaderChunk[ "uv_pars_fragment" ],
+                    THREE.ShaderChunk[ "uv2_pars_fragment" ],
+                    THREE.ShaderChunk[ "map_pars_fragment" ],
+                    THREE.ShaderChunk[ "alphamap_pars_fragment" ],
+                    THREE.ShaderChunk[ "aomap_pars_fragment" ],
+                    THREE.ShaderChunk[ "lightmap_pars_fragment" ],
+                    THREE.ShaderChunk[ "emissivemap_pars_fragment" ],
+                    THREE.ShaderChunk[ "envmap_pars_fragment" ],
+                    THREE.ShaderChunk[ "fog_pars_fragment" ],
+                    THREE.ShaderChunk[ "lights_phong_pars_fragment" ],
+                    THREE.ShaderChunk[ "shadowmap_pars_fragment" ],
+                    THREE.ShaderChunk[ "bumpmap_pars_fragment" ],
+                    THREE.ShaderChunk[ "normalmap_pars_fragment" ],
+                    THREE.ShaderChunk[ "specularmap_pars_fragment" ],
+                    THREE.ShaderChunk[ "logdepthbuf_pars_fragment" ],
+
+                    `
+                    void main() {
+
+                    `,
+                    "   vec3 outgoingLight = vec3( 0.0 );",
+                    "   vec4 diffuseColor = vec4( diffuse, opacity );",
+                    "   vec3 totalAmbientLight = ambientLightColor;",
+                    "   vec3 totalEmissiveLight = emissive;",
+
+                    customCode, // must set gl_FragColor!
+
+                    THREE.ShaderChunk[ "logdepthbuf_fragment" ],
+                    THREE.ShaderChunk[ "map_fragment" ],
+                    THREE.ShaderChunk[ "color_fragment" ],
+                    THREE.ShaderChunk[ "alphamap_fragment" ],
+                    THREE.ShaderChunk[ "alphatest_fragment" ],
+                    THREE.ShaderChunk[ "specularmap_fragment" ],
+                    THREE.ShaderChunk[ "lightmap_fragment" ],
+                    THREE.ShaderChunk[ "aomap_fragment" ],
+                    THREE.ShaderChunk[ "emissivemap_fragment" ],
+
+                    THREE.ShaderChunk[ "lights_phong_fragment" ],
+
+                    THREE.ShaderChunk[ "envmap_fragment" ],
+                    THREE.ShaderChunk[ "shadowmap_fragment" ],
+
+                    THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
+
+                    THREE.ShaderChunk[ "fog_fragment" ],
+
+                "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
+
+                "}"
+
+                ].join( "\n" );
+
+                return fragmentShader;
 
             },
 
