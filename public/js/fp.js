@@ -1758,7 +1758,7 @@ define( [
             };
         };
 
-        this.TERRAIN_MAPS = [ "../assets/syd2.bin", "../assets/mel2.bin" ];
+        this.TERRAIN_MAPS = [ "../assets/syd-region.bin", "../assets/syd2.bin", "../assets/mel2.bin" ];
 
         /**
          * Represents the fp.terrain of the world.
@@ -1854,8 +1854,16 @@ define( [
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
+                // var map = new THREE.ImageUtils.loadTexture( "../assets/syd2.bin" );
+                // var bmap = new THREE.ImageUtils.loadTexture( "../assets/syd2.bin" );
                 fp.terrain.dayTerrainUniforms = {
+                    // Lambert settings
+                    emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
+                    diffuse: { type: "c", value: new THREE.Color( 0.0, 0.0, 1.0 ) },
                     opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
+                    // Phong settings
+                    specular: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                    shininess: { type: "f", value: 70 },
 
                     groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
@@ -1874,10 +1882,16 @@ define( [
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
                 };
                 fp.terrain.nightTerrainUniforms = {
+                    // map: { type: "t", value: map },
+                    // bumpMap: { type: "t", value: bmap },
+                    // bumpScale: { type: "f", value: 0.25 },
                     // Lambert settings
-                    // emissive: { type: "c", value: new THREE.Color( 1.0, 0.0, 0.0 ) },
+                    emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
                     diffuse: { type: "c", value: new THREE.Color( 0.0, 0.0, 1.0 ) },
                     opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
+                    // Phong settings
+                    specular: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                    shininess: { type: "f", value: 10 },
 
                     groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
@@ -1915,6 +1929,7 @@ define( [
                 // Only use the shader material if we have variable heights
                 if ( fp.appConfig.terrainOptions.shaderUse ) {
                     // Necessary? Maybe for Phong
+                    geometry.computeFaceNormals();
                     geometry.computeVertexNormals();
                     fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
                 }
@@ -4561,14 +4576,14 @@ define( [
             // these six values define the boundaries of the yellow box seen above
             fp.lightDirectional.shadowCameraNear = 250;
             fp.lightDirectional.shadowCameraFar = 80000;
-            var d = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
+            var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
             fp.lightDirectional.shadowMapWidth = d;
             fp.lightDirectional.shadowMapHeight = d;
             fp.lightDirectional.shadowCameraLeft = -d;
             fp.lightDirectional.shadowCameraRight = d;
             fp.lightDirectional.shadowCameraTop = d;
             fp.lightDirectional.shadowCameraBottom = -d;
-            fp.lightDirectional.shadowBias = -0.0001;
+            // fp.lightDirectional.shadowBias = -0.0001;
             // fp.lightDirectional.shadowCameraVisible = true; // for debugging
             if ( fp.appConfig.displayOptions.lightDirectionalShow )
                 fp.scene.add( fp.lightDirectional );

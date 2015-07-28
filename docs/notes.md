@@ -765,6 +765,14 @@ Miscellaneous, from the [GDAL Cheat Sheet](https://github.com/dwtkns/gdal-cheat-
     gdaldem hillshade -of PNG slopeshade.tif hillshade.png
 
 
+Work with tiff:
+
+    # Concert tif to bin
+    gdal_translate -scale 0 400 0 65535 -ot UInt16 -of ENVI ~/Downloads/srtm_67_19/srtm_67_19.tif ~/Downloads/srtm_67_19/srtm_67_19.bin
+    cp ~/Downloads/srtm_67_19/srtm_67_19.bin public/assets/syd-region.bin
+    
+    # gdal_translate -scale 0 400 0 65535 -ot UInt16 -outsize 1601 1601 -of ENVI syd2.tif syd2.bin
+
 
 ### Prepare for `Unreal`  {#terrain_unreal}
 
