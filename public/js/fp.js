@@ -1758,7 +1758,7 @@ define( [
             };
         };
 
-        this.TERRAIN_MAPS = [ "../assets/syd-region.bin", "../assets/syd2.bin", "../assets/mel2.bin" ];
+        this.TERRAIN_MAPS = [ "../assets/Sydney-local.bin", "../assets/syd2.bin", "../assets/mel2.bin" ];
 
         /**
          * Represents the fp.terrain of the world.
@@ -1859,11 +1859,11 @@ define( [
                 fp.terrain.dayTerrainUniforms = {
                     // Lambert settings
                     emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
-                    diffuse: { type: "c", value: new THREE.Color( 0.0, 0.0, 1.0 ) },
+                    diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                     opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
                     // Phong settings
-                    specular: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
-                    shininess: { type: "f", value: 70 },
+                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    shininess: { type: "f", value: 0 },
 
                     groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
@@ -1887,11 +1887,11 @@ define( [
                     // bumpScale: { type: "f", value: 0.25 },
                     // Lambert settings
                     emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
-                    diffuse: { type: "c", value: new THREE.Color( 0.0, 0.0, 1.0 ) },
+                    diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                     opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
                     // Phong settings
-                    specular: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
-                    shininess: { type: "f", value: 10 },
+                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    shininess: { type: "f", value: 0 },
 
                     groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
@@ -1921,7 +1921,7 @@ define( [
                         fp.ShaderUtils.terrainFragmentShaderMain()
                     ),
                     lights: true,
-                    fog: false,
+                    fog: true,
                     // transparent: true,
                     alphaTest: 0.5
                 } );
@@ -1929,7 +1929,7 @@ define( [
                 // Only use the shader material if we have variable heights
                 if ( fp.appConfig.terrainOptions.shaderUse ) {
                     // Necessary? Maybe for Phong
-                    geometry.computeFaceNormals();
+                    // geometry.computeFaceNormals();
                     geometry.computeVertexNormals();
                     fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
                 }
@@ -2960,6 +2960,7 @@ define( [
                 for ( var i = 0; i < ( fp.appConfig.maxLevels * 16 + 8 ); i++ )
                     this.geometry.vertices.push( new THREE.Vector3( 0,0,0 ));
                 this.geometry.verticesNeedUpdate = true;
+                this.geometry.computeVertexNormals();
 
                 // Set up containers
                 this.mesh = new THREE.Object3D();
@@ -3248,9 +3249,13 @@ define( [
                         var showWindows = fp.appConfig.buildingOptions.showWindows;
                         this.uniforms = {
 
-                            // Standard Lambert uniforms
-                            //opacity: { type: "f", value: fp.appConfig.buildingOptions.opacity },
-                            // emissive: { type: "v3", value: fc },
+                            // Lambert settings
+                            emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
+                            diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                            opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
+                            // Phong settings
+                            specular: { type: "c", value: new THREE.Color( 0xbaba3a ) },
+                            shininess: { type: "f", value: 50 },
 
                             time: { type: "f", value: 1.0 },
                             location: { type: "v2", value: new THREE.Vector2( this.lod.position.x, this.lod.position.z ) },
@@ -3278,24 +3283,27 @@ define( [
                         }
 
                         var shaderMaterial = new THREE.ShaderMaterial( {
-                            uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
+                            uniforms: fp.ShaderUtils.phongUniforms( this.uniforms ),
                             attributes: attributes,
-                            vertexShader: fp.ShaderUtils.lambertShaderVertex(
+                            vertexShader: fp.ShaderUtils.phongShaderVertex(
                                 fp.ShaderUtils.buildingVertexShaderParams(),
                                 fp.ShaderUtils.buildingVertexShaderMain()
                             ),
-                            fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                            fragmentShader: fp.ShaderUtils.phongShaderFragment(
                                 fp.ShaderUtils.buildingFragmentShaderParams(),
                                 fp.ShaderUtils.buildingFragmentShaderMain()
                             ),
                             lights: true,
-                            transparent: true
+                            fog: true,
+                            // transparent: true,
+                            alphaTest: 0.5
                         } );
 
                         shaderMaterial.side = THREE.DoubleSide;
                         shaderMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
 
                         // this.mesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
+                        shapeGeometry.computeVertexNormals();
                         this.mesh = new THREE.Mesh( shapeGeometry, shaderMaterial );
                         this.mesh.castShadow = true;
                         this.mesh.receiveShadow = true;
@@ -3309,7 +3317,7 @@ define( [
                         this.mesh.updateMatrix();
                         // fp.buildingNetwork.networkMesh.add( this.highResMeshContainer );
                         fp.buildingNetwork.networkMesh.add( this.mesh );
-                        this.highResMeshContainer.add( this.mesh.clone() );
+                        // this.highResMeshContainer.add( this.mesh.clone() );
                         /*
                         if ( fp.buildingNetwork.networkMesh.children.length === 0 ) {
                             this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
@@ -3944,6 +3952,9 @@ define( [
                     fp.scene.add( fp.agentNetwork.particles );
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
+                fp.buildingNetwork.networkMesh.castShadow = true;
+                fp.buildingNetwork.networkMesh.receiveShadow = true;
+
                 if ( fp.appConfig.displayOptions.buildingsShow )
                     fp.scene.add( fp.buildingNetwork.networkMesh );
 
@@ -4491,9 +4502,9 @@ define( [
                 fp.container.requestPointerLock();
             }
             else {
-                fp.controls = new THREE.TrackballControls( fp.camera, fp.container );
+                // fp.controls = new THREE.TrackballControls( fp.camera, fp.container );
                 // Works better - but has no rotation?
-                // controls = new THREE.OrbitControls( fp.camera, fp.container );
+                fp.controls = new THREE.OrbitControls( fp.camera, fp.container );
                 fp.controls.rotateSpeed = 0.15;
                 fp.controls.zoomSpeed = 0.6;
                 fp.controls.panSpeed = 0.3;
@@ -4584,6 +4595,7 @@ define( [
             fp.lightDirectional.shadowCameraTop = d;
             fp.lightDirectional.shadowCameraBottom = -d;
             // fp.lightDirectional.shadowBias = -0.0001;
+            fp.lightDirectional.shadowBias = -0.05;
             // fp.lightDirectional.shadowCameraVisible = true; // for debugging
             if ( fp.appConfig.displayOptions.lightDirectionalShow )
                 fp.scene.add( fp.lightDirectional );
@@ -6032,8 +6044,8 @@ define( [
 
                     {
                         "emissive" : { type: "c", value: new THREE.Color( 0x000000 ) },
-                        "specular" : { type: "c", value: new THREE.Color( 0x111111 ) },
-                        "shininess": { type: "f", value: 30 }
+                        "specular" : { type: "c", value: new THREE.Color( 0x000000 ) },
+                        "shininess": { type: "f", value: 0 }
                     }
                 ] );
                 return _.extend( uniforms, otherUniforms );

@@ -1,15 +1,15 @@
 ENVI
 description = {
 syd-region.bin}
-samples = 400
-lines   = 400
+samples = 1600
+lines   = 1600
 bands   = 1
 header offset = 0
 file type = ENVI Standard
 data type = 12
 interleave = bsq
 byte order = 0
-map info = {Geographic Lat/Lon, 1, 1, 149.999583333323, -29.9995828490557, 0.0125020833333333, 0.0125020833333333,WGS-84}
+map info = {Geographic Lat/Lon, 1, 1, 150.999861111111, -32.9998611111111, 0.000625173611111111, 0.000625173611111111,WGS-84}
 coordinate system string = {GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]}
 band names = {
 Band 1}
