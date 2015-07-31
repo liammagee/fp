@@ -1758,7 +1758,7 @@ define( [
             };
         };
 
-        this.TERRAIN_MAPS = [ "../assets/Sydney-local.bin", "../assets/syd2.bin", "../assets/mel2.bin" ];
+        this.TERRAIN_MAPS = [ "../assets/syd2.bin", "../assets/mel2.bin" ];
 
         /**
          * Represents the fp.terrain of the world.
@@ -1773,6 +1773,7 @@ define( [
             this.dayTerrainUniforms = null;
             this.nightTerrainUniforms = null;
             this.terrainMapIndex = fp.appConfig.terrainOptions.mapIndex;
+            this.terrainMapFile = fp.appConfig.terrainOptions.mapFile;
             this.gridExtent = fp.appConfig.terrainOptions.gridExtent;
             this.halfExtent = this.gridExtent / 2;
             this.gridPoints = fp.appConfig.terrainOptions.gridPoints;
@@ -3821,6 +3822,7 @@ define( [
                 shaderUse: true,
                 multiplier: 1,
                 mapIndex: 0,
+                mapFile: "",
                 patchSize: 4,
                 defaultHeight: 10
             };
@@ -4257,8 +4259,9 @@ define( [
                 terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step( 1 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step( 1 ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "mapFile" ).onFinishChange( fp.loadTerrain );
             }
 
             if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
@@ -5584,7 +5587,10 @@ define( [
          */
         this.loadTerrain = function( callback ) {
             var terrainLoader = new THREE.TerrainLoader();
-            terrainLoader.load( fp.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ], function( data ) {
+            var terrainFile = fp.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ]
+            if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" )
+                terrainFile = fp.terrain.terrainMapFile;
+            terrainLoader.load( terrainFile, function( data ) {
                 fp.terrain.initTerrain( data );
                 fp.animate(); // Kick off the animation loop
                 if ( _.isFunction( callback ) )
