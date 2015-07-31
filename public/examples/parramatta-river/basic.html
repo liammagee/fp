@@ -12,14 +12,26 @@
                   "remembered": {
                     "Default": {
                         "1": {  },
-                        "2": { },
-                        "3": { "create": false },
+                        "2": {
+                            "detectBuildingCollisions": true,
+                            "detectRoadCollisions": true,
+                            "windowsRandomise": true,
+                            "randomForm": true,
+                            "rotateRandomly": false,
+                            "minHeight": 10,
+                            "maxHeight": 100,
+                            "stagger": true,
+                            "taper": true,
+                        },
+                        "3": {
+                            "create": false
+                        },
                         "4": {
-                            "waterShow": true,
+                            "waterShow": false,
                             "terrainShow": true,
                             "buildingsShow": true,
                             "roadsShow": false,
-                            "dayShow": true,
+                            "dayShow": false,
                             "patchesShow": false,
 
                             "lightDirectionalShow": true,
@@ -39,11 +51,10 @@
                             "coloriseAgentsByHealth": false,
                         },
                         "6": {
-                            "gridExtent": 45000,
+                            "gridExtent": 1800,
                             "gridPoints": 900,
                             "multiplier": 1,
-                            "maxTerrainHeight": 2000
-
+                            "maxTerrainHeight": 100,
                         },
                     }
                   }

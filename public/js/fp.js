@@ -3283,13 +3283,13 @@ define( [
                         }
 
                         var shaderMaterial = new THREE.ShaderMaterial( {
-                            uniforms: fp.ShaderUtils.phongUniforms( this.uniforms ),
+                            uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
                             attributes: attributes,
-                            vertexShader: fp.ShaderUtils.phongShaderVertex(
+                            vertexShader: fp.ShaderUtils.lambertShaderVertex(
                                 fp.ShaderUtils.buildingVertexShaderParams(),
                                 fp.ShaderUtils.buildingVertexShaderMain()
                             ),
-                            fragmentShader: fp.ShaderUtils.phongShaderFragment(
+                            fragmentShader: fp.ShaderUtils.lambertShaderFragment(
                                 fp.ShaderUtils.buildingFragmentShaderParams(),
                                 fp.ShaderUtils.buildingFragmentShaderMain()
                             ),
@@ -3303,7 +3303,7 @@ define( [
                         shaderMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
 
                         // this.mesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
-                        shapeGeometry.computeVertexNormals();
+                        // shapeGeometry.computeVertexNormals();
                         this.mesh = new THREE.Mesh( shapeGeometry, shaderMaterial );
                         this.mesh.castShadow = true;
                         this.mesh.receiveShadow = true;
@@ -4594,8 +4594,8 @@ define( [
             fp.lightDirectional.shadowCameraRight = d;
             fp.lightDirectional.shadowCameraTop = d;
             fp.lightDirectional.shadowCameraBottom = -d;
-            // fp.lightDirectional.shadowBias = -0.0001;
-            fp.lightDirectional.shadowBias = -0.05;
+            fp.lightDirectional.shadowBias = -0.0001;
+            // fp.lightDirectional.shadowBias = -0.05;
             // fp.lightDirectional.shadowCameraVisible = true; // for debugging
             if ( fp.appConfig.displayOptions.lightDirectionalShow )
                 fp.scene.add( fp.lightDirectional );
