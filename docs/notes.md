@@ -1,13 +1,8 @@
-% Fierce Planet Redesign
-% Liam Magee
-% 20 June, 2014
+% Fierce Planet - Notes
 
-<!--
-v1.0: 4 July, 2014
--->
+## Overview
 
-
-# Overview
+These notes cover a range of different topics for using or extending the *Fierce Planet* application.
 
 
 ## Adding 1 Arc-Second (30m) resolution terrain:
