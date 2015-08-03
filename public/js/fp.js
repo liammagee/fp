@@ -4590,7 +4590,8 @@ define( [
             // these six values define the boundaries of the yellow box seen above
             fp.lightDirectional.shadowCameraNear = 250;
             fp.lightDirectional.shadowCameraFar = 80000;
-            var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
+            // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
+            var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
             fp.lightDirectional.shadowMapWidth = d;
             fp.lightDirectional.shadowMapHeight = d;
             fp.lightDirectional.shadowCameraLeft = -d;
@@ -4598,7 +4599,7 @@ define( [
             fp.lightDirectional.shadowCameraTop = d;
             fp.lightDirectional.shadowCameraBottom = -d;
             fp.lightDirectional.shadowBias = -0.0001;
-            // fp.lightDirectional.shadowBias = -0.05;
+            //fp.lightDirectional.shadowBias = -0.05;
             // fp.lightDirectional.shadowCameraVisible = true; // for debugging
             if ( fp.appConfig.displayOptions.lightDirectionalShow )
                 fp.scene.add( fp.lightDirectional );
