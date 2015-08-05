@@ -1798,6 +1798,73 @@ define( [
             this.wrappingState = 0;
 
             /**
+             * Create uniforms
+             */
+            this.createUniforms = function() {
+
+                //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
+
+                var uniforms = {
+                    // Lambert settings
+                    emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
+                    diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                    opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
+                    // Phong settings
+                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    shininess: { type: "f", value: 0.0 },
+
+                    //map: map,
+                    //bumpMap: map,
+                    //normalMap: map,
+                    //emissiveMap: map,
+                    //lightMap: map,
+                    //aoMap: map,
+                    //specularMap: map,
+                    //alphaMap: map,
+
+                    groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
+                    midland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland1 ) },
+                    midland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland2 ) },
+                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
+
+                    stop1: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop1 },
+                    stop2: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop2 },
+                    stop3: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop3 },
+                    stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
+                    stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
+
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier },
+
+                    shadowMix: { type: "f", value: fp.appConfig.terrainOptions.shaderShadowMix },
+
+                };
+
+                if ( fp.appConfig.displayOptions.dayShow ) {
+                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) };
+                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) };
+                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) };
+                    uniforms.midland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland1 ) };
+                    uniforms.midland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland2 ) };
+                    uniforms.highlandColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) };
+                }
+                else {
+                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) };
+                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) };
+                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) };
+                    uniforms.midland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland1 ) };
+                    uniforms.midland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland2 ) };
+                    uniforms.highlandColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) };
+                   
+                }
+
+                return uniforms;
+
+            };
+
+            /**
              * Initialises the terrain.
              */
             this.initTerrain = function( data ) {
@@ -1833,10 +1900,31 @@ define( [
 
                 }
 
-                fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( { color: 0x666666, wireframe: fp.appConfig.displayOptions.wireframeShow } );
-                fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
-                fp.terrain.simpleTerrainMaterial.color.setHSL( 0.095, 1, 0.75 );
+                //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
+                fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( { 
 
+                    color: new THREE.Color( 0xffffff ),  // diffuse
+                    emissive: new THREE.Color( 0x111111 ),  
+                    specular: new THREE.Color( 0x111111 ),  
+
+                    //map: map,
+                    //bumpMap: map,
+                    //normalMap: map,
+                    //emissiveMap: map,
+                    //lightMap: map,
+                    //aoMap: map,
+                    //specularMap: map,
+                    //alphaMap: map,
+
+                    //metal: true,
+
+                    wireframe: fp.appConfig.displayOptions.wireframeShow 
+
+                } );
+
+                fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
+
+                // Create shader material
                 var len = geometry.attributes.position.array.length / 3,
                     heights = new Float32Array( len ),
                     trailPoints = new Float32Array( len ),
@@ -1855,63 +1943,9 @@ define( [
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
-                var map = new THREE.ImageUtils.loadTexture( "../assets/b2.png" );
-                var bmap = new THREE.ImageUtils.loadTexture( "../assets/b2.png" );
-                fp.terrain.dayTerrainUniforms = {
-                    // Lambert settings
-                    emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
-                    diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
-                    opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
-                    // Phong settings
-                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
-                    shininess: { type: "f", value: 0 },
-
-                    groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
-                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
-                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) },
-                    midland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland1 ) },
-                    midland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland2 ) },
-                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) },
-
-                    stop1: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop1 },
-                    stop2: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop2 },
-                    stop3: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop3 },
-                    stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
-                    stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
-
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
-                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier }
-                };
-                fp.terrain.nightTerrainUniforms = {
-                    // map: { type: "t", value: map },
-                    // bumpMap: { type: "t", value: bmap },
-                    // bumpScale: { type: "f", value: 0.25 },
-                    // Lambert settings
-                    emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
-                    diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
-                    opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
-                    // Phong settings
-                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
-                    shininess: { type: "f", value: 0 },
-
-                    groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) },
-                    lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) },
-                    lowland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) },
-                    midland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland1 ) },
-                    midland2Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland2 ) },
-                    highlandColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) },
-
-                    stop1: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop1 },
-                    stop2: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop2 },
-                    stop3: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop3 },
-                    stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
-                    stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
-
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
-                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier + 1 }
-                };
+                var uniforms = this.createUniforms();
                 fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial( {
-                    uniforms: fp.ShaderUtils.phongUniforms( fp.terrain.nightTerrainUniforms ),
+                    uniforms: fp.ShaderUtils.phongUniforms( uniforms ),
                     attributes: terrainAttributes,
                     vertexShader:   fp.ShaderUtils.phongShaderVertex(
                         fp.ShaderUtils.terrainVertexShaderParams(),
@@ -3820,6 +3854,7 @@ define( [
                 gridPoints: 400,
                 maxTerrainHeight: 400,
                 shaderUse: true,
+                shaderShadowMix: 0.5,
                 multiplier: 1,
                 mapIndex: 0,
                 mapFile: "",
@@ -4258,6 +4293,7 @@ define( [
                 terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
+                terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
                 terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step( 1 ).onFinishChange( fp.loadTerrain );
@@ -5518,9 +5554,11 @@ define( [
          * @memberof fp
          */
         this.toggleDayNight = function() {
+
             var colorBackground, colorBuilding, colorRoad,
                 colorAgent, colorNetwork, colorTrail,
                 colorBuildingFill, colorBuildingLine, colorBuildingWindow;
+            
             if ( fp.appConfig.displayOptions.dayShow ) {
                 colorBackground = fp.appConfig.colorOptions.colorDayBackground;
                 colorRoad = fp.appConfig.colorOptions.colorDayRoad;
@@ -5530,7 +5568,7 @@ define( [
                 colorBuildingFill = fp.appConfig.colorOptions.colorDayBuildingFill;
                 colorBuildingLine = fp.appConfig.colorOptions.colorDayBuildingLine;
                 colorBuildingWindow = fp.appConfig.colorOptions.colorDayBuildingWindow;
-                fp.terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( fp.terrain.dayTerrainUniforms );
+                fp.terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.phongUniforms( fp.terrain.createUniforms() );
                 fp.terrain.simpleTerrainMaterial.color = new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 );
                 if ( fp.appConfig.displayOptions.skyboxShow )
                     fp.scene.add( fp.skyBox );
@@ -5544,14 +5582,17 @@ define( [
                 colorBuildingFill = fp.appConfig.colorOptions.colorNightBuildingFill;
                 colorBuildingLine = fp.appConfig.colorOptions.colorNightBuildingLine;
                 colorBuildingWindow = fp.appConfig.colorOptions.colorNightBuildingWindow;
-                fp.terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms );
+                fp.terrain.richTerrainMaterial.uniforms = fp.ShaderUtils.phongUniforms( fp.terrain.createUniforms() );
                 fp.terrain.simpleTerrainMaterial.color = new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 );
-                fp.scene.remove( fp.skyBox );
+                if ( fp.appConfig.displayOptions.skyboxShow )
+                    fp.scene.remove( fp.skyBox );
             }
+            
             fp.terrain.richTerrainMaterial.needsUpdate = true; // important!
             fp.terrain.simpleTerrainMaterial.needsUpdate = true; // important!
             fp.terrain.plane.material.needsUpdate = true; // important!
             fp.renderer.setClearColor( colorBackground, 1 );
+            
             if ( fp.appConfig.buildingOptions.useShader ) {
                 fp.buildingNetwork.buildings.forEach( function( building ) {
                     building.highResMeshContainer.children.forEach( function( floor ) {
@@ -5580,6 +5621,7 @@ define( [
             }
             if ( !_.isNull( fp.agentNetwork.particles ) )
                 fp.agentNetwork.agents.forEach( function( agent ) { agent.color = colorAgent; } );
+        
         };
 
         /**
@@ -5599,6 +5641,18 @@ define( [
            } );
         };
 
+
+        /**
+         * Updates the terrain with current values
+         */
+        this.updateTerrain = function() {
+            fp.terrain.plane.material.uniforms = fp.ShaderUtils.phongUniforms( fp.terrain.createUniforms() );
+            fp.terrain.plane.material.needsUpdate = true;
+        };
+
+        /**
+         * Shader utilites - wrappers around Three.js Lambert and Phong shaders.
+         */
         this.ShaderUtils = {
             buildingVertexShaderParams: function() {
                 var shader =
@@ -5767,6 +5821,8 @@ define( [
                         uniform float stop3;
                         uniform float stop4;
                         uniform float stop5;
+                        // Mix shadows
+                        uniform float shadowMix;
                     `;
                 return shader;
             },
@@ -5781,6 +5837,8 @@ define( [
                     float range;
                     vec4 col;
 
+                    float alphaChannel = opacity;
+                    vec3 diffusion = diffuse;
                     float elevation = vHeight / maxHeight;
                     if ( vPatch > 0.0 ) {
                         if ( elevation <=  0.0 ) {
@@ -5796,6 +5854,8 @@ define( [
                     else {
                         if ( elevation == 0.0 ) {
                             col = vec4( 0.0, 0.0, 0.0, 0.0 );
+                            alphaChannel = 0.0;
+                            diffusion = vec3( 0.0, 0.0, 0.0 );
                         }
                         else if ( elevation < stop1 ) {
                             range = ( elevation - 0.0 ) * ( 1.0 / stop1 );
@@ -5821,9 +5881,15 @@ define( [
                             col = highland;
                         }
                     }
-                    outgoingLight = vec3( col.r, col.g, col.b );
-                    diffuseColor = vec4( col.r, col.g, col.b, col.a );
+                    //outgoingLight = vec3( col.r, col.g, col.b );
+                    //diffuseColor = vec4( diffuse, alphaChannel );
+
+                    // Allow for a blending of shadows and gradient colors
+                    vec4 tmp = mix( vec4( outgoingLight, 0.0 ), col, shadowMix );
+                    outgoingLight = vec3( tmp.r, tmp.g, tmp.b );
+                    diffuseColor = vec4( diffusion, alphaChannel );
                     `;
+
                 return shader;
             },
 
@@ -6165,18 +6231,15 @@ define( [
                     "   vec3 totalAmbientLight = ambientLightColor;",
                     "   vec3 totalEmissiveLight = emissive;",
 
-                    customCode, // must set gl_FragColor!
-
                     THREE.ShaderChunk[ "logdepthbuf_fragment" ],
                     THREE.ShaderChunk[ "map_fragment" ],
                     THREE.ShaderChunk[ "color_fragment" ],
-                    THREE.ShaderChunk[ "alphamap_fragment" ],
-                    THREE.ShaderChunk[ "alphatest_fragment" ],
                     THREE.ShaderChunk[ "specularmap_fragment" ],
                     THREE.ShaderChunk[ "lightmap_fragment" ],
                     THREE.ShaderChunk[ "aomap_fragment" ],
                     THREE.ShaderChunk[ "emissivemap_fragment" ],
 
+                   
                     THREE.ShaderChunk[ "lights_phong_fragment" ],
 
                     THREE.ShaderChunk[ "envmap_fragment" ],
@@ -6185,6 +6248,12 @@ define( [
                     THREE.ShaderChunk[ "linear_to_gamma_fragment" ],
 
                     THREE.ShaderChunk[ "fog_fragment" ],
+
+                    customCode, // must set gl_FragColor!
+
+                    // Really want this as the last step
+                    THREE.ShaderChunk[ "alphamap_fragment" ],
+                    THREE.ShaderChunk[ "alphatest_fragment" ],
 
                 "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );",
 

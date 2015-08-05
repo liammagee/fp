@@ -5,7 +5,7 @@
         <link rel="stylesheet" type="text/css" href="../css/fp.css">
         <script src="../js/require.js"></script>
         <script>
-        require(["../js/fp-compiled"],
+        require(["../js/fp"],
             function() {
                 var config = {
                   "preset": "Default",
@@ -31,7 +31,7 @@
                             "terrainShow": true,
                             "buildingsShow": true,
                             "roadsShow": false,
-                            "dayShow": false,
+                            "dayShow": true,
                             "patchesShow": false,
 
                             "lightDirectionalShow": true,
@@ -41,16 +41,31 @@
                             "cameraZ": 1000,
                         },
                         "5": {
-                            "colorNightTerrainGroundLevel": 0x000000,
+                            //"colorNightTerrainGroundLevel": 0x888888,
+                            //"colorNightTerrainLowland1": 0x888888,
+                            //"colorNightTerrainLowland2": 0x888888,
+                            //"colorNightTerrainMidland1": 0x888888,
+                            //"colorNightTerrainMidland2": 0x888888,
+                            //"colorNightTerrainHighland": 0x888888,
+                            "colorNightTerrainGroundLevel": 0x111111,
                             "colorNightTerrainLowland1": 0x272727,
                             "colorNightTerrainLowland2": 0x3F3F3F,
                             "colorNightTerrainMidland1": 0x696969,
                             "colorNightTerrainMidland2": 0xA2A2A2,
                             "colorNightTerrainHighland": 0xFDFDFD,
+                            //"colorNightTerrainGroundLevel": 0x000000,
+                            //"colorNightTerrainLowland1": 0x272727,
+                            //"colorNightTerrainLowland2": 0x3F3F3F,
+                            //"colorNightTerrainMidland1": 0x696969,
+                            //"colorNightTerrainMidland2": 0xA2A2A2,
+                            //"colorNightTerrainHighland": 0xFDFDFD,
+
 
                             "coloriseAgentsByHealth": false,
                         },
                         "6": {
+                            "shaderUse": true,
+                            "shaderShadowMix": 0.5,
                             "gridExtent": 9000,
                             "gridPoints": 900,
                             "multiplier": 1,
