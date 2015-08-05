@@ -1,13 +1,15 @@
 require.config({
     baseUrl: "../js",
     paths: {
-        jquery: "utils/jquery"
+        jquery: "utils/jquery",
+        astar: "utils/astar",
+        underscore: "utils/underscore",
+        three: "three-71"
     },
     shim: {
         jquery: { exports: "$" },
-        "three": { exports: "THREE" },
-        "utils/underscore": { exports: "_" },
-        "utils/astar": { exports: "astar" },
+        three: { exports: "THREE" },
+        underscore: { exports: "_" },
         "utils/jstat.min": { exports: "jStat" },
         "ux/dat.gui": { exports: "dat.gui" },
         "ux/smoothie": { exports: "SmoothieChart" },
@@ -22,11 +24,13 @@ require.config({
     }
 });
 
+
 define( [
-    "utils/astar", // Needs 
+
+    "astar", // Needs to be named
     "jquery",
     "three",
-    "utils/underscore",
+    "underscore",
     "utils/jstat.min",
     "utils/jsts",
     "ux/dat.gui",
@@ -39,10 +43,10 @@ define( [
     "controls/TrackballControls",
     "controls/OrbitControls",
     "controls/PointerLockControls"
-    ], function( astar ) {
+    
+    ], function( astar, $, THREE, _ ) {
     "use strict";
 
-    console.log( astar )
     //var astar = require( "astar" );
 
     /**
@@ -475,21 +479,21 @@ define( [
 
                 if ( !_.isNull( this.particles ) ) {
 
-                    for ( var k = 0; k < agents.length; k++ ) {
-                    // for ( var offset = 0, k = 0; k < agents.length; k++ ) {
+                    //for ( var k = 0; k < agents.length; k++ ) { // r071
+                    for ( var offset = 0, k = 0; k < agents.length; k++ ) { // r072
 
                         // Must be the original unshuffled collection
                         var particleAgent = this.agents[ k ];
                         var posVec = fp.terrain.transformPointFromPlaneToSphere( particleAgent.position, fp.terrain.wrappedPercent );
-                        // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
-                        // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
-                        // this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
+                        //this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
+                        //this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
+                        //this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
                         this.particles.geometry.vertices[ k ] = posVec; // r071
 
                     }
 
                     this.particles.geometry.verticesNeedUpdate = true; // r071
-                    // this.particles.geometry.attributes.position.needsUpdate = true; // r072
+                    //this.particles.geometry.attributes.position.needsUpdate = true; // r072
 
                 }
             };
@@ -581,7 +585,8 @@ define( [
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
                     size: fp.appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
-                    attributes: this.agentParticleSystemAttributes,
+                    //attributes: [ 'alpha', 'color' ], // r072
+                    attributes: this.agentParticleSystemAttributes, // r071
                     vertexShader: fp.ShaderUtils.agentVertexShader(),
                     fragmentShader: fp.ShaderUtils.agentFragmentShader(),
                     sizeAttenuation: true,
