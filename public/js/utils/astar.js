@@ -1,4 +1,4 @@
-// javascript-astar 0.3.0
+// javascript-astar 0.4.0
 // http://github.com/bgrins/javascript-astar
 // Freely distributable under the MIT License.
 // Implements the astar search algorithm in javascript using a Binary Heap.
@@ -35,18 +35,6 @@ function getHeap() {
 }
 
 var astar = {
-    init: function(graph) {
-        for (var i = 0, len = graph.nodes.length; i < len; ++i) {
-            var node = graph.nodes[i];
-            node.f = 0;
-            node.g = 0;
-            node.h = 0;
-            node.visited = false;
-            node.closed = false;
-            node.parent = null;
-        }
-    },
-
     /**
     * Perform an A* Search on a graph given a start and end node.
     * @param {Graph} graph
@@ -59,8 +47,7 @@ var astar = {
     *          astar.heuristics).
     */
     search: function(graph, start, end, options) {
-        astar.init(graph);
-
+        graph.cleanDirty();
         options = options || {};
         var heuristic = options.heuristic || astar.heuristics.manhattan,
             closest = options.closest || false;
@@ -109,7 +96,7 @@ var astar = {
                     neighbor.h = neighbor.h || heuristic(neighbor, end);
                     neighbor.g = gScore;
                     neighbor.f = neighbor.g + neighbor.h;
-
+                    graph.markDirty(neighbor);
                     if (closest) {
                         // If the neighbour is closer than the current closestNode or if it's equally close but has
                         // a cheaper path than the current closest node then it becomes the closest node
@@ -151,6 +138,14 @@ var astar = {
             var d2 = Math.abs(pos1.y - pos0.y);
             return (D * (d1 + d2)) + ((D2 - (2 * D)) * Math.min(d1, d2));
         }
+    },
+    cleanNode:function(node){
+        node.f = 0;
+        node.g = 0;
+        node.h = 0;
+        node.visited = false;
+        node.closed = false;
+        node.parent = null;
     }
 };
 
@@ -174,7 +169,26 @@ function Graph(gridIn, options) {
             this.nodes.push(node);
         }
     }
+    this.init();
 }
+
+Graph.prototype.init = function() {
+    this.dirtyNodes = [];
+    for (var i = 0; i < this.nodes.length; i++) {
+        astar.cleanNode(this.nodes[i]);
+    }
+};
+
+Graph.prototype.cleanDirty = function() {
+    for (var i = 0; i < this.dirtyNodes.length; i++) {
+        astar.cleanNode(this.dirtyNodes[i]);
+    }
+    this.dirtyNodes = [];
+};
+
+Graph.prototype.markDirty = function(node) {
+    this.dirtyNodes.push(node);
+};
 
 Graph.prototype.neighbors = function(node) {
     var ret = [],
@@ -252,7 +266,11 @@ GridNode.prototype.toString = function() {
     return "[" + this.x + " " + this.y + "]";
 };
 
-GridNode.prototype.getCost = function() {
+GridNode.prototype.getCost = function(fromNeighbor) {
+    // Take diagonal weight into consideration.
+    if (fromNeighbor && fromNeighbor.x != this.x && fromNeighbor.y != this.y) {
+        return this.weight * 1.41421;
+    }
     return this.weight;
 };
 

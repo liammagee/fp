@@ -5,26 +5,28 @@ require.config({
     },
     shim: {
         jquery: { exports: "$" },
+        "three": { exports: "THREE" },
         "utils/underscore": { exports: "_" },
+        "utils/astar": { exports: "astar" },
         "utils/jstat.min": { exports: "jStat" },
-        "utils/jsts": [ "utils/javascript.util" ],
         "ux/dat.gui": { exports: "dat.gui" },
         "ux/smoothie": { exports: "SmoothieChart" },
         "ux/stats.min": { exports: "Stats" },
-        "three": { exports: "THREE" },
         "objects/Mirror": [ "three" ],
         "objects/water-material": { exports: "THREE.Water", deps: [ "three", "objects/Mirror" ] },
         "loaders/TerrainLoader": { deps: [ "three" ] },
         "controls/TrackballControls": { deps: [ "three" ] },
         "controls/OrbitControls": { deps: [ "three" ] },
-        "controls/PointerLockControls": { deps: [ "three" ] }
+        "controls/PointerLockControls": { deps: [ "three" ] },
+        "utils/jsts": { deps: [ "utils/javascript.util" ] }
     }
 });
+
 define( [
+    "utils/astar", // Needs 
     "jquery",
     "three",
     "utils/underscore",
-    "utils/astar",
     "utils/jstat.min",
     "utils/jsts",
     "ux/dat.gui",
@@ -37,8 +39,11 @@ define( [
     "controls/TrackballControls",
     "controls/OrbitControls",
     "controls/PointerLockControls"
-    ], function( $, THREE, _, astar ) {
+    ], function( astar ) {
     "use strict";
+
+    console.log( astar )
+    //var astar = require( "astar" );
 
     /**
      * Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/ .
@@ -1900,7 +1905,6 @@ define( [
 
                 }
 
-                //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( { 
 
                     color: new THREE.Color( 0xffffff ),  // diffuse
@@ -1929,6 +1933,7 @@ define( [
                     heights = new Float32Array( len ),
                     trailPoints = new Float32Array( len ),
                     patchPoints = new Float32Array( len );
+
                 for ( i = 0; i < len; i++ ) {
                     heights[ i ] = vertices[ i * 3 + 2 ];
                     trailPoints[ i ] = 0.0;
@@ -5603,22 +5608,26 @@ define( [
                     } );
                 } );
             }
+
             if ( !_.isNull( fp.roadNetwork.networkMesh ) ) {
                 fp.roadNetwork.networkMesh.children.forEach( function( road ) {
                     road.material.color = new THREE.Color( colorRoad );
                     road.material.colorsNeedUpdate = true;
                 } );
             }
+
             fp.agentNetwork.networks.forEach( function( network ) {
                 if ( !_.isNull( network.networkMesh ) ) {
                     network.networkMesh.material.color = new THREE.Color( colorNetwork );
                     network.networkMesh.material.colorsNeedUpdate = true;
                 }
             } );
+
             if ( !_.isNull( fp.trailNetwork.globalTrailLine ) ) {
                 fp.trailNetwork.globalTrailLine.material.color = new THREE.Color( colorTrail );
                 fp.trailNetwork.globalTrailLine.material.colorsNeedUpdate = true;
             }
+
             if ( !_.isNull( fp.agentNetwork.particles ) )
                 fp.agentNetwork.agents.forEach( function( agent ) { agent.color = colorAgent; } );
         
@@ -5629,16 +5638,20 @@ define( [
          * @param  {Function} callback A function that is called after the terrain is loaded successfully.
          */
         this.loadTerrain = function( callback ) {
+
             var terrainLoader = new THREE.TerrainLoader();
             var terrainFile = fp.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ]
+
             if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" )
                 terrainFile = fp.terrain.terrainMapFile;
+
             terrainLoader.load( terrainFile, function( data ) {
                 fp.terrain.initTerrain( data );
                 fp.animate(); // Kick off the animation loop
                 if ( _.isFunction( callback ) )
                     callback(); // Run the callback
            } );
+
         };
 
 
@@ -5646,14 +5659,17 @@ define( [
          * Updates the terrain with current values
          */
         this.updateTerrain = function() {
+
             fp.terrain.plane.material.uniforms = fp.ShaderUtils.phongUniforms( fp.terrain.createUniforms() );
             fp.terrain.plane.material.needsUpdate = true;
+
         };
 
         /**
          * Shader utilites - wrappers around Three.js Lambert and Phong shaders.
          */
         this.ShaderUtils = {
+
             buildingVertexShaderParams: function() {
                 var shader =
                     `
@@ -6272,24 +6288,35 @@ define( [
             allShaders: function() {
 
                 return [
+
                     fp.ShaderUtils.lambertShaderVertex(
+
                         fp.ShaderUtils.buildingVertexShaderParams(),
                         fp.ShaderUtils.buildingVertexShaderMain()
+
                     ),
                     fp.ShaderUtils.lambertShaderFragment(
+
                         fp.ShaderUtils.buildingFragmentShaderParams(),
                         fp.ShaderUtils.buildingFragmentShaderMain()
+
                     ),
                     fp.ShaderUtils.lambertShaderVertex(
+
                         fp.ShaderUtils.terrainVertexShaderParams(),
                         fp.ShaderUtils.terrainVertexShaderMain()
+
                     ),
                     fp.ShaderUtils.lambertShaderFragment(
+
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
+
                     ),
+
                     fp.ShaderUtils.agentVertexShader(),
                     fp.ShaderUtils.agentFragmentShader(),
+
                 ].join( "\n" )
 
             }
