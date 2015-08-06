@@ -4,7 +4,7 @@ require.config({
         jquery: "utils/jquery",
         astar: "utils/astar",
         underscore: "utils/underscore",
-        three: "three-71",
+        three: "three-72",
         jstat: "utils/jstat.min",
         smoothie: "ux/smoothie",
         stats: "ux/stats.min",
@@ -405,56 +405,35 @@ define( [
                 return { x: x, z: z };
             };
 
-            /**
-             * Updates the agent network shader at runtime.
-             */
-            this.updateAgentShader = function() {
-                if ( !_.isNull( this.agentParticleSystemAttributes ) &&
-                    typeof ( this.agentParticleSystemAttributes.color ) !== "undefined" &&
-                    this.agentParticleSystemAttributes.color.value.length > 0 ) {
-                    for( var i = 0; i < this.agents.length; i++ ) {
-                        var agent = this.agents[ i ];
-                        if ( fp.appConfig.displayOptions.coloriseAgentsByHealth ) {
-                            var health = agent.health;
-                            var r = 0;
-                            var g = fp.appConfig.displayOptions.dayShow ? 0.0 : 1.0;
-                            var b = fp.appConfig.displayOptions.dayShow ? 1.0 : 0.0;
-                            g *= ( health / 100.0 );
-                            b *= ( health / 100.0 );
-                            r = ( 100 - health ) / 100.0;
-                            var col = new THREE.Color( r, g, b );
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = 0.75;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( col );
-                        }
-                        else {
-                            this.agentParticleSystemAttributes.alpha.value[ i ] = ( agent.health * 0.0075 ) + 0.025;
-                            this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( agent.color );
-                        }
-                    }
-                    this.agentParticleSystemAttributes.color.needsUpdate = true; // important!
-                }
-            };
 
             /**
              * Updates all agents belonging to this network.
              */
             this.updateAgents = function() {
+
                 if ( !fp.AppState.runSimulation || _.isUndefined( this.particles ) ) {
+
                     return;
+
                 }
 
                 var agents = this.agents;
                 if ( fp.appConfig.agentOptions.shuffle ) {
+
                     agents = _.shuffle( this.agents );
+
                 }
 
                 for ( var i = 0; i < agents.length; i++ ) {
+
                     var agent = agents[ i ];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
                     var timeToMove = Math.floor( ( i / this.agents.length ) * fp.timescale.framesToYear );
                     var interval = fp.timescale.frameCounter % fp.timescale.framesToYear;
+
                     if ( timeToMove === interval ) {
+
                         var underConstruction = agent.build() || agent.buildRoad();
 
                         if ( underConstruction ) {
@@ -466,20 +445,27 @@ define( [
 
                         // Enlist the agent in available networks
                         if ( fp.appConfig.agentOptions.establishLinks ) {
+
                             for (var j = this.networks.length - 1; j >= 0; j--) {
-                                var network = this.networks[ j ];
-                                network.enlistAgent( agent );
+
+                                this.networks[ j ].enlistAgent( agent );
+
                             }
+
                         }
 
                         // Then add the position to this agent's trail
                         var ai = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
                         if ( ai > -1 ) {
+
                             fp.trailNetwork.trails[ ai ] = ( fp.trailNetwork.trails[ ai ] ) ? fp.trailNetwork.trails[ ai ] + 1 : 1;
+
                         }
 
                         if ( agent.grounded ) {
+
                             agent.perturbDirection();
+
                         }
 
                         agent.updateTick();
@@ -490,74 +476,66 @@ define( [
 
                 }
 
-                if ( !_.isNull( this.particles ) ) {
-
-                    //for ( var k = 0; k < agents.length; k++ ) { // r071
-                    for ( var offset = 0, k = 0; k < agents.length; k++ ) { // r072
-
-                        // Must be the original unshuffled collection
-                        var particleAgent = this.agents[ k ];
-                        var posVec = fp.terrain.transformPointFromPlaneToSphere( particleAgent.position, fp.terrain.wrappedPercent );
-                        //this.particles.geometry.attributes.position.array[ offset++ ] = posVec.x; // r072
-                        //this.particles.geometry.attributes.position.array[ offset++ ] = posVec.y; // r072
-                        //this.particles.geometry.attributes.position.array[ offset++ ] = posVec.z; // r072
-                        this.particles.geometry.vertices[ k ] = posVec; // r071
-
-                    }
-
-                    this.particles.geometry.verticesNeedUpdate = true; // r071
-                    //this.particles.geometry.attributes.position.needsUpdate = true; // r072
-
-                }
             };
+
 
             /**
              * Updates the particle system representing this agent network.
              */
             this.updateAgentParticleSystem = function() {
-                // Needs to be updated for r072
-                /*
-                var agentGeometry = new THREE.BufferGeometry();
-                var positions = new THREE.Float32Attribute( this.agents.length * 3, 3 );
-                for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
-                    var agent = this.agents[i];
-                    var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
-                    positions.array[ offset++ ] = posVec.x;
-                    positions.array[ offset++ ] = posVec.y;
-                    positions.array[ offset++ ] = posVec.z;
-                };
-                agentGeometry.addAttribute( 'position', positions );
-                */
-                // r071 and earlier
-                var agentGeometry = new THREE.Geometry();
-                // for (var offset = 0, i = 0; i < this.agents.length - 1; i++ ) {
-                for (var i = 0; i < this.agents.length - 1; i++ ) {
 
-                    var agent = this.agents[i];
-                    var posVec = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
-                    agentGeometry.vertices.push( posVec );
+                if ( _.isNull( this.particles ) )
+                    return;
+
+                var geometry = this.particles.geometry;
+
+                var positionValues = new Float32Array( this.agents.length * 3 );
+                var alphaValues = new Float32Array( this.agents.length * 1 );
+                var colourValues = new Float32Array( this.agents.length * 3 );
+
+                for ( var i = 0 ; i < this.agents.length; i++ ) {
+
+                    var agent = this.agents[ i ];
+
+                    var position = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+
+                    geometry.attributes.position.array[ i * 3 + 0 ] = position.x;
+                    geometry.attributes.position.array[ i * 3 + 1 ] = position.y;
+                    geometry.attributes.position.array[ i * 3 + 2 ] = position.z;
+
+                    if ( fp.appConfig.displayOptions.coloriseAgentsByHealth ) {
+
+                        var health = agent.health;
+                        var r = ( 100 - health ) / 100.0;
+                        var g = fp.appConfig.displayOptions.dayShow ? 0.0 : 1.0;
+                        var b = fp.appConfig.displayOptions.dayShow ? 1.0 : 0.0;
+                        g *= ( health / 100.0 );
+                        b *= ( health / 100.0 );
+
+                        geometry.attributes.color.array[ i * 3 + 0 ] = r;
+                        geometry.attributes.color.array[ i * 3 + 1 ] = g;
+                        geometry.attributes.color.array[ i * 3 + 2 ] = b;
+
+                        geometry.attributes.alpha.array[ i ] = 0.75;
+
+                    }
+                    else {
+
+                        var color = new THREE.Color( this.agents[ i ].color );
+                        geometry.attributes.color.array[ i * 3 + 0 ] = color.r;
+                        geometry.attributes.color.array[ i * 3 + 1 ] = color.g;
+                        geometry.attributes.color.array[ i * 3 + 2 ] = color.b;
+
+                        geometry.attributes.alpha.array[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
+
+                    }
 
                 }
 
-                // Shader approach from http://jsfiddle.net/8mrH7/3/
-                this.agentParticleSystemAttributes = {
-                    alpha: { type: "f", value: [ ] },
-                    color: { type: "c", value: [ ] }
-                };
+                this.particles.geometry.attributes.position.needsUpdate = true;
+                this.particles.geometry.attributes.color.needsUpdate = true;
+                this.particles.geometry.attributes.alpha.needsUpdate = true;
 
-                for( var j = 0; j < this.agents.length; j++ ) {
-                    this.agentParticleSystemAttributes.alpha.value[ j ] = ( fp.agentNetwork.agents[ j ].health * 0.0075 ) + 0.025;
-                    this.agentParticleSystemAttributes.color.value[ j ] = new THREE.Color( fp.agentNetwork.agents[ j ].color );
-                }
-
-                // point cloud material
-                var agentShaderMaterial = fp.agentNetwork.particles.material;
-                agentShaderMaterial.attributes = this.agentParticleSystemAttributes;
-                fp.scene.remove( fp.agentNetwork.particles );
-                this.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
-                this.particles.dynamic = true;
-                this.particles.sortParticles = true;
-                fp.scene.add( this.particles );
             };
 
 
@@ -566,40 +544,57 @@ define( [
              */
             this.buildAgentParticleSystem = function() {
 
-                var agentGeometry = new THREE.Geometry();
-                this.agents.forEach( function( agent ) {
-                    agentGeometry.vertices.push( fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent ) );
-                } );
+                var agentGeometry = new THREE.BufferGeometry();
 
-                // Shader approach from http://jsfiddle.net/8mrH7/3/
-                this.agentParticleSystemAttributes = {
-                    alpha: { type: "f", value: [] },
-                    color: { type: "c", value: [] }
-                };
+                var positionValues = new Float32Array( this.agents.length * 3 );
+                var colourValues = new Float32Array( this.agents.length * 3 );
+                var alphaValues = new Float32Array( this.agents.length * 1 );
+
+                for ( var i = 0 ; i < this.agents.length; i++ ) {
+
+                    var agent = this.agents[ i ];
+
+                    var position = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
+
+                    positionValues[ i * 3 + 0 ] = position.x;
+                    positionValues[ i * 3 + 1 ] = position.y;
+                    positionValues[ i * 3 + 2 ] = position.z;
+
+                    alphaValues[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
+
+                    var colour = new THREE.Color( this.agents[ i ].color );
+                    colourValues[ i * 3 + 0 ] = colour.r;
+                    colourValues[ i * 3 + 1 ] = colour.g;
+                    colourValues[ i * 3 + 2 ] = colour.b;
+                }
+
+                agentGeometry.addAttribute( 'position', new THREE.BufferAttribute( positionValues, 3 ) );
+                agentGeometry.addAttribute( 'alpha', new THREE.BufferAttribute( alphaValues, 1 ) );
+                agentGeometry.addAttribute( 'color', new THREE.BufferAttribute( colourValues, 3 ) );
 
                 var discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/stickman_180.png" );
                 if ( !fp.appConfig.agentOptions.useStickman ) {
+
                     discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/disc.png" );
+
                 }
                 discTexture.minFilter = THREE.LinearFilter;
 
                 // uniforms
                 var agentParticleSystemUniforms = {
+
                     texture: { type: "t", value: discTexture },
                     size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )}
+
                 };
 
-                for( var i = 0; i < agentGeometry.vertices.length; i++ ) {
-                    this.agentParticleSystemAttributes.alpha.value[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
-                    this.agentParticleSystemAttributes.color.value[ i ] = new THREE.Color( this.agents[ i ].color );
-                }
+                var attributes = [ 'alpha', 'color' ];
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
                     size: fp.appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
-                    //attributes: [ 'alpha', 'color' ], // r072
-                    attributes: this.agentParticleSystemAttributes, // r071
+                    attributes: attributes, // r072
                     vertexShader: fp.ShaderUtils.agentVertexShader(),
                     fragmentShader: fp.ShaderUtils.agentFragmentShader(),
                     sizeAttenuation: true,
@@ -610,18 +605,28 @@ define( [
                 } );
 
                 fp.scene.remove( this.particles );
+
                 this.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
                 this.particles.dynamic = true;
                 this.particles.sortParticles = true;
+
             };
 
             /**
              * Wrapper method for updating individual agents, their network and the shader.
              */
             this.updateAgentNetwork = function() {
+
                 this.updateAgents();
-                this.networks.forEach( function( network ) { network.updateAgentNetworkRendering(); } );
-                this.updateAgentShader();
+
+                this.networks.forEach( function( network ) {
+
+                    network.updateAgentNetworkRendering();
+
+                } );
+
+                this.updateAgentParticleSystem();
+
             };
 
             this.AgentClass = fp.Agent;
