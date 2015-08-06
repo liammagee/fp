@@ -33,7 +33,8 @@ require.config({
         TrackballControls: { deps: [ "three" ] },
         OrbitControls: { deps: [ "three" ] },
         PointerLockControls: { deps: [ "three" ] }
-    }
+    },
+    waitSeconds: 200
 });
 
 
