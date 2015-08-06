@@ -3436,7 +3436,7 @@ define( [
                         var shaderMaterial = new THREE.ShaderMaterial( {
 
                             uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
-                            // attributes: attributes,
+                            attributes: attributes,
                             vertexShader: fp.ShaderUtils.lambertShaderVertex(
 
                                 fp.ShaderUtils.buildingVertexShaderParams(),
@@ -3459,8 +3459,6 @@ define( [
                         shaderMaterial.side = THREE.DoubleSide;
                         shaderMaterial.wireframe = fp.appConfig.displayOptions.wireframeShow;
 
-                        // this.mesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
-                        // shapeGeometry.computeVertexNormals();
                         this.mesh = new THREE.Mesh( shapeGeometry, shaderMaterial );
                         this.mesh.castShadow = true;
                         this.mesh.receiveShadow = true;
@@ -3473,47 +3471,11 @@ define( [
                         height += this.levels * fp.appConfig.buildingOptions.levelHeight;
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
-                        // fp.buildingNetwork.networkMesh.add( this.highResMeshContainer );
+
                         fp.buildingNetwork.networkMesh.add( this.mesh );
-                        // this.highResMeshContainer.add( this.mesh.clone() );
-                        /*
-                        if ( fp.buildingNetwork.networkMesh.children.length === 0 ) {
-                            this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
-                            this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
-                            this.mesh.updateMatrix();
-                            fp.buildingNetwork.networkMesh.add( this.mesh );
-                        }
-                        else {
-                            // this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
-                            this.mesh.position.set( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z, height );
-                            this.mesh.updateMatrix();
-                            fp.buildingNetwork.networkMesh.children[ 0 ].geometry.mergeMesh( this.mesh );
-                            fp.buildingNetwork.networkMesh.children[ len ].geometry.verticesNeedUpdate = true;
-                        }
-                        */
+
                     }
                     else {
-
-                        /*
-                        var newGeom = this.mesh.geometry.clone();
-                        newGeom.mergeMesh( floorMesh );
-                        newGeom.verticesNeedUpdate = true;
-                        var newMesh = new THREE.Mesh( newGeom, this.mesh.material );
-                        newMesh.castShadow = true;
-                        newMesh.receiveShadow = true;
-                        newMesh.children.forEach( function( b ) {
-                            b.castShadow = true;
-                            b.receiveShadow = true;
-                        } );
-                        newMesh.rotation.set( -Math.PI / 2, 0, 0 );
-                        var newHeight = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
-                        newMesh.position.set( this.highResMeshContainer.position.x, newHeight, this.highResMeshContainer.position.z );
-                        newMesh.updateMatrix();
-                        newMesh.geometry.verticesNeedUpdate = true;
-                        fp.buildingNetwork.networkMesh.remove( this.mesh );
-                        this.mesh = newMesh;
-                        fp.buildingNetwork.networkMesh.add( this.mesh );
-                        */
 
                         var geometry = new THREE.BufferGeometry();
                         var existingFloorsCount = this.mesh.geometry.attributes.position.count;
