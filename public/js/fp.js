@@ -59,6 +59,7 @@ define( [
     "PointerLockControls"
 
     ], function( astar, $, THREE, _ ) {
+
     "use strict";
 
     /**
