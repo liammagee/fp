@@ -2328,8 +2328,10 @@ define( [
                         fp.roadNetwork.networkMesh.children[ k ].geometry.vertices = transformedVertices;
                         fp.roadNetwork.networkMesh.children[ k ].geometry.verticesNeedUpdate = true;
                     }
+
                     // Alter paths
                     for (var n = 0; n < fp.pathNetwork.networkMesh.children.length; n++ ) {
+
                         transformedVertices = [ ];
                         vertices = fp.pathNetwork.networkMesh.children[ n ];
                         for ( var o = 0; o < vertoces.length; o++ ) {
@@ -2337,24 +2339,43 @@ define( [
                         }
                         fp.pathNetwork.networkMesh.children[ n ].geometry.vertices = transformedVertices;
                         fp.pathNetwork.networkMesh.children[ n ].geometry.verticesNeedUpdate = true;
+
                     }
-                    for ( var p = 0; p < fp.agentNetwork.agents.length; p++ ) {
-                        var agent = fp.agentNetwork.agents[ p ];
-                        nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
-                        fp.agentNetwork.particles.geometry.vertices[ p ] = nv;
+
+                    if ( !_.isNull( fp.agentNetwork.particles ) ) {
+
+                        for ( var p = 0; p < fp.agentNetwork.agents.length; p++ ) {
+
+                            var agent = fp.agentNetwork.agents[ p ];
+                            nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
+                            fp.agentNetwork.particles.geometry.attributes.position.array[ p * 3 + 0 ] = nv.x;
+                            fp.agentNetwork.particles.geometry.attributes.position.array[ p * 3 + 1 ] = nv.y;
+                            fp.agentNetwork.particles.geometry.attributes.position.array[ p * 3 + 2 ] = nv.z;
+
+                        }
+
+                        fp.agentNetwork.particles.geometry.attributes.position.needsUpdate = true;
+
                     }
-                    if ( !_.isNull( fp.agentNetwork.particles ) )
-                        fp.agentNetwork.particles.geometry.verticesNeedUpdate = true;
+
                     for ( var r = 0; r < fp.agentNetwork.networks.length; r++ ) {
+
                         transformedVertices = [ ];
                         var network = fp.agentNetwork.networks[ r ];
+
                         if ( !_.isNull( network.networkMesh ) ) {
+
                             vertices = network.networkMesh.geometry.vertices;
+
                             for ( var s = 0; s < vertices.length; s++ ) {
+
                                 transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ s ], percent ) );
+
                             }
+
                             network.networkMesh.geometry.vertices = transformedVertices;
                             network.networkMesh.geometry.verticesNeedUpdate = true;
+
                         }
                     }
                 }
@@ -3335,6 +3356,7 @@ define( [
                 var mesh;
 
                 if ( shapeGeometry.boundingBox ) {
+
                     var dumbMaterial = new THREE.MeshBasicMaterial( { color: "#ff0000" } );
                     dumbMaterial.visible = false;
 
@@ -3344,17 +3366,22 @@ define( [
                     mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                     mesh.updateMatrix();
                     return mesh;
+
                 }
+
                 return null;
+
             };
 
             this.shadedShapeGeometry = function( points ) {
+
                 var shape = new THREE.Shape();
                 shape.moveTo( points[ 0 ].x, points[ 0 ].z );
                 for ( var i = 1; i < points.length; i++ )
                     shape.lineTo( points[ i ].x, points[ i ].z );
                 shape.lineTo( points[ 0 ].x, points[ 0 ].z );
                 return shape;
+
             };
 
             this.shadedShape = function( points ) {
@@ -3468,7 +3495,6 @@ define( [
                         } );
                         this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
                         height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
-                        height += this.levels * fp.appConfig.buildingOptions.levelHeight;
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
 
