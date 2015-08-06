@@ -8,6 +8,7 @@ require.config({
         jstat: "utils/jstat.min",
         smoothie: "ux/smoothie",
         stats: "ux/stats.min",
+        javascriptUtil: "utils/javascript.util",
         jsts: "utils/jsts",
         datGui: "ux/dat.gui",
         water: "objects/water-material",
@@ -25,13 +26,13 @@ require.config({
         datGui: { exports: "dat.gui" },
         smoothie: { exports: "SmoothieChart" },
         stats: { exports: "Stats" },
+        jsts: { deps: [ "javascriptUtil" ] },
         water: { exports: "THREE.Water", deps: [ "three" ] },
         KeyboardState: { deps: [ "three" ] },
         TerrainLoader: { deps: [ "three" ] },
         TrackballControls: { deps: [ "three" ] },
         OrbitControls: { deps: [ "three" ] },
-        PointerLockControls: { deps: [ "three" ] },
-        jsts: { deps: [ "utils/javascript.util" ] }
+        PointerLockControls: { deps: [ "three" ] }
     }
 });
 
