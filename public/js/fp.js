@@ -569,8 +569,8 @@ define( [
                 }
 
                 agentGeometry.addAttribute( 'position', new THREE.BufferAttribute( positionValues, 3 ) );
-                agentGeometry.addAttribute( 'alpha', new THREE.BufferAttribute( alphaValues, 1 ) );
                 agentGeometry.addAttribute( 'color', new THREE.BufferAttribute( colourValues, 3 ) );
+                agentGeometry.addAttribute( 'alpha', new THREE.BufferAttribute( alphaValues, 1 ) );
 
                 var discTexture = THREE.ImageUtils.loadTexture( "../images/sprites/stickman_180.png" );
                 if ( !fp.appConfig.agentOptions.useStickman ) {
@@ -1217,6 +1217,7 @@ define( [
              * Construct a geometry with closed spaces.
              */
             this.cloneGeometry = function() {
+
                 var clone = fp.terrain.plane.geometry.clone();
                 var vertices = fp.terrain.plane.geometry.attributes.position.array;
                 var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
@@ -1228,75 +1229,102 @@ define( [
                 var patchSizeOffset = fp.patchNetwork.patchSize + 1;
                 var newOffset = 0, oldOffset = 0;
                 var counter = 0;
+
                 for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
+
                     for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
+
                         geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                         geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                         geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+
                         if ( i % patchSize === 0 ) {
+
                             newOffset += newPoints * 3 ;
                             geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                             geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                             geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+
                             if ( j % patchSize === 0 ) {
+
                                 newOffset += 3;
                                 geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                                 geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                                 geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
                                 newOffset -= 3;
+
                             }
+
                             newOffset -= newPoints * 3;
+
                         }
+
                         if ( j % patchSize === 0 ) {
+
                             newOffset += 3;
                             geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                             geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
                             geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+
                         }
+
                         newOffset += 3;
                         oldOffset += 3;
+
                     }
                     if ( i % patchSize === 0 ) {
+
                         newOffset += newPoints * 3;
+
                     }
                 }
+
                 var len = geometry.attributes.position.array.length / 3,
                     heights = new Float32Array( len ),
                     trailPoints = new Float32Array( len ),
                     patchPoints = new Float32Array( len );
-                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
-                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
-                var patchAttributes = {
-                    height: { type: "f", value: null },
-                    trail: { type: "f", value: null },
-                    patch: { type: "f", value: null },
-                };
+
                 for ( i = 0; i < len; i++ ) {
+
                     heights[ i ] = geometry.attributes.position.array[ i * 3 + 2 ];
                     trailPoints[ i ] = 0;
                     patchPoints[ i ] = 0;
+
                 }
+
+                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
+
+                var patchAttributes = [ 'height', 'trail', 'patch' ];
+
                 var richTerrainMaterial = new THREE.ShaderMaterial( {
+
                     uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
                     attributes: patchAttributes,
                     vertexShader:   fp.ShaderUtils.lambertShaderVertex(
+
                         fp.ShaderUtils.terrainVertexShaderParams(),
                         fp.ShaderUtils.terrainVertexShaderMain()
+
                     ),
                     fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
+
                     ),
                     lights: true,
                     fog: false,
                     transparent: true
 
                 } );
-                // richTerrainMaterial.wireframe = true;
+
                 this.patchPlaneArray = geometry.attributes.position.clone();
                 this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
+
                 return new THREE.Mesh( geometry, richTerrainMaterial );
+
             };
 
             /**
@@ -1765,25 +1793,35 @@ define( [
                 return pathLine;
             };
 
+
             /**
              * Update the visualisation of all agent paths.
              */
             this.updatePath = function() {
+
                 if ( !fp.AppState.runSimulation )
                     return;
 
                 var children = fp.pathNetwork.networkMesh.children;
+
                 for ( var i = children.length - 1; i >= 0; i-- ) {
+
                     fp.pathNetwork.networkMesh.remove( children[ i ] );
+
                 }
                 var agentsWithPaths = _.chain( fp.agentNetwork.agents ).
                     map( function( agent ) { if ( !_.isUndefined( agent.pathComputed ) && agent.pathComputed.length > 1 ) return agent; } ).
                         compact().
                         value();
+
                 _.each( agentsWithPaths, function( agent ) {
+
                     fp.pathNetwork.drawPathHome( agent );
+
                 } );
+
             };
+
         };
 
         this.TERRAIN_MAPS = [ "../assets/syd2.bin", "../assets/mel2.bin" ];
@@ -1892,6 +1930,7 @@ define( [
 
             };
 
+
             /**
              * Initialises the terrain.
              */
@@ -1958,47 +1997,59 @@ define( [
                     patchPoints = new Float32Array( len );
 
                 for ( i = 0; i < len; i++ ) {
+
                     heights[ i ] = vertices[ i * 3 + 2 ];
                     trailPoints[ i ] = 0.0;
                     patchPoints[ i ] = 0.0;
+
                 }
-                var terrainAttributes = {
-                    height: { type: "f", value: null },
-                    trail: { type: "f", value: null },
-                    patch: { type: "f", value: null },
-                };
+
+                var terrainAttributes = [ 'height', 'trail', 'patch' ];
+
                 geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
                 var uniforms = this.createUniforms();
+
                 fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial( {
+
                     uniforms: fp.ShaderUtils.phongUniforms( uniforms ),
                     attributes: terrainAttributes,
                     vertexShader:   fp.ShaderUtils.phongShaderVertex(
+
                         fp.ShaderUtils.terrainVertexShaderParams(),
                         fp.ShaderUtils.terrainVertexShaderMain()
+
                     ),
                     fragmentShader: fp.ShaderUtils.phongShaderFragment(
+
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
+
                     ),
                     lights: true,
                     fog: true,
                     // transparent: true,
                     alphaTest: 0.5
+
                 } );
 
                 // Only use the shader material if we have variable heights
                 if ( fp.appConfig.terrainOptions.shaderUse ) {
+
                     // Necessary? Maybe for Phong
                     // geometry.computeFaceNormals();
                     geometry.computeVertexNormals();
                     fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
+
                 }
                 else {
+
                     fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
+
                 }
+
                 // Cache the array
                 fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
                 fp.terrain.plane.castShadow = true;
@@ -2009,16 +2060,23 @@ define( [
                 fp.terrain.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 fp.toggleTerrainPlane();
 
-                if ( fp.appConfig.displayOptions.patchesShow )
+                if ( fp.appConfig.displayOptions.patchesShow ) {
+
                     fp.patchNetwork.buildPatchMesh();
+
+                }
+
                 // fp.terrain.createTerrainColors();
                 fp.toggleDayNight();
                 fp.pathNetwork.setupAStarGraph();
 
                 // Construct the sphere, and switch it on
                 if ( fp.appConfig.terrainOptions.renderAsSphere ) {
+
                     fp.terrain.sphereArray = fp.terrain.constructSphere( fp.terrain.planeArray );
+
                 }
+
             };
 
             /**
@@ -3020,8 +3078,12 @@ define( [
 
                 this.geometry = new THREE.Geometry();
                 // Pre-fill with enough vertices
-                for ( var i = 0; i < ( fp.appConfig.maxLevels * 16 + 8 ); i++ )
+                for ( var i = 0; i < ( fp.appConfig.maxLevels * 16 + 8 ); i++ ) {
+
                     this.geometry.vertices.push( new THREE.Vector3( 0,0,0 ));
+
+                }
+
                 this.geometry.verticesNeedUpdate = true;
                 this.geometry.computeVertexNormals();
 
@@ -3031,6 +3093,7 @@ define( [
                 this.lowResMeshContainer = new THREE.Object3D();
 
                 if ( ! fp.appConfig.buildingOptions.useShader ) {
+
                     this.mesh = new THREE.Line( this.geometry, this.lineMaterial, THREE.LineSegments );
                     this.highResMeshContainer.add( this.mesh );
 
@@ -3039,23 +3102,34 @@ define( [
                         this.highResMeshContainer.add( this.windowsOutlineContainer );
 
                     this.windowsFillContainer = new THREE.Object3D();
-                    if ( fp.appConfig.buildingOptions.windowsFill )
+
+                    if ( fp.appConfig.buildingOptions.windowsFill ) {
+
                         this.highResMeshContainer.add( this.windowsFillContainer );
+
+                    }
+
                 }
 
                 if ( fp.appConfig.buildingOptions.useLevelOfDetail ) {
+
                     this.lod.addLevel( this.highResMeshContainer, fp.appConfig.buildingOptions.highResDistance );
                     this.lod.addLevel( this.lowResMeshContainer, fp.appConfig.buildingOptions.lowResDistance );
                     this.lowResGeometry = new THREE.BoxGeometry( fp.appConfig.buildingOptions.width, ( this.levels + 1 ) * fp.appConfig.buildingOptions.levelHeight, fp.appConfig.buildingOptions.length );
                     this.lowResGeometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, ( this.levels + 1 ) * fp.appConfig.buildingOptions.levelHeight / 2, 0 ) );
                     this.lowResMesh = new THREE.Mesh( this.lowResGeometry, this.buildingMaterial );
                     this.lowResMeshContainer.add( this.lowResMesh );
+
                 }
-                else
+                else {
+
                     this.lod.addLevel( this.highResMeshContainer, 1 );
+
+                }
 
                 this.lod.updateMatrix();
                 this.lod.matrixAutoUpdate = false;
+
             };
 
             /**
@@ -3284,32 +3358,41 @@ define( [
             };
 
             this.shadedShape = function( points ) {
+
                 var base = points[ 0 ].y;
                 var height = base;// + this.lod.position.y;
                 var offset = fp.getOffset( this.levels, points.length );
                 var shape = this.shadedShapeGeometry( points );
                 var extrudeSettings = { amount: fp.appConfig.buildingOptions.levelHeight * 1.0, bevelEnabled: false };
-                var shapeGeometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+                var tmpGeometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+                var shapeGeometry = new THREE.BufferGeometry().fromGeometry( tmpGeometry );
                 shapeGeometry.computeBoundingBox();
 
                 if ( shapeGeometry.boundingBox ) {
-                    // if ( this.highResMeshContainer.children.length === 0 ) {
-                    // if ( this.levels < 1000 ) {
+
                     if ( this.levels === 0 ) {
+                    // if ( this.levels < 1000 ) {
+
                         var fc, lc, wc;
                         if ( fp.appConfig.displayOptions.dayShow ) {
+
                             fc = fp.buildColorVector( fp.appConfig.colorOptions.colorDayBuildingFill );
                             lc = fp.buildColorVector( fp.appConfig.colorOptions.colorDayBuildingLine );
                             wc = fp.buildColorVector( fp.appConfig.colorOptions.colorDayBuildingWindow );
+
                         }
                         else {
+
                             fc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingFill );
                             lc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingLine );
                             wc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingWindow );
+
                         }
+
                         // Gets around a problem with rendering a single building with lines or windows
                         var showLines = ( fp.buildingNetwork.buildings.length > 1 && fp.appConfig.buildingOptions.showLines );
                         var showWindows = fp.appConfig.buildingOptions.showWindows;
+
                         this.uniforms = {
 
                             // Lambert settings
@@ -3340,26 +3423,37 @@ define( [
 
                         };
 
-                        var attributes = { mixin: { type: "f", value: [ ] } };
-                        for ( var i = 0; i < shapeGeometry.vertices.length; i++ ) {
-                            attributes.mixin.value[ i ] = Math.random() * 10;
+                        var mixins = new Float32Array( shapeGeometry.attributes.position.count * 1 );
+                        for ( var i = 0; i < shapeGeometry.attributes.position.count; i++ ) {
+
+                            mixins[ i ] = Math.random() * 10;
+
                         }
+                        shapeGeometry.addAttribute( 'mixin', new THREE.BufferAttribute( mixins, 1 ) );
+
+                        var attributes = [ 'mixin' ];
 
                         var shaderMaterial = new THREE.ShaderMaterial( {
+
                             uniforms: fp.ShaderUtils.lambertUniforms( this.uniforms ),
-                            attributes: attributes,
+                            // attributes: attributes,
                             vertexShader: fp.ShaderUtils.lambertShaderVertex(
+
                                 fp.ShaderUtils.buildingVertexShaderParams(),
                                 fp.ShaderUtils.buildingVertexShaderMain()
+
                             ),
                             fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+
                                 fp.ShaderUtils.buildingFragmentShaderParams(),
                                 fp.ShaderUtils.buildingFragmentShaderMain()
+
                             ),
                             lights: true,
                             fog: true,
                             // transparent: true,
                             alphaTest: 0.5
+
                         } );
 
                         shaderMaterial.side = THREE.DoubleSide;
@@ -3376,6 +3470,7 @@ define( [
                         } );
                         this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
                         height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
+                        height += this.levels * fp.appConfig.buildingOptions.levelHeight;
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
                         // fp.buildingNetwork.networkMesh.add( this.highResMeshContainer );
@@ -3398,10 +3493,8 @@ define( [
                         */
                     }
                     else {
-                        var dumbMaterial = new THREE.MeshBasicMaterial( { color: "#ff0000" } );
-                        var floorMesh = new THREE.Mesh( shapeGeometry, dumbMaterial );
-                        floorMesh.position.set( 0, 0, height );
-                        floorMesh.updateMatrix();
+
+                        /*
                         var newGeom = this.mesh.geometry.clone();
                         newGeom.mergeMesh( floorMesh );
                         newGeom.verticesNeedUpdate = true;
@@ -3420,6 +3513,75 @@ define( [
                         fp.buildingNetwork.networkMesh.remove( this.mesh );
                         this.mesh = newMesh;
                         fp.buildingNetwork.networkMesh.add( this.mesh );
+                        */
+
+                        var geometry = new THREE.BufferGeometry();
+                        var existingFloorsCount = this.mesh.geometry.attributes.position.count;
+                        var newFloorCount = shapeGeometry.attributes.position.count;
+                        var totalBuildingCount = existingFloorsCount + newFloorCount;
+                        var positions = new Float32Array( totalBuildingCount * 3 );
+                        var normals = new Float32Array( totalBuildingCount * 3 );
+                        var colors = new Float32Array( totalBuildingCount * 3 );
+                        var uvs = new Float32Array( totalBuildingCount * 2 );
+                        var mixins = new Float32Array( totalBuildingCount * 1 );
+
+                        for ( var i = 0; i < existingFloorsCount; i++ ) {
+
+                            positions[ i * 3 + 0 ] = this.mesh.geometry.attributes.position.array[ i * 3 + 0 ];
+                            positions[ i * 3 + 1 ] = this.mesh.geometry.attributes.position.array[ i * 3 + 1 ];
+                            positions[ i * 3 + 2 ] = this.mesh.geometry.attributes.position.array[ i * 3 + 2 ];
+
+                            normals[ i * 3 + 0 ] = this.mesh.geometry.attributes.normal.array[ i * 3 + 0 ];
+                            normals[ i * 3 + 1 ] = this.mesh.geometry.attributes.normal.array[ i * 3 + 1 ];
+                            normals[ i * 3 + 2 ] = this.mesh.geometry.attributes.normal.array[ i * 3 + 2 ];
+
+                            colors[ i * 3 + 0 ] = this.mesh.geometry.attributes.color.array[ i * 3 + 0 ];
+                            colors[ i * 3 + 1 ] = this.mesh.geometry.attributes.color.array[ i * 3 + 1 ];
+                            colors[ i * 3 + 2 ] = this.mesh.geometry.attributes.color.array[ i * 3 + 2 ];
+
+                            uvs[ i * 2 + 0 ] = this.mesh.geometry.attributes.uv.array[ i * 2 + 0 ];
+                            uvs[ i * 2 + 1 ] = this.mesh.geometry.attributes.uv.array[ i * 2 + 1 ];
+
+                        }
+
+                        for ( var i = existingFloorsCount, j = 0; j < newFloorCount; j++ ) {
+
+                            positions[ ( i + j ) * 3 + 0 ] = shapeGeometry.attributes.position.array[ j * 3 + 0 ];
+                            positions[ ( i + j ) * 3 + 1 ] = shapeGeometry.attributes.position.array[ j * 3 + 1 ];
+                            positions[ ( i + j ) * 3 + 2 ] = shapeGeometry.attributes.position.array[ j * 3 + 2 ] + this.levels * fp.appConfig.buildingOptions.levelHeight;
+
+                            normals[ ( i + j ) * 3 + 0 ] = shapeGeometry.attributes.normal.array[ j * 3 + 0 ];
+                            normals[ ( i + j ) * 3 + 1 ] = shapeGeometry.attributes.normal.array[ j * 3 + 1 ];
+                            normals[ ( i + j ) * 3 + 2 ] = shapeGeometry.attributes.normal.array[ j * 3 + 2 ];
+
+                            colors[ ( i + j ) * 3 + 0 ] = shapeGeometry.attributes.color.array[ j * 3 + 0 ];
+                            colors[ ( i + j ) * 3 + 1 ] = shapeGeometry.attributes.color.array[ j * 3 + 1 ];
+                            colors[ ( i + j ) * 3 + 2 ] = shapeGeometry.attributes.color.array[ j * 3 + 2 ];
+
+                            uvs[ ( i + j ) * 2 + 0 ] = shapeGeometry.attributes.uv.array[ j * 2 + 0 ];
+                            uvs[ ( i + j ) * 2 + 1 ] = shapeGeometry.attributes.uv.array[ j * 2 + 1 ];
+
+                        }
+
+                        var mixins = new Float32Array( totalBuildingCount * 1 );
+                        for ( var i = 0; i < totalBuildingCount; i++ ) {
+
+                            mixins[ i ] = Math.random() * 10;
+
+                        }
+
+                        geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+                        geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+                        geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+                        geometry.addAttribute( 'uv', new THREE.BufferAttribute( uvs, 2 ) );
+                        geometry.addAttribute( 'mixin', new THREE.BufferAttribute( mixins, 1 ) );
+                        geometry.computeBoundingBox();
+                        geometry.computeVertexNormals();
+
+                        this.mesh.geometry = geometry;
+                        this.mesh.updateMatrix();
+
+
                     }
                 }
             };
@@ -3433,63 +3595,93 @@ define( [
              * Updates the building's state.
              */
             this.updateBuilding = function() {
+
                 if ( this.canAddFloor() ) {
+
                     this.counter++;
+
                     if ( this.counter % fp.appConfig.buildingOptions.riseRate === 0 || this.levels === 0 ) {
+
                         this.addFloor();
+
                     }
 
                     if ( fp.appConfig.buildingOptions.falling ) {
+
                         var y = - ( this.levelHeight /  ( 2 * fp.appConfig.buildingOptions.riseRate ));
                         this.yOffset += y;
                         this.highResMeshContainer.translateY( y );
                         this.lowResMeshContainer.translateY( y );
+
                     }
+
                 }
                 // NOT WORKING YET
                 else if ( !this.destroying && fp.appConfig.buildingOptions.destroyOnComplete ) {
+
                     this.destroying = true;
+
                 }
                 else if ( this.destroying && this.levels > 0 ) {
                     this.counter++;
                     if ( this.counter % fp.appConfig.buildingOptions.riseRate === 0 ) {
+
                         this.removeFloor();
+
                     }
                 }
                 else if ( this.destroying && this.levels === 0 && fp.appConfig.buildingOptions.loopCreateDestroy ) {
+
                     this.destroying = false;
+
                 }
 
                 if ( fp.appConfig.buildingOptions.turning ) {
+
                     this.highResMeshContainer.rotation.x += 0.001;
                     this.highResMeshContainer.rotation.y += 0.01;
                     this.lowResMeshContainer.rotation.x += 0.001;
                     this.lowResMeshContainer.rotation.y += 0.01;
                     this.lowResMesh.rotation.x += 0.001;
                     this.lowResMesh.rotation.y += 0.01;
+
                 }
+
                 this.updateBuildingShader();
+
             };
 
             /**
              * Updates the building's shader.
              */
             this.updateBuildingShader = function() {
+
                 if ( _.isUndefined( this.mesh ) || _.isNull( this.mesh ) )
                     return;
-                var verticesPerLevel = this.mesh.geometry.vertices.length / this.levels;
-                var shaderMaterial = this.mesh.material;
+
+                var verticesPerLevel = ( this.mesh.geometry.attributes.position.count ) / this.levels;
+
                 for ( var i = 0; i < this.levels; i++ ) {
+
                     var r = Math.random() * 10;
                     var chance = fp.appConfig.buildingOptions.windowsFlickerRate;
+
                     if ( Math.random() < chance ) {
+
                         var v = i * verticesPerLevel;
+
                         for ( var j = v; j < v + verticesPerLevel; j++ ) {
-                            shaderMaterial.attributes.mixin.value[ j ] = r;
+
+                            this.mesh.geometry.attributes.mixin.array[ j ] = r;
+
                         }
+
                     }
+
                 }
-                shaderMaterial.attributes.mixin.needsUpdate = true; // important!
+
+                this.mesh.geometry.attributes.mixin.needsUpdate = true; // important!
+
             };
 
             this.updateSimpleBuilding = function () {
