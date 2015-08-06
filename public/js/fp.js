@@ -61,8 +61,6 @@ define( [
     ], function( astar, $, THREE, _ ) {
     "use strict";
 
-    //var astar = require( "astar" );
-
     /**
      * Extension to JQuery for URL param extraction - taken from: http://www.sitepoint.com/url-parameters-jquery/ .
      */
