@@ -5831,8 +5831,11 @@ define( [
                 fp.trailNetwork.globalTrailLine.material.colorsNeedUpdate = true;
             }
 
-            if ( !_.isNull( fp.agentNetwork.particles ) )
+            if ( !_.isNull( fp.agentNetwork.particles ) ) {
+
                 fp.agentNetwork.agents.forEach( function( agent ) { agent.color = colorAgent; } );
+
+            }
 
         };
 
