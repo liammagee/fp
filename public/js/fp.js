@@ -4,46 +4,58 @@ require.config({
         jquery: "utils/jquery",
         astar: "utils/astar",
         underscore: "utils/underscore",
-        three: "three-71"
+        three: "three-71",
+        jstat: "utils/jstat.min",
+        smoothie: "ux/smoothie",
+        stats: "ux/stats.min",
+        jsts: "utils/jsts",
+        datGui: "ux/dat.gui",
+        water: "objects/water-material",
+        KeyboardState: "controls/THREEx.KeyboardState",
+        TerrainLoader: "loaders/TerrainLoader",
+        TrackballControls: "controls/TrackballControls",
+        OrbitControls: "controls/OrbitControls",
+        PointerLockControls: "controls/PointerLockControls",
     },
     shim: {
         jquery: { exports: "$" },
         three: { exports: "THREE" },
         underscore: { exports: "_" },
-        "utils/jstat.min": { exports: "jStat" },
-        "ux/dat.gui": { exports: "dat.gui" },
-        "ux/smoothie": { exports: "SmoothieChart" },
-        "ux/stats.min": { exports: "Stats" },
-        "objects/Mirror": [ "three" ],
-        "objects/water-material": { exports: "THREE.Water", deps: [ "three", "objects/Mirror" ] },
-        "loaders/TerrainLoader": { deps: [ "three" ] },
-        "controls/TrackballControls": { deps: [ "three" ] },
-        "controls/OrbitControls": { deps: [ "three" ] },
-        "controls/PointerLockControls": { deps: [ "three" ] },
-        "utils/jsts": { deps: [ "utils/javascript.util" ] }
+        jstat: { exports: "jStat" },
+        datGui: { exports: "dat.gui" },
+        smoothie: { exports: "SmoothieChart" },
+        stats: { exports: "Stats" },
+        water: { exports: "THREE.Water", deps: [ "three" ] },
+        KeyboardState: { deps: [ "three" ] },
+        TerrainLoader: { deps: [ "three" ] },
+        TrackballControls: { deps: [ "three" ] },
+        OrbitControls: { deps: [ "three" ] },
+        PointerLockControls: { deps: [ "three" ] },
+        jsts: { deps: [ "utils/javascript.util" ] }
     }
 });
 
 
 define( [
 
-    "astar", // Needs to be named
+    // NEED TO BE NAMED
+    "astar",
     "jquery",
     "three",
     "underscore",
-    "utils/jstat.min",
-    "utils/jsts",
+    // DO NOT NEED TO BE NAMED
+    "jstat",
+    "jsts",
     "ux/dat.gui",
-    "ux/smoothie",
-    "ux/stats.min",
-    "loaders/TerrainLoader",
-    "objects/Mirror",
-    "objects/water-material",
-    "controls/THREEx.KeyboardState",
-    "controls/TrackballControls",
-    "controls/OrbitControls",
-    "controls/PointerLockControls"
-    
+    "smoothie",
+    "stats",
+    "water",
+    "TerrainLoader",
+    "KeyboardState",
+    "TrackballControls",
+    "OrbitControls",
+    "PointerLockControls"
+
     ], function( astar, $, THREE, _ ) {
     "use strict";
 
@@ -1867,7 +1879,7 @@ define( [
                     uniforms.midland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland1 ) };
                     uniforms.midland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainMidland2 ) };
                     uniforms.highlandColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainHighland ) };
-                   
+
                 }
 
                 return uniforms;
@@ -1910,11 +1922,11 @@ define( [
 
                 }
 
-                fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( { 
+                fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( {
 
                     color: new THREE.Color( 0xffffff ),  // diffuse
-                    emissive: new THREE.Color( 0x111111 ),  
-                    specular: new THREE.Color( 0x111111 ),  
+                    emissive: new THREE.Color( 0x111111 ),
+                    specular: new THREE.Color( 0x111111 ),
 
                     //map: map,
                     //bumpMap: map,
@@ -1927,7 +1939,7 @@ define( [
 
                     //metal: true,
 
-                    wireframe: fp.appConfig.displayOptions.wireframeShow 
+                    wireframe: fp.appConfig.displayOptions.wireframeShow
 
                 } );
 
@@ -5568,7 +5580,7 @@ define( [
             var colorBackground, colorBuilding, colorRoad,
                 colorAgent, colorNetwork, colorTrail,
                 colorBuildingFill, colorBuildingLine, colorBuildingWindow;
-            
+
             if ( fp.appConfig.displayOptions.dayShow ) {
                 colorBackground = fp.appConfig.colorOptions.colorDayBackground;
                 colorRoad = fp.appConfig.colorOptions.colorDayRoad;
@@ -5597,12 +5609,12 @@ define( [
                 if ( fp.appConfig.displayOptions.skyboxShow )
                     fp.scene.remove( fp.skyBox );
             }
-            
+
             fp.terrain.richTerrainMaterial.needsUpdate = true; // important!
             fp.terrain.simpleTerrainMaterial.needsUpdate = true; // important!
             fp.terrain.plane.material.needsUpdate = true; // important!
             fp.renderer.setClearColor( colorBackground, 1 );
-            
+
             if ( fp.appConfig.buildingOptions.useShader ) {
                 fp.buildingNetwork.buildings.forEach( function( building ) {
                     building.highResMeshContainer.children.forEach( function( floor ) {
@@ -5635,7 +5647,7 @@ define( [
 
             if ( !_.isNull( fp.agentNetwork.particles ) )
                 fp.agentNetwork.agents.forEach( function( agent ) { agent.color = colorAgent; } );
-        
+
         };
 
         /**
@@ -6260,7 +6272,7 @@ define( [
                     THREE.ShaderChunk[ "aomap_fragment" ],
                     THREE.ShaderChunk[ "emissivemap_fragment" ],
 
-                   
+
                     THREE.ShaderChunk[ "lights_phong_fragment" ],
 
                     THREE.ShaderChunk[ "envmap_fragment" ],
