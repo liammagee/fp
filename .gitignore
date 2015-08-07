@@ -22,9 +22,6 @@ coverage
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
-# Generated API docs
-public/api
-
 # Dependency directory
 # Commenting this out is preferred by some people, see
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-
@@ -44,3 +41,6 @@ node_modules
 
 # Compiled ES6 files - DO NOT IGNORE FOR NOW
 # *-compiled.*
+
+# Generated API docs - DO NOT IGNORE FOR NOW
+# public/api

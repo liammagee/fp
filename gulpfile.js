@@ -17,6 +17,10 @@ var paths = {
     fpCompiled: 'fp-compiled.js',
     fpCompiledFull:  'public/js/fp-compiled.js'
 }
+var pathsToWatch = [
+    paths.fp,
+    'docs/*.md'
+]
 
 gulp.task( 'default', [ 'watch' ] );
 
@@ -37,7 +41,7 @@ gulp.task( 'babel', [ 'clean' ], function() {
  * Watch for babel
  */
 gulp.task( 'watch', [ 'clean' ], function() {
-    return gulp.watch( paths.fp, [ 'babel' ] );
+    return gulp.watch( pathsToWatch, [ 'pandoc-site', 'babel' ] );
 } );
 
 
