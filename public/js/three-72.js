@@ -11569,8 +11569,6 @@ THREE.BufferGeometry.prototype = {
 
 			}
 
-			console.log( attributeArray1.length, attributeSize, attributeArray2.length )
-
 		}
 
 		return this;
@@ -17643,7 +17641,7 @@ THREE.SkinnedMesh.prototype.bind = function( skeleton, bindMatrix ) {
 	if ( bindMatrix === undefined ) {
 
 		this.updateMatrixWorld( true );
-
+		
 		this.skeleton.calculateInverses();
 
 		bindMatrix = this.matrixWorld;
@@ -29837,7 +29835,7 @@ THREE.EllipseCurve.prototype.getPoint = function ( t ) {
 		angle = this.aStartAngle + t * deltaAngle;
 
 	}
-
+	
 	var vector = new THREE.Vector2();
 
 	vector.x = this.aX + this.xRadius * Math.cos( angle );
@@ -32617,7 +32615,7 @@ THREE.ShapeGeometry.prototype.addShape = function ( shape, options ) {
  * @author bhouston / http://exocortex.com
  */
 
-// points - to create a closed torus, one must use a set of points
+// points - to create a closed torus, one must use a set of points 
 //    like so: [ a, b, c, d, a ], see first is the same as last.
 // segments - the number of circumference segments to create
 // phiStart - the starting radian
