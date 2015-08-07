@@ -134,6 +134,6 @@ Showcases using a different starting map.
 
 Showcases patches overlaid on the map, with changing values.
 
-[Open in a new window](examples/usage/patches.html)
+[Open in a new window](examples/usage/patch-grid.html)
 
 
