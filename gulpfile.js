@@ -104,6 +104,30 @@ gulp.task( 'jsdoc', shell.task( [
 /**
  * Generates a complete HTML file with citations, MathJax and a bootstrap template.
  */
+gulp.task('pandoc-site', function() {
+  gulp.src('docs/*.md')
+    .pipe(pandoc({
+      from: 'markdown',
+      to: 'html5',
+      ext: '.html',
+      args: [
+        '--smart',
+        '--standalone',
+        '--toc',
+        '--toc-depth=2 ',
+        // '--mathjax=js/docs/MathJax.js',
+        '--mathjax',
+        '--bibliography=docs/fp.bib',
+        '--template=docs/templates/fp.html',
+        // '--css=css/docs.css'
+        ]
+    }))
+    .pipe(gulp.dest('public/'));
+});
+
+/**
+ * Generates a complete HTML file with citations, MathJax and a bootstrap template.
+ */
 gulp.task('pandoc-html', function() {
   gulp.src('docs/*.md')
     .pipe(pandoc({
