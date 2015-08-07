@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <!-- Pandoc Start -->
+  <meta name="generator" content="pandoc" />
+      <title>Fierce Planet</title>
+  <!-- Pandoc End -->
+
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Pandoc Start -->
+  <style type="text/css">code{white-space: pre;}</style>
+    <!-- Pandoc End -->
+
+</head>
+<body>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+                  <div id="header">
+          <h1 class="title">Fierce Planet</h1>
+                              </div>
+              </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+         <div class="col-md-9" role="main">
+          <h2 id="overview">Overview</h2>
+          <p>These notes cover a range of different topics for using or extending the <em>Fierce Planet</em> application.</p>
+          <h2 id="adding-1-arc-second-30m-resolution-terrain">Adding 1 Arc-Second (30m) resolution terrain:</h2>
+          <ol type="1">
+          <li>Visit http://earthexplorer.usgs.gov/ (register if necessary)
+          <ul>
+          <li>Enter search criteria (e.g. “Sydney”)</li>
+          <li>Customise coordinates to fit desired region</li>
+          <li>Click the “Data Sets” button</li>
+          <li>Expand “Digital Elevation”</li>
+          <li>Expand “SRTM”</li>
+          <li>Select “SRTM 1 Arc-Second Global”</li>
+          <li>Click “Results”</li>
+          <li>Download <em>all</em> of the resulting tiles in GeoTIFF format</li>
+          </ul></li>
+          <li>To merge the downloaded files (if e.g. 4 tiles are downloaded):</li>
+          </ol>
+          <pre><code>    gdal_merge.py -o Sydney.tif s34_e150_1arc_v3.tif s34_e151_1arc_v3.tif s35_e150_1arc_v3.tif s35_e151_1arc_v3.tif</code></pre>
+          <ol start="3" type="1">
+          <li>Check the resulting merged tif file.</li>
+          <li>To get the dimensions of the merged tif file:</li>
+          </ol>
+          <pre><code>    gdalinfo Sydney.tif</code></pre>
+          <ol start="5" type="1">
+          <li><p>To select a sample of the resulting tif:</p>
+          <ul>
+          <li>Suppose the file is 7201 x 7201 pixels, and the desired region is a square offset by 25% on the x axis and 12.5% on the y axis</li>
+          </ul></li>
+          </ol>
+          <pre><code>    gdal_translate -srcwin 1800 900 3601 3601 Sydney.tif Sydney-local.tif</code></pre>
+          <ol start="6" type="1">
+          <li>Then to translate to a header-less heightmap file of appropriate scale</li>
+          </ol>
+          <pre><code>
+              gdal_translate -scale 0 1000 0 65535 -ot UInt16 -outsize 900 900 -of ENVI Sydney-local.tif Sydney-local.bin
+          </code></pre>
+          <div class="references">
+          
+          </div>
+        </div>
+        <div class="col-md-3" >
+          <div class="fp-docs-sidebar" data-spy="affix" data-offset-top="200" data-offset-bottom="0">
+          <!--
+                      <div id="TOC">
+            <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#adding-1-arc-second-30m-resolution-terrain">Adding 1 Arc-Second (30m) resolution terrain:</a></li>
+            </ul>
+            </div>
+                    -->
+            <ul class="nav nav-pills nav-stacked">
+              <li role="presentation"><a href="index.html">Home</a></li>
+              <li role="presentation">
+                <a href="#">Examples</a>
+                <ul class="nav">
+                  <li><a href="examples-usage.html"> - Basic Usage</a></li>
+                  <li><a href="examples-sustainability.html"> - Sustainability</a></li>
+                  <li><a href="examples-interwoven-cities.html"> - Interwoven Cities</a></li>
+                  <li><a href="examples-geo-language-games.html"> - Geo Language Games</a></li>
+                  <li><a href="examples-parramatta.html"> - Parramatta</a></li>
+                </ul>
+              </li>
+              <li role="presentation"><a href="contact.html">Contact</a></li>
+              <li role="presentation"><a href="api/index.html" target="_blank">API docs</a></li>
+              <li role="presentation"><a href="https://github.com/liammagee/fp.git" target="_blank">GitHub</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="../js/docs/jquery.min.js"></script>
+
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="../js/docs/bootstrap.min.js"></script>
+
+    <!-- Convert links to target="_blank". Taken from: http://stackoverflow.com/questions/4425198/markdown-target-blank -->
+    <script type="text/javascript">
+      <!-- Double dollar sign because of Pandoc's processing template language -->
+      $(document.links).filter(function() {
+        return this.hostname != window.location.hostname;
+      }).attr('target', '_blank');
+    </script>
+
+
+
+</body>
+</html>
+
