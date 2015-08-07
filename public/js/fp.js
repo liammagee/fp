@@ -205,13 +205,17 @@ define( [
                  * @return {THREE.LineBasicMaterial}
                  */
                 this.friendNetworkMaterial = function() {
+
                     return new THREE.LineBasicMaterial( {
+
                         color: this.networkColor || fp.appConfig.colorOptions.colorNightNetwork,
                         linewidth: 1,
                         opacity: 1.0,
                         blending: THREE.NormalBlending,
                         transparent: false
+
                     } );
+
                 };
 
                 /**
@@ -220,6 +224,7 @@ define( [
                  * @return {THREE.Line}
                  */
                 this.renderFriendNetwork = function() {
+
                     if ( !fp.AppState.runSimulation || !fp.appConfig.displayOptions.networkShow ) {
                         return;
                     }
@@ -241,6 +246,7 @@ define( [
                         );
                     }
                     fp.scene.add( this.networkMesh );
+
                 };
 
                 /**
@@ -250,6 +256,7 @@ define( [
                  * @param  {fp.Agent} agent2
                  */
                 this.establishLink = function( agent1, agent2 ) {
+
                     // Introduce more variability by squaring the probability
                     var chance = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetwork, 2 );
                     var chanceWithHome = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithHome, 2 );
@@ -293,20 +300,33 @@ define( [
                  * @param {fp.Agent} agent
                  */
                 this.enlistAgent = function( agent ) {
+
                     var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
+
                     if ( _.isUndefined( agents ) ) {
+
                         return;
+
                     }
+
                     if ( agents.length <= 1 ) {
+
                         return;
+
                     }
+
                     for ( var i = 0; i < agents.length; i++ ) {
+
                         if ( agents[ i ] === agent ) {
+
                             continue;
+
                         }
                         var otherAgent = agents[ i ];
                         this.establishLink( agent, otherAgent );
+
                     }
+
                 };
 
                 /**
@@ -446,7 +466,7 @@ define( [
                         // Enlist the agent in available networks
                         if ( fp.appConfig.agentOptions.establishLinks ) {
 
-                            for (var j = this.networks.length - 1; j >= 0; j--) {
+                            for ( var j = this.networks.length - 1; j >= 0; j-- ) {
 
                                 this.networks[ j ].enlistAgent( agent );
 
@@ -1727,28 +1747,39 @@ define( [
              * @return {Array}       Of nodes
              */
             this.findPathToOtherAgentsHome = function( agent ) {
+
                 var otherAgentHome = null;
                 var networks = _.shuffle( fp.agentNetwork.networks );
+
                 for ( var i = 0; i < networks.length; i++ ) {
+
                     var network = fp.agentNetwork.networks[ i ];
                     var links = _.shuffle( network.links );
+
                     for ( var j = 0; j < links.length; j++ ) {
+
                         var link = links[ j ];
                         if ( link.agent1 == agent )
                             otherAgentHome = link.agent2.home;
                         else if ( link.agent2 ==  agent )
                             otherAgentHome = link.agent1.home;
+
                     }
+
                 }
 
                 if ( !otherAgentHome )
                     return [ ];
+
                 var start = this.nodeAt( agent.position );
                 var end = this.nodeAt( otherAgentHome.lod.position );
+
                 if ( _.isUndefined( start ) || _.isUndefined( end ) )
                     return [ ];
+
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
+
             };
 
 
@@ -1791,6 +1822,7 @@ define( [
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
                 this.networkMesh.add( pathLine );
                 return pathLine;
+
             };
 
 
