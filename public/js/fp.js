@@ -357,6 +357,7 @@ define( [
              * @return {fp#Agent}
              */
             this.createAgent = function() {
+
                 var position = new THREE.Vector3();
                 var point = this.randomPointForAgent();
                 var x = point.x;
@@ -373,10 +374,12 @@ define( [
                 agent.setPosition( position );
                 agent.setRandomDirection();
 
-                agent.color = "#" + ( fp.appConfig.displayOptions.dayShow ?
-                                      fp.appConfig.colorOptions.colorDayAgent.toString( 16 ) :
-                                      fp.appConfig.colorOptions.colorNightAgent.toString( 16 ) );
+                agent.color = ( fp.appConfig.displayOptions.dayShow ?
+                                      fp.appConfig.colorOptions.colorDayAgent :
+                                      fp.appConfig.colorOptions.colorNightAgent );
+
                 return agent;
+
             };
 
             /**
@@ -1318,25 +1321,27 @@ define( [
 
                 var patchAttributes = [ 'height', 'trail', 'patch' ];
 
+                var uniforms = fp.terrain.createUniforms();
+
                 var richTerrainMaterial = new THREE.ShaderMaterial( {
 
-                    uniforms: fp.ShaderUtils.lambertUniforms( fp.terrain.nightTerrainUniforms ),
+                    uniforms: fp.ShaderUtils.phongUniforms( uniforms ),
                     attributes: patchAttributes,
-                    vertexShader:   fp.ShaderUtils.lambertShaderVertex(
+                    vertexShader:   fp.ShaderUtils.phongShaderVertex(
 
                         fp.ShaderUtils.terrainVertexShaderParams(),
                         fp.ShaderUtils.terrainVertexShaderMain()
 
                     ),
-                    fragmentShader: fp.ShaderUtils.lambertShaderFragment(
+                    fragmentShader: fp.ShaderUtils.phongShaderFragment(
 
                         fp.ShaderUtils.terrainFragmentShaderParams(),
                         fp.ShaderUtils.terrainFragmentShaderMain()
 
                     ),
                     lights: true,
-                    fog: false,
-                    transparent: true
+                    fog: true,
+                    alphaTest: 0.5
 
                 } );
 
@@ -1351,6 +1356,7 @@ define( [
              * Builds a plane mesh based on the current terrain geometry, but with its own material.
              */
             this.buildPatchMesh = function() {
+
                 // var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
                 this.plane = this.cloneGeometry();
                 // Rotate 90 degrees on X axis, to be the "ground"
@@ -1359,10 +1365,10 @@ define( [
                 this.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 this.plane.castShadow = true;
                 this.plane.receiveShadow = true;
-                this.updateTerrainPatchAttributes();
+                //this.updateTerrainPatchAttributes();
 
                 // Toggle patches state
-                this.togglePatchesState();
+                //this.togglePatchesState();
                 // fp.scene.add( this.plane );
 
             };
@@ -1410,19 +1416,29 @@ define( [
              * Updates values of all patches in the network.
              */
             this.updatePatchValues = function() {
+
                 if ( fp.appConfig.displayOptions.patchesUpdate && fp.AppState.runSimulation ) {
+
                     // Allow for overriding of the patch values
                     if ( !_.isUndefined( fp.patchNetwork.reviseValues ) ) {
+
                         fp.patchNetwork.reviseValues();
+
                     }
                     else {
+
                         fp.patchNetwork.defaultReviseValues();
+
                     }
+
                 }
 
                 if ( fp.appConfig.displayOptions.patchesShow ) {
+
                     this.updateTerrainPatchAttributes();
+
                 }
+
             };
 
 
@@ -1430,8 +1446,10 @@ define( [
              * Updates the terrain's colors based on its patch attributes.
              */
             this.updateTerrainPatchAttributes = function() {
+
                 if ( _.isUndefined( this.patchValues ))
                     return;
+
                 var pl = Math.sqrt( this.patchValues.length );
 
                 var counter = 0;
@@ -1440,20 +1458,29 @@ define( [
                 var dim = Math.ceil( gridPoints / patchSize );
                 var newPoints = gridPoints + dim;
                 var oldVal = 0;
+
                 for ( var i = 0; i < this.patchValues.length; i++ ) {
+
                     var val = this.patchValues[ i ].value;
                     var patchCol = i % ( dim - 1 );
                     var patchRow = Math.floor( i / ( dim - 1 ) );
+
                     for ( var j = 0; j < patchSize + 3; j++ ) {
+
                         for ( var k = 0; k < patchSize + 3 ; k++ ) {
+
                             if ( j === 0 && patchRow !== 0 )
                                 continue;
+
                             if ( k === 0 && patchCol !== 0 )
                                 continue;
+
                             if ( j == this.patchSize + 2 && patchRow < ( dim - 2 ) )
                                 continue;
+
                             if ( k == this.patchSize + 2 && patchCol < ( dim - 2 ) )
                                 continue;
+
                             var colOffset = patchCol * ( patchSize + 1 ) + k;
                             var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newPoints;
                             var cell = rowOffset + colOffset;
@@ -1461,27 +1488,49 @@ define( [
                             // var cols = ( i % pl ) * ( this.patchSize + 1 ) + k;
                             // var cell = rows + cols;
                             counter++;
+
                             if ( oldVal != val ) {
+
                                 oldVal = val;
+
                             }
+
                             this.plane.geometry.attributes.patch.array[ cell ] = val;
+
                         }
+
                     }
+
                 }
+
                 this.plane.geometry.attributes.patch.needsUpdate = true;
+
             };
 
 
             this.togglePatchesState = function() {
+
                 if ( fp.appConfig.displayOptions.patchesShow  ) {
-                    if ( this.plane === null )
+
+                    if ( this.plane === null ) {
+
                         this.buildPatchMesh();
-                    else
+
+                    }
+                    else {
+
                         fp.scene.add( this.plane );
+
+                    }
                 }
-                else
+                else {
+
                     fp.scene.remove( this.plane );
+
+                }
+
             };
+
         };
 
         /**
@@ -2062,7 +2111,6 @@ define( [
                     ),
                     lights: true,
                     fog: true,
-                    // transparent: true,
                     alphaTest: 0.5
 
                 } );
@@ -3945,7 +3993,9 @@ define( [
                 movementRelativeToPatch: false,
                 movementInPatch: 1,
                 movementStrictlyIntercardinal: false
+
             };
+
             this.buildingOptions = {
                 create: true,
 
