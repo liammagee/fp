@@ -19,7 +19,8 @@ var paths = {
 }
 var pathsToWatch = [
     paths.fp,
-    'docs/*.md'
+    'docs/*.md',
+    'docs/templates/fp.html'
 ]
 
 gulp.task( 'default', [ 'watch' ] );
