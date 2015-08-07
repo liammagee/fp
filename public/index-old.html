@@ -21,12 +21,19 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-              </div>
+        <div class="row">
+          <div class="col-md-8" role="main">
+                      </div>
+          <div class="col-md-4" >
+            <img src="images/screenshot-1-min.png">
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="container">
       <div class="row">
-         <div class="col-md-9" role="main">
+         <div class="col-md-8" role="main">
           <div id="wrapper">
           <div id="sidebar-wrapper">
           <ul>
@@ -341,7 +348,7 @@
           
           </div>
         </div>
-        <div class="col-md-3" >
+        <div class="col-md-4" >
           <div class="fp-docs-sidebar" data-spy="affix" data-offset-top="200" data-offset-bottom="0">
           <!--
                     -->
@@ -375,9 +382,13 @@
     <!-- Convert links to target="_blank". Taken from: http://stackoverflow.com/questions/4425198/markdown-target-blank -->
     <script type="text/javascript">
       <!-- Double dollar sign because of Pandoc's processing template language -->
+
       $(document.links).filter(function() {
-        return this.hostname != window.location.hostname;
+
+        return this.pathname.indexOf('examples/') > -1;
+
       }).attr('target', '_blank');
+
     </script>
 
 

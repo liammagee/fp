@@ -44,26 +44,33 @@ $endfor$
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-        $if(title)$
-          <div id="$idprefix$header">
-          <h1 class="title">$title$</h1>
-          $for(author)$
-          <h2 class="author">$author$</h2>
-          $endfor$
-          $if(date)$
-          <h3 class="date">$date$</h3>
-          $endif$
+        <div class="row">
+          <div class="col-md-8" role="main">
+            $if(title)$
+              <div id="$idprefix$header">
+              <h1 class="title">$title$</h1>
+              $for(author)$
+              <h2 class="author">$author$</h2>
+              $endfor$
+              $if(date)$
+              <h3 class="date">$date$</h3>
+              $endif$
+              </div>
+            $endif$
           </div>
-        $endif$
+          <div class="col-md-4" >
+            <img src="images/screenshot-1-min.png">
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="container">
       <div class="row">
-         <div class="col-md-9" role="main">
+         <div class="col-md-8" role="main">
           $body$
         </div>
-        <div class="col-md-3" >
+        <div class="col-md-4" >
           <div class="fp-docs-sidebar" data-spy="affix" data-offset-top="200" data-offset-bottom="0">
           <!--
           $if(toc)$
@@ -102,9 +109,13 @@ $endfor$
     <!-- Convert links to target="_blank". Taken from: http://stackoverflow.com/questions/4425198/markdown-target-blank -->
     <script type="text/javascript">
       <!-- Double dollar sign because of Pandoc's processing template language -->
+
       $$(document.links).filter(function() {
-        return this.hostname != window.location.hostname;
+
+        return this.pathname.indexOf('examples/') > -1;
+
       }).attr('target', '_blank');
+
     </script>
 
 
