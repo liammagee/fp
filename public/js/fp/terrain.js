@@ -1,0 +1,595 @@
+
+define(
+    [
+        'fp/fp-base',
+        'fp/config'
+    ],
+
+    function( FiercePlanet ) {
+
+        /**
+         * Represents the fp.terrain of the world.
+         * @constructor
+         * @memberof fp
+         * @inner
+         */
+        FiercePlanet.Terrain = function() {
+            this.plane = null;
+            this.richTerrainMaterial = null;
+            this.simpleTerrainMaterial = null;
+            this.dayTerrainUniforms = null;
+            this.nightTerrainUniforms = null;
+            this.terrainMapIndex = appConfig.terrainOptions.mapIndex;
+            this.terrainMapFile = appConfig.terrainOptions.mapFile;
+            this.gridExtent = appConfig.terrainOptions.gridExtent;
+            this.halfExtent = this.gridExtent / 2;
+            this.gridPoints = appConfig.terrainOptions.gridPoints;
+            this.ratioExtentToPoint = this.gridExtent / this.gridPoints;
+            this.maxTerrainHeight = appConfig.terrainOptions.maxTerrainHeight;
+            this.gridSize = 4;
+            /**
+             * Used to cache the plane geometry array.
+             */
+            this.planeArray = null;
+            /**
+             * Used to cache the sphere geometry array.
+             */
+            this.sphereArray = null;
+            /**
+             * Specifies the percentage to which the plane is wrapped.
+             */
+            this.wrappedPercent = 0;
+            /**
+             * Specifies whether the plane is being wrapped, unwrapped or neither.
+             */
+            this.wrappingState = 0;
+
+            /**
+             * Create uniforms
+             */
+            this.createUniforms = function() {
+
+                //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
+
+                var uniforms = {
+                    // Lambert settings
+                    emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
+                    diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                    opacity: { type: "f", value: appConfig.colorOptions.colorTerrainOpacity },
+                    // Phong settings
+                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    shininess: { type: "f", value: 0.0 },
+
+                    //map: map,
+                    //bumpMap: map,
+                    //normalMap: map,
+                    //emissiveMap: map,
+                    //lightMap: map,
+                    //aoMap: map,
+                    //specularMap: map,
+                    //alphaMap: map,
+
+                    groundLevelColor: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainGroundLevel ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland2 ) },
+                    midland1Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland1 ) },
+                    midland2Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland2 ) },
+                    highlandColor: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainHighland ) },
+
+                    stop1: { type: "f", value: appConfig.colorOptions.colorTerrainStop1 },
+                    stop2: { type: "f", value: appConfig.colorOptions.colorTerrainStop2 },
+                    stop3: { type: "f", value: appConfig.colorOptions.colorTerrainStop3 },
+                    stop4: { type: "f", value: appConfig.colorOptions.colorTerrainStop4 },
+                    stop5: { type: "f", value: appConfig.colorOptions.colorTerrainStop5 },
+
+                    size: { type: "f", value: Math.floor( appConfig.agentOptions.size / 2 )},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier },
+
+                    shadowMix: { type: "f", value: appConfig.terrainOptions.shaderShadowMix },
+
+                };
+
+                if ( appConfig.displayOptions.dayShow ) {
+                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainGroundLevel ) };
+                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland1 ) };
+                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland2 ) };
+                    uniforms.midland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland1 ) };
+                    uniforms.midland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland2 ) };
+                    uniforms.highlandColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainHighland ) };
+                }
+                else {
+                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainGroundLevel ) };
+                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainLowland1 ) };
+                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainLowland2 ) };
+                    uniforms.midland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainMidland1 ) };
+                    uniforms.midland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainMidland2 ) };
+                    uniforms.highlandColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainHighland ) };
+
+                }
+
+                return uniforms;
+
+            };
+
+
+            /**
+             * Initialises the terrain.
+             */
+            this.initTerrain = function( data ) {
+                fp.scene.remove( fp.terrain.plane );
+                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
+
+                // Use logic from math.stackexchange.com
+                var vertices = geometry.attributes.position.array;
+                var i, j, l = vertices.length,
+                    n = Math.sqrt( l ),
+                    k = l + 1;
+
+                if ( appConfig.terrainOptions.loadHeights ) {
+
+                    for ( i = 0, j = 0; i < l; i++, j += 3 ) {
+
+                        geometry.attributes.position.array[ j + 2 ] =
+                            data[ i ] / 65535 *
+                            fp.terrain.maxTerrainHeight *
+                            appConfig.terrainOptions.multiplier;
+
+                    }
+
+                }
+                else {
+
+                    for ( i = 0, j = 0; i < l; i++, j += 3 ) {
+
+                        geometry.attributes.position.array[ j + 2 ] = 0;
+
+                    }
+
+                }
+
+                fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( {
+
+                    color: new THREE.Color( 0xffffff ),  // diffuse
+                    emissive: new THREE.Color( 0x111111 ),
+                    specular: new THREE.Color( 0x111111 ),
+
+                    //map: map,
+                    //bumpMap: map,
+                    //normalMap: map,
+                    //emissiveMap: map,
+                    //lightMap: map,
+                    //aoMap: map,
+                    //specularMap: map,
+                    //alphaMap: map,
+
+                    //metal: true,
+
+                    wireframe: appConfig.displayOptions.wireframeShow
+
+                } );
+
+                fp.terrain.simpleTerrainMaterial.side = THREE.DoubleSide;
+
+                // Create shader material
+                var len = geometry.attributes.position.array.length / 3,
+                    heights = new Float32Array( len ),
+                    trailPoints = new Float32Array( len ),
+                    patchPoints = new Float32Array( len );
+
+                for ( i = 0; i < len; i++ ) {
+
+                    heights[ i ] = vertices[ i * 3 + 2 ];
+                    trailPoints[ i ] = 0.0;
+                    patchPoints[ i ] = 0.0;
+
+                }
+
+                var terrainAttributes = [ 'height', 'trail', 'patch' ];
+
+                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
+
+                var uniforms = this.createUniforms();
+
+                fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial( {
+
+                    uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
+                    attributes: terrainAttributes,
+                    vertexShader:   FiercePlanet.ShaderUtils.phongShaderVertex(
+
+                        FiercePlanet.ShaderUtils.terrainVertexShaderParams(),
+                        FiercePlanet.ShaderUtils.terrainVertexShaderMain()
+
+                    ),
+                    fragmentShader: FiercePlanet.ShaderUtils.phongShaderFragment(
+
+                        FiercePlanet.ShaderUtils.terrainFragmentShaderParams(),
+                        FiercePlanet.ShaderUtils.terrainFragmentShaderMain()
+
+                    ),
+                    lights: true,
+                    fog: true,
+                    alphaTest: 0.5
+
+                } );
+
+                // Only use the shader material if we have variable heights
+                if ( appConfig.terrainOptions.shaderUse ) {
+
+                    // Necessary? Maybe for Phong
+                    // geometry.computeFaceNormals();
+                    geometry.computeVertexNormals();
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
+
+                }
+                else {
+
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
+
+                }
+
+                // Cache the array
+                fp.terrain.planeArray = fp.terrain.plane.geometry.attributes.position.clone();
+                fp.terrain.plane.castShadow = true;
+                fp.terrain.plane.receiveShadow = true;
+                // Rotate 90 degrees on X axis, to be the "ground"
+                fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0 );
+                // Lift by 1, to ensure shaders doesn't clash with water
+                fp.terrain.plane.position.set( 0, appConfig.terrainOptions.defaultHeight, 0 );
+                fp.toggleTerrainPlane();
+
+                if ( appConfig.displayOptions.patchesShow ) {
+
+                    fp.patchNetwork.buildPatchMesh();
+
+                }
+
+                // fp.terrain.createTerrainColors();
+                fp.toggleDayNight();
+                fp.pathNetwork.setupAStarGraph();
+
+                // Construct the sphere, and switch it on
+                if ( appConfig.terrainOptions.renderAsSphere ) {
+
+                    fp.terrain.sphereArray = fp.terrain.constructSphere( fp.terrain.planeArray );
+
+                }
+
+            };
+
+            /**
+             * Gets the terrain height for a given co-ordinate index.
+             * @memberof fp.Terrain
+             * @param {Number} index The co-ordinate index
+             * @return {Number} The corresponding y value
+             */
+            this.getHeightForIndex = function( index ) {
+                var x = index % fp.terrain.gridPoints ;
+                var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints );
+                var reversedIndex = y * fp.terrain.gridPoints + x;
+                if ( index >= 0 && !_.isUndefined( fp.terrain.planeArray.array[ index * 3 + 2 ] ) )
+                    return fp.terrain.planeArray.array[ index * 3 + 2 ];
+                return null;
+            };
+
+            /**
+             * Gets the terrain coordinates for a given co-ordinate index.
+             * @memberof fp.Terrain
+             * @param {Number} index The co-ordinate index
+             * @return {Number} The corresponding y value
+             */
+            this.getCoordinatesForIndex = function( index ) {
+                var x = index % fp.terrain.gridPoints;
+                var y = fp.terrain.gridPoints - Math.floor( index / fp.terrain.gridPoints ) - 1;
+                var reversedIndex = y * fp.terrain.gridPoints + x;
+                if ( reversedIndex >= 0 && !_.isUndefined( fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ] ) ) {
+                    var xCoord = fp.terrain.planeArray.array[ reversedIndex * 3 + 0 ];
+                    var zCoord = fp.terrain.planeArray.array[ reversedIndex * 3 + 1 ];
+                    return [ xCoord, zCoord ];
+                }
+                return null;
+            };
+
+            /**
+             * Flattens out the terrain.
+             */
+            this.flattenTerrain = function() {
+                if ( !appConfig.displayOptions.cursorShow )
+                    return;
+
+                var vertices = this.plane.geometry.attributes.position.array;
+                var i, point, meanHeight = 0;
+                for ( i = 0; i < fp.cursor.cell.geometry.vertices.length; i++ ) {
+                    point = fp.cursor.cell.geometry.vertices[ i ];
+                    meanHeight += fp.getHeight( point.x, - point.y );
+                }
+                meanHeight /= fp.cursor.cell.geometry.vertices.length;
+                for ( i = 0; i < fp.cursor.cell.geometry.vertices.length; i++ ) {
+                    point = fp.cursor.cell.geometry.vertices[ i ];
+                    var index = fp.getIndex( point.x, - point.y );
+                    this.plane.geometry.attributes.position.array[ 3 * index + 2 ] = meanHeight;
+                }
+                this.plane.geometry.attributes.position.needsUpdate = true;
+                this.plane.geometry.verticesNeedUpdate = true;
+            };
+
+            /**
+             * Creates a basic set of colors for the terrain.
+             */
+            this.createTerrainColors = function () {
+                for ( var y = 0; y < 99; y++ ) {
+                    for ( var x = 0; x < 99; x++ ) {
+                        var r = Math.random();
+                        var color = new THREE.Color( r, r, r );
+                        var arrayX = x * fp.terrain.gridSize * 2;
+                        var arrayY = y * fp.terrain.gridSize * 2;
+                        for ( var i = arrayY; i < arrayY + ( fp.terrain.gridSize * 2 ); i += 2 ) {
+                            for ( var j = arrayX; j < arrayX + ( fp.terrain.gridSize * 2 ); j++ ) {
+                                var index = ( ( fp.terrain.gridPoints - 1 ) * i ) + j;
+                                if ( fp.terrain.plane.geometry.attributes.uv.array[ index ] ) {
+                                    fp.terrain.plane.geometry.attributes.uv.array[ index ] = color;
+                                    fp.terrain.plane.geometry.attributes.uv.array[ index + 1 ] = color;
+                                    fp.terrain.plane.geometry.attributes.uv.array[ index + 1 ] = color;
+                                }
+                            }
+                        }
+
+                    }
+                }
+                return fp.terrain.plane.geometry.color;
+            };
+
+            /**
+             * Retrieves the origin of the terrain sphere
+             */
+            this.sphereOrigin = function() {
+                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = new THREE.Vector3( 0, - radius, 0 );
+                return origin;
+            };
+
+            /**
+             * Retrieves the angle to the origin of the terrain sphere.
+             * @param {Number} x
+             * @param {Number} y
+             * @param {Number} z
+             * @return {THREE.Vector3} A rotation vector in the order: pitch ( x ), yaw ( y ), roll ( z )
+             */
+            this.sphereOriginAngle = function( x, y, z ) {
+                // Retrieve standard variables about the sphere
+                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = fp.terrain.sphereOrigin();
+                // Obtain the difference between the coordinate and the sphere's origin.
+                var diff = new THREE.Vector3( x, y, z ).sub( origin );
+                // Get differences and signs of values.
+                var dx = diff.x % radius, sx = $.sign( diff.x ), rx = Math.floor( Math.abs( diff.x ) / radius );
+                var dz = diff.z % radius, sz = $.sign( diff.z ), rz = Math.floor( Math.abs( diff.z ) / radius );
+                // Calculate the X and Z angle
+                var angleX = Math.asin( dx / radius );
+                var angleZ = Math.asin( dz / radius );
+                // Reflect the X angle if we have on the other side of the sphere.
+                if ( y < - radius ) {
+                    angleX = ( sx * Math.PI ) - angleX;
+                }
+                // Rotation is in the order: pitch, yaw, roll
+                var rotation = new THREE.Vector3( angleZ, 0, - angleX );
+                return rotation;
+            };
+
+            /**
+             * Transforms a single point from a plane to a sphere geometry.
+             * @param {Number} x
+             * @param {Number} y
+             * @param {Number} z
+             * @return {THREE.Vector3} The sphere position to transform the plane position to.
+             */
+            this.transformSpherePoint = function( x, y, z ) {
+                // Retrieve standard variables about the sphere
+                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var he = size / 2;
+                var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
+                var origin = this.sphereOrigin();
+                // Obtain the signs and absolute values for x and z values
+                var sx = $.sign( x ), sz = $.sign( z );
+                var ax = Math.abs( x ), az = Math.abs( z );
+                // Which is the highest absolute value?
+                var mxz = ( ax > az ? ax : az );
+                // Obtain the angle between the absolute values
+                var angle = Math.atan2( ax, az );
+                var ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter;
+                var nry = -ry;
+                var my = ( radius > nry ? radius - nry : nry - radius );
+                var py = Math.cos( Math.asin( my / radius ) );
+                var dx = sx * py;
+                var dz = sz * py;
+                var rx = dx * Math.sin( angle ) * radius;
+                var rz = dz * Math.cos( angle ) * radius;
+                // Adjust for existing terrain heights
+                var v1 = new THREE.Vector3( rx, rz, ry );
+                var v2 = new THREE.Vector3();
+                v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
+                return v1.add( v2 );
+            };
+
+            /**
+             * Wraps planar point to sphere - calls transformSpherePoint,
+             * but handles unpacking and applying the transformation to a certain percentage.
+             * @param {THREE.Vector3} point    the point to transform
+             * @param {Number} percent
+             * @return {THREE.Vector3} The sphere position to transform the plane position to.
+             */
+            this.transformPointFromPlaneToSphere = function( point, percent ) {
+                if ( percent <= 0 || percent > 100 )
+                    return point; // Optimisation when no transform is needed.
+                var x = point.x, y = point.y, z = point.z;
+                var nv = new THREE.Vector3( x, y, z );
+                var v2 = fp.terrain.transformSpherePoint( x, y, z );
+                var dv = new THREE.Vector3( v2.x, v2.z, v2.y );
+                dv.sub( nv ).multiplyScalar( percent / 100 );
+                nv.add( dv );
+                return nv;
+            };
+
+
+            /**
+             * Wraps a plane into a sphere
+             */
+            this.constructSphere = function( planeArray ) {
+                var sphereArray = planeArray.clone();//
+                var l = sphereArray.array.length;
+                for ( var j = 0; j < l; j += 3 ) {
+                    var x = planeArray.array[ j + 0 ];
+                    var z = planeArray.array[ j + 1 ];
+                    var y = planeArray.array[ j + 2 ];
+                    var v = this.transformSpherePoint( x, y, z );
+                    sphereArray.array[ j + 0 ] = v.x;
+                    sphereArray.array[ j + 1 ] = v.y;
+                    sphereArray.array[ j + 2 ] = v.z;
+                }
+                return sphereArray;
+            };
+
+            /**
+             * Wraps the plane into a sphere, to a specified percent ( 0 unwraps back to a plane ).
+             */
+            this.wrapTerrainIntoSphere = function( percent ) {
+                this.wrappedPercent = percent;
+                var i, j, k;
+                var pv, sv, nv, cv;
+                var transformedVertices, vertices;
+                if ( !_.isUndefined( percent ) && percent <= 100 && percent >= 0 ) {
+                    var l = fp.terrain.sphereArray.array.length;
+                    for ( i = 0; i < l; i++ ) {
+                        pv = fp.terrain.planeArray.array[ i ];
+                        sv = fp.terrain.sphereArray.array[ i ];
+                        nv = pv + ( sv - pv ) * ( percent / 100 );
+                        fp.terrain.plane.geometry.attributes.position.array[ i ] = nv;
+                    }
+                    fp.terrain.plane.geometry.attributes.position.needsUpdate = true;
+                    if ( !_.isNull( fp.patchNetwork.plane ) ) {
+                        l = fp.patchNetwork.patchSphereArray.array.length;
+                        for ( j = 0; j < l; j++ ) {
+                            pv = fp.patchNetwork.patchPlaneArray.array[ j ];
+                            sv = fp.patchNetwork.patchSphereArray.array[ j ];
+                            nv = pv + ( sv - pv ) * ( percent / 100 );
+                            fp.patchNetwork.plane.geometry.attributes.position.array[ j ] = nv;
+                        }
+                        fp.patchNetwork.plane.geometry.attributes.position.needsUpdate = true;
+                    }
+                    fp.buildingNetwork.buildings.forEach( function( building ) {
+                        building.lod.matrixAutoUpdate = false;
+                        cv = _.clone( building.originPosition );
+                        // var cv = _.clone( building.mesh );
+                        nv = fp.terrain.transformPointFromPlaneToSphere( cv, 100 );
+                        var v = fp.terrain.sphereOriginAngle( nv.x, nv.y, nv.z ).multiplyScalar( percent / 100 );
+                        nv = fp.terrain.transformPointFromPlaneToSphere( cv, percent );
+                        building.mesh.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
+                        building.mesh.position.set( nv.x, nv.y, nv.z );
+                        building.lod.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
+                        building.lod.position.set( nv.x, nv.y, nv.z );
+                        building.highResMeshContainer.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
+                        building.highResMeshContainer.position.set( nv.x, nv.y, nv.z );
+                        building.lowResMeshContainer.rotation.set( -Math.PI / 2 + v.x, -v.z, v.y );
+                        building.lowResMeshContainer.position.set( nv.x, nv.y, nv.z );
+                    } );
+                    // Alter roards
+                    for ( k = 0; k < fp.roadNetwork.planeVertices.length; k++ ) {
+                        transformedVertices = [ ];
+                        vertices = fp.roadNetwork.planeVertices[ k ];
+                        for ( var m = 0; m < vertices.length; m++ ) {
+                            transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ m ], percent ) );
+                        }
+                        fp.roadNetwork.networkMesh.children[ k ].geometry.vertices = transformedVertices;
+                        fp.roadNetwork.networkMesh.children[ k ].geometry.verticesNeedUpdate = true;
+                    }
+
+                    // Alter paths
+                    for (var n = 0; n < fp.pathNetwork.networkMesh.children.length; n++ ) {
+
+                        transformedVertices = [ ];
+                        vertices = fp.pathNetwork.networkMesh.children[ n ];
+                        for ( var o = 0; o < vertoces.length; o++ ) {
+                            transformedVertoces.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ o ], percent ) );
+                        }
+                        fp.pathNetwork.networkMesh.children[ n ].geometry.vertices = transformedVertices;
+                        fp.pathNetwork.networkMesh.children[ n ].geometry.verticesNeedUpdate = true;
+
+                    }
+
+                    if ( !_.isNull( fp.agentNetwork.particles ) ) {
+
+                        for ( var p = 0; p < fp.agentNetwork.agents.length; p++ ) {
+
+                            var agent = fp.agentNetwork.agents[ p ];
+                            nv = fp.terrain.transformPointFromPlaneToSphere( agent.position, percent );
+                            fp.agentNetwork.particles.geometry.attributes.position.array[ p * 3 + 0 ] = nv.x;
+                            fp.agentNetwork.particles.geometry.attributes.position.array[ p * 3 + 1 ] = nv.y;
+                            fp.agentNetwork.particles.geometry.attributes.position.array[ p * 3 + 2 ] = nv.z;
+
+                        }
+
+                        fp.agentNetwork.particles.geometry.attributes.position.needsUpdate = true;
+
+                    }
+
+                    for ( var r = 0; r < fp.agentNetwork.networks.length; r++ ) {
+
+                        transformedVertices = [ ];
+                        var network = fp.agentNetwork.networks[ r ];
+
+                        if ( !_.isNull( network.networkMesh ) ) {
+
+                            vertices = network.networkMesh.geometry.vertices;
+
+                            for ( var s = 0; s < vertices.length; s++ ) {
+
+                                transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ s ], percent ) );
+
+                            }
+
+                            network.networkMesh.geometry.vertices = transformedVertices;
+                            network.networkMesh.geometry.verticesNeedUpdate = true;
+
+                        }
+                    }
+                }
+            };
+
+            /**
+             * Updates terrain.
+             */
+            this.updateTerrain = function() {
+                if ( this.wrappingState === 1 ) {
+                    appConfig.displayOptions.waterShow = false;
+                    if ( fp.terrain.wrappedPercent < 100 ) {
+                        fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
+                        fp.terrain.wrappedPercent += this.wrappingState;
+                    }
+                    else {
+                        this.wrappingState = 0;
+                    }
+                }
+                else if ( this.wrappingState === -1 ) {
+                    if ( fp.terrain.wrappedPercent > 0 ) {
+                        fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
+                        fp.terrain.wrappedPercent += this.wrappingState;
+                    }
+                    else {
+                        appConfig.displayOptions.waterShow = appConfig.displayOptions.waterShow;
+                        this.wrappingState = 0;
+                    }
+                }
+                fp.toggleWaterState();
+            };
+        };
+
+        return FiercePlanet;
+    }
+
+)
