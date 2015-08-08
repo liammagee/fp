@@ -46,7 +46,6 @@ require.config({
 
 });
 
-
 define(
 
     [
@@ -55,6 +54,7 @@ define(
         "jquery",
         "three",
         "underscore",
+        "fp",
         // DO NOT NEED TO BE NAMED
         "jstat",
         "jsts",
@@ -70,7 +70,7 @@ define(
 
     ],
 
-    function( astar, $, THREE, _ ) {
+    function( astar, $, THREE, _, fp ) {
 
         "use strict";
 
