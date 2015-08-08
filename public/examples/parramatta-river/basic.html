@@ -1,12 +1,11 @@
 <html>
     <head>
         <title>Fierce Planet</title>
-        <base href="../">
         <link rel="stylesheet" type="text/css" href="/css/fp.css">
         <script src="/js/require.js"></script>
         <script>
-        require(["../js/fp"],
-            function() {
+        require(["../../js/fp"],
+            function( fp ) {
                 var config = {
                   "preset": "Default",
                   "remembered": {
@@ -70,7 +69,7 @@
                             "gridPoints": 900,
                             "multiplier": 1,
                             "maxTerrainHeight": 400,
-                            "mapFile": "../assets/Sydney-local.bin",
+                            "mapFile": "/assets/Sydney-local.bin",
                         },
                     }
                   }
