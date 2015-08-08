@@ -13,7 +13,16 @@
 
   <!-- Bootstrap -->
   <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Other styles -->
+  <link href="../css/highlight-default.min.css" rel="stylesheet">
   <link href="../css/docs.css" rel="stylesheet">
+  <script src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+  <!-- Highlight -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/styles/default.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.7/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
 
   <!-- Pandoc Start -->
   <style type="text/css">code{white-space: pre;}</style>
@@ -46,9 +55,16 @@
     <div class="row">
        <div class="col-md-8" role="main">
         <h1 id="overview">Overview</h1>
-        <p>Fierce Planet is an platform for developing agent-based models of cities and other social systems.</p>
-        <p>It has been developed as a teaching tool. However it can be adapted for other purposes: more sophisticated simulations, games and demonstrations.</p>
-        <p>Fierce Planet is also highly configurable. The examples show some of the “out-of-the-box” options. It is also possible to add functional hooks to “setup” and “run” actions, to customise agent, terrain, building and road behaviour.</p>
+        <p><em>Fierce Planet</em> is a web programming toolkit for simulating cities and other social systems.</p>
+        <p>Designed to work in modern, <a href="https://get.webgl.org/">WebGL</a>-compatible browsers, it can be used to illustrate patterns of urban growth, sustainable development, and the emergence of social networks. It is currently developed by researchers at <a href="http://www.rmit.edu.au">RMIT University</a> and <a href="http://www.uws.edu.au">University of Western Sydney</a>.</p>
+        <p><em>Fierce Planet</em> combines several simulation approaches:</p>
+        <ul>
+        <li><em>Agent-based modelling</em> - Models use computational agents to represent human and other actors.</li>
+        <li><em>Procedural City Building</em> - City-like structures can be built from interactions between agents and their environment.</li>
+        <li><em>Digital Elevation Models</em> - Publicly-available satellite data can be loaded to provide realistic geographic terrain.</li>
+        <li><em>3D rendering</em> - Models are represented in 3-dimensional space that can be zoomed, panned and rotated.</li>
+        </ul>
+        <p>Click on some of the examples below to view the toolkit in action.</p>
         <div class="references">
         
         </div>
@@ -67,6 +83,7 @@
                 <li><a href="examples-parramatta.html"> Parramatta</a></li>
               </ul>
             </li>
+            <li role="presentation"><a href="getting-started.html">Getting Started</a></li>
             <li role="presentation"><a href="contact.html">Contact</a></li>
             <li role="presentation"><a href="api/index.html" target="_blank">API docs</a></li>
             <li role="presentation"><a href="https://github.com/liammagee/fp.git" target="_blank">GitHub</a></li>

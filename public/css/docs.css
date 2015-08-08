@@ -1,3 +1,8 @@
+/*
+div {
+    font-size: 1.05em;
+}
+*/
 
 h1>a {
     color: black;
@@ -9,3 +14,4 @@ h1>a:hover {
 .nav>li>ul>li>a {
     padding: 5px 25px;
 }
+

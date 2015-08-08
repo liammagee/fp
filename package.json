@@ -7,8 +7,7 @@
   },
   "dependencies": {
     "express": "~4.13.1",
-    "jade": "~1.11.0",
-    "bootstrap": "~3.3.5"
+    "jade": "~1.11.0"
   },
   "devDependencies": {
     "jsdoc": "git+https://github.com/jsdoc3/jsdoc.git",
