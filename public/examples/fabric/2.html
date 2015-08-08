@@ -2,19 +2,19 @@
     <head>
         <title>Fierce Planet</title>
         <base href="../">
-        <link rel="stylesheet" type="text/css" href="../css/fp.css">
-        <script src="../js/require.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
         <script>
-        require(["../js/fp-compiled"],
+        require(["/js/fp-compiled"],
             function() {
                 var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                        "1": { 
+                        "1": {
                             "initialPopulation": 1000,
                          },
-                        "2": { 
+                        "2": {
                             "roads": 0.0,
                             "water": 0.0,
                             "otherBuildings": 0.25,
@@ -23,7 +23,7 @@
                             "buildingHeight": 0.0,
                             "detectBuildingCollisions": true,
                         },
-                        "3": { 
+                        "3": {
                             "create": false },
                         "4": {
                             "waterShow": true,
@@ -69,12 +69,12 @@
                             // "colorGraphPopulation": 0x4747b3,
                             // "colorGraphHealth": 0xb34747,
                             // "colorGraphPatchValues": 0x47b347,
-                            // 
+                            //
                             "colorLightHemisphereSky": 0xFFFFFF,
                             "colorLightHemisphereGround": 0xFFFFFF,
                             "colorLightHemisphereIntensity": 0.75,
                             "colorLightDirectional": 0xffffff,
-                            "colorLightDirectionalIntensity": 1.0,                        
+                            "colorLightDirectionalIntensity": 1.0,
                         },
                         "6": { "multiplier": 2 },
 

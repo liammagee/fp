@@ -2,21 +2,21 @@
     <head>
         <title>Fierce Planet</title>
         <base href="../">
-        <link rel="stylesheet" type="text/css" href="../css/fp.css">
-        <script src="../js/require.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
         <script>
-        require(["../js/fp-compiled"],
+        require(["/js/fp-compiled"],
             function() {
                 var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
-                        "1": { 
+                        "1": {
                             "initialPopulation": 1000,
                          },
-                        "2": { 
+                        "2": {
                         },
-                        "3": { 
+                        "3": {
                             "create": true },
                         "4": {
                             "waterShow": true,
@@ -32,7 +32,7 @@
                             "coloriseAgentsByHealth": false,
                             "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
                         },
-                        "6": { 
+                        "6": {
                             "multiplier": 2,
                             "loadHeights": true
                          },
