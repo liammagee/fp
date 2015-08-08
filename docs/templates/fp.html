@@ -23,23 +23,23 @@
 
   <!-- Pandoc Start -->
   <style type="text/css">code{white-space: pre;}</style>
-$if(quotes)$
-  <style type="text/css">q { quotes: "“" "”" "‘" "’"; }</style>
-$endif$
-$if(highlighting-css)$
-  <style type="text/css">
-$highlighting-css$
-  </style>
-$endif$
-$for(css)$
-  <link rel="stylesheet" href="$css$" $if(html5)$$else$type="text/css" $endif$/>
-$endfor$
-$if(math)$
-  $math$
-$endif$
-$for(header-includes)$
-  $header-includes$
-$endfor$
+  $if(quotes)$
+    <style type="text/css">q { quotes: "“" "”" "‘" "’"; }</style>
+  $endif$
+  $if(highlighting-css)$
+    <style type="text/css">
+  $highlighting-css$
+    </style>
+  $endif$
+  $for(css)$
+    <link rel="stylesheet" href="$css$" $if(html5)$$else$type="text/css" $endif$/>
+  $endfor$
+  $if(math)$
+    $math$
+  $endif$
+  $for(header-includes)$
+    $header-includes$
+  $endfor$
   <!-- Pandoc End -->
 
 </head>
@@ -52,7 +52,11 @@ $endfor$
         <div class="col-md-8" role="main">
           $if(title)$
             <div id="$idprefix$header">
-            <h1 class="title">$title$</h1>
+            <h1 class="title">
+              <a href="/">
+                $title$
+              </a>
+            </h1>
             $for(author)$
             <h2 class="author">$author$</h2>
             $endfor$
@@ -75,7 +79,7 @@ $endfor$
         $body$
       </div>
       <div class="col-md-4" role="complementary">
-        <div class="sidebar" data-spy="affix" data-offset-top="200" data-offset-bottom="0">
+        <div class="sidebar" data-spy="affix" data-offset-top="200">
           <ul class="nav">
             <li role="presentation"><a href="index.html">Home</a></li>
             <li role="presentation">
