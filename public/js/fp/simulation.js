@@ -30,6 +30,11 @@ define(
          */
         FiercePlanet.Simulation = function() {
             var fp = this;
+
+            // Copy class definitions into this instance, to simplify imports
+            fp.Agent = FiercePlanet.Agent;
+            fp.PatchNetwork = FiercePlanet.PatchNetwork;
+
             this.container = null;
             this.scene = null;
             this.appConfig = null;

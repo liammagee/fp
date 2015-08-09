@@ -4,9 +4,18 @@
         <link rel="stylesheet" type="text/css" href="/css/fp.css">
         <script src="/js/require.js"></script>
         <script>
-        require(["../../js/fp-compiled"],
+
+        require.config({
+
+          baseUrl: '/js',
+          // paths: {  'fp': 'fp' }
+          paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
             function( fp ) {
-                var config = { = {
+                var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -759,8 +768,8 @@
                         fp.chart.options = _.extend( { minValue: 0.0, maxValue: 1.0 }, SmoothieChart.defaultChartOptions );
                         fp.chart.updateValueRange();
 
-                        fp.appConfig.Setup();
-                        fp.appConfig.Run();
+                        fp.appController.Setup();
+                        fp.appController.Run();
                     } )
                 } );
             }

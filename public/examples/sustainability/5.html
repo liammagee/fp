@@ -4,9 +4,18 @@
         <link rel="stylesheet" type="text/css" href="/css/fp.css">
         <script src="/js/require.js"></script>
         <script>
-        require(["../../js/fp-compiled"],
+
+        require.config({
+
+          baseUrl: '/js',
+          // paths: {  'fp': 'fp' }
+          paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
             function( fp ) {
-                var config = { = {
+                var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -44,11 +53,6 @@
                                 this.health -= healthReduce;
                         }
 
-                        fp.Agent.prototype.exercise = function() {
-                            if (this.health > 0)
-                                this.health -= healthReduce;
-                        };
-
                         fp.Agent.prototype.consume = function() {
                             var index = fp.getPatchIndex(this.position.x, this.position.z);
                             this.health += healthGain * ( fp.patchNetwork.patchValues[index].value / fp.patchNetwork.patches[index].length );
@@ -68,7 +72,6 @@
                             if ( Math.random() > 0.999 &&
                                  this.children.length < 4 &&
                                  this.gender == "f" )  {
-                                fp.scene.remove( fp.agentNetwork.particles );
                                 var agent = fp.agentNetwork.createAgent();
                                 agent.mother = this;
                                 agent.color = this.color;
@@ -91,7 +94,7 @@
                 }
 
                 fp.init( config, sim, function() {
-                    fp.appConfig.Setup();
+                    fp.appController.Setup();
                 } );
             }
         );

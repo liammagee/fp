@@ -10,7 +10,16 @@
         </style>
         <script src="/js/require.js"></script>
         <script>
-        require(["../../js/fp-compiled"],
+
+        require.config({
+
+          baseUrl: '/js',
+          // paths: {  'fp': 'fp' }
+          paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
 
             function( fp ) {
                 var config1 = {

@@ -4,7 +4,16 @@
         <link rel="stylesheet" type="text/css" href="/css/fp.css">
         <script src="/js/require.js"></script>
         <script>
-        require(["../../js/fp-compiled"],
+
+        require.config({
+
+          baseUrl: '/js',
+          // paths: {  'fp': 'fp' }
+          paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
 
             function() {
                 var roadColor = fp.buildColorInteger(0, 0, 0);
@@ -114,8 +123,8 @@
                 };
 
                 fp.init( config, sim, function() {
-                    fp.appConfig.Setup();
-                    fp.appConfig.Run();
+                    fp.appController.Setup();
+                    fp.appController.Run();
                 } );
             }
         );

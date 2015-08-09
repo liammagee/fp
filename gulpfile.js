@@ -41,33 +41,13 @@ gulp.task( 'default', [ 'watch' ] );
  * Watch for babel
  */
 gulp.task( 'watch', [ 'clean' ], function() {
-    return gulp.watch( pathsToWatch, [ 'pandoc-site', 'babel' ] );
+    return gulp.watch( pathsToWatch, [ 'pandoc-site', 'babel-shader' ] );
 } );
 
 
 
 // BABEL FOR ES6
 
-/**
- * Converts ES6 to ES5
- */
-gulp.task( 'babel', [ 'babel-clean' ], function() {
-    return gulp.src( fpDistSrc )
-        .pipe( sourcemaps.init() )
-        .pipe( babel( ) )
-        .pipe( concat( fpDistCompiled ) )
-        .pipe( sourcemaps.write( '.' ) )
-        .pipe( gulp.dest( fpDist ) );
-} );
-
-
-/**
- * Cleans Babel compiled file.
- */
-gulp.task( 'babel-clean', function() {
-    return gulp.src( fpDist + fpDistCompiled + '*', {read: false} )
-        .pipe( clean() );
-});
 
 /**
  * Converts ES6 to ES5
@@ -90,16 +70,6 @@ gulp.task( 'babel-shader-clean', function() {
         .pipe( clean() );
 });
 
-
-
-/**
- * NOTE: source maps not working with both babel and uglify
- */
-gulp.task('uglify', [ ], function() {
-  gulp.src( fpDistSrc )
-    .pipe( uglify( { outSourceMap: true }) )
-    .pipe( gulp.dest( fpDist ) )
-});
 
 
 /**
@@ -136,6 +106,17 @@ gulp.task('require', function () {
         }))
         .pipe(gulp.dest( fpDist ));
 });
+
+
+/**
+ * NOTE: source maps not working with both babel and uglify
+ */
+gulp.task('uglify', [ ], function() {
+  gulp.src( fpDistSrc )
+    .pipe( uglify( { outSourceMap: true }) )
+    .pipe( gulp.dest( fpDist ) )
+});
+
 
 
 /**

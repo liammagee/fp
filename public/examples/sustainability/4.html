@@ -5,9 +5,20 @@
         <script src="/js/require.js"></script>
         <script>
 
-        require( [ "../../js/fp-compiled" ],
+
+        require.config({
+
+          baseUrl: '/js',
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
+
+        });
+
+        var _fp;
+        require( [ 'fp' ],
             function( fp ) {
-                var config = { = {
+                _fp = fp;
+                var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -20,14 +31,13 @@
                         "3": { "create": false },
                         "4": {
                             "waterShow": true,
-                            // Don't show terrain
-                            "terrainShow": false,
+                            "terrainShow": true,
                             "buildingsShow": false,
                             "roadsShow": false,
                             "dayShow": false,
                             // Show patches
                             "patchesShow": true,
-                            "lightDirectionalShow": false,
+                            "lightDirectionalShow": true,
 
                             "cameraOverride": true,
                             "cameraX": 0,
@@ -99,7 +109,6 @@
                                  this.gender == "f" &&
                                  Math.random() * this.health > 50 &&
                                  this.age > 15 && this.age < 50 )  {
-                                fp.scene.remove( fp.agentNetwork.particles );
                                 var agent = fp.agentNetwork.createAgent();
                                 agent.mother = this;
                                 agent.color = this.color;
@@ -162,7 +171,7 @@
                     malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 10).step( 0.1 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "patchConsumptionRate", 0, 1).step( 0.005 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "patchRecoveryRate", 0, 0.1).step( 0.005 );
-                    fp.appConfig.Setup();
+                    fp.appController.Setup();
                 } );
             }
         );

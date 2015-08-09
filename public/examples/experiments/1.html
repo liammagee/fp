@@ -37,7 +37,7 @@
                 "PointerLockControls",
             ],
             function( fp ) {
-                var config = { = {
+                var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -176,8 +176,8 @@
                 }
 
                 fp.init( config, sim, function() {
-                    fp.appConfig.Setup();
-                    fp.appConfig.Run();
+                    fp.appController.Setup();
+                    fp.appController.Run();
                     // var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
                     // var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
                     // var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
