@@ -1,3 +1,4 @@
+
 var gulp = require('gulp');
 var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
@@ -8,35 +9,33 @@ var uglify = require('gulp-uglify');
 var eslint = require('gulp-eslint')
 var shell = require( 'gulp-shell' );
 var pandoc = require('gulp-pandoc');
-
+var requirejsOptimize = require('gulp-requirejs-optimize');
 
 // Key files
-var paths = {
-    fp: 'public/js/fp.js',
-    fpOutput: 'public/js',
-    fpCompiled: 'fp-compiled.js',
-    fpCompiledFull:  'public/js/fp-compiled.js'
-}
+var jsSrc = 'public/js/';
+var fpSrc = jsSrc + 'fp/';
+var fpDist = jsSrc + 'dist/';
+var fpBaseFile = 'fp.js';
+var fpBaseSrc = jsSrc + fpBaseFile;
+var fpDistSrc = fpDist + fpBaseFile;
+var fpDistCompiled = 'fp-compiled.js';
+
+var fpShaderSrc = fpSrc + 'shader-utils.js';
+var fpShaderCompiled = 'shader-utils-compiled.js';
+
+var docFiles = 'docs/*.md';
+var docTemplate = 'docs/templates/fp.html';
+
+
 var pathsToWatch = [
-    paths.fp,
-    'docs/*.md',
-    'docs/templates/fp.html'
+    fpSrc,
+    docFiles,
+    docTemplate
 ]
+
 
 gulp.task( 'default', [ 'watch' ] );
 
-
-/**
- * Converts ES6 to ES5
- */
-gulp.task( 'babel', [ 'clean' ], function() {
-    return gulp.src( paths.fp )
-        .pipe( sourcemaps.init() )
-        .pipe( babel( ) )
-        .pipe( concat( paths.fpCompiled ) )
-        .pipe( sourcemaps.write( '.' ) )
-        .pipe( gulp.dest( paths.fpOutput ) );
-} );
 
 /**
  * Watch for babel
@@ -46,64 +45,97 @@ gulp.task( 'watch', [ 'clean' ], function() {
 } );
 
 
+
+// BABEL FOR ES6
+
 /**
- * Cleans compiled file.
+ * Converts ES6 to ES5
  */
-gulp.task( 'clean', function() {
-    return gulp.src( paths.fpCompiledFull + '*', {read: false} )
+gulp.task( 'babel', [ 'babel-clean' ], function() {
+    return gulp.src( fpDistSrc )
+        .pipe( sourcemaps.init() )
+        .pipe( babel( ) )
+        .pipe( concat( fpDistCompiled ) )
+        .pipe( sourcemaps.write( '.' ) )
+        .pipe( gulp.dest( fpDist ) );
+} );
+
+
+/**
+ * Cleans Babel compiled file.
+ */
+gulp.task( 'babel-clean', function() {
+    return gulp.src( fpDist + fpDistCompiled + '*', {read: false} )
         .pipe( clean() );
 });
 
 /**
- * NOTE: source maps not working with both babel and uglify
+ * Converts ES6 to ES5
  */
-gulp.task('uglify', [ 'babel' ], function() {
-  gulp.src( paths.fpCompiledFull )
-    .pipe( uglify( { outSourceMap: true }) )
-    .pipe( gulp.dest( paths.fpOutput ) )
-});
+gulp.task( 'babel-shader', [ 'babel-shader-clean' ], function() {
+    return gulp.src( fpShaderSrc )
+        .pipe( sourcemaps.init() )
+        .pipe( babel( ) )
+        .pipe( concat( fpShaderCompiled ) )
+        .pipe( sourcemaps.write( '.' ) )
+        .pipe( gulp.dest( fpSrc ) );
+} );
+
 
 /**
- * Configure the eshint task.
- * Rules available here: http://eslint.org/docs/rules/
+ * Cleans Babel compiled file.
  */
-gulp.task('lint', function() {
-  return gulp.src( paths.fp )
-    // eslint() attaches the lint output to the eslint property
-    // of the file object so it can be used by other modules.
-    .pipe( eslint(
-        {
-            ecmaFeatures: {
-                templateStrings: true
-            },
-            rules: {
-                "semi": 2,
-                "dot-notation": 1,
-                "camelcase": 1
-            },
+gulp.task( 'babel-shader-clean', function() {
+    return gulp.src( fpSrc + fpShaderCompiled + '*', {read: false} )
+        .pipe( clean() );
+});
 
-            globals: {
-                "window": true,
-                "require": true,
-                "define": true,
-                "THREEx": true
-            },
 
-            envs: [ 'es6', 'browser' ]
-        }
-    ))
-    // eslint.format() outputs the lint results to the console.
-    // Alternatively use eslint.formatEach() (see Docs).
-    .pipe(eslint.format())
+
+/**
+ * NOTE: source maps not working with both babel and uglify
+ */
+gulp.task('uglify', [ ], function() {
+  gulp.src( fpDistSrc )
+    .pipe( uglify( { outSourceMap: true }) )
+    .pipe( gulp.dest( fpDist ) )
 });
 
 
 /**
  * Cleans compiled files.
  */
-gulp.task( 'jsdoc', shell.task( [
-  'jsdoc  -d public/api --package package.json --readme README.md --configure jsdoc-conf.json public/js/fp.js'
-] ) );
+gulp.task('require', function () {
+
+    return gulp.src( fpBaseSrc )
+        .pipe(requirejsOptimize({
+            baseUrl: jsSrc,
+            paths: {
+                jquery: "utils/jquery",
+                astar: "utils/astar",
+                underscore: "utils/underscore",
+                three: "three-72",
+                jstat: "utils/jstat.min",
+                smoothie: "ux/smoothie",
+                stats: "ux/stats.min",
+                javascriptUtil: "utils/javascript.util",
+                jsts: "utils/jsts",
+                datGui: "ux/dat.gui",
+                water: "objects/water-material",
+                KeyboardState: "controls/THREEx.KeyboardState",
+                TerrainLoader: "loaders/TerrainLoader",
+                TrackballControls: "controls/TrackballControls",
+                OrbitControls: "controls/OrbitControls",
+                PointerLockControls: "controls/PointerLockControls",
+
+                fpShaderUtils: "fp/shader-utils-compiled",
+                fpInstance: "fp/instance"
+            },
+            optimize: 'none',
+            name: "fp"
+        }))
+        .pipe(gulp.dest( fpDist ));
+});
 
 
 /**
@@ -130,50 +162,46 @@ gulp.task('pandoc-site', function() {
     .pipe(gulp.dest('public/'));
 });
 
-/**
- * Generates a complete HTML file with citations, MathJax and a bootstrap template.
- */
-gulp.task('pandoc-html', function() {
-  gulp.src('docs/*.md')
-    .pipe(pandoc({
-      from: 'markdown',
-      to: 'html5',
-      ext: '.html',
-      args: [
-        '--smart',
-        '--standalone',
-        '--toc',
-        '--toc-depth=2 ',
-        // '--mathjax=js/docs/MathJax.js',
-        '--mathjax',
-        '--bibliography=docs/fp.bib',
-        '--template=docs/templates/bootstrap.html',
-        '--css=css/docs.css'
-        ]
-    }))
-    .pipe(gulp.dest('public/'));
-});
 
 /**
- * Generates, first, a latex file from the Markdown; and second, a PDF from the latex.
- * (Direct to PDF doesn't seem to work due to the interim Latex file going missing.)
+ * Cleans compiled files.
  */
-gulp.task('pandoc-pdf', function() {
-  gulp.src('docs/*.md')
-    .pipe(pandoc({
-      from: 'markdown',
-      to: 'latex',
-      ext: '.tex',
-      args: [
-        '--smart',
-        '--standalone',
-        '--toc',
-        '--toc-depth=2 ',
-        '--bibliography=docs/fp.bib',
-        ]
-    }))
-    .pipe(gulp.dest('public/'));
-    shell.task( [
-        'pdflatex public/*.tex public/'
-    ] )
+gulp.task( 'jsdoc', shell.task( [
+  'jsdoc  -d public/api --package package.json --readme README.md --configure jsdoc-conf.json public/js/fp.js'
+] ) );
+
+
+
+/**
+ * Configure the eshint task.
+ * Rules available here: http://eslint.org/docs/rules/
+ */
+gulp.task('lint', function() {
+  return gulp.src( fpBaseSrc )
+    // eslint() attaches the lint output to the eslint property
+    // of the file object so it can be used by other modules.
+    .pipe( eslint(
+        {
+            ecmaFeatures: {
+                templateStrings: true
+            },
+            rules: {
+                "semi": 2,
+                "dot-notation": 1,
+                "camelcase": 1
+            },
+
+            globals: {
+                "window": true,
+                "require": true,
+                "define": true,
+                "THREEx": true
+            },
+
+            envs: [ 'es6', 'browser' ]
+        }
+    ))
+    // eslint.format() outputs the lint results to the console.
+    // Alternatively use eslint.formatEach() (see Docs).
+    .pipe(eslint.format())
 });

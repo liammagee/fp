@@ -21,6 +21,7 @@ require.config({
         OrbitControls: "controls/OrbitControls",
         PointerLockControls: "controls/PointerLockControls",
 
+        fpShaderUtils: "fp/shader-utils-compiled",
         fpInstance: "fp/instance"
 
     },

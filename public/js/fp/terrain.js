@@ -3,7 +3,7 @@ define(
     [
         'fp/fp-base',
         'fp/config',
-        'fp/shader-utils'
+        'fpShaderUtils'
     ],
 
     function( FiercePlanet ) {
