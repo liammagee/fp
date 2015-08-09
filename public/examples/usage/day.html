@@ -5,7 +5,16 @@
         <script src="/js/require.js"></script>
         <script>
 
-        require( [ "../../js/fp" ],
+        require.config({
+
+          baseUrl: '/js',
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'fp-built' }
+
+        });
+
+        var _fp;
+        require( [ 'fp' ],
 
             function( fp ) {
 
@@ -36,6 +45,7 @@
                 }
 
                 fp.init( config, sim );
+                _fp = fp;
             }
 
         );

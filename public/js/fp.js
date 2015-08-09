@@ -52,6 +52,8 @@ require.config({
 
 define(
 
+    'fp',
+
     [
         // NEED TO BE NAMED
         "astar",
@@ -62,6 +64,7 @@ define(
 
         // DO NOT NEED TO BE NAMED
         "jstat",
+        "javascriptUtil",
         "jsts",
         "ux/dat.gui",
         "smoothie",
