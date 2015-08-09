@@ -83,7 +83,7 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.Building = function( form, dimensions, position, rotation ) {
+        FiercePlanet.Building = function( fp, form, dimensions, position, rotation ) {
 
             /**
              * Sets the dimensions of the building.

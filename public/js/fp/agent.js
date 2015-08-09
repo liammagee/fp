@@ -13,7 +13,7 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.Agent = function() {
+        FiercePlanet.Agent = function( fp ) {
 
             /**
              * @memberof Agent

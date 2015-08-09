@@ -21,8 +21,7 @@ require.config({
         OrbitControls: "controls/OrbitControls",
         PointerLockControls: "controls/PointerLockControls",
 
-        PointerLockControls: "controls/PointerLockControls",
-        FiercePlanet: "fp/fp-whole"
+        fpInstance: "fp/instance"
 
     },
 
@@ -41,7 +40,9 @@ require.config({
         TerrainLoader: { deps: [ "three" ] },
         TrackballControls: { deps: [ "three" ] },
         OrbitControls: { deps: [ "three" ] },
-        PointerLockControls: { deps: [ "three" ] }
+        PointerLockControls: { deps: [ "three" ] },
+
+        fp: { exports: "fp" },
 
     },
 
@@ -57,7 +58,7 @@ define(
         "jquery",
         "three",
         "underscore",
-        "FiercePlanet",
+        "fpInstance",
 
         // DO NOT NEED TO BE NAMED
         "jstat",
@@ -74,7 +75,7 @@ define(
 
     ],
 
-    function( astar, $, THREE, _, FiercePlanet ) {
+    function( astar, $, THREE, _, fp ) {
 
         "use strict";
 
@@ -98,10 +99,7 @@ define(
 
         };
 
-
-        // var fp = FiercePlanet.Simulation;
-
-        return FiercePlanet;
+        return fp;
 
     }
 

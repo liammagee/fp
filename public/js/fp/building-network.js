@@ -14,7 +14,8 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.BuildingNetwork = function() {
+        FiercePlanet.BuildingNetwork = function( fp ) {
+
             this.networkMesh = null;
             this.networkJstsCache = [ ];
             this.buildings = [ ];
@@ -205,7 +206,7 @@ define( [
 
                 }
                 var rotation = new THREE.Vector3( 0, rotateY, 0 );
-                var building = new FiercePlanet.Building( buildingForm, dimensions, position, rotation );
+                var building = new FiercePlanet.Building( fp, buildingForm, dimensions, position, rotation );
 
                 // Before we add this, try to detect collision
                 if ( fp.appConfig.buildingOptions.detectBuildingCollisions ) {

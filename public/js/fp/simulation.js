@@ -1,8 +1,10 @@
 
 define(
+
     [
          'fp/fp-base',
          'fp/app-state',
+         'fp/app-controller',
          'fp/config',
          'fp/terrain',
          'fp/agent-network',
@@ -19,222 +21,41 @@ define(
     function( FiercePlanet ) {
 
 
-    FiercePlanet.AppController = function() {
 
         /**
-         * Resets the state of the fp object.
+         * Drives the simulation.
+         *
+         * @module fp
+         * @namespace fp
          */
-        this.Reset = function() {
-            // First coerce grid points to some multiple of patchSize, + 1
-            fp.scene.remove(  fp.agentNetwork.particles  );
-            fp.agentNetwork.agents = [ ];
-            fp.agentNetwork.agentParticleSystemAttributes = null;
-            fp.buildingNetwork.networkJstsCache = [ ];
-            fp.buildingNetwork.buildings = [ ];
-            fp.buildingNetwork.buildingHash = {};
-            fp.roadNetwork.indexValues = [ ];
-            fp.roadNetwork.roads = {};
-
-            fp.timescale.currentYear = fp.timescale.initialYear;
-            fp.updateYear();
-            fp.timescale.frameCounter = 0;
-            if ( fp.trailNetwork.trailMeshes )
-                fp.trailNetwork.trailMeshes.forEach( function( trail ) { scene.remove( trail ); } );
-
-            var len = fp.terrain.plane.geometry.attributes.position.array.length / 3,
-                trailPoints = new Float32Array( len ),
-                patchPoints = new Float32Array( len );
-            for ( var i = 0; i < len; i++ ) {
-                trailPoints[ i ] = 0;
-                patchPoints[ i ] = 0;
-            }
-            fp.terrain.plane.geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-            fp.terrain.plane.geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
-            fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
-            fp.terrain.plane.geometry.attributes.patch.needsUpdate = true;
-
-            fp.trailNetwork.trails = {};
-            fp.agentNetwork.networks.forEach( function( network ) {
-                network.links = [ ];
-                fp.scene.remove( network.networkMesh );
-            } );
-            fp.scene.remove( fp.buildingNetwork.networkMesh );
-            fp.scene.remove( fp.roadNetwork.networkMesh );
-            fp.scene.remove( fp.pathNetwork.networkMesh );
-            fp.scene.remove( fp.trailNetwork.globalTrailLine );
-            fp.patchNetwork.initialisePatches();
-        };
-
-        /**
-         * Sets up the simulation.
-         */
-        this.Setup = function() {
-            fp.appController.Reset();
-            fp.agentNetwork.createInitialAgentPopulation();
-            if ( fp.appConfig.displayOptions.agentsShow )
-                fp.scene.add( fp.agentNetwork.particles );
-
-            fp.buildingNetwork.networkMesh = new THREE.Object3D();
-            fp.buildingNetwork.networkMesh.castShadow = true;
-            fp.buildingNetwork.networkMesh.receiveShadow = true;
-
-            if ( fp.appConfig.displayOptions.buildingsShow )
-                fp.scene.add( fp.buildingNetwork.networkMesh );
-
-            fp.roadNetwork.networkMesh = new THREE.Object3D();
-            fp.roadNetwork.planeVertices = [ ];
-            if ( fp.appConfig.displayOptions.roadsShow )
-                fp.scene.add( fp.roadNetwork.networkMesh );
-
-            fp.pathNetwork.networkMesh = new THREE.Object3D();
-            if ( fp.appConfig.displayOptions.pathsShow )
-                fp.scene.add( fp.pathNetwork.networkMesh );
-
-            fp.trailNetwork.buildTrailNetwork( false );
-            /*
-            fp.trailNetwork.globalTrailGeometry = new THREE.Geometry();
-            for ( var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++ ) {
-                var vertices = new Array( fp.appConfig.displayOptions.trailLength );
-                for ( var j = 0; j < fp.appConfig.displayOptions.trailLength ; j++ ) {
-                    fp.trailNetwork.globalTrailGeometry.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
-                }
-                var ai = fp.getIndex( fp.agentNetwork.agents[ i ].lastPosition.x / fp.appConfig.terrainOptions.multiplier, fp.agentNetwork.agents[ i ].lastPosition.z / fp.appConfig.terrainOptions.multiplier );
-                if ( ai > -1 )
-                    fp.trailNetwork.trails[ ai ] = 1;
-            }
-            var trailMaterial = new THREE.LineBasicMaterial( {
-                color: fp.appConfig.colorOptions.colorNightTrail,
-            var trailMaterial = new THREE.LineBasicMPath( {
-                color: fp.appConfig.colorOptions.colorNightTrail,
-                linewidth: 0.1,
-                opacity: 0.1,
-                blending: THREE.NormalBlending,
-                transparent: true
-            } );
-            fp.trailNetwork.globalTrailLine = new THREE.Line( fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LineSegments );
-            if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
-                fp.scene.add( fp.trailNetwork.globalTrailLine );
-            }
-            */
-
-            fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-
-        };
-
-
-        this.Run = function() {
-
-            FiercePlanet.AppState.runSimulation = !FiercePlanet.AppState.runSimulation;
-            FiercePlanet.AppState.stepSimulation = false;
-
-            if ( !_.isUndefined( fp.chart ) ) {
-
-                if ( FiercePlanet.AppState.runSimulation ) {
-
-                    fp.chart.start();
-
-                }
-                else {
-
-                    fp.chart.stop();
-
-                }
-
-            }
-
-        };
-
-
-        this.Step = function() {
-            fp.AppState.runSimulation = fp.AppState.stepSimulation = true;
-        };
-
-
-        /**
-         * Increase the frame rate relative to the timescale interval.
-         */
-        this.SpeedUp = function() {
-            if ( fp.timescale.framesToYear > fp.timescale.MIN_FRAMES_TO_YEAR )
-                fp.timescale.framesToYear = Math.ceil( fp.timescale.framesToYear / 2 );
-            console.log( "Speed: " + fp.timescale.framesToYear );
-        };
-
-        /**
-         * Decrease the frame rate relative to the timescale interval.
-         */
-        this.SlowDown = function() {
-            if ( fp.timescale.framesToYear < fp.timescale.MAX_FRAMES_TO_YEAR )
-                fp.timescale.framesToYear *= 2;
-            console.log( "Speed: " + fp.timescale.framesToYear );
-        };
-
-        this.Snapshot = function() {
-            var mimetype = mimetype  || "image/png";
-            var url = fp.renderer.domElement.toDataURL( mimetype );
-            window.open( url, "name-" + Math.random() );
-        };
-        this.FullScreen = function() {
-            if ( document.documentElement.requestFullscreen ) {
-                document.documentElement.requestFullscreen();
-            } else if ( document.documentElement.mozRequestFullScreen ) {
-                document.documentElement.mozRequestFullScreen();
-            } else if ( document.documentElement.webkitRequestFullscreen ) {
-                document.documentElement.webkitRequestFullscreen();
-            } else if ( document.documentElement.msRequestFullscreen ) {
-                document.documentElement.msRequestFullscreen();
-            }
-        };
-        this.SwitchTerrain = function() {
-            fp.appConfig.Reset();
-            fp.terrain.terrainMapIndex =
-                ( fp.terrain.terrainMapIndex == fp.TERRAIN_MAPS.length - 1 ) ?
-                  0 :
-                  fp.terrain.terrainMapIndex + 1;
-            fp.loadTerrain();
-        };
-        this.WrapTerrain = function() {
-            fp.appConfig.waterShow = false;
-            fp.terrain.wrappingState = 1;
-        };
-        this.UnwrapTerrain = function() {
-            fp.terrain.wrappingState = -1;
-        };
-    };
-
-
-    /**
-     * Drives the simulation.
-     *
-     * @module fp
-     * @namespace fp
-     */
-    FiercePlanet.Simulation = function() {
-        var fp = this;
-        this.container = null;
-        this.scene = null;
-        this.appConfig = null;
-        this.camera = null;
-        this.renderer = null;
-        this.clock = new THREE.Clock();
-        this.mouse = { x: 0, y: 0, z: 1 };
-        this.mouseVector = new THREE.Vector3();
-        this.keyboard = new THREEx.KeyboardState();
-        this.stats = null;
-        this.terrain = null;
-        this.controls = null;
-        this.gui = null;
-        this.chart = null;
-        this.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
-        this.skyBox = null;
-        this.waterMesh = null;
-        this.water = null;
-        this.agentNetwork = null;
-        this.pathNetwork = null;
-        this.trailNetwork = null;
-        this.cursor = null;
-        this.sim = null;
-        this.lightHemisphere = null;
-        this.lightDirectional = null;
+        FiercePlanet.Simulation = function() {
+            var fp = this;
+            this.container = null;
+            this.scene = null;
+            this.appConfig = null;
+            this.camera = null;
+            this.renderer = null;
+            this.clock = new THREE.Clock();
+            this.mouse = { x: 0, y: 0, z: 1 };
+            this.mouseVector = new THREE.Vector3();
+            this.keyboard = new THREEx.KeyboardState();
+            this.stats = null;
+            this.terrain = null;
+            this.controls = null;
+            this.gui = null;
+            this.chart = null;
+            this.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
+            this.skyBox = null;
+            this.waterMesh = null;
+            this.water = null;
+            this.agentNetwork = null;
+            this.pathNetwork = null;
+            this.trailNetwork = null;
+            this.cursor = null;
+            this.sim = null;
+            this.lightHemisphere = null;
+            this.lightDirectional = null;
+            this.chart = null;
 
             /**
              * Generates a THREE.Vector3 object containing RGB values from either
@@ -259,19 +80,24 @@ define(
             };
 
             fp.buildColorInteger = function( r, g, b ) {
+
                 return r * 256 * 256 + g * 256 + b;
+
             };
 
             fp.getOffset = function( currentLevel, len ) {
+
                 var initOffset = ( currentLevel > 0 ) ? len * 2 : 0;
                 var offset = initOffset + ( currentLevel ) * len * 4;
                 return offset;
+
             };
 
             /**
              * Resizes the renderer and camera aspect.
              */
             fp.onWindowResize = function() {
+
                 if ( fp.appConfig.displayOptions.maximiseView ) {
                     fp.camera.aspect = window.innerWidth / window.innerHeight;
                     fp.camera.updateProjectionMatrix();
@@ -283,27 +109,36 @@ define(
                     fp.camera.updateProjectionMatrix();
                     fp.renderer.setSize( width, height );
                 }
+
             };
 
             /**
              * Update the series colours, if they change
              */
             fp.updateChartColors = function() {
-                if ( fp.chart.seriesSet.length == 3 ) {
+
+                if ( fp.chart.chart.seriesSet.length == 3 ) {
+
                     var colorPop = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPopulation ).getHexString(),
                         colorHealth = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphHealth ).getHexString(),
                         colorPatches = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPatchValues ).getHexString();
-                    _.extend( fp.chart.seriesSet[ 0 ].options, { strokeStyle: colorPop } );
-                    _.extend( fp.chart.seriesSet[ 1 ].options, { strokeStyle: colorHealth } );
-                    _.extend( fp.chart.seriesSet[ 2 ].options, { strokeStyle: colorPatches } );
+                    _.extend( fp.chart.chart.seriesSet[ 0 ].options, { strokeStyle: colorPop } );
+                    _.extend( fp.chart.chart.seriesSet[ 1 ].options, { strokeStyle: colorHealth } );
+                    _.extend( fp.chart.chart.seriesSet[ 2 ].options, { strokeStyle: colorPatches } );
+
                 }
+
             };
 
             fp.mostVisited = function() {
+
                 return _.chain( trailNetwork.trails ).pairs().sortBy( function( a ) {return a[ 1 ];} ).last( 100 ).value();
+
             };
 
+
             fp.vertexCount = function( obj ) {
+
                 var count = 0;
                 if ( !_.isUndefined( obj.geometry ) ) {
                     if ( !_.isUndefined( obj.geometry.vertices ) )
@@ -317,22 +152,24 @@ define(
                     } );
                 }
                 return count;
+
             };
 
             /**
              * Sets up the basic sim objects
              */
             fp.setupSimObjects = function() {
+
                 // Set up root objects
-                fp.terrain = new FiercePlanet.Terrain();
+                fp.terrain = new FiercePlanet.Terrain( fp );
                 fp.terrain.gridExtent = fp.appConfig.terrainOptions.gridExtent;
 
-                fp.agentNetwork = new FiercePlanet.AgentNetwork();
-                fp.buildingNetwork = new FiercePlanet.BuildingNetwork();
-                fp.roadNetwork = new FiercePlanet.RoadNetwork();
-                fp.pathNetwork = new FiercePlanet.PathNetwork();
-                fp.trailNetwork = new FiercePlanet.TrailNetwork();
-                fp.patchNetwork = new FiercePlanet.PatchNetwork();
+                fp.agentNetwork = new FiercePlanet.AgentNetwork( fp );
+                fp.buildingNetwork = new FiercePlanet.BuildingNetwork( fp );
+                fp.roadNetwork = new FiercePlanet.RoadNetwork( fp );
+                fp.pathNetwork = new FiercePlanet.PathNetwork( fp );
+                fp.trailNetwork = new FiercePlanet.TrailNetwork( fp );
+                fp.patchNetwork = new FiercePlanet.PatchNetwork( fp );
                 fp.timescale = new FiercePlanet.Timescale();
                 fp.cursor = new FiercePlanet.Cursor();
             };
@@ -364,6 +201,7 @@ define(
              * @memberof fp
              */
             fp.setupControls = function() {
+
                 if ( fp.appConfig.displayOptions.firstPersonView ) {
                     fp.controls = new THREE.PointerLockControls( fp.camera );
                     fp.scene.add( fp.controls.getObject() );
@@ -385,6 +223,7 @@ define(
                     fp.controls.minDistance = 250.0;
                     fp.controls.maxDistance = 10000.0;
                 }
+
             };
 
             /**
@@ -392,9 +231,11 @@ define(
              * @memberof fp
              */
             fp.resetControls = function() {
+
                 fp.setupCamera();
                 fp.setupControls();
                 fp.setupWater();
+
             };
 
 
@@ -403,6 +244,7 @@ define(
              * @memberof fp
              */
             fp.setupRenderer = function() {
+
                 fp.renderer = new THREE.WebGLRenderer( {
                     alpha: true,
                     antialias: true,
@@ -423,12 +265,14 @@ define(
                 // We add the event listener to = function the domElement
                 fp.renderer.domElement.addEventListener( "mousemove", fp.onMouseMove );
                 fp.renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
+
             };
 
             /**
              * @memberof fp
              */
             fp.setupLighting = function() {
+
                 // Remove existing lights
                 fp.scene.remove( fp.lightHemisphere );
                 fp.scene.remove( fp.lightDirectional );
@@ -469,12 +313,14 @@ define(
                 // fp.lightDirectional.shadowCameraVisible = true; // for debugging
                 if ( fp.appConfig.displayOptions.lightDirectionalShow )
                     fp.scene.add( fp.lightDirectional );
+
             };
 
             /**
              * @memberof fp
              */
             fp.updateLighting = function() {
+
                 if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.colorLightDirectional ) )
                     return null;
 
@@ -491,6 +337,7 @@ define(
              * @memberof fp
              */
             fp.setupWater = function() {
+
                 // Taken from Three.js examples, webgl_shaders_ocean.html
                 var parameters = {
                     width: 2000,
@@ -501,6 +348,7 @@ define(
                     param: 4,
                     filterparam: 1
                 };
+
                 var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
                 waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
                 fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
@@ -513,17 +361,33 @@ define(
                     waterColor: 0x001e0f,
                     distortionScale: 50.0,
                 } );
+
                 if ( !_.isUndefined( fp.waterMesh ) )
                     fp.scene.remove( fp.waterMesh );
+
                 fp.waterMesh = new THREE.Mesh(
                     new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
                     fp.water.material
                 );
+
                 fp.waterMesh.add( fp.water );
                 fp.waterMesh.rotation.x = - Math.PI * 0.5;
                 fp.waterMesh.position.y = -10;
+
                 if ( fp.appConfig.displayOptions.waterShow )
                     fp.scene.add( fp.waterMesh );
+
+            };
+
+
+            /**
+             * @memberof fp
+             */
+            fp.setupChart = function() {
+
+                fp.chart = new FiercePlanet.Chart( fp );
+                fp.chart.setupChart();
+
             };
 
             /**
@@ -574,27 +438,35 @@ define(
                     depthWrite: false,
                     side: THREE.BackSide
                 } );
+
                 fp.skyBox = new THREE.Mesh(
                     new THREE.BoxGeometry( 1000000, 1000000, 1000000 ),
                     skyBoxMaterial
                 );
+
                 fp.skyBox.position.set( 0, skies[ skyI ][ 2 ], 0 );
                 if ( fp.appConfig.displayOptions.skyboxShow )
                     fp.scene.add( fp.skyBox );
+
             };
+
 
             /**
              * @memberof fp
              */
             fp.setOutputHUD = function() {
+
                 $( "#yearValue" ).html( fp.timescale.currentYear );
                 $( "#populationValue" ).html( fp.agentNetwork.agents.length );
+
             };
+
 
             /**
              * @memberof fp
              */
             fp.setupGUI = function( config ) {
+
                 if ( !_.isUndefined( config ) ) {
                     fp.doGUI( config );
                 }
@@ -613,6 +485,7 @@ define(
                 }
                 else
                     fp.doGUI();
+
             };
 
             /**
@@ -623,6 +496,7 @@ define(
              * @param  {Function} callback Callback function to call at the end of initialisation.
              */
             fp.init = function( config, sim, callback ) {
+
                 fp.container = $( "#container" )[ 0 ] || config.container;
                 fp.scene = new THREE.Scene();
 
@@ -642,10 +516,11 @@ define(
                 fp.setupWater();
                 fp.setupSky();
                 fp.setOutputHUD();
-                FiercePlanet.Chart.setupChart();
+                fp.setupChart();
                 fp.toggleStatsState(); // Add stats
                 window.addEventListener( "resize", fp.onWindowResize, false );
                 fp.loadTerrain( callback ); // Load the terrain asynchronously
+
             };
 
             /**
@@ -680,6 +555,7 @@ define(
                 fp.updateKeyboard();
                 requestAnimationFrame( fp.animate );
                 fp.renderer.render( fp.scene, fp.camera );
+
             };
 
             /**
@@ -744,9 +620,9 @@ define(
              * @memberof fp
              */
             fp.updateGraph = function() {
-                if ( fp.chart.seriesSet.length == 3 &&
-                    fp.chart.options.maxValue <= fp.agentNetwork.agents.length ) {
-                    fp.chart.options.maxValue *= 2;
+                if ( fp.chart.chart.seriesSet.length == 3 &&
+                    fp.chart.chart.options.maxValue <= fp.agentNetwork.agents.length ) {
+                    fp.chart.chart.options.maxValue *= 2;
                 }
             };
 
@@ -1502,278 +1378,280 @@ define(
             };
 
 
-        /**
-         * Creates a dat.GUI interface for controlling and configuring the simulation.
-         * @param  {Object} config  An object representation of properties to override defaults for the fp.AppConfig object.
-         */
-        fp.doGUI = function( config ) {
-            fp.appConfig = new FiercePlanet.AppConfig();
-            fp.appController = new FiercePlanet.AppController();
+            /**
+             * Creates a dat.GUI interface for controlling and configuring the simulation.
+             * @param  {Object} config  An object representation of properties to override defaults for the fp.AppConfig object.
+             */
+            fp.doGUI = function( config ) {
+                fp.appConfig = new FiercePlanet.AppConfig();
+                fp.appController = new FiercePlanet.AppController( fp );
 
-            fp.gui = new dat.GUI( { load: config } );
+                fp.gui = new dat.GUI( { load: config } );
 
-            fp.gui.remember( fp.appConfig );
-            fp.gui.remember( fp.appConfig.agentOptions );
-            fp.gui.remember( fp.appConfig.buildingOptions );
-            fp.gui.remember( fp.appConfig.roadOptions );
-            fp.gui.remember( fp.appConfig.displayOptions );
-            fp.gui.remember( fp.appConfig.colorOptions );
-            fp.gui.remember( fp.appConfig.terrainOptions );
+                fp.gui.remember( fp.appConfig );
+                fp.gui.remember( fp.appConfig.agentOptions );
+                fp.gui.remember( fp.appConfig.buildingOptions );
+                fp.gui.remember( fp.appConfig.roadOptions );
+                fp.gui.remember( fp.appConfig.displayOptions );
+                fp.gui.remember( fp.appConfig.colorOptions );
+                fp.gui.remember( fp.appConfig.terrainOptions );
 
-            fp.gui.add( fp.appController, "Setup" );
-            fp.gui.add( fp.appController, "Run" );
-            fp.gui.add( fp.appController, "Step" );
+                fp.gui.add( fp.appController, "Setup" );
+                fp.gui.add( fp.appController, "Run" );
+                fp.gui.add( fp.appController, "Step" );
 
-            if ( fp.appConfig.displayOptions.guiShowControls ) {
-                var controlPanel = fp.gui.addFolder( "More controls" );
-                controlPanel.add( fp.appController, "SpeedUp" );
-                controlPanel.add( fp.appController, "SlowDown" );
-                controlPanel.add( fp.appController, "Snapshot" );
-                controlPanel.add( fp.appController, "FullScreen" );
-                controlPanel.add( fp.appController, "SwitchTerrain" );
-                controlPanel.add( fp.appController, "WrapTerrain" );
-                controlPanel.add( fp.appController, "UnwrapTerrain" );
-            }
+                if ( fp.appConfig.displayOptions.guiShowControls ) {
+                    var controlPanel = fp.gui.addFolder( "More controls" );
+                    controlPanel.add( fp.appController, "SpeedUp" );
+                    controlPanel.add( fp.appController, "SlowDown" );
+                    controlPanel.add( fp.appController, "Snapshot" );
+                    controlPanel.add( fp.appController, "FullScreen" );
+                    controlPanel.add( fp.appController, "SwitchTerrain" );
+                    controlPanel.add( fp.appController, "WrapTerrain" );
+                    controlPanel.add( fp.appController, "UnwrapTerrain" );
+                }
 
-            if ( fp.appConfig.displayOptions.guiShowAgentFolder ) {
-                var agentsFolder = fp.gui.addFolder( "Agent Options" );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 1000 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialExtent", 1, 100 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1, 100 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialX",  0, 100 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialY",  0, 100 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "randomAge" );
-                agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0 ).step( 0.01 );
-                agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithHome", 0.0, 1.0 ).step( 0.01 );
-                agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithBothHomes", 0.0, 1.0 ).step( 0.01 );
-                agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0 ).step( 0.01 );
-                agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToOtherAgentHome", 0.0, 1.0 ).step( 0.01 );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
-                agentsFolder.add( fp.appConfig.agentOptions, "noWater" );
-                agentsFolder.add( fp.appConfig.agentOptions, "noUphill" );
-                agentsFolder.add( fp.appConfig.agentOptions, "useStickman" );
-                agentsFolder.add( fp.appConfig.agentOptions, "visitHomeBuilding", 0.0, 1.0 ).step( 0.001 );
-                agentsFolder.add( fp.appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0 ).step( 0.001 );
-                agentsFolder.add( fp.appConfig.agentOptions, "establishLinks" );
-                agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
-                agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
-                agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 10 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1 ).step( 0.05 );
-                agentsFolder.add( fp.appConfig.agentOptions, "movementRelativeToPatch" );
-                agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100 ).step( 1 );
-                agentsFolder.add( fp.appConfig.agentOptions, "movementStrictlyIntercardinal" );
-            }
+                if ( fp.appConfig.displayOptions.guiShowAgentFolder ) {
+                    var agentsFolder = fp.gui.addFolder( "Agent Options" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 1000 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialExtent", 1, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialX",  0, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialY",  0, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "randomAge" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0 ).step( 0.01 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithHome", 0.0, 1.0 ).step( 0.01 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithBothHomes", 0.0, 1.0 ).step( 0.01 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0 ).step( 0.01 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToOtherAgentHome", 0.0, 1.0 ).step( 0.01 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "noWater" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "noUphill" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "useStickman" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "visitHomeBuilding", 0.0, 1.0 ).step( 0.001 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0 ).step( 0.001 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "establishLinks" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 10 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1 ).step( 0.05 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "movementRelativeToPatch" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "movementStrictlyIntercardinal" );
+                }
 
-            if ( fp.appConfig.displayOptions.guiShowBuildingsFolder ) {
-                var buildingsFolder = fp.gui.addFolder( "Building Options" );
-                buildingsFolder.add( fp.appConfig.buildingOptions, "create" );
-                buildingsFolder.add( fp.appConfig.buildingOptions, "maxNumber", 1, 100 ).step( 1 );
-                buildingsFolder.add( fp.appConfig.buildingOptions, "detectBuildingCollisions" );
-                buildingsFolder.add( fp.appConfig.buildingOptions, "detectRoadCollisions" );
-                var forms = buildingsFolder.addFolder( "Form" );
-                forms.add( fp.appConfig.buildingOptions, "buildingForm", FiercePlanet.BUILDING_FORMS.names );
-                forms.add( fp.appConfig.buildingOptions, "spread", 1, 100 ).step( 1 );
-                forms.add( fp.appConfig.buildingOptions, "randomForm" );
-                forms.add( fp.appConfig.buildingOptions, "rotateRandomly" );
-                forms.add( fp.appConfig.buildingOptions, "rotateSetAngle", 0, 360 ).step( 1 );
-                var dimensions = buildingsFolder.addFolder( "Dimensions" );
-                dimensions.add( fp.appConfig.buildingOptions, "minHeight", 1, 100 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "maxHeight", 2, 200 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "heightA", 0.1, 10.0 ).step( 0.1 );
-                dimensions.add( fp.appConfig.buildingOptions, "heightB", 1, 100 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "riseRate", 1, 100 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "levelHeight", 10, 100 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "minWidth", 1, 200 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "maxWidth", 41, 400 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "minLength", 1, 200 ).step( 1 );
-                dimensions.add( fp.appConfig.buildingOptions, "maxLength", 41, 400 ).step( 1 );
-                var influences = buildingsFolder.addFolder( "Influences" );
-                influences.add( fp.appConfig.buildingOptions, "roads", 0.0, 1.0 ).step( 0.1 );
-                influences.add( fp.appConfig.buildingOptions, "water", 0.0, 1.0 ).step( 0.1 );
-                influences.add( fp.appConfig.buildingOptions, "otherBuildings", 0.0, 1.0 ).step( 0.1 );
-                influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMin", 0, 10000 ).step( 100 );
-                influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMax", 0, 10000 ).step( 100 );
-                influences.add( fp.appConfig.buildingOptions, "buildingHeight", 0.0, 1.0 ).step( 0.1 );
-                var view = buildingsFolder.addFolder( "Appearance" );
-                view.add( fp.appConfig.buildingOptions, "useShader" );
-                view.add( fp.appConfig.buildingOptions, "useLevelOfDetail" );
-                view.add( fp.appConfig.buildingOptions, "lowResDistance", 2000, 20000 ).step( 1000 );
-                view.add( fp.appConfig.buildingOptions, "highResDistance", 100, 2000 ).step( 100 );
-                view.add( fp.appConfig.buildingOptions, "opacity", 0.0, 1.0 ).step( 0.01 );
-                var fill = view.addFolder( "Fill" );
-                fill.add( fp.appConfig.buildingOptions, "showFill" );
-                fill.add( fp.appConfig.buildingOptions, "fillRooves" );
-                var line = view.addFolder( "Line" );
-                line.add( fp.appConfig.buildingOptions, "showLines" );
-                line.add( fp.appConfig.buildingOptions, "linewidth", 0.1, 8 ).step( 0.1 );
-                var windows = view.addFolder( "Window" );
-                var showWindowsOptions = windows.add( fp.appConfig.buildingOptions, "showWindows" );
-                showWindowsOptions.onChange( function( value ) {
-                    fp.buildingNetwork.buildings.forEach( function( b ) {
-                        b.uniforms.showWindows.value = value ? 1 : 0;
+                if ( fp.appConfig.displayOptions.guiShowBuildingsFolder ) {
+                    var buildingsFolder = fp.gui.addFolder( "Building Options" );
+                    buildingsFolder.add( fp.appConfig.buildingOptions, "create" );
+                    buildingsFolder.add( fp.appConfig.buildingOptions, "maxNumber", 1, 100 ).step( 1 );
+                    buildingsFolder.add( fp.appConfig.buildingOptions, "detectBuildingCollisions" );
+                    buildingsFolder.add( fp.appConfig.buildingOptions, "detectRoadCollisions" );
+                    var forms = buildingsFolder.addFolder( "Form" );
+                    forms.add( fp.appConfig.buildingOptions, "buildingForm", FiercePlanet.BUILDING_FORMS.names );
+                    forms.add( fp.appConfig.buildingOptions, "spread", 1, 100 ).step( 1 );
+                    forms.add( fp.appConfig.buildingOptions, "randomForm" );
+                    forms.add( fp.appConfig.buildingOptions, "rotateRandomly" );
+                    forms.add( fp.appConfig.buildingOptions, "rotateSetAngle", 0, 360 ).step( 1 );
+                    var dimensions = buildingsFolder.addFolder( "Dimensions" );
+                    dimensions.add( fp.appConfig.buildingOptions, "minHeight", 1, 100 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "maxHeight", 2, 200 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "heightA", 0.1, 10.0 ).step( 0.1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "heightB", 1, 100 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "riseRate", 1, 100 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "levelHeight", 10, 100 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "minWidth", 1, 200 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "maxWidth", 41, 400 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "minLength", 1, 200 ).step( 1 );
+                    dimensions.add( fp.appConfig.buildingOptions, "maxLength", 41, 400 ).step( 1 );
+                    var influences = buildingsFolder.addFolder( "Influences" );
+                    influences.add( fp.appConfig.buildingOptions, "roads", 0.0, 1.0 ).step( 0.1 );
+                    influences.add( fp.appConfig.buildingOptions, "water", 0.0, 1.0 ).step( 0.1 );
+                    influences.add( fp.appConfig.buildingOptions, "otherBuildings", 0.0, 1.0 ).step( 0.1 );
+                    influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMin", 0, 10000 ).step( 100 );
+                    influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMax", 0, 10000 ).step( 100 );
+                    influences.add( fp.appConfig.buildingOptions, "buildingHeight", 0.0, 1.0 ).step( 0.1 );
+                    var view = buildingsFolder.addFolder( "Appearance" );
+                    view.add( fp.appConfig.buildingOptions, "useShader" );
+                    view.add( fp.appConfig.buildingOptions, "useLevelOfDetail" );
+                    view.add( fp.appConfig.buildingOptions, "lowResDistance", 2000, 20000 ).step( 1000 );
+                    view.add( fp.appConfig.buildingOptions, "highResDistance", 100, 2000 ).step( 100 );
+                    view.add( fp.appConfig.buildingOptions, "opacity", 0.0, 1.0 ).step( 0.01 );
+                    var fill = view.addFolder( "Fill" );
+                    fill.add( fp.appConfig.buildingOptions, "showFill" );
+                    fill.add( fp.appConfig.buildingOptions, "fillRooves" );
+                    var line = view.addFolder( "Line" );
+                    line.add( fp.appConfig.buildingOptions, "showLines" );
+                    line.add( fp.appConfig.buildingOptions, "linewidth", 0.1, 8 ).step( 0.1 );
+                    var windows = view.addFolder( "Window" );
+                    var showWindowsOptions = windows.add( fp.appConfig.buildingOptions, "showWindows" );
+                    showWindowsOptions.onChange( function( value ) {
+                        fp.buildingNetwork.buildings.forEach( function( b ) {
+                            b.uniforms.showWindows.value = value ? 1 : 0;
+                        } );
                     } );
-                } );
-                windows.add( fp.appConfig.buildingOptions, "windowsRandomise" );
-                windows.add( fp.appConfig.buildingOptions, "windowsFlickerRate", 0, 1 ).step( 0.01 );
-                windows.add( fp.appConfig.buildingOptions, "windowWidth", 1, 100 ).step( 1 );
-                windows.add( fp.appConfig.buildingOptions, "windowPercent", 1, 100 ).step( 1 );
-                windows.add( fp.appConfig.buildingOptions, "windowsStartY", 1, 100 ).step( 1 );
-                windows.add( fp.appConfig.buildingOptions, "windowsEndY", 1, 100 ).step( 1 );
-                var stagger = buildingsFolder.addFolder( "Stagger" );
-                stagger.add( fp.appConfig.buildingOptions, "stagger" );
-                stagger.add( fp.appConfig.buildingOptions, "staggerAmount", 1, 100 );
-                var taper = buildingsFolder.addFolder( "Taper" );
-                taper.add( fp.appConfig.buildingOptions, "taper" );
-                taper.add( fp.appConfig.buildingOptions, "taperExponent", 1, 10 ).step( 1 );
-                taper.add( fp.appConfig.buildingOptions, "taperDistribution", 0.1, 5 );
-                var animation = buildingsFolder.addFolder( "Animation" );
-                animation.add( fp.appConfig.buildingOptions, "destroyOnComplete" );
-                animation.add( fp.appConfig.buildingOptions, "loopCreateDestroy" );
-                animation.add( fp.appConfig.buildingOptions, "turning" );
-                animation.add( fp.appConfig.buildingOptions, "falling" );
-            }
+                    windows.add( fp.appConfig.buildingOptions, "windowsRandomise" );
+                    windows.add( fp.appConfig.buildingOptions, "windowsFlickerRate", 0, 1 ).step( 0.01 );
+                    windows.add( fp.appConfig.buildingOptions, "windowWidth", 1, 100 ).step( 1 );
+                    windows.add( fp.appConfig.buildingOptions, "windowPercent", 1, 100 ).step( 1 );
+                    windows.add( fp.appConfig.buildingOptions, "windowsStartY", 1, 100 ).step( 1 );
+                    windows.add( fp.appConfig.buildingOptions, "windowsEndY", 1, 100 ).step( 1 );
+                    var stagger = buildingsFolder.addFolder( "Stagger" );
+                    stagger.add( fp.appConfig.buildingOptions, "stagger" );
+                    stagger.add( fp.appConfig.buildingOptions, "staggerAmount", 1, 100 );
+                    var taper = buildingsFolder.addFolder( "Taper" );
+                    taper.add( fp.appConfig.buildingOptions, "taper" );
+                    taper.add( fp.appConfig.buildingOptions, "taperExponent", 1, 10 ).step( 1 );
+                    taper.add( fp.appConfig.buildingOptions, "taperDistribution", 0.1, 5 );
+                    var animation = buildingsFolder.addFolder( "Animation" );
+                    animation.add( fp.appConfig.buildingOptions, "destroyOnComplete" );
+                    animation.add( fp.appConfig.buildingOptions, "loopCreateDestroy" );
+                    animation.add( fp.appConfig.buildingOptions, "turning" );
+                    animation.add( fp.appConfig.buildingOptions, "falling" );
+                }
 
-            if ( fp.appConfig.displayOptions.guiShowRoadsFolder ) {
-                var roadsFolder = fp.gui.addFolder( "Road Options" );
-                roadsFolder.add( fp.appConfig.roadOptions, "create" );
-                roadsFolder.add( fp.appConfig.roadOptions, "maxNumber", 1, 100 ).step( 1 );
-                roadsFolder.add( fp.appConfig.roadOptions, "roadWidth", 5, 50 ).step( 5 );
-                roadsFolder.add( fp.appConfig.roadOptions, "roadDeviation", 0, 50 ).step( 1 );
-                roadsFolder.add( fp.appConfig.roadOptions, "roadRadiusSegments", 2, 20 ).step( 1 );
-                roadsFolder.add( fp.appConfig.roadOptions, "roadSegments", 1, 20 ).step( 1 );
-                roadsFolder.add( fp.appConfig.roadOptions, "initialRadius", 0, 1000 ).step( 100 );
-                roadsFolder.add( fp.appConfig.roadOptions, "probability", 50, 1000 ).step( 50 );
-                roadsFolder.add( fp.appConfig.roadOptions, "lenMinimum", 0, 2000 ).step( 100 );
-                roadsFolder.add( fp.appConfig.roadOptions, "lenMaximum", 100, 2000 ).step( 100 );
-                roadsFolder.add( fp.appConfig.roadOptions, "lenDistributionFactor", 1, 10 ).step( 1 );
-                roadsFolder.add( fp.appConfig.roadOptions, "overlapThreshold", 1, 100 ).step( 1 );
-                roadsFolder.add( fp.appConfig.roadOptions, "flattenAdjustment", 0.025, 1.0 ).step( 0.025 );
-                roadsFolder.add( fp.appConfig.roadOptions, "flattenLift", 0, 40 ).step( 1 );
-            }
+                if ( fp.appConfig.displayOptions.guiShowRoadsFolder ) {
+                    var roadsFolder = fp.gui.addFolder( "Road Options" );
+                    roadsFolder.add( fp.appConfig.roadOptions, "create" );
+                    roadsFolder.add( fp.appConfig.roadOptions, "maxNumber", 1, 100 ).step( 1 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "roadWidth", 5, 50 ).step( 5 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "roadDeviation", 0, 50 ).step( 1 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "roadRadiusSegments", 2, 20 ).step( 1 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "roadSegments", 1, 20 ).step( 1 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "initialRadius", 0, 1000 ).step( 100 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "probability", 50, 1000 ).step( 50 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "lenMinimum", 0, 2000 ).step( 100 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "lenMaximum", 100, 2000 ).step( 100 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "lenDistributionFactor", 1, 10 ).step( 1 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "overlapThreshold", 1, 100 ).step( 1 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "flattenAdjustment", 0.025, 1.0 ).step( 0.025 );
+                    roadsFolder.add( fp.appConfig.roadOptions, "flattenLift", 0, 40 ).step( 1 );
+                }
 
-            if ( fp.appConfig.displayOptions.guiShowTerrainFolder ) {
-                var terrainFolder = fp.gui.addFolder( "Terrain Options" );
-                terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step( 1 ).onFinishChange( fp.loadTerrain );
-                terrainFolder.add( fp.appConfig.terrainOptions, "mapFile" ).onFinishChange( fp.loadTerrain );
-            }
+                if ( fp.appConfig.displayOptions.guiShowTerrainFolder ) {
+                    var terrainFolder = fp.gui.addFolder( "Terrain Options" );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step( 1 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "mapFile" ).onFinishChange( fp.loadTerrain );
+                }
 
-            if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
-                var displayFolder = fp.gui.addFolder( "Display Options" );
-                displayFolder.add( fp.appConfig.displayOptions, "agentsShow" ).onFinishChange( fp.toggleAgentState );
-                displayFolder.add( fp.appConfig.displayOptions, "buildingsShow" ).onFinishChange( fp.toggleBuildingState );
-                displayFolder.add( fp.appConfig.displayOptions, "roadsShow" ).onFinishChange( fp.toggleRoadState );
-                displayFolder.add( fp.appConfig.displayOptions, "waterShow" ).onFinishChange( fp.toggleWaterState );
-                displayFolder.add( fp.appConfig.displayOptions, "networkShow" ).onFinishChange( fp.toggleAgentNetwork );
-                displayFolder.add( fp.appConfig.displayOptions, "networkCurve" );
-                displayFolder.add( fp.appConfig.displayOptions, "networkCurvePoints", 4, 20 ).step( 1 );
-                displayFolder.add( fp.appConfig.displayOptions, "patchesUpdate" );
-                displayFolder.add( fp.appConfig.displayOptions, "patchesShow" ).onFinishChange( fp.togglePatchesState );
-                displayFolder.add( fp.appConfig.displayOptions, "trailsShow" ).onFinishChange( fp.toggleTrailState );
-                displayFolder.add( fp.appConfig.displayOptions, "trailsUpdate" ).onFinishChange( fp.toggleTrailState );
-                displayFolder.add( fp.appConfig.displayOptions, "trailsShowAsLines" ).onFinishChange( fp.toggleTrailState );
-                displayFolder.add( fp.appConfig.displayOptions, "trailLength", 1, 10000 ).step( 1 );
-                displayFolder.add( fp.appConfig.displayOptions, "cursorShow" ).onFinishChange( fp.removeCursor );
-                displayFolder.add( fp.appConfig.displayOptions, "statsShow" ).onFinishChange( fp.toggleStatsState );
-                displayFolder.add( fp.appConfig.displayOptions, "hudShow" ).onFinishChange( fp.toggleHUDState );
-                displayFolder.add( fp.appConfig.displayOptions, "wireframeShow" ).onFinishChange( fp.toggleWireframeState );
-                displayFolder.add( fp.appConfig.displayOptions, "dayShow" ).onFinishChange( fp.toggleDayNight );
-                displayFolder.add( fp.appConfig.displayOptions, "skyboxShow" ).onFinishChange( fp.toggleDayNight );
-                displayFolder.add( fp.appConfig.displayOptions, "chartShow" ).onFinishChange( fp.updateGraph );
-                displayFolder.add( fp.appConfig.displayOptions, "pathsShow" ).onFinishChange( fp.togglePathsState );
-                displayFolder.add( fp.appConfig.displayOptions, "terrainShow" ).onFinishChange( fp.toggleTerrainPlane );
-                displayFolder.add( fp.appConfig.displayOptions, "lightHemisphereShow" ).onFinishChange( fp.toggleLights );
-                displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShow" ).onFinishChange( fp.toggleLights );
-                displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
-                displayFolder.add( fp.appConfig.displayOptions, "firstPersonView" ).onFinishChange( fp.resetControls );
-                displayFolder.add( fp.appConfig.displayOptions, "cameraOverride" ).onFinishChange( fp.resetControls );
-                displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 5000 ).onFinishChange( fp.resetControls );
-                displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 5000 ).onFinishChange( fp.resetControls );
-                displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 5000 ).onFinishChange( fp.resetControls );
-                displayFolder.add( fp.appConfig.displayOptions, "maximiseView" );
-                displayFolder.add( fp.appConfig.displayOptions, "guiShow" );
-                var folders = displayFolder.addFolder( "Folder Options" );
-                folders.add( fp.appConfig.displayOptions, "guiShowControls" );
-                folders.add( fp.appConfig.displayOptions, "guiShowAgentFolder" );
-                folders.add( fp.appConfig.displayOptions, "guiShowBuildingsFolder" );
-                folders.add( fp.appConfig.displayOptions, "guiShowRoadsFolder" );
-                folders.add( fp.appConfig.displayOptions, "guiShowTerrainFolder" );
-                folders.add( fp.appConfig.displayOptions, "guiShowDisplayFolder" );
-                folders.add( fp.appConfig.displayOptions, "guiShowColorFolder" );
-            }
+                if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
+                    var displayFolder = fp.gui.addFolder( "Display Options" );
+                    displayFolder.add( fp.appConfig.displayOptions, "agentsShow" ).onFinishChange( fp.toggleAgentState );
+                    displayFolder.add( fp.appConfig.displayOptions, "buildingsShow" ).onFinishChange( fp.toggleBuildingState );
+                    displayFolder.add( fp.appConfig.displayOptions, "roadsShow" ).onFinishChange( fp.toggleRoadState );
+                    displayFolder.add( fp.appConfig.displayOptions, "waterShow" ).onFinishChange( fp.toggleWaterState );
+                    displayFolder.add( fp.appConfig.displayOptions, "networkShow" ).onFinishChange( fp.toggleAgentNetwork );
+                    displayFolder.add( fp.appConfig.displayOptions, "networkCurve" );
+                    displayFolder.add( fp.appConfig.displayOptions, "networkCurvePoints", 4, 20 ).step( 1 );
+                    displayFolder.add( fp.appConfig.displayOptions, "patchesUpdate" );
+                    displayFolder.add( fp.appConfig.displayOptions, "patchesShow" ).onFinishChange( fp.togglePatchesState );
+                    displayFolder.add( fp.appConfig.displayOptions, "trailsShow" ).onFinishChange( fp.toggleTrailState );
+                    displayFolder.add( fp.appConfig.displayOptions, "trailsUpdate" ).onFinishChange( fp.toggleTrailState );
+                    displayFolder.add( fp.appConfig.displayOptions, "trailsShowAsLines" ).onFinishChange( fp.toggleTrailState );
+                    displayFolder.add( fp.appConfig.displayOptions, "trailLength", 1, 10000 ).step( 1 );
+                    displayFolder.add( fp.appConfig.displayOptions, "cursorShow" ).onFinishChange( fp.removeCursor );
+                    displayFolder.add( fp.appConfig.displayOptions, "statsShow" ).onFinishChange( fp.toggleStatsState );
+                    displayFolder.add( fp.appConfig.displayOptions, "hudShow" ).onFinishChange( fp.toggleHUDState );
+                    displayFolder.add( fp.appConfig.displayOptions, "wireframeShow" ).onFinishChange( fp.toggleWireframeState );
+                    displayFolder.add( fp.appConfig.displayOptions, "dayShow" ).onFinishChange( fp.toggleDayNight );
+                    displayFolder.add( fp.appConfig.displayOptions, "skyboxShow" ).onFinishChange( fp.toggleDayNight );
+                    displayFolder.add( fp.appConfig.displayOptions, "chartShow" ).onFinishChange( fp.updateGraph );
+                    displayFolder.add( fp.appConfig.displayOptions, "pathsShow" ).onFinishChange( fp.togglePathsState );
+                    displayFolder.add( fp.appConfig.displayOptions, "terrainShow" ).onFinishChange( fp.toggleTerrainPlane );
+                    displayFolder.add( fp.appConfig.displayOptions, "lightHemisphereShow" ).onFinishChange( fp.toggleLights );
+                    displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShow" ).onFinishChange( fp.toggleLights );
+                    displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
+                    displayFolder.add( fp.appConfig.displayOptions, "firstPersonView" ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraOverride" ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 5000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 5000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 5000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "maximiseView" );
+                    displayFolder.add( fp.appConfig.displayOptions, "guiShow" );
+                    var folders = displayFolder.addFolder( "Folder Options" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowControls" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowAgentFolder" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowBuildingsFolder" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowRoadsFolder" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowTerrainFolder" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowDisplayFolder" );
+                    folders.add( fp.appConfig.displayOptions, "guiShowColorFolder" );
+                }
 
-            if ( fp.appConfig.displayOptions.guiShowColorFolder ) {
-                var colorFolder = fp.gui.addFolder( "Color Options" );
-                var colorTerrainFolder = colorFolder.addFolder( "Terrain Colors" );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainGroundLevel" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainGroundLevel" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland1" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland1" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland2" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland2" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland1" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland1" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland2" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland2" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainHighland" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainHighland" ).onChange( fp.loadTerrain );
-                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop1", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
-                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop2", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
-                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop3", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
-                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop4", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
-                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop5", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
-                colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainOpacity", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
-                var colorBuildingFolder = colorFolder.addFolder( "Building Colors" );
-                colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingFill" );
-                colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingFill" );
-                colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingLine" );
-                colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingLine" );
-                colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingWindow" );
-                colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingWindow" );
-                var colorGraphFolder = colorFolder.addFolder( "Graph Colors" );
-                colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPopulation" ).onChange( fp.updateChartColors );
-                colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphHealth" ).onChange( fp.updateChartColors );
-                colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPatchValues" ).onChange( fp.updateChartColors );
-                var colorLightingFolder = colorFolder.addFolder( "Lighting Colors" );
-                colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereSky" ).onChange( fp.updateLighting );
-                colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereGround" ).onChange( fp.updateLighting );
-                colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightHemisphereIntensity", 0, 1 ).step( 0.01 ).onChange( fp.updateLighting );
-                colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightDirectional" ).onChange( fp.updateLighting );
-                colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightDirectionalIntensity", 0, 1 ).step( 0.01 ).onChange( fp.updateLighting );
-                var colorOtherFolder = colorFolder.addFolder( "Other Colors" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayBackground" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightBackground" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayRoad" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightRoad" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayAgent" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightAgent" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayTrail" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightTrail" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayPath" );
-                colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightPath" );
-            }
+                if ( fp.appConfig.displayOptions.guiShowColorFolder ) {
+                    var colorFolder = fp.gui.addFolder( "Color Options" );
+                    var colorTerrainFolder = colorFolder.addFolder( "Terrain Colors" );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainGroundLevel" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainGroundLevel" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland1" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland1" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainLowland2" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainLowland2" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland1" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland1" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainMidland2" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainMidland2" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainHighland" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorNightTerrainHighland" ).onChange( fp.loadTerrain );
+                    colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop1", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                    colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop2", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                    colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop3", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                    colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop4", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                    colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop5", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                    colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainOpacity", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+                    var colorBuildingFolder = colorFolder.addFolder( "Building Colors" );
+                    colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingFill" );
+                    colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingFill" );
+                    colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingLine" );
+                    colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingLine" );
+                    colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingWindow" );
+                    colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingWindow" );
+                    var colorGraphFolder = colorFolder.addFolder( "Graph Colors" );
+                    colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPopulation" ).onChange( fp.updateChartColors );
+                    colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphHealth" ).onChange( fp.updateChartColors );
+                    colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPatchValues" ).onChange( fp.updateChartColors );
+                    var colorLightingFolder = colorFolder.addFolder( "Lighting Colors" );
+                    colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereSky" ).onChange( fp.updateLighting );
+                    colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereGround" ).onChange( fp.updateLighting );
+                    colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightHemisphereIntensity", 0, 1 ).step( 0.01 ).onChange( fp.updateLighting );
+                    colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightDirectional" ).onChange( fp.updateLighting );
+                    colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightDirectionalIntensity", 0, 1 ).step( 0.01 ).onChange( fp.updateLighting );
+                    var colorOtherFolder = colorFolder.addFolder( "Other Colors" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayBackground" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightBackground" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayRoad" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightRoad" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayAgent" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightAgent" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayTrail" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightTrail" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayPath" );
+                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightPath" );
+                }
 
-            // Need to create the GUI to seed the parameters first.
-            if ( !fp.appConfig.displayOptions.guiShow ) {
-                fp.gui.destroy();
-                return;
-            }
-        };
+                // Need to create the GUI to seed the parameters first.
+                if ( !fp.appConfig.displayOptions.guiShow ) {
+                    fp.gui.destroy();
+                    return;
+                }
+            };
+        }
+
+        return FiercePlanet;
+
     }
 
-    return FiercePlanet;
-
-})
+)
 

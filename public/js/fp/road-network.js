@@ -13,7 +13,7 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.RoadNetwork = function() {
+        FiercePlanet.RoadNetwork = function( fp ) {
             this.networkMesh = null;
             this.planeVertices = [ ];
             this.networkJstsCache = [ ];

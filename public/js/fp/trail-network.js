@@ -13,7 +13,7 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.TrailNetwork = function() {
+        FiercePlanet.TrailNetwork = function( fp ) {
             this.trails = {};
             this.trailMeshes = null;
             this.globalTrailLine = null;

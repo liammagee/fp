@@ -18,7 +18,8 @@ define(
          * @memberof fp
          * @inner
          */
-        FiercePlanet.Terrain = function() {
+        FiercePlanet.Terrain = function( fp ) {
+
             this.plane = null;
             this.richTerrainMaterial = null;
             this.simpleTerrainMaterial = null;
@@ -32,6 +33,7 @@ define(
             this.ratioExtentToPoint = this.gridExtent / this.gridPoints;
             this.maxTerrainHeight = FiercePlanet.appConfig.terrainOptions.maxTerrainHeight;
             this.gridSize = 4;
+
             /**
              * Used to cache the plane geometry array.
              */
@@ -121,6 +123,7 @@ define(
              * Initialises the terrain.
              */
             this.initTerrain = function( data ) {
+
                 fp.scene.remove( fp.terrain.plane );
                 var size = fp.terrain.gridExtent * FiercePlanet.appConfig.terrainOptions.multiplier;
                 var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );

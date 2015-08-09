@@ -4,10 +4,10 @@
         <link rel="stylesheet" type="text/css" href="/css/fp.css">
         <script src="/js/require.js"></script>
         <script>
-        var fp;
+
         require( [ "../../js/fp" ],
 
-            function( FiercePlanet ) {
+            function( fp ) {
 
                 var config = {
                   "preset": "Default",
@@ -35,7 +35,6 @@
                     }
                 }
 
-                fp = new FiercePlanet.Simulation();
                 fp.init( config, sim );
             }
 

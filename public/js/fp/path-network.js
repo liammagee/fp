@@ -10,13 +10,12 @@ require.config({
 
 define( [
         'fp/fp-base',
-        'astar'
+        'astar',
+        'fp/config'
 
     ],
 
     function( FiercePlanet, astar ) {
-
-
 
 
         /**
@@ -25,14 +24,19 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.PathNetwork = function() {
+        FiercePlanet.PathNetwork = function( fp ) {
+
+            var gridExtent = FiercePlanet.appConfig.terrainOptions.gridExtent;
+            var gridPoints = FiercePlanet.appConfig.terrainOptions.gridPoints;
+            this.stepsPerNode = gridExtent / gridPoints;
+
             this.networkMesh = null;
-            this.stepsPerNode = fp.terrain.ratioExtentToPoint;
             this.graphAStar = null;
             this.nodes = [ ];
             this.opts = null;
 
             this.setupAStarGraph = function() {
+
                 this.opts = {
                     // wallFrequency: $selectWallFrequency.val(),
                     // fp.terrain.gridSize: $selectGridSize.val(),
@@ -40,28 +44,43 @@ define( [
                     diagonal: true,
                     closest: true
                 };
+
                 for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
+
                     var nodeRow = [ ];
+
                     for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
+
                         var weight = 1 - fp.terrain.getHeightForIndex( i * fp.terrain.gridPoints + j ) / fp.terrain.maxTerrainHeight;
                         weight = ( weight == 1 ? 0 : weight );
                         nodeRow.push( weight );
+
                     }
+
                     this.nodes.push( nodeRow );
+
                 }
                 this.graphAStar = new astar.Graph( this.nodes );
                 this.graphAStar.diagonal = true;
+
             };
 
             this.nodeAt = function( position ) {
+
                 var index = fp.getIndex( position.x, position.z );
                 var x = index % fp.terrain.gridPoints, y = Math.floor( index / fp.terrain.gridPoints );
+
                 try {
+
                     return this.graphAStar.grid[ x ][ y ];
+
                 }
                 catch ( err ) {
+
                     return undefined;
+
                 }
+
             };
 
 

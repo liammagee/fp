@@ -2,6 +2,7 @@
 
 define( [
         'fp/fp-base',
+        'fp/config',
         'fp/patch'
     ],
 
@@ -13,7 +14,7 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.PatchNetwork = function( func ) {
+        FiercePlanet.PatchNetwork = function( fp, func ) {
 
             this.plane = null;
             this.patches = {};
@@ -21,7 +22,7 @@ define( [
             this.patchPlaneArray = [ ];
             this.patchSphereArray = [ ];
             this.patchMeanValue = 0;
-            this.patchSize = fp.appConfig.terrainOptions.patchSize;
+            this.patchSize = FiercePlanet.appConfig.terrainOptions.patchSize;
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
             /**

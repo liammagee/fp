@@ -15,7 +15,7 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.AgentNetwork = function() {
+        FiercePlanet.AgentNetwork = function( fp ) {
 
             /**
              * Represents a specific network within the overall network configuration. Also provides factory and utility methods.
@@ -281,7 +281,7 @@ define( [
                 position.z = z;
 
                 // Allow for the class to be overridden
-                var agent = new fp.agentNetwork.AgentClass();
+                var agent = new fp.agentNetwork.AgentClass( fp );
                 agent.setPosition( position );
                 agent.setRandomDirection();
 
