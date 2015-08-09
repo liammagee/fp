@@ -2,10 +2,15 @@
 define(
     [
         'fp/fp-base',
-        'fp/config'
+        'fp/config',
+        'fp/shader-utils'
     ],
 
     function( FiercePlanet ) {
+
+
+        FiercePlanet.TERRAIN_MAPS = [ "/assets/syd2.bin", "/assets/mel2.bin" ];
+
 
         /**
          * Represents the fp.terrain of the world.
@@ -19,13 +24,13 @@ define(
             this.simpleTerrainMaterial = null;
             this.dayTerrainUniforms = null;
             this.nightTerrainUniforms = null;
-            this.terrainMapIndex = appConfig.terrainOptions.mapIndex;
-            this.terrainMapFile = appConfig.terrainOptions.mapFile;
-            this.gridExtent = appConfig.terrainOptions.gridExtent;
+            this.terrainMapIndex = FiercePlanet.appConfig.terrainOptions.mapIndex;
+            this.terrainMapFile = FiercePlanet.appConfig.terrainOptions.mapFile;
+            this.gridExtent = FiercePlanet.appConfig.terrainOptions.gridExtent;
             this.halfExtent = this.gridExtent / 2;
-            this.gridPoints = appConfig.terrainOptions.gridPoints;
+            this.gridPoints = FiercePlanet.appConfig.terrainOptions.gridPoints;
             this.ratioExtentToPoint = this.gridExtent / this.gridPoints;
-            this.maxTerrainHeight = appConfig.terrainOptions.maxTerrainHeight;
+            this.maxTerrainHeight = FiercePlanet.appConfig.terrainOptions.maxTerrainHeight;
             this.gridSize = 4;
             /**
              * Used to cache the plane geometry array.
@@ -55,7 +60,7 @@ define(
                     // Lambert settings
                     emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
                     diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
-                    opacity: { type: "f", value: appConfig.colorOptions.colorTerrainOpacity },
+                    opacity: { type: "f", value: FiercePlanet.appConfig.colorOptions.colorTerrainOpacity },
                     // Phong settings
                     specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
                     shininess: { type: "f", value: 0.0 },
@@ -69,41 +74,41 @@ define(
                     //specularMap: map,
                     //alphaMap: map,
 
-                    groundLevelColor: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainGroundLevel ) },
-                    lowland1Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland1 ) },
-                    lowland2Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland2 ) },
-                    midland1Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland1 ) },
-                    midland2Color: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland2 ) },
-                    highlandColor: { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainHighland ) },
+                    groundLevelColor: { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
+                    lowland1Color: { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainLowland1 ) },
+                    lowland2Color: { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainLowland2 ) },
+                    midland1Color: { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainMidland1 ) },
+                    midland2Color: { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainMidland2 ) },
+                    highlandColor: { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainHighland ) },
 
-                    stop1: { type: "f", value: appConfig.colorOptions.colorTerrainStop1 },
-                    stop2: { type: "f", value: appConfig.colorOptions.colorTerrainStop2 },
-                    stop3: { type: "f", value: appConfig.colorOptions.colorTerrainStop3 },
-                    stop4: { type: "f", value: appConfig.colorOptions.colorTerrainStop4 },
-                    stop5: { type: "f", value: appConfig.colorOptions.colorTerrainStop5 },
+                    stop1: { type: "f", value: FiercePlanet.appConfig.colorOptions.colorTerrainStop1 },
+                    stop2: { type: "f", value: FiercePlanet.appConfig.colorOptions.colorTerrainStop2 },
+                    stop3: { type: "f", value: FiercePlanet.appConfig.colorOptions.colorTerrainStop3 },
+                    stop4: { type: "f", value: FiercePlanet.appConfig.colorOptions.colorTerrainStop4 },
+                    stop5: { type: "f", value: FiercePlanet.appConfig.colorOptions.colorTerrainStop5 },
 
-                    size: { type: "f", value: Math.floor( appConfig.agentOptions.size / 2 )},
-                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * appConfig.terrainOptions.multiplier },
+                    size: { type: "f", value: Math.floor( FiercePlanet.appConfig.agentOptions.size / 2 )},
+                    maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * FiercePlanet.appConfig.terrainOptions.multiplier },
 
-                    shadowMix: { type: "f", value: appConfig.terrainOptions.shaderShadowMix },
+                    shadowMix: { type: "f", value: FiercePlanet.appConfig.terrainOptions.shaderShadowMix },
 
                 };
 
-                if ( appConfig.displayOptions.dayShow ) {
-                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainGroundLevel ) };
-                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland1 ) };
-                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainLowland2 ) };
-                    uniforms.midland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland1 ) };
-                    uniforms.midland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainMidland2 ) };
-                    uniforms.highlandColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorDayTerrainHighland ) };
+                if ( FiercePlanet.appConfig.displayOptions.dayShow ) {
+                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainGroundLevel ) };
+                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainLowland1 ) };
+                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainLowland2 ) };
+                    uniforms.midland1Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainMidland1 ) };
+                    uniforms.midland2Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainMidland2 ) };
+                    uniforms.highlandColor = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorDayTerrainHighland ) };
                 }
                 else {
-                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainGroundLevel ) };
-                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainLowland1 ) };
-                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainLowland2 ) };
-                    uniforms.midland1Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainMidland1 ) };
-                    uniforms.midland2Color = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainMidland2 ) };
-                    uniforms.highlandColor = { type: "c", value: new THREE.Color( appConfig.colorOptions.colorNightTerrainHighland ) };
+                    uniforms.groundLevelColor = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorNightTerrainGroundLevel ) };
+                    uniforms.lowland1Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorNightTerrainLowland1 ) };
+                    uniforms.lowland2Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorNightTerrainLowland2 ) };
+                    uniforms.midland1Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorNightTerrainMidland1 ) };
+                    uniforms.midland2Color = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorNightTerrainMidland2 ) };
+                    uniforms.highlandColor = { type: "c", value: new THREE.Color( FiercePlanet.appConfig.colorOptions.colorNightTerrainHighland ) };
 
                 }
 
@@ -117,7 +122,7 @@ define(
              */
             this.initTerrain = function( data ) {
                 fp.scene.remove( fp.terrain.plane );
-                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var size = fp.terrain.gridExtent * FiercePlanet.appConfig.terrainOptions.multiplier;
                 var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
 
                 // Use logic from math.stackexchange.com
@@ -126,14 +131,14 @@ define(
                     n = Math.sqrt( l ),
                     k = l + 1;
 
-                if ( appConfig.terrainOptions.loadHeights ) {
+                if ( FiercePlanet.appConfig.terrainOptions.loadHeights ) {
 
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
 
                         geometry.attributes.position.array[ j + 2 ] =
                             data[ i ] / 65535 *
                             fp.terrain.maxTerrainHeight *
-                            appConfig.terrainOptions.multiplier;
+                            FiercePlanet.appConfig.terrainOptions.multiplier;
 
                     }
 
@@ -165,7 +170,7 @@ define(
 
                     //metal: true,
 
-                    wireframe: appConfig.displayOptions.wireframeShow
+                    wireframe: FiercePlanet.appConfig.displayOptions.wireframeShow
 
                 } );
 
@@ -216,7 +221,7 @@ define(
                 } );
 
                 // Only use the shader material if we have variable heights
-                if ( appConfig.terrainOptions.shaderUse ) {
+                if ( FiercePlanet.appConfig.terrainOptions.shaderUse ) {
 
                     // Necessary? Maybe for Phong
                     // geometry.computeFaceNormals();
@@ -237,10 +242,10 @@ define(
                 // Rotate 90 degrees on X axis, to be the "ground"
                 fp.terrain.plane.rotation.set( -Math.PI / 2, 0, 0 );
                 // Lift by 1, to ensure shaders doesn't clash with water
-                fp.terrain.plane.position.set( 0, appConfig.terrainOptions.defaultHeight, 0 );
+                fp.terrain.plane.position.set( 0, FiercePlanet.appConfig.terrainOptions.defaultHeight, 0 );
                 fp.toggleTerrainPlane();
 
-                if ( appConfig.displayOptions.patchesShow ) {
+                if ( FiercePlanet.appConfig.displayOptions.patchesShow ) {
 
                     fp.patchNetwork.buildPatchMesh();
 
@@ -251,7 +256,7 @@ define(
                 fp.pathNetwork.setupAStarGraph();
 
                 // Construct the sphere, and switch it on
-                if ( appConfig.terrainOptions.renderAsSphere ) {
+                if ( FiercePlanet.appConfig.terrainOptions.renderAsSphere ) {
 
                     fp.terrain.sphereArray = fp.terrain.constructSphere( fp.terrain.planeArray );
 
@@ -296,7 +301,7 @@ define(
              * Flattens out the terrain.
              */
             this.flattenTerrain = function() {
-                if ( !appConfig.displayOptions.cursorShow )
+                if ( !FiercePlanet.appConfig.displayOptions.cursorShow )
                     return;
 
                 var vertices = this.plane.geometry.attributes.position.array;
@@ -345,7 +350,7 @@ define(
              * Retrieves the origin of the terrain sphere
              */
             this.sphereOrigin = function() {
-                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var size = fp.terrain.gridExtent * FiercePlanet.appConfig.terrainOptions.multiplier;
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = new THREE.Vector3( 0, - radius, 0 );
@@ -360,26 +365,40 @@ define(
              * @return {THREE.Vector3} A rotation vector in the order: pitch ( x ), yaw ( y ), roll ( z )
              */
             this.sphereOriginAngle = function( x, y, z ) {
+
                 // Retrieve standard variables about the sphere
-                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var size = fp.terrain.gridExtent * FiercePlanet.appConfig.terrainOptions.multiplier;
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = fp.terrain.sphereOrigin();
+
                 // Obtain the difference between the coordinate and the sphere's origin.
                 var diff = new THREE.Vector3( x, y, z ).sub( origin );
+
                 // Get differences and signs of values.
-                var dx = diff.x % radius, sx = $.sign( diff.x ), rx = Math.floor( Math.abs( diff.x ) / radius );
-                var dz = diff.z % radius, sz = $.sign( diff.z ), rz = Math.floor( Math.abs( diff.z ) / radius );
+                var dx = diff.x % radius,
+                    sx = Math.sign( diff.x ),
+                    rx = Math.floor( Math.abs( diff.x ) / radius );
+                var dz = diff.z % radius,
+                    sz = Math.sign( diff.z ),
+                    rz = Math.floor( Math.abs( diff.z ) / radius );
+
                 // Calculate the X and Z angle
                 var angleX = Math.asin( dx / radius );
                 var angleZ = Math.asin( dz / radius );
+
                 // Reflect the X angle if we have on the other side of the sphere.
                 if ( y < - radius ) {
+
                     angleX = ( sx * Math.PI ) - angleX;
+
                 }
+
                 // Rotation is in the order: pitch, yaw, roll
                 var rotation = new THREE.Vector3( angleZ, 0, - angleX );
+
                 return rotation;
+
             };
 
             /**
@@ -390,16 +409,23 @@ define(
              * @return {THREE.Vector3} The sphere position to transform the plane position to.
              */
             this.transformSpherePoint = function( x, y, z ) {
+
                 // Retrieve standard variables about the sphere
-                var size = fp.terrain.gridExtent * appConfig.terrainOptions.multiplier;
+                var size = fp.terrain.gridExtent * FiercePlanet.appConfig.terrainOptions.multiplier;
                 var he = size / 2;
                 var diameter = ( he / Math.PI ) * 2, radius = diameter / 2;
                 var origin = this.sphereOrigin();
+
                 // Obtain the signs and absolute values for x and z values
-                var sx = $.sign( x ), sz = $.sign( z );
-                var ax = Math.abs( x ), az = Math.abs( z );
+                var sx = Math.sign( x ),
+                    sz = Math.sign( z );
+                var ax = Math.abs( x ),
+                    az = Math.abs( z );
+
+
                 // Which is the highest absolute value?
                 var mxz = ( ax > az ? ax : az );
+
                 // Obtain the angle between the absolute values
                 var angle = Math.atan2( ax, az );
                 var ry = ( ( 1 + Math.sin( Math.PI * ( ( mxz / he ) - 0.5 ) ) ) / 2 ) * - diameter;
@@ -410,11 +436,14 @@ define(
                 var dz = sz * py;
                 var rx = dx * Math.sin( angle ) * radius;
                 var rz = dz * Math.cos( angle ) * radius;
+
                 // Adjust for existing terrain heights
                 var v1 = new THREE.Vector3( rx, rz, ry );
                 var v2 = new THREE.Vector3();
                 v2.subVectors( origin, v2 ).normalize().multiplyScalar( y );
+
                 return v1.add( v2 );
+
             };
 
             /**
@@ -566,7 +595,7 @@ define(
              */
             this.updateTerrain = function() {
                 if ( this.wrappingState === 1 ) {
-                    appConfig.displayOptions.waterShow = false;
+                    FiercePlanet.appConfig.displayOptions.waterShow = false;
                     if ( fp.terrain.wrappedPercent < 100 ) {
                         fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
                         fp.terrain.wrappedPercent += this.wrappingState;
@@ -581,7 +610,7 @@ define(
                         fp.terrain.wrappedPercent += this.wrappingState;
                     }
                     else {
-                        appConfig.displayOptions.waterShow = appConfig.displayOptions.waterShow;
+                        FiercePlanet.appConfig.displayOptions.waterShow = FiercePlanet.appConfig.displayOptions.waterShow;
                         this.wrappingState = 0;
                     }
                 }

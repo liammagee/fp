@@ -1,15 +1,26 @@
 
 define(
     [
-     'fp/fp-base',
-     'fp/config'
+         'fp/fp-base',
+         'fp/app-state',
+         'fp/config',
+         'fp/terrain',
+         'fp/agent-network',
+         'fp/building-network',
+         'fp/road-network',
+         'fp/patch-network',
+         'fp/trail-network',
+         'fp/path-network',
+         'fp/timescale',
+         'fp/cursor',
+         'fp/chart'
      ],
 
     function( FiercePlanet ) {
 
 
-
     FiercePlanet.AppController = function() {
+
         /**
          * Resets the state of the fp object.
          */
@@ -107,22 +118,37 @@ define(
             */
 
             fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+
         };
 
+
         this.Run = function() {
-            fp.AppState.runSimulation = !fp.AppState.runSimulation;
-            fp.AppState.stepSimulation = false;
+
+            FiercePlanet.AppState.runSimulation = !FiercePlanet.AppState.runSimulation;
+            FiercePlanet.AppState.stepSimulation = false;
+
             if ( !_.isUndefined( fp.chart ) ) {
-                if ( fp.AppState.runSimulation )
+
+                if ( FiercePlanet.AppState.runSimulation ) {
+
                     fp.chart.start();
-                else
+
+                }
+                else {
+
                     fp.chart.stop();
+
+                }
+
             }
+
         };
+
 
         this.Step = function() {
             fp.AppState.runSimulation = fp.AppState.stepSimulation = true;
         };
+
 
         /**
          * Increase the frame rate relative to the timescale interval.
@@ -298,17 +324,17 @@ define(
              */
             fp.setupSimObjects = function() {
                 // Set up root objects
-                fp.terrain = new fp.Terrain();
+                fp.terrain = new FiercePlanet.Terrain();
                 fp.terrain.gridExtent = fp.appConfig.terrainOptions.gridExtent;
 
-                fp.agentNetwork = new fp.AgentNetwork();
-                fp.buildingNetwork = new fp.BuildingNetwork();
-                fp.roadNetwork = new fp.RoadNetwork();
-                fp.pathNetwork = new fp.PathNetwork();
-                fp.trailNetwork = new fp.TrailNetwork();
-                fp.patchNetwork = new fp.PatchNetwork();
-                fp.timescale = new fp.Timescale();
-                fp.cursor = new fp.Cursor();
+                fp.agentNetwork = new FiercePlanet.AgentNetwork();
+                fp.buildingNetwork = new FiercePlanet.BuildingNetwork();
+                fp.roadNetwork = new FiercePlanet.RoadNetwork();
+                fp.pathNetwork = new FiercePlanet.PathNetwork();
+                fp.trailNetwork = new FiercePlanet.TrailNetwork();
+                fp.patchNetwork = new FiercePlanet.PatchNetwork();
+                fp.timescale = new FiercePlanet.Timescale();
+                fp.cursor = new FiercePlanet.Cursor();
             };
 
             /**
@@ -616,7 +642,7 @@ define(
                 fp.setupWater();
                 fp.setupSky();
                 fp.setOutputHUD();
-                fp.Chart.setupChart();
+                FiercePlanet.Chart.setupChart();
                 fp.toggleStatsState(); // Add stats
                 window.addEventListener( "resize", fp.onWindowResize, false );
                 fp.loadTerrain( callback ); // Load the terrain asynchronously
@@ -627,11 +653,14 @@ define(
              * @memberof fp
              */
             fp.animate = function() {
-                if ( fp.AppState.halt )
+
+                if ( FiercePlanet.AppState.halt )
                     return;
+
                 // Must call this first!
                 fp.patchNetwork.updatePatchAgents();
-                if ( fp.AppState.runSimulation )
+
+                if ( FiercePlanet.AppState.runSimulation )
                     fp.sim.tick.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
 
                 fp.agentNetwork.updateAgentNetwork();
@@ -670,8 +699,8 @@ define(
              * @memberof fp
              */
             fp.updateSimState = function() {
-                if ( fp.AppState.stepSimulation )
-                    fp.AppState.runSimulation = false;
+                if ( FiercePlanet.AppState.stepSimulation )
+                    FiercePlanet.AppState.runSimulation = false;
             };
 
             /**
@@ -757,17 +786,21 @@ define(
              * @memberof fp
              */
             fp.updateYear = function() {
-                if ( !fp.AppState.runSimulation )
+
+                if ( !FiercePlanet.AppState.runSimulation )
                     return;
+
                 fp.timescale.frameCounter++;
                 if ( fp.timescale.frameCounter % fp.timescale.framesToYear === 0 ) {
                     if ( !fp.timescale.terminate || fp.timescale.currentYear <  fp.timescale.endYear ) {
                         fp.timescale.currentYear++;
                         fp.setOutputHUD();
                     }
-                    else
+                    else {
                         fp.endSim();
+                    }
                 }
+
             };
 
             /**
@@ -1443,7 +1476,7 @@ define(
             fp.loadTerrain = function( callback ) {
 
                 var terrainLoader = new THREE.TerrainLoader();
-                var terrainFile = fp.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ]
+                var terrainFile = FiercePlanet.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ]
 
                 if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" )
                     terrainFile = fp.terrain.terrainMapFile;
@@ -1539,7 +1572,7 @@ define(
                 buildingsFolder.add( fp.appConfig.buildingOptions, "detectBuildingCollisions" );
                 buildingsFolder.add( fp.appConfig.buildingOptions, "detectRoadCollisions" );
                 var forms = buildingsFolder.addFolder( "Form" );
-                // forms.add( fp.appConfig.buildingOptions, "buildingForm", fp.BUILDING_FORMS.names );
+                forms.add( fp.appConfig.buildingOptions, "buildingForm", FiercePlanet.BUILDING_FORMS.names );
                 forms.add( fp.appConfig.buildingOptions, "spread", 1, 100 ).step( 1 );
                 forms.add( fp.appConfig.buildingOptions, "randomForm" );
                 forms.add( fp.appConfig.buildingOptions, "rotateRandomly" );

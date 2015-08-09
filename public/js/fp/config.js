@@ -1,7 +1,9 @@
 
 define( [
         'fp/fp-base'
-    ], function( FiercePlanet ) {
+    ],
+
+    function( FiercePlanet ) {
 
     /**
      * Represents configuration data about the application.
@@ -326,6 +328,8 @@ define( [
             sun: !true
         };
     };
+
+    FiercePlanet.appConfig = new FiercePlanet.AppConfig();
 
     return FiercePlanet;
 
