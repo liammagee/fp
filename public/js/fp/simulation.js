@@ -1354,10 +1354,13 @@ define(
                     terrainFile = fp.terrain.terrainMapFile;
 
                 terrainLoader.load( terrainFile, function( data ) {
+
                     fp.terrain.initTerrain( data );
+
                     fp.animate(); // Kick off the animation loop
                     if ( _.isFunction( callback ) )
                         callback(); // Run the callback
+
                } );
 
             };

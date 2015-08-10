@@ -250,7 +250,8 @@ define(
 
                 if ( fp.appConfig.displayOptions.patchesShow ) {
 
-                    fp.patchNetwork.buildPatchMesh();
+                    // Toggle the patches, in case they need to be shown now
+                    fp.patchNetwork.togglePatchesState();
 
                 }
 

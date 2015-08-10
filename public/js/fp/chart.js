@@ -82,8 +82,6 @@ define( [
                         colorHealth = fp.appConfig.colorOptions.colorGraphHealth,
                         colorPatches = fp.appConfig.colorOptions.colorGraphPatchValues;
 
-                    console.log( generateRGBA( colorPop, 1.0 ) );
-
                     _.extend( fp.chart.chart.seriesSet[ 0 ].options, {
                         strokeStyle: generateRGBA( colorPop, 1.0 ),
                         fillStyle: generateRGBA( colorPop, 0.4 ),

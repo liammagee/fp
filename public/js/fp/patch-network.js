@@ -182,6 +182,7 @@ define( [
              * Default revision of the values of each patch.
              */
             this.defaultReviseValues = function() {
+
                 this.patchMeanValue = 0;
                 var popPatch = fp.patchNetwork.patchValues.length;
                 var popAgent = fp.agentNetwork.agents.length;
@@ -201,6 +202,7 @@ define( [
                     this.patchMeanValue += patch.value;
                 }
                 this.patchMeanValue /= this.patchValues.length;
+
             };
 
             /**
@@ -313,6 +315,9 @@ define( [
             };
 
 
+            /**
+             * Adds or removes the patch network from the scene.
+             */
             this.togglePatchesState = function() {
 
                 if ( fp.appConfig.displayOptions.patchesShow  ) {
@@ -322,11 +327,9 @@ define( [
                         this.buildPatchMesh();
 
                     }
-                    else {
 
-                        fp.scene.add( this.plane );
+                    fp.scene.add( this.plane );
 
-                    }
                 }
                 else {
 
