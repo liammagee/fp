@@ -45,6 +45,16 @@ gulp.task( 'watch', [ 'clean' ], function() {
 } );
 
 
+/**
+ * Cleans Babel compiled file.
+ */
+gulp.task( 'clean', function() {
+
+    // return gulp.src( fpSrc + fpShaderCompiled + '*', {read: false} )
+    //     .pipe( clean() );
+        
+});
+
 
 // BABEL FOR ES6
 
@@ -52,7 +62,7 @@ gulp.task( 'watch', [ 'clean' ], function() {
 /**
  * Converts ES6 to ES5
  */
-gulp.task( 'babel-shader', [ 'babel-shader-clean' ], function() {
+gulp.task( 'babel-shader', [ 'clean' ], function() {
     return gulp.src( fpShaderSrc )
         .pipe( sourcemaps.init() )
         .pipe( babel( ) )
@@ -61,14 +71,6 @@ gulp.task( 'babel-shader', [ 'babel-shader-clean' ], function() {
         .pipe( gulp.dest( fpSrc ) );
 } );
 
-
-/**
- * Cleans Babel compiled file.
- */
-gulp.task( 'babel-shader-clean', function() {
-    return gulp.src( fpSrc + fpShaderCompiled + '*', {read: false} )
-        .pipe( clean() );
-});
 
 
 

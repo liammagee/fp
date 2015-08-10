@@ -149,17 +149,14 @@ accounting.
 
 
 
-<!--
 
 
-## The 4 pillars of sustainability and the social ecology model
+<!-- ## The 4 pillars of sustainability and the social ecology model -->
 
 
 
-*Description:* as above it includes the assumptions of these two related
-approaches to sustainability.
-
-
+<!-- *Description:* as above it includes the assumptions of these two related
+approaches to sustainability. -->
 
 
 
@@ -167,26 +164,13 @@ approaches to sustainability.
 
 
 
-## Uneven Development
+
+
+<!-- ## Uneven Development -->
 
 
 
-*Description:* finally introduces the dynamic of geographic/spatial
+<!-- *Description:* finally introduces the dynamic of geographic/spatial
 inequality in terms of growth (reflecting the insights of Harvey and
-development studies more generally).
-
-
-
-
-
-
-
-
-
-A Synthetic Model
------------------
-
--->
-
-
+development studies more generally). -->
 

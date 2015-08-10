@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
+        <script>
+
+        require.config({
+
+          baseUrl: '/js',
+          // paths: {  'fp': 'fp' }
+          paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
+            function( fp ) {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        "1": {  },
+                        "2": { },
+                        "3": { "create": false },
+                        "4": {
+                            "waterShow": false,
+                            "terrainShow": true,
+                            "dayShow": false,
+                            "patchesShow": true,
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 1000,
+                        },
+                        "5": {
+                            "coloriseAgentsByHealth": false,
+                        },
+                        "6": { "multiplier": 2 },
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+
+                    setup: function() {
+                        counter = 0;
+                        var healthReduce = 0.05;
+                        var healthGain = 1.0;
+
+                        // Set up an agent class that can exercise, consume, reproduce and die
+                        fp.Agent.prototype.exercise = function() {
+                            if (this.health > 0)
+                                this.health -= healthReduce;
+                        }
+
+                        fp.Agent.prototype.consume = function() {
+                            var index = fp.getPatchIndex(this.position.x, this.position.z);
+                            this.health += healthGain * ( fp.patchNetwork.patchValues[index].value / fp.patchNetwork.patches[index].length );
+                            this.health = (this.health > 100) ? 100 : this.health;
+                        };
+
+                        fp.Agent.prototype.die = function() {
+                            fp.scene.remove( fp.agentNetwork.particles );
+                            var index = fp.agentNetwork.agents.indexOf(this);
+                            fp.agentNetwork.agents.splice(index, 1);
+                            fp.agentNetwork.updateAgentParticleSystem();
+                            fp.scene.add( fp.agentNetwork.particles );
+                        };
+
+                        fp.Agent.prototype.reproduce = function() {
+                            // && this.ticks > 1  * fp.timescale.framesToYear
+                            if ( Math.random() > 0.999 &&
+                                 this.children.length < 4 &&
+                                 this.gender == "f" )  {
+                                var agent = fp.agentNetwork.createAgent();
+                                agent.mother = this;
+                                agent.color = this.color;
+                                this.children.push(agent);
+                                fp.agentNetwork.agents.push(agent);
+                                fp.agentNetwork.updateAgentParticleSystem();
+                            }
+                        };
+
+                    },
+                    tick: function() {
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+                            agent.exercise();
+                            agent.consume();
+                            agent.reproduce();
+                            if (agent.health <= 0)
+                                agent.die();
+                        } );
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    fp.appController.Setup();
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
