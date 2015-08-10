@@ -259,18 +259,23 @@
                     counter: 0,
 
                     setup: function() {
+
                         fp.timescale.framesToYear = 1;
 
                         fp.appConfig.displayOptions.patchesShow = true;
                         fp.patchNetwork.togglePatchesState();
+
                     },
+
                     tick: function() {
                     }
                 }
 
                 fp.init( config, sim, function() {
+
                     fp.appController.Setup();
                     // fp.appController.Run();
+
                 } );
             }
         );

@@ -22,7 +22,7 @@ define( [
             this.patchPlaneArray = [ ];
             this.patchSphereArray = [ ];
             this.patchMeanValue = 0;
-            this.patchSize = FiercePlanet.appConfig.terrainOptions.patchSize;
+            this.patchSize = fp.appConfig.terrainOptions.patchSize;
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
             /**
@@ -209,14 +209,20 @@ define( [
              * Update the cached count of patch agents.
              */
             this.updatePatchAgents = function() {
+
                 this.patches = {};
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+
                     var agent =  fp.agentNetwork.agents[ i ];
                     var index = fp.getPatchIndex( agent.position.x, agent.position.z );
+
                     if ( !this.patches[ index ] )
                         this.patches[ index ] = [ ];
+
                     this.patches[ index ].push( agent );
+
                 }
+
             };
 
             /**

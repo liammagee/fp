@@ -57,8 +57,11 @@
                             "coloriseAgentsByHealth": false,
                         },
                         "6": {
-                            "multiplier": 2,
+                            "multiplier": 1,
                             "loadHeights": true,
+                            "gridExtent": 8000,
+                            "gridPoints": 400,
+                            "maxTerrainHeight": 400,
                             "patchSize": 21
                         },
                     }
@@ -157,6 +160,7 @@
                 }
 
                 fp.init( config, sim, function() {
+
                     fp.appConfig.malthusOptions = {};
                     fp.appConfig.malthusOptions.reproductionChance = 0.25;
                     fp.appConfig.malthusOptions.maxChildren = 10;
@@ -172,6 +176,7 @@
                     malthusFolder.add( fp.appConfig.malthusOptions, "patchConsumptionRate", 0, 1).step( 0.005 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "patchRecoveryRate", 0, 0.1).step( 0.005 );
                     fp.appController.Setup();
+
                 } );
             }
         );
