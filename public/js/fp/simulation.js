@@ -122,16 +122,7 @@ define(
              */
             fp.updateChartColors = function() {
 
-                if ( fp.chart.chart.seriesSet.length == 3 ) {
-
-                    var colorPop = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPopulation ).getHexString(),
-                        colorHealth = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphHealth ).getHexString(),
-                        colorPatches = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPatchValues ).getHexString();
-                    _.extend( fp.chart.chart.seriesSet[ 0 ].options, { strokeStyle: colorPop } );
-                    _.extend( fp.chart.chart.seriesSet[ 1 ].options, { strokeStyle: colorHealth } );
-                    _.extend( fp.chart.chart.seriesSet[ 2 ].options, { strokeStyle: colorPatches } );
-
-                }
+                fp.chart.updateChartColors();
 
             };
 
