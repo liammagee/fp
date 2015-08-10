@@ -1,14 +1,16 @@
 % Fierce Planet
 
-# Sustainability
+
+# Sustainability and Sustainable Development
+
 
 These are a series of models designed to demonstrate different aspects
 and theories of urban sustainability.
 
 
 
-## Petri Dish
 
+## Petri Dish
 
 
 *Description:* shows the interaction of agents and resources (embedded
@@ -38,7 +40,7 @@ Patches regain health once the agent has moved.
 
 
 
-[Open in a new window](examples/sustainability/1.html)
+[Open in a new window](examples/sustainability/petri-dish.html)
 
 
 
@@ -55,7 +57,7 @@ topographical variation).
 
 
 
-[Open in a new window](examples/sustainability/2.html)
+[Open in a new window](examples/sustainability/terrain.html)
 
 
 
@@ -73,7 +75,7 @@ scenarios but introducing settlement patterns and the path dependency
 
 
 
-[Open in a new window](examples/sustainability/3.html)
+[Open in a new window](examples/sustainability/settlements.html)
 
 
 
@@ -91,9 +93,22 @@ resource consumption and availability.
 
 
 
-[Open in a new window](examples/sustainability/4.html)
+[Open in a new window](examples/sustainability/malthus.html)
 
 
+
+
+## Limits to Growth (the Club of Rome)
+
+
+
+*Description:* this scenario introduces a simplified suite of
+assumptions from the 1972 (rereleased in 2004) report of the Club of
+Rome to again demonstrate the concept of limits to growth.
+
+
+
+*Coming Soon*
 
 
 
@@ -108,19 +123,9 @@ and the availability of new resource sources.
 
 
 
+*Coming Soon*
 
 
-
-
-
-
-## Limits to Growth (the Club of Rome)
-
-
-
-*Description:* this scenario introduces a simplified suite of
-assumptions from the 1972 (rereleased in 2004) report of the Club of
-Rome to again demonstrate the concept of limits to growth.
 
 
 
@@ -139,10 +144,12 @@ accounting.
 
 
 
+*Coming Soon*
 
 
 
 
+<!--
 
 
 ## The 4 pillars of sustainability and the social ecology model
@@ -178,6 +185,8 @@ development studies more generally).
 
 A Synthetic Model
 -----------------
+
+-->
 
 
 
