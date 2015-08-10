@@ -38704,7 +38704,7 @@ define( 'fp/config',[
 ;
 
 
-define('fpShaderUtils',["fp/fp-base"], function (FiercePlanet) {
+define('fpShaderUtils',['fp/fp-base'], function (FiercePlanet) {
 
     /**
      * Shader utilites - wrappers around Three.js Lambert and Phong shaders.

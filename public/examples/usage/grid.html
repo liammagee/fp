@@ -15,7 +15,8 @@
 
         require( [ 'fp' ],
 
-            function() {
+            function( fp ) {
+
                 var roadColor = fp.buildColorInteger(0, 0, 0);
                 var config = {
                   "preset": "Default",
@@ -95,7 +96,9 @@
                             fp.roadNetwork.addRoad(p1, p2, 10);
                         }
                     },
+
                     tick: function() {
+
                         var minHeight = 30, maxHeight = 100;
                         if ( fp.buildingNetwork.buildings.length < this.maxBuildings  ) {
                             var x = Math.floor(Math.random() * this.dim * 2) - this.dim,
@@ -119,6 +122,7 @@
                             else
                                 this.counter++;
                         }
+                        
                     }
                 };
 
