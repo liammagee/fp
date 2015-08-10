@@ -38704,7 +38704,7 @@ define( 'fp/config',[
 ;
 
 
-define('fpShaderUtils',['fp/fp-base'], function (FiercePlanet) {
+define('fpShaderUtils',["fp/fp-base"], function (FiercePlanet) {
 
     /**
      * Shader utilites - wrappers around Three.js Lambert and Phong shaders.
@@ -38743,7 +38743,7 @@ define('fpShaderUtils',['fp/fp-base'], function (FiercePlanet) {
             return shader;
         },
         terrainFragmentShaderMain: function terrainFragmentShaderMain() {
-            var shader = "\n                        vec4 groundLevel = vec4( groundLevelColor, opacity );\n                        vec4 lowland1 = vec4( lowland1Color, opacity );\n                        vec4 lowland2 = vec4( lowland2Color, opacity );\n                        vec4 midland1 = vec4( midland1Color, opacity );\n                        vec4 midland2 = vec4( midland2Color, opacity );\n                        vec4 highland = vec4( highlandColor, opacity );\n                        float range;\n                        vec4 col;\n\n                        float alphaChannel = opacity;\n                        vec3 diffusion = diffuse;\n                        float elevation = vHeight / maxHeight;\n                        if ( vPatch > 0.0 ) {\n                            if ( elevation <=  0.0 ) {\n                                col = vec4( 0.0, 0.0, 0.0, 0.0 );\n                            }\n                            else {\n                                col = vec4( vPatch, vPatch, vPatch, 1.0 );\n                            }\n                        }\n                        else if ( vTrail > 0.0 ) {\n                            col = vec4( vTrail, vTrail, vTrail, 1.0 );\n                        }\n                        else {\n                            if ( elevation == 0.0 ) {\n                                col = vec4( 0.0, 0.0, 0.0, 0.0 );\n                                alphaChannel = 0.0;\n                                diffusion = vec3( 0.0, 0.0, 0.0 );\n                            }\n                            else if ( elevation < stop1 ) {\n                                range = ( elevation - 0.0 ) * ( 1.0 / stop1 );\n                                col = mix( groundLevel, lowland1, range );\n                            }\n                            else if ( elevation < stop2 ) {\n                                range = ( elevation - stop1 ) * ( 1.0 / ( stop2 - stop1 ) );\n                                col = mix( lowland1, lowland2, range );\n                            }\n                            else if ( elevation < stop3 ) {\n                                range = ( elevation - stop2 ) * ( 1.0 / ( stop3 - stop2 ) );\n                                col = mix( lowland2, midland1, range );\n                            }\n                            else if ( elevation < stop4 ) {\n                                range = ( elevation - stop3 ) * ( 1.0 / ( stop4 - stop3 ) );\n                                col = mix( midland1, midland2, range );\n                            }\n                            else if ( elevation < stop5 ) {\n                                range = ( elevation - stop4 ) * ( 1.0 / ( stop5 - stop4 ) );\n                                col = mix( midland2, highland, range );\n                            }\n                            else  {\n                                col = highland;\n                            }\n                        }\n                        //outgoingLight = vec3( col.r, col.g, col.b );\n                        //diffuseColor = vec4( diffuse, alphaChannel );\n\n                        // Allow for a blending of shadows and gradient colors\n                        vec4 tmp = mix( vec4( outgoingLight, 0.0 ), col, shadowMix );\n                        outgoingLight = vec3( tmp.r, tmp.g, tmp.b );\n                        diffuseColor = vec4( diffusion, alphaChannel );\n                        ";
+            var shader = "\n                        vec4 groundLevel = vec4( groundLevelColor, opacity );\n                        vec4 lowland1 = vec4( lowland1Color, opacity );\n                        vec4 lowland2 = vec4( lowland2Color, opacity );\n                        vec4 midland1 = vec4( midland1Color, opacity );\n                        vec4 midland2 = vec4( midland2Color, opacity );\n                        vec4 highland = vec4( highlandColor, opacity );\n                        float range;\n                        vec4 col;\n\n                        float alphaChannel = opacity;\n                        vec3 diffusion = diffuse;\n                        float elevation = vHeight / maxHeight;\n                        if ( vPatch > 0.0 ) {\n                            if ( elevation <=  0.0 ) {\n                                col = vec4( 0.0, 0.0, 0.0, 0.0 );\n                                alphaChannel = 0.0;\n                                diffusion = vec3( 0.0, 0.0, 0.0 );\n                            }\n                            else {\n                                col = vec4( vPatch, vPatch, vPatch, 1.0 );\n                            }\n                        }\n                        else if ( vTrail > 0.0 ) {\n                            col = vec4( vTrail, vTrail, vTrail, 1.0 );\n                        }\n                        else {\n                            if ( elevation == 0.0 ) {\n                                col = vec4( 0.0, 0.0, 0.0, 0.0 );\n                                alphaChannel = 0.0;\n                                diffusion = vec3( 0.0, 0.0, 0.0 );\n                            }\n                            else if ( elevation < stop1 ) {\n                                range = ( elevation - 0.0 ) * ( 1.0 / stop1 );\n                                col = mix( groundLevel, lowland1, range );\n                            }\n                            else if ( elevation < stop2 ) {\n                                range = ( elevation - stop1 ) * ( 1.0 / ( stop2 - stop1 ) );\n                                col = mix( lowland1, lowland2, range );\n                            }\n                            else if ( elevation < stop3 ) {\n                                range = ( elevation - stop2 ) * ( 1.0 / ( stop3 - stop2 ) );\n                                col = mix( lowland2, midland1, range );\n                            }\n                            else if ( elevation < stop4 ) {\n                                range = ( elevation - stop3 ) * ( 1.0 / ( stop4 - stop3 ) );\n                                col = mix( midland1, midland2, range );\n                            }\n                            else if ( elevation < stop5 ) {\n                                range = ( elevation - stop4 ) * ( 1.0 / ( stop5 - stop4 ) );\n                                col = mix( midland2, highland, range );\n                            }\n                            else  {\n                                col = highland;\n                            }\n                        }\n                        //outgoingLight = vec3( col.r, col.g, col.b );\n                        //diffuseColor = vec4( diffuse, alphaChannel );\n\n                        // Allow for a blending of shadows and gradient colors\n                        vec4 tmp = mix( vec4( outgoingLight, 0.0 ), col, shadowMix );\n                        outgoingLight = vec3( tmp.r, tmp.g, tmp.b );\n                        diffuseColor = vec4( diffusion, alphaChannel );\n                        ";
 
             return shader;
         },
@@ -39095,7 +39095,8 @@ define(
 
                 if ( fp.appConfig.displayOptions.patchesShow ) {
 
-                    fp.patchNetwork.buildPatchMesh();
+                    // Toggle the patches, in case they need to be shown now
+                    fp.patchNetwork.togglePatchesState();
 
                 }
 
@@ -40888,21 +40889,29 @@ define( 'fp/building',[
              * Adds a new floor to the current building
              */
             this.addFloor = function () {
+
                 var base = this.levels * fp.appConfig.buildingOptions.levelHeight;
                 var points = FiercePlanet.BUILDING_FORMS[ this.buildingForm ]( this.localWidth, this.localLength, base );
+                
                 if ( !fp.appConfig.buildingOptions.useShader ) {
+                    
                     if ( fp.appConfig.buildingOptions.showLines ) {
                         this.geometry.dynamic = true;
                         this.generateSkeleton( points );
                         this.geometry.verticesNeedUpdate = true;
                     }
+                    
                     if ( fp.appConfig.buildingOptions.showFill )
                         this.generateExtrudedShape( points );
+                    
                     if ( fp.appConfig.buildingOptions.showWindows )
                         this.generateWindows( points );
+
                 }
                 else {
+
                     this.shadedShape( points );
+
                 }
 
                 this.levels++;
@@ -40911,19 +40920,28 @@ define( 'fp/building',[
 
                 // Do tapering and staggering here
                 if ( fp.appConfig.buildingOptions.stagger ) {
+                
                     if ( fp.appConfig.buildingOptions.taper ) {
+                
                         var percentage = this.levels / this.localMaxLevels;
                         var sq = Math.pow( percentage, fp.appConfig.buildingOptions.taperExponent );
                         var hurdle = jStat.exponential.cdf( sq, fp.appConfig.buildingOptions.taperDistribution );
+                
                         if ( Math.random() < hurdle ) {
+                
                             this.localWidth -= fp.appConfig.buildingOptions.staggerAmount;
                             this.localLength -= fp.appConfig.buildingOptions.staggerAmount;
+                
                         }
+                
                     }
                     else {
+                
                         this.localWidth -= fp.appConfig.buildingOptions.staggerAmount;
                         this.localLength -= fp.appConfig.buildingOptions.staggerAmount;
+                
                     }
+                
                 }
             };
 
@@ -41006,6 +41024,7 @@ define( 'fp/building',[
             };
 
             this.generateWindows = function ( points ) {
+                
                 var base = points[ 0 ].y + fp.appConfig.agentOptions.terrainOffset;
                 var offset = fp.getOffset( this.levels, points.length );
 
@@ -41732,8 +41751,14 @@ define( 'fp/building-network',[
 
                 // Give the building a form
                 var buildingForm = fp.appConfig.buildingOptions.buildingForm;
-                if ( fp.appConfig.buildingOptions.randomForm )
-                    buildingForm = fp.BUILDING_FORMS.names[ Math.floor( Math.random() * fp.BUILDING_FORMS.names.length ) ];
+
+                if ( fp.appConfig.buildingOptions.randomForm ) {
+
+                    buildingForm = FiercePlanet.BUILDING_FORMS.names[ 
+                        Math.floor( Math.random() * FiercePlanet.BUILDING_FORMS.names.length ) 
+                    ];
+
+                }
 
                 var rotateY = ( fp.appConfig.buildingOptions.rotateSetAngle / 180 ) * Math.PI;
                 if ( fp.appConfig.buildingOptions.rotateRandomly ) {
@@ -42130,7 +42155,7 @@ define( 'fp/patch-network',[
             this.patchPlaneArray = [ ];
             this.patchSphereArray = [ ];
             this.patchMeanValue = 0;
-            this.patchSize = FiercePlanet.appConfig.terrainOptions.patchSize;
+            this.patchSize = fp.appConfig.terrainOptions.patchSize;
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
             /**
@@ -42214,6 +42239,7 @@ define( 'fp/patch-network',[
 
                     }
                 }
+                geometry.computeVertexNormals();
 
                 var len = geometry.attributes.position.array.length / 3,
                     heights = new Float32Array( len ),
@@ -42290,6 +42316,7 @@ define( 'fp/patch-network',[
              * Default revision of the values of each patch.
              */
             this.defaultReviseValues = function() {
+
                 this.patchMeanValue = 0;
                 var popPatch = fp.patchNetwork.patchValues.length;
                 var popAgent = fp.agentNetwork.agents.length;
@@ -42309,20 +42336,27 @@ define( 'fp/patch-network',[
                     this.patchMeanValue += patch.value;
                 }
                 this.patchMeanValue /= this.patchValues.length;
+
             };
 
             /**
              * Update the cached count of patch agents.
              */
             this.updatePatchAgents = function() {
+
                 this.patches = {};
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+
                     var agent =  fp.agentNetwork.agents[ i ];
                     var index = fp.getPatchIndex( agent.position.x, agent.position.z );
+
                     if ( !this.patches[ index ] )
                         this.patches[ index ] = [ ];
+
                     this.patches[ index ].push( agent );
+
                 }
+
             };
 
             /**
@@ -42421,6 +42455,9 @@ define( 'fp/patch-network',[
             };
 
 
+            /**
+             * Adds or removes the patch network from the scene.
+             */
             this.togglePatchesState = function() {
 
                 if ( fp.appConfig.displayOptions.patchesShow  ) {
@@ -42430,11 +42467,9 @@ define( 'fp/patch-network',[
                         this.buildPatchMesh();
 
                     }
-                    else {
 
-                        fp.scene.add( this.plane );
+                    fp.scene.add( this.plane );
 
-                    }
                 }
                 else {
 
@@ -42939,7 +42974,6 @@ define( 'fp/chart',[
     function( FiercePlanet ) {
 
 
-
         /**
          * Singleton Chart object.
          * @type {Object}
@@ -42955,29 +42989,84 @@ define( 'fp/chart',[
                 var agentPopulationSeries = new TimeSeries();
                 var agentHealthSeries = new TimeSeries();
                 var patchValuesSeries = new TimeSeries();
+
                 setInterval( function() {
+
                     if ( FiercePlanet.AppState.runSimulation ) {
+
                         agentPopulationSeries.append( new Date().getTime(), fp.agentNetwork.agents.length );
                         agentHealthSeries.append( new Date().getTime(), agentDiv * jStat( _.map( fp.agentNetwork.agents, function( agent ) { return agent.health; } ) ).mean() / 100 );
                         patchValuesSeries.append( new Date().getTime(), agentDiv * fp.patchNetwork.patchMeanValue );
+
                     }
                 }, 500 );
+
                 var chartCanvas = document.createElement( "canvas" );
                 chartCanvas.setAttribute( "id", "chartCanvas-" + fp.container.id );
                 chartCanvas.setAttribute( "width", "400" );
                 chartCanvas.setAttribute( "height", "100" );
                 chartCanvas.setAttribute( "style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  " );
                 fp.container.insertBefore( chartCanvas, fp.container.firstChild );
-                this.chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba( 0, 0, 255, 0.2 )", lineWidth: 4 } );
-                this.chart.addTimeSeries( agentHealthSeries, { fillStyle: "rgba( 255, 0, 0, 0.2 )", lineWidth: 4 } );
-                this.chart.addTimeSeries( patchValuesSeries, { fillStyle: "rgba( 0, 255, 0, 0.2 )", lineWidth: 4 } );
-                // fp.updateChartColors();
+
+                this.chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba( 0, 0, 255, 0.5 )", lineWidth: 4 } );
+                this.chart.addTimeSeries( agentHealthSeries, { fillStyle: "rgba( 255, 0, 0, 0.5 )", lineWidth: 4 } );
+                this.chart.addTimeSeries( patchValuesSeries, { fillStyle: "rgba( 0, 255, 0, 0.5 )", lineWidth: 4 } );
+
+                this.updateGraphColors();
+
                 this.chart.streamTo( chartCanvas, 500 );
                 this.updateGraph();
+
             };
 
             this.updateGraph = function() {
+
                 $( "#chartCanvas-" + fp.container.id ).toggle( FiercePlanet.appConfig.displayOptions.chartShow );
+
+            };
+
+            this.updateGraphColors = function() {
+
+                var generateRGBA = function( colorValue, alpha ) {
+
+                    var b = colorValue % 256;
+                    colorValue = colorValue - b;
+                    var g = ( colorValue / 256 ) % 256;
+                    colorValue = colorValue - ( g * 256 );
+                    var r = colorValue / ( 256 * 256 );
+                    if ( alpha === undefined ) {
+                        alpha = 1.0;
+                    }
+                    var rgba = 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ' )';
+                    return rgba;
+
+                };
+
+                if ( fp.chart.chart.seriesSet.length == 3 ) {
+
+                    var colorPop = fp.appConfig.colorOptions.colorGraphPopulation,
+                        colorHealth = fp.appConfig.colorOptions.colorGraphHealth,
+                        colorPatches = fp.appConfig.colorOptions.colorGraphPatchValues;
+
+                    _.extend( fp.chart.chart.seriesSet[ 0 ].options, {
+                        strokeStyle: generateRGBA( colorPop, 1.0 ),
+                        fillStyle: generateRGBA( colorPop, 0.4 ),
+                        lineWidth: 4
+                    } );
+                    _.extend( fp.chart.chart.seriesSet[ 1 ].options, {
+                        strokeStyle: generateRGBA( colorHealth, 1.0 ),
+                        fillStyle: generateRGBA( colorHealth, 0.4 ),
+                        lineWidth: 4
+                    } );
+                    _.extend( fp.chart.chart.seriesSet[ 2 ].options, {
+                        strokeStyle: generateRGBA( colorPatches, 1.0 ),
+                        fillStyle: generateRGBA( colorPatches, 0.4 ),
+                        lineWidth: 4
+                    } );
+
+                }
+
+
             };
 
         };
@@ -43112,16 +43201,7 @@ define(
              */
             fp.updateChartColors = function() {
 
-                if ( fp.chart.chart.seriesSet.length == 3 ) {
-
-                    var colorPop = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPopulation ).getHexString(),
-                        colorHealth = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphHealth ).getHexString(),
-                        colorPatches = "#" + new THREE.Color( fp.appConfig.colorOptions.colorGraphPatchValues ).getHexString();
-                    _.extend( fp.chart.chart.seriesSet[ 0 ].options, { strokeStyle: colorPop } );
-                    _.extend( fp.chart.chart.seriesSet[ 1 ].options, { strokeStyle: colorHealth } );
-                    _.extend( fp.chart.chart.seriesSet[ 2 ].options, { strokeStyle: colorPatches } );
-
-                }
+                fp.chart.updateChartColors();
 
             };
 
@@ -43281,8 +43361,8 @@ define(
                 // var fp.lightHemisphere = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
                 // var fp.lightHemisphere = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
                 fp.lightHemisphere.position.set( 0, 1000, 0 );
-                if ( fp.appConfig.displayOptions.lightHemisphereShow )
-                    fp.scene.add( fp.lightHemisphere );
+                // if ( fp.appConfig.displayOptions.lightHemisphereShow )
+                    // fp.scene.add( fp.lightHemisphere );
 
                 fp.lightDirectional = new THREE.DirectionalLight(
                     new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
@@ -43316,9 +43396,10 @@ define(
              */
             fp.updateLighting = function() {
 
-                if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.colorLightDirectional ) )
+                if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.lightDirectional ) )
                     return null;
 
+                console.log('got here')
                 fp.lightHemisphere.color = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky );
                 fp.lightHemisphere.groundColor = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereGround );
                 fp.lightHemisphere.intensity = fp.appConfig.colorOptions.colorLightHemisphereIntensity;
@@ -44353,10 +44434,16 @@ define(
                     terrainFile = fp.terrain.terrainMapFile;
 
                 terrainLoader.load( terrainFile, function( data ) {
+
                     fp.terrain.initTerrain( data );
+
+                    // Toggle the patches, in case they need to be shown now
+                    fp.togglePatchesState();
+
                     fp.animate(); // Kick off the animation loop
                     if ( _.isFunction( callback ) )
                         callback(); // Run the callback
+
                } );
 
             };

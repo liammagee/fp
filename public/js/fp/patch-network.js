@@ -106,6 +106,7 @@ define( [
 
                     }
                 }
+                geometry.computeVertexNormals();
 
                 var len = geometry.attributes.position.array.length / 3,
                     heights = new Float32Array( len ),

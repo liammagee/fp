@@ -282,8 +282,8 @@ define(
                 // var fp.lightHemisphere = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
                 // var fp.lightHemisphere = new THREE.HemisphereLight( 0xefeeb0, 0xefeeb0, 1.0 );
                 fp.lightHemisphere.position.set( 0, 1000, 0 );
-                if ( fp.appConfig.displayOptions.lightHemisphereShow )
-                    fp.scene.add( fp.lightHemisphere );
+                // if ( fp.appConfig.displayOptions.lightHemisphereShow )
+                    // fp.scene.add( fp.lightHemisphere );
 
                 fp.lightDirectional = new THREE.DirectionalLight(
                     new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
@@ -317,9 +317,10 @@ define(
              */
             fp.updateLighting = function() {
 
-                if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.colorLightDirectional ) )
+                if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.lightDirectional ) )
                     return null;
 
+                console.log('got here')
                 fp.lightHemisphere.color = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky );
                 fp.lightHemisphere.groundColor = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereGround );
                 fp.lightHemisphere.intensity = fp.appConfig.colorOptions.colorLightHemisphereIntensity;
@@ -1356,6 +1357,9 @@ define(
                 terrainLoader.load( terrainFile, function( data ) {
 
                     fp.terrain.initTerrain( data );
+
+                    // Toggle the patches, in case they need to be shown now
+                    fp.togglePatchesState();
 
                     fp.animate(); // Kick off the animation loop
                     if ( _.isFunction( callback ) )

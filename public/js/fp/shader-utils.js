@@ -202,6 +202,8 @@ define( [
                         if ( vPatch > 0.0 ) {
                             if ( elevation <=  0.0 ) {
                                 col = vec4( 0.0, 0.0, 0.0, 0.0 );
+                                alphaChannel = 0.0;
+                                diffusion = vec3( 0.0, 0.0, 0.0 );
                             }
                             else {
                                 col = vec4( vPatch, vPatch, vPatch, 1.0 );
