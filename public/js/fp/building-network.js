@@ -196,8 +196,14 @@ define( [
 
                 // Give the building a form
                 var buildingForm = fp.appConfig.buildingOptions.buildingForm;
-                if ( fp.appConfig.buildingOptions.randomForm )
-                    buildingForm = fp.BUILDING_FORMS.names[ Math.floor( Math.random() * fp.BUILDING_FORMS.names.length ) ];
+
+                if ( fp.appConfig.buildingOptions.randomForm ) {
+
+                    buildingForm = FiercePlanet.BUILDING_FORMS.names[ 
+                        Math.floor( Math.random() * FiercePlanet.BUILDING_FORMS.names.length ) 
+                    ];
+
+                }
 
                 var rotateY = ( fp.appConfig.buildingOptions.rotateSetAngle / 180 ) * Math.PI;
                 if ( fp.appConfig.buildingOptions.rotateRandomly ) {

@@ -8,8 +8,8 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
 
         });
 
@@ -41,13 +41,16 @@
                             "dayShow": false,
                             "waterShow": false,
                             "skyboxShow": false,
+
+                            "lightHemisphereShow": true,
+                            "lightDirectionalShow": true,
                             "cameraOverride": true,
                             "cameraY": 200,
                             "cameraZ": 800
                         },
                       "5": {
-                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
-                            "colorNightTerrainLowland1": 128 * 256 * 256 + 128 * 256 + 128,
+                            "colorNightBackground": 245 * 256 * 256 + 241 * 256 + 222,
+                            "colorNightTerrainLowland1": 245 * 256 * 256 + 241 * 256 + 222,
                             "coloriseAgentsByHealth": false,
                         },
                       "6": {
@@ -70,10 +73,12 @@
                 }
 
                 fp.init( config, sim, function() {
+
                     var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
                     var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
                     var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
                     fp.agentNetwork.networks = [ network1, network2, network3 ];
+
                 } );
             }
         );
