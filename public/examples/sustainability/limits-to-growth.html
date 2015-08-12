@@ -108,6 +108,50 @@
                         fp.timescale.framesToYear = 100;
                         currentNonrenewableResources = fp.appConfig.limitsToGrowthOptions.nonrenewableResources;
 
+                        // Setup another chart
+                        setupAltChart = function() {
+
+                            var agentInitialCount = fp.appConfig.agentOptions.initialPopulation;
+
+                            var agentPopulationFunc = function() {
+
+                                return fp.agentNetwork.agents.length;
+
+                            }
+
+
+                            var foodMeanFunc = function() {
+
+                                var agentLen = fp.agentNetwork.agents.length;
+
+                                var foodYield = sim.getFoodYield();
+
+                                console.log( ( agentLen / foodYield ) )
+
+                                return agentInitialCount * ( agentLen / foodYield );
+
+                            }
+
+                            var resourcesMeanFunc = function() {
+
+                                return agentInitialCount * fp.patchNetwork.patchMeanValue;
+
+                            }
+
+                            // Add three default functions to generate time series chart data
+                            fp.chart.setupChart( [
+
+                                agentPopulationFunc,
+                                foodMeanFunc,
+                                resourcesMeanFunc
+
+                            ] );
+
+                        };
+
+                        setupAltChart();
+
+
 
                         // Set up an agent class that can exercise, consume, reproduce and die
                         fp.Agent.prototype.exercise = function() {
@@ -233,6 +277,7 @@
                         });
 
 
+
                     },
 
                     tick: function() {
@@ -255,19 +300,19 @@
 
                             this.currentNonrenewableResources = this.getCurrentResources();
                             this.currentIndustrialOutput = this.currentPop / this.currentNonrenewableResources;
-                            this.currentFood = this.currentPop / this.currentNonrenewableResources;
+                            this.currentFood = this.getFoodYield();
                             this.currentServices = this.currentPop / this.currentNonrenewableResources;
                             this.currentPollution = this.currentIndustrialOutput;
 
                             console.log( "Year: " + this.currentYear )
                             console.log( " - Pop: " + this.currentPop )
-                            console.log( " - Crude Birth Rate: " + this.currentCrudeBirthRate )
-                            console.log( " - Crude Death Rate: " + this.currentCrudeDeathRate )
-                            console.log( " - Nonrenewable Resources: " + this.currentNonrenewableResources )
-                            console.log( " - Industrial Output: " + this.currentIndustrialOutput )
+                            // console.log( " - Crude Birth Rate: " + this.currentCrudeBirthRate )
+                            // console.log( " - Crude Death Rate: " + this.currentCrudeDeathRate )
+                            // console.log( " - Nonrenewable Resources: " + this.currentNonrenewableResources )
+                            // console.log( " - Industrial Output: " + this.currentIndustrialOutput )
                             console.log( " - Food: " + this.currentFood )
-                            console.log( " - Services: " + this.currentServices )
-                            console.log( " - Pollution: " + this.currentPollution )
+                            // console.log( " - Services: " + this.currentServices )
+                            // console.log( " - Pollution: " + this.currentPollution )
 
                         }
 

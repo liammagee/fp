@@ -442,7 +442,7 @@ define(
 
                 var agentPopulationFunc = function() {
 
-                    return fp.agentNetwork.agents.length
+                    return fp.agentNetwork.agents.length;
 
                 }
 

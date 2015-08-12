@@ -15,7 +15,7 @@ define( [
         FiercePlanet.Chart = function( fp ) {
 
             this.chart = null;
-            this.series = [];
+            this.intervalID = null;
 
 
             /**
@@ -30,6 +30,12 @@ define( [
 
                 var agentInitialCount = fp.appConfig.agentOptions.initialPopulation * 2;
 
+                if ( this.chart !== null ) {
+
+                    this.chart.stop();
+
+                }
+
                 this.chart = new SmoothieChart( {
 
                     maxValue: agentInitialCount,
@@ -38,17 +44,17 @@ define( [
                 } );
 
 
-                if ( $( '#chartDiv' ).length === 0 ) {
+                var chartCanvas = $( '#chartDiv' )[0];
+                if ( chartCanvas === undefined ) {
 
-                    var chartDiv = 'chartCanvas';
-                    var chartCanvas = document.createElement( "canvas" );
-                    chartCanvas.setAttribute( "id", chartDiv );
-                    chartCanvas.setAttribute( "width", "400" );
-                    chartCanvas.setAttribute( "height", "100" );
-                    chartCanvas.setAttribute( "style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  " );
+                    chartCanvas = document.createElement( "canvas" );
                     fp.container.insertBefore( chartCanvas, fp.container.firstChild );
 
                 }
+                chartCanvas.setAttribute( "id", 'chartDiv' );
+                chartCanvas.setAttribute( "width", "400" );
+                chartCanvas.setAttribute( "height", "100" );
+                chartCanvas.setAttribute( "style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  " );
 
                 for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
 
@@ -56,7 +62,11 @@ define( [
 
                 }
 
-                setInterval( function() {
+                if ( this.intervalID !== null ) {
+                    clearInterval( this.intervalID );
+                }
+
+                this.intervalID = setInterval( function() {
 
                     if ( FiercePlanet.AppState.runSimulation ) {
 
@@ -64,26 +74,12 @@ define( [
 
                             var seriesFunc = seriesSetFuncs[ i ];
                             var value = seriesFunc();
+                            if ( i == 1 )
+                                console.log(value)
                             var timeSeries = fp.chart.chart.seriesSet[ i ].timeSeries;
                             timeSeries.append( new Date().getTime(), value );
 
                         }
-
-                        /*
-                        agentPopulationSeries.append( new Date().getTime(),
-                            function() {
-
-                                return fp.agentNetwork.agents.length
-
-                            }
-                        );
-                        agentHealthSeries.append( new Date().getTime(),
-                            agentInitialCount / 2 * jStat( _.map( fp.agentNetwork.agents, function( agent ) { return agent.health; } ) ).mean() / 100
-                        );
-                        patchValuesSeries.append( new Date().getTime(),
-                            agentInitialCount / 2 * fp.patchNetwork.patchMeanValue
-                        );
-                        */
 
                     }
 
@@ -92,6 +88,7 @@ define( [
                 this.updateGraphColors();
 
                 this.chart.streamTo( chartCanvas, 500 );
+
                 this.toggleVisibility();
 
             };
@@ -152,7 +149,7 @@ define( [
                     _.extend( fp.chart.chart.seriesSet[ seriesNumber ].options, {
 
                         strokeStyle: generateRGBA( color, 1.0 ),
-                        fillStyle: generateRGBA( color, 0.4 ),
+                        fillStyle: generateRGBA( color, 0.2 ),
                         lineWidth: 4
 
                     } );
