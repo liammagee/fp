@@ -126,8 +126,6 @@
 
                                 var foodYield = sim.getFoodYield();
 
-                                console.log( ( agentLen / foodYield ) )
-
                                 return agentInitialCount * ( agentLen / foodYield );
 
                             }
@@ -327,7 +325,7 @@
                     fp.timescale.initialYear = 1900;
 
                     fp.appConfig.limitsToGrowthOptions = {};
-                    fp.appConfig.limitsToGrowthOptions.reproductionChance = 0.05;
+                    fp.appConfig.limitsToGrowthOptions.reproductionChance = 0.25;
                     fp.appConfig.limitsToGrowthOptions.maxChildren = 10;
                     fp.appConfig.limitsToGrowthOptions.energyLoss = 1;
                     fp.appConfig.limitsToGrowthOptions.energyGain = 0.1;

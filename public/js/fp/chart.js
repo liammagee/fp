@@ -63,7 +63,9 @@ define( [
                 }
 
                 if ( this.intervalID !== null ) {
+
                     clearInterval( this.intervalID );
+
                 }
 
                 this.intervalID = setInterval( function() {
@@ -74,8 +76,6 @@ define( [
 
                             var seriesFunc = seriesSetFuncs[ i ];
                             var value = seriesFunc();
-                            if ( i == 1 )
-                                console.log(value)
                             var timeSeries = fp.chart.chart.seriesSet[ i ].timeSeries;
                             timeSeries.append( new Date().getTime(), value );
 
