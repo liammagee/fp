@@ -26,7 +26,7 @@ define( [
              *  - the average health of the population (red)
              *  - the average value of the patches (green)
              */
-            this.setupChart = function ( series ) {
+            this.setupChart = function ( seriesSetFuncs ) {
 
                 var agentInitialCount = fp.appConfig.agentOptions.initialPopulation * 2;
 
@@ -50,16 +50,32 @@ define( [
 
                 }
 
-                var agentPopulationSeries = new TimeSeries();
-                var agentHealthSeries = new TimeSeries();
-                var patchValuesSeries = new TimeSeries();
+                for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
+
+                    this.chart.addTimeSeries( new TimeSeries() );
+
+                }
 
                 setInterval( function() {
 
                     if ( FiercePlanet.AppState.runSimulation ) {
 
+                        for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
+
+                            var seriesFunc = seriesSetFuncs[ i ];
+                            var value = seriesFunc();
+                            var timeSeries = fp.chart.chart.seriesSet[ i ].timeSeries;
+                            timeSeries.append( new Date().getTime(), value );
+
+                        }
+
+                        /*
                         agentPopulationSeries.append( new Date().getTime(),
-                            fp.agentNetwork.agents.length
+                            function() {
+
+                                return fp.agentNetwork.agents.length
+
+                            }
                         );
                         agentHealthSeries.append( new Date().getTime(),
                             agentInitialCount / 2 * jStat( _.map( fp.agentNetwork.agents, function( agent ) { return agent.health; } ) ).mean() / 100
@@ -67,14 +83,11 @@ define( [
                         patchValuesSeries.append( new Date().getTime(),
                             agentInitialCount / 2 * fp.patchNetwork.patchMeanValue
                         );
+                        */
 
                     }
 
                 }, 500 );
-
-                this.chart.addTimeSeries( agentPopulationSeries, { fillStyle: "rgba( 0, 0, 255, 0.5 )", lineWidth: 4 } );
-                this.chart.addTimeSeries( agentHealthSeries, { fillStyle: "rgba( 255, 0, 0, 0.5 )", lineWidth: 4 } );
-                this.chart.addTimeSeries( patchValuesSeries, { fillStyle: "rgba( 0, 255, 0, 0.5 )", lineWidth: 4 } );
 
                 this.updateGraphColors();
 

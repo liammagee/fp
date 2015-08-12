@@ -431,12 +431,49 @@ define(
 
 
             /**
+             * Sets up the default chart, with three functions for
+             * agent population (blue), mean agent health (red), and mean pathch values (green).
              * @memberof fp
              */
             fp.setupChart = function() {
 
                 fp.chart = new FiercePlanet.Chart( fp );
-                fp.chart.setupChart();
+                var agentInitialCount = fp.appConfig.agentOptions.initialPopulation * 2;
+
+                var agentPopulationFunc = function() {
+
+                    return fp.agentNetwork.agents.length
+
+                }
+
+                var agentHealthFunc = function() {
+
+                    var healthMean = jStat(
+                        _.map( fp.agentNetwork.agents,
+                            function( agent ) {
+                                return agent.health;
+                            }
+                        )
+                    ).mean() / 100;
+
+                    return agentInitialCount / 2 * healthMean;
+
+                }
+
+                var patchMeanFunc = function() {
+
+                    return agentInitialCount / 2 * fp.patchNetwork.patchMeanValue;
+
+                }
+
+                // Add three default functions to generate time series chart data
+                fp.chart.setupChart( [
+
+                    agentPopulationFunc,
+                    agentHealthFunc,
+                    patchMeanFunc
+
+                ] );
 
             };
 
@@ -1477,6 +1514,18 @@ define(
 
             };
 
+
+            /**
+             * Gets the offset for the level of a building.
+             * NOTE: Should be moved to building.js
+             */
+            fp.getOffset = function( currentLevel, len ) {
+
+                var initOffset = ( currentLevel > 0 ) ? len * 2 : 0;
+                var offset = initOffset + ( currentLevel ) * len * 4;
+                return offset;
+
+            };
 
             /**
              * Creates a dat.GUI interface for controlling and configuring the simulation.
