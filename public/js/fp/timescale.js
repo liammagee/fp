@@ -14,6 +14,7 @@ define( [
          * @inner
          */
        FiercePlanet.Timescale = function() {     // Time variables
+
             this.initialYear = 1800;
             this.endYear = 2200;
             this.terminate = false;
@@ -24,6 +25,7 @@ define( [
             this.MIN_FRAMES_TO_YEAR = null;
             this.framesToYear = 32;
             this.frameCounter = 0;
+
         };
 
         return FiercePlanet;

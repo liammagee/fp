@@ -59,6 +59,7 @@ define( [
                 fp.scene.remove( fp.roadNetwork.networkMesh );
                 fp.scene.remove( fp.pathNetwork.networkMesh );
                 fp.scene.remove( fp.trailNetwork.globalTrailLine );
+
                 fp.patchNetwork.initialisePatches();
 
             };
@@ -68,8 +69,11 @@ define( [
              */
             this.Setup = function() {
 
+                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+
                 fp.appController.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
+
                 if ( fp.appConfig.displayOptions.agentsShow )
                     fp.scene.add( fp.agentNetwork.particles );
 
@@ -115,8 +119,6 @@ define( [
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
                 }
                 */
-
-                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
 
             };
 

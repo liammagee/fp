@@ -80,6 +80,8 @@
                 };
 
                 var sim =  {
+
+                    sim: this,
                     currentYear: 0,
                     currentPop: 0,
                     currentIndustrialOutput: 0,
@@ -90,59 +92,90 @@
                     currentCrudeDeathRate: 0,
                     currentServices: 0,
 
+                    getCurrentResources: function() {
+                        return _.reduce( fp.patchNetwork.patchValues, function( memo, patch ) { return memo + patch.value; }, 0 );
+                    },
+
+
+                    getFoodYield: function() {
+                        return sim.getCurrentResources();
+                    },
+
                     setup: function() {
+
                         counter = 0;
+
+                        fp.timescale.framesToYear = 100;
+                        currentNonrenewableResources = fp.appConfig.limitsToGrowthOptions.nonrenewableResources;
+
 
                         // Set up an agent class that can exercise, consume, reproduce and die
                         fp.Agent.prototype.exercise = function() {
-                            if (this.health > 0)
-                                this.health -= fp.appConfig.limitsToGrowthOptions.energyLoss;
-                        }
-
-                        fp.Agent.prototype.consume = function() {
 
                             var index = fp.getPatchIndex( this.position.x, this.position.z );
                             var patch = fp.patchNetwork.patches[index];
+
                             if ( !_.isUndefined( patch ) ) {
+
                                 var agentsOnPatch = patch.length;
                                 var patchValue = fp.patchNetwork.patchValues[index];
-                                if ( _.isUndefined( patchValue ) )
-                                    console.log( this.position.x, this.position.z, index );
-                                var availableYield = patchValue.value / agentsOnPatch;
-                                patchValue.updatePatchValue( - fp.appConfig.limitsToGrowthOptions.rateOfConsumption );
-                                this.health += fp.appConfig.limitsToGrowthOptions.energyGain * availableYield;
-                                this.health = (this.health > 100) ? 100 : this.health;
+
+                                patchValue.updatePatchValue( -fp.appConfig.limitsToGrowthOptions.rateOfConsumption );
+
                             }
+
+                            if (this.health > 0)
+                                this.health -= fp.appConfig.limitsToGrowthOptions.energyLoss;
+
+                        }
+
+
+                        fp.Agent.prototype.consume = function() {
+
+                            var foodAvailable = sim.getFoodYield();
+                            var totalAgents = fp.agentNetwork.agents.length;
+                            var availableYield = foodAvailable / totalAgents;
+                            // this.health += fp.appConfig.limitsToGrowthOptions.energyGain * availableYield;
+                            this.health = (this.health > 100) ? 100 : this.health;
 
                         };
 
                         fp.Agent.prototype.die = function() {
 
-                            // fp.scene.remove( fp.agentNetwork.particles );
+                            fp.scene.remove( fp.agentNetwork.particles );
                             var index = fp.agentNetwork.agents.indexOf(this);
                             fp.agentNetwork.agents.splice(index, 1);
                             fp.agentNetwork.updateAgentParticleSystem();
-                            // fp.scene.add( fp.agentNetwork.particles );
+                            fp.scene.add( fp.agentNetwork.particles );
+
+                            if ( fp.agentNetwork.agents.length === 0 )
+                                fp.endSim();
 
                         };
 
                         fp.Agent.prototype.reproduce = function() {
+
                             // Crude set of assumptions about conditions for reproduction
                             var current = fp.agentNetwork.agents.length;
                             var initial = fp.appConfig.agentOptions.initialPopulation;
                             var popCorrection = Math.pow( ( current / initial ), 2 );
-                            if ( Math.random() * popCorrection <  fp.appConfig.limitsToGrowthOptions.reproductionChance &&
 
+                            if ( Math.random() * popCorrection <  fp.appConfig.limitsToGrowthOptions.reproductionChance &&
                                  this.children.length < fp.appConfig.limitsToGrowthOptions.maxChildren &&
                                  this.gender == "f" &&
                                  Math.random() * this.health > 50 &&
                                  this.age > 15 && this.age < 50 )  {
+
+
                                 var agent = fp.agentNetwork.createAgent();
                                 agent.mother = this;
                                 agent.color = this.color;
                                 this.children.push(agent);
                                 fp.agentNetwork.agents.push(agent);
+
+                                fp.scene.remove( fp.agentNetwork.particles );
                                 fp.agentNetwork.updateAgentParticleSystem();
+                                fp.scene.add( fp.agentNetwork.particles );
 
                             }
 
@@ -151,6 +184,15 @@
                         // Initialise the patch resources
 
                         // Override PatchNetwork methods
+                        fp.patchNetwork.initialisePatchFunction = function() {
+
+                            var sum = fp.patchNetwork.patchValues.length;
+                            var value = 2 * Math.random() * ( currentNonrenewableResources / sum );
+                            return value;
+
+                        };
+
+
                         fp.PatchNetwork.prototype.reviseValues = function() {
 
                             fp.patchNetwork.patchMeanValue = 0;
@@ -193,31 +235,30 @@
 
                     },
 
-
                     tick: function() {
 
-                        // Approximation to LtG model
-                        this.currentNonrenewableResources
-
-                        fp.agentNetwork.agents.forEach( function( agent ) {
-
-                            agent.exercise();
-                            agent.consume();
-                            agent.reproduce();
-
-                            if (agent.health <= 0)
-                                agent.die();
-
-                        } );
-
                         if ( this.currentYear != fp.timescale.currentYear ) {
+
+                            fp.agentNetwork.agents.forEach( function( agent ) {
+
+                                agent.exercise();
+                                agent.consume();
+                                agent.reproduce();
+
+                                if (agent.health <= 0)
+                                    agent.die();
+
+                            } );
+
                             this.currentYear = fp.timescale.currentYear;
                             this.currentPop = fp.agentNetwork.agents.length;
-                            this.currentNonrenewableResources = _.reduce( fp.patchNetwork.patchValues, function( memo, patch ) { return memo + patch.value; }, 0 );
+
+                            this.currentNonrenewableResources = this.getCurrentResources();
                             this.currentIndustrialOutput = this.currentPop / this.currentNonrenewableResources;
                             this.currentFood = this.currentPop / this.currentNonrenewableResources;
                             this.currentServices = this.currentPop / this.currentNonrenewableResources;
                             this.currentPollution = this.currentIndustrialOutput;
+
                             console.log( "Year: " + this.currentYear )
                             console.log( " - Pop: " + this.currentPop )
                             console.log( " - Crude Birth Rate: " + this.currentCrudeBirthRate )
@@ -227,6 +268,7 @@
                             console.log( " - Food: " + this.currentFood )
                             console.log( " - Services: " + this.currentServices )
                             console.log( " - Pollution: " + this.currentPollution )
+
                         }
 
                         //fp.patchNetwork.reviseValues();
@@ -240,14 +282,15 @@
                     fp.timescale.initialYear = 1900;
 
                     fp.appConfig.limitsToGrowthOptions = {};
-                    fp.appConfig.limitsToGrowthOptions.reproductionChance = 0.25;
+                    fp.appConfig.limitsToGrowthOptions.reproductionChance = 0.05;
                     fp.appConfig.limitsToGrowthOptions.maxChildren = 10;
-                    fp.appConfig.limitsToGrowthOptions.energyLoss = 0.1;
-                    fp.appConfig.limitsToGrowthOptions.energyGain = 2;
+                    fp.appConfig.limitsToGrowthOptions.energyLoss = 1;
+                    fp.appConfig.limitsToGrowthOptions.energyGain = 0.1;
                     fp.appConfig.limitsToGrowthOptions.rateOfConsumption = 0.1;
                     fp.appConfig.limitsToGrowthOptions.rateOfRecovery = 0.0;
 
                     // Specific to limits to growth
+                    fp.appConfig.limitsToGrowthOptions.nonrenewableResources = 100;
                     fp.appConfig.limitsToGrowthOptions.food = 0.5;
                     fp.appConfig.limitsToGrowthOptions.industrialOutput = 0.5;
                     fp.appConfig.limitsToGrowthOptions.services = 0.5;
@@ -255,20 +298,22 @@
 
 
                     var limitsToGrowthFolder = fp.gui.addFolder( "Limits to Growth Options" );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "reproductionChance", 0, 1).step( 0.01 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "maxChildren", 1, 10).step( 1 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "reproductionChance", 0, 1 ).step( 0.01 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "maxChildren", 1, 10 ).step( 1 );
 
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "energyLoss", 0, 1).step( 0.05 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "energyGain", 0, 10).step( 0.1 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "energyLoss", 0, 1 ).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "energyGain", 0, 10 ).step( 0.1 );
 
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "rateOfConsumption", 0, 1).step( 0.005 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "rateOfRecovery", 0, 0.1).step( 0.005 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "rateOfConsumption", 0, 1 ).step( 0.005 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "rateOfRecovery", 0, 0.1 ).step( 0.005 );
 
                     // Specific to limits to growth
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "food", 0.0, 1.0).step( 0.05 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "industrialOutput", 0.0, 1.0).step( 0.05 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "services", 0.0, 1.0).step( 0.05 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "pollution", 0.0, 1.0).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "nonrenewableResources", 0, 1000 ).step( 10 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "food", 0.0, 1.0 ).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "industrialOutput", 0.0, 1.0 ).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "services", 0.0, 1.0 ).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "pollution", 0.0, 1.0 ).step( 0.05 );
+
 
                     fp.appController.Setup();
 

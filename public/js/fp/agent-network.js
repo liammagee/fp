@@ -433,9 +433,12 @@ define( [
 
                     var position = fp.terrain.transformPointFromPlaneToSphere( agent.position, fp.terrain.wrappedPercent );
 
-                    geometry.attributes.position.array[ i * 3 + 0 ] = position.x;
-                    geometry.attributes.position.array[ i * 3 + 1 ] = position.y;
-                    geometry.attributes.position.array[ i * 3 + 2 ] = position.z;
+                    positionValues[ i * 3 + 0 ] = position.x;
+                    positionValues[ i * 3 + 1 ] = position.y;
+                    positionValues[ i * 3 + 2 ] = position.z;
+                    // geometry.attributes.position.array[ i * 3 + 0 ] = position.x;
+                    // geometry.attributes.position.array[ i * 3 + 1 ] = position.y;
+                    // geometry.attributes.position.array[ i * 3 + 2 ] = position.z;
 
                     if ( fp.appConfig.displayOptions.coloriseAgentsByHealth ) {
 
@@ -446,29 +449,29 @@ define( [
                         g *= ( health / 100.0 );
                         b *= ( health / 100.0 );
 
-                        geometry.attributes.color.array[ i * 3 + 0 ] = r;
-                        geometry.attributes.color.array[ i * 3 + 1 ] = g;
-                        geometry.attributes.color.array[ i * 3 + 2 ] = b;
+                        colourValues[ i * 3 + 0 ] = r;
+                        colourValues[ i * 3 + 1 ] = g;
+                        colourValues[ i * 3 + 2 ] = b;
 
-                        geometry.attributes.alpha.array[ i ] = 0.75;
+                        alphaValues[ i ] = 0.75;
 
                     }
                     else {
 
                         var color = new THREE.Color( this.agents[ i ].color );
-                        geometry.attributes.color.array[ i * 3 + 0 ] = color.r;
-                        geometry.attributes.color.array[ i * 3 + 1 ] = color.g;
-                        geometry.attributes.color.array[ i * 3 + 2 ] = color.b;
+                        colourValues[ i * 3 + 0 ] = color.r;
+                        colourValues[ i * 3 + 1 ] = color.g;
+                        colourValues[ i * 3 + 2 ] = color.b;
 
-                        geometry.attributes.alpha.array[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
+                        alphaValues[ i ] = ( this.agents[ i ].health * 0.0075 ) + 0.025;
 
                     }
 
                 }
 
-                this.particles.geometry.attributes.position.needsUpdate = true;
-                this.particles.geometry.attributes.color.needsUpdate = true;
-                this.particles.geometry.attributes.alpha.needsUpdate = true;
+                geometry.addAttribute( 'position', new THREE.BufferAttribute( positionValues, 3 ) );
+                geometry.addAttribute( 'color', new THREE.BufferAttribute( colourValues, 3 ) );
+                geometry.addAttribute( 'alpha', new THREE.BufferAttribute( alphaValues, 1 ) );
 
             };
 

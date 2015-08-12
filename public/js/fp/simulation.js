@@ -656,9 +656,11 @@ define(
              * @memberof fp
              */
             fp.endSim = function() {
-                fp.AppState.runSimulation = false;
+
+                FiercePlanet.AppState.runSimulation = false;
                 fp.appConfig.displayOptions.buildingsShow = false;
                 fp.appConfig.displayOptions.patchesUpdate = false;
+
             };
 
             /**
