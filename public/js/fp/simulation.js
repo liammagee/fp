@@ -62,6 +62,7 @@ define(
             this.lightDirectional = null;
             this.chart = null;
 
+
             /**
              * Generates a THREE.Vector3 object containing RGB values from either
              * a number or string color representation
@@ -69,34 +70,40 @@ define(
              * @return {THREE.Vector3}       [ description ]
              */
             fp.buildColorVector = function( color ) {
+
                 var bc, r, g, b;
+
                 if ( !isNaN( parseInt( color )) ) {
+
                     b = color % 256;
                     g = ( ( color - b ) / 256 ) % 256;
                     r = ( ( color - ( g * 256 ) - b ) / ( 256 * 256 ) ) % 256;
+
                 }
                 else {
+
                     bc = parseCSSColor( color );
                     r = bc[ 0 ];
                     g = bc[ 1 ];
                     b = bc[ 2 ];
+
                 }
+
                 return new THREE.Vector3( r / 255.0, g / 255.0, b / 255.0 );
+
             };
 
+
+            /**
+             * Builds an integer representation of a color.
+             * @memberof fp
+             */
             fp.buildColorInteger = function( r, g, b ) {
 
                 return r * 256 * 256 + g * 256 + b;
 
             };
 
-            fp.getOffset = function( currentLevel, len ) {
-
-                var initOffset = ( currentLevel > 0 ) ? len * 2 : 0;
-                var offset = initOffset + ( currentLevel ) * len * 4;
-                return offset;
-
-            };
 
             /**
              * Resizes the renderer and camera aspect.
@@ -104,28 +111,27 @@ define(
             fp.onWindowResize = function() {
 
                 if ( fp.appConfig.displayOptions.maximiseView ) {
+
                     fp.camera.aspect = window.innerWidth / window.innerHeight;
                     fp.camera.updateProjectionMatrix();
                     fp.renderer.setSize( window.innerWidth, window.innerHeight );
+
                 }
                 else {
+
                     var width = $( "#container1" ).width(), height = $( "#container1" ).height();
                     fp.camera.aspect = width / height;
                     fp.camera.updateProjectionMatrix();
                     fp.renderer.setSize( width, height );
+
                 }
 
             };
 
+
             /**
-             * Update the series colours, if they change
+             * Returns a list of the most visited trail points.
              */
-            fp.updateChartColors = function() {
-
-                fp.chart.updateChartColors();
-
-            };
-
             fp.mostVisited = function() {
 
                 return _.chain( trailNetwork.trails ).pairs().sortBy( function( a ) {return a[ 1 ];} ).last( 100 ).value();
@@ -133,23 +139,38 @@ define(
             };
 
 
+            /**
+             * Counts the vertices of the object's geometry.
+             */
             fp.vertexCount = function( obj ) {
 
                 var count = 0;
+
                 if ( !_.isUndefined( obj.geometry ) ) {
-                    if ( !_.isUndefined( obj.geometry.vertices ) )
+
+                    if ( !_.isUndefined( obj.geometry.vertices ) ) {
                         count += obj.geometry.vertices.length;
-                    else if ( !_.isUndefined( obj.geometry.attributes.position ) )
+                    }
+                    else if ( !_.isUndefined( obj.geometry.attributes.position ) ) {
                         count += obj.geometry.attributes.position.array.length / 3;
+                    }
+
                 }
+
                 if ( !_.isUndefined( obj.children ) ) {
+
                     obj.children.forEach( function( child ) {
+
                         count += fp.vertexCount( child );
+
                     } );
+
                 }
+
                 return count;
 
             };
+
 
             /**
              * Sets up the basic sim objects
@@ -168,29 +189,41 @@ define(
                 fp.patchNetwork = new FiercePlanet.PatchNetwork( fp );
                 fp.timescale = new FiercePlanet.Timescale();
                 fp.cursor = new FiercePlanet.Cursor();
+
             };
+
 
             /**
              * Sets up the THREE.js camera.
              */
             fp.setupCamera = function() {
+
                 fp.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000000 );
+
                 if ( fp.appConfig.displayOptions.cameraOverride ) {
+
                     fp.camera.position.x = fp.appConfig.displayOptions.cameraX;
                     fp.camera.position.y = fp.appConfig.displayOptions.cameraY;
                     fp.camera.position.z = fp.appConfig.displayOptions.cameraZ;
+
                 }
                 else if ( fp.appConfig.displayOptions.firstPersonView ) {
+
                     fp.camera.position.x = 0;
                     fp.camera.position.y = 50 * fp.appConfig.terrainOptions.multiplier;
                     fp.camera.position.z = 0;
+
                 }
                 else {
+
                     fp.camera.position.x = 0;
                     fp.camera.position.y = 200 * fp.appConfig.terrainOptions.multiplier;
                     fp.camera.position.z = 800 * fp.appConfig.terrainOptions.multiplier;
+
                 }
+
             };
+
 
             /**
              * Sets up the controls.
@@ -199,12 +232,15 @@ define(
             fp.setupControls = function() {
 
                 if ( fp.appConfig.displayOptions.firstPersonView ) {
+
                     fp.controls = new THREE.PointerLockControls( fp.camera );
                     fp.scene.add( fp.controls.getObject() );
                     fp.controls.enabled = true;
                     fp.container.requestPointerLock();
+
                 }
                 else {
+
                     // fp.controls = new THREE.TrackballControls( fp.camera, fp.container );
                     // Works better - but has no rotation?
                     fp.controls = new THREE.OrbitControls( fp.camera, fp.container );
@@ -218,9 +254,11 @@ define(
                     fp.controls.noRoll = true;
                     fp.controls.minDistance = 250.0;
                     fp.controls.maxDistance = 10000.0;
+
                 }
 
             };
+
 
             /**
              * Resets the state of the camera, controls and water object.
@@ -263,6 +301,7 @@ define(
                 fp.renderer.domElement.addEventListener( "mouseup", fp.onMouseUp );
 
             };
+
 
             /**
              * @memberof fp
@@ -312,6 +351,20 @@ define(
 
             };
 
+
+            /**
+             * @memberof fp
+             */
+            fp.updateGraphColors = function() {
+
+                if ( _.isNull( fp.chart ) )
+                    return null;
+
+                fp.chart.updateGraphColors();
+
+            };
+
+
             /**
              * @memberof fp
              */
@@ -320,7 +373,6 @@ define(
                 if ( _.isNull( fp.lightHemisphere ) || _.isNull( fp.lightDirectional ) )
                     return null;
 
-                console.log('got here')
                 fp.lightHemisphere.color = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereSky );
                 fp.lightHemisphere.groundColor = new THREE.Color( fp.appConfig.colorOptions.colorLightHemisphereGround );
                 fp.lightHemisphere.intensity = fp.appConfig.colorOptions.colorLightHemisphereIntensity;
@@ -329,6 +381,7 @@ define(
                 fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
 
             };
+
 
             /**
              * @memberof fp
@@ -544,7 +597,8 @@ define(
                 fp.pathNetwork.updatePath();
                 fp.updateYear();
                 fp.updateSimState();
-                fp.updateGraph();
+                if ( !_.isNull( fp.chart ) )
+                    fp.chart.adjustGraphSize();
                 fp.updateWater();
 
                 fp.updateStats();
@@ -619,16 +673,22 @@ define(
                 }
             };
 
+
             /**
              * Adjusts the graph size if needed.
              * @memberof fp
              */
             fp.updateGraph = function() {
+
                 if ( fp.chart.chart.seriesSet.length == 3 &&
                     fp.chart.chart.options.maxValue <= fp.agentNetwork.agents.length ) {
+
                     fp.chart.chart.options.maxValue *= 2;
+
                 }
+
             };
+
 
             /**
              * Updates the stats widget.
@@ -1024,7 +1084,7 @@ define(
                 }
                 else if ( fp.keyboard.pressed( "G" ) ) {
                     fp.appConfig.displayOptions.chartShow = !fp.appConfig.displayOptions.chartShow;
-                    fp.updateGraph();
+                    fp.toggleChart();
                 }
                 else if ( fp.keyboard.pressed( "X" ) ) {
                     fp.appConfig.displayOptions.pathsShow = !fp.appConfig.displayOptions.pathsShow;
@@ -1180,6 +1240,7 @@ define(
                 fp.patchNetwork.togglePatchesState();
             };
 
+
             /**
              * Toggles the visibility of the trail.
              * @memberof fp
@@ -1193,6 +1254,22 @@ define(
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
                 }
             };
+
+
+            /**
+             * Toggles the visibility of the chart.
+             * @memberof fp
+             */
+            fp.toggleChart = function() {
+
+                if ( fp.chart !== null ) {
+
+                    fp.chart.toggleVisibility();
+
+                }
+
+            };
+
 
             /**
              * Toggles the visibility of the path network.
@@ -1586,7 +1663,7 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "wireframeShow" ).onFinishChange( fp.toggleWireframeState );
                     displayFolder.add( fp.appConfig.displayOptions, "dayShow" ).onFinishChange( fp.toggleDayNight );
                     displayFolder.add( fp.appConfig.displayOptions, "skyboxShow" ).onFinishChange( fp.toggleDayNight );
-                    displayFolder.add( fp.appConfig.displayOptions, "chartShow" ).onFinishChange( fp.updateGraph );
+                    displayFolder.add( fp.appConfig.displayOptions, "chartShow" ).onFinishChange( fp.toggleChart );
                     displayFolder.add( fp.appConfig.displayOptions, "pathsShow" ).onFinishChange( fp.togglePathsState );
                     displayFolder.add( fp.appConfig.displayOptions, "terrainShow" ).onFinishChange( fp.toggleTerrainPlane );
                     displayFolder.add( fp.appConfig.displayOptions, "lightHemisphereShow" ).onFinishChange( fp.toggleLights );

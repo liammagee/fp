@@ -189,19 +189,28 @@ define( [
                 var popAgent = fp.agentNetwork.agents.length;
                 var r = popAgent / popPatch;
                 var change;
+
                 for ( var i = 0; i < this.patchValues.length; i++ ) {
+
                     var patch = this.patchValues[ i ];
+
                     if ( !_.isUndefined( this.patches[ i ] ) ) {
+
                         var len = this.patches[ i ].length;
                         change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
                         patch.updatePatchValue( change );
+
                     }
                     else { // if ( patch.value < patch.initialValue ) { // Recover
+
                         change = Math.pow( r, 2 );
                         patch.updatePatchValue( Math.pow( r, 3 ) );
+
                     }
                     this.patchMeanValue += patch.value;
+
                 }
+
                 this.patchMeanValue /= this.patchValues.length;
 
             };
@@ -212,6 +221,7 @@ define( [
             this.updatePatchAgents = function() {
 
                 this.patches = {};
+
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
 
                     var agent =  fp.agentNetwork.agents[ i ];

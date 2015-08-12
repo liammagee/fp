@@ -25,13 +25,16 @@ define( [
              * @inner
              */
             this.AgentNetworkNetwork = function( color ) {
+
                 this.links = [ ];
                 this.networkColor = color;
                 this.networkMesh = null;
 
                 this.AgentNetworkNetworkLink = function( agent1, agent2 ) {
+
                     this.agent1 = agent1;
                     this.agent2 = agent2;
+
                 };
 
                 /**
@@ -40,19 +43,25 @@ define( [
                  * @return {vertices}
                  */
                 this.generateFriendNetworkVertices = function() {
+
                     var vertices = [ ];
                     for ( var i = 0; i < this.links.length; i++ ) {
+
                         var link = this.links[ i ];
-                        var agent1 = link.agent1,
-                            agent2 = link.agent2;
-                        var p1 = fp.terrain.transformPointFromPlaneToSphere( agent1.position.clone(), fp.terrain.wrappedPercent ),
-                            p2 = fp.terrain.transformPointFromPlaneToSphere( agent2.position.clone(), fp.terrain.wrappedPercent );
+                        var agent1 = link.agent1
+                        var agent2 = link.agent2;
+                        var p1 = fp.terrain.transformPointFromPlaneToSphere( agent1.position.clone(), fp.terrain.wrappedPercent );
+                        var p2 = fp.terrain.transformPointFromPlaneToSphere( agent2.position.clone(), fp.terrain.wrappedPercent );
+
                         p1.y += fp.appConfig.agentOptions.size / 8;
                         p2.y += fp.appConfig.agentOptions.size / 8;
                         vertices.push( p2 );
                         vertices.push( p1 );
+
                     }
+
                     return vertices;
+
                 };
 
                 /**
@@ -62,17 +71,23 @@ define( [
                  * @return {THREE.Geometry}
                  */
                 this.friendNetworkGeometryCurved = function( vertices ) {
+
                     var networkGeometry = new THREE.Geometry();
                     var len = vertices.length;
                     var spline = new THREE.Spline( vertices );
                     var subN = fp.appConfig.displayOptions.networkCurvePoints;
                     var position, index;
+
                     for ( var i = 0; i < len * subN; i++ ) {
+
                         index = i / ( len * subN );
                         position = spline.getPoint( index );
                         networkGeometry.vertices[ i ] = new THREE.Vector3( position.x, position.y, position.z );
+
                     }
+
                     return networkGeometry;
+
                 };
 
                 /**
@@ -82,15 +97,22 @@ define( [
                  * @return {THREE.Geometry}
                  */
                 this.friendNetworkGeometry = function( vertices ) {
+
                     if ( !fp.appConfig.displayOptions.networkCurve ) {
+
                         var networkGeometry = new THREE.Geometry();
                         networkGeometry.vertices = vertices;
                         return networkGeometry;
+
                     }
                     else {
+
                         return this.friendNetworkGeometryCurved( vertices );
+
                     }
+
                 };
+
 
                 /**
                  * Returns a material for the network.
@@ -110,6 +132,7 @@ define( [
                     } );
 
                 };
+
 
                 /**
                  * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
@@ -170,37 +193,56 @@ define( [
                     var chanceWithHome = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithHome, 2 );
                     var chanceWithBothHomes = Math.pow( fp.appConfig.agentOptions.chanceToJoinNetworkWithBothHomes, 2 );
                     var link1, link2;
+
                     if ( Math.random() < chance ) {
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
                         link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
                         link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+
                         if ( this.links.indexOf( link1 ) === -1 &&
                              this.links.indexOf( link2 ) === -1 ) {
+
                             this.links.push( link1 );
+
                         }
+
                     }
+
                     if ( Math.random() < chanceWithHome && ( agent1.home !== null || agent2.home !== null ) ) {
+
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
                         link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
                         link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+
                         if ( this.links.indexOf( link1 ) === -1 &&
                              this.links.indexOf( link2 ) === -1 ) {
+
                             this.links.push( link1 );
+
                         }
+
                     }
+
                     if ( Math.random() < chanceWithBothHomes && agent1.home !== null && agent2.home !== null ) {
+
                         // Add the other agent if it is not already contained in
                         // either agent's existing connections
                         link1 = new this.AgentNetworkNetworkLink( agent1, agent2 );
                         link2 = new this.AgentNetworkNetworkLink( agent2, agent1 );
+
                         if ( this.links.indexOf( link1 ) === -1 &&
                              this.links.indexOf( link2 ) === -1 ) {
+
                             this.links.push( link1 );
+
                         }
+
                     }
+
                 };
+
 
                 /**
                  * Tries to enlist an agent in this network.
@@ -243,7 +285,9 @@ define( [
                 this.updateAgentNetworkRendering = function() {
 
                     if ( !FiercePlanet.AppState.runSimulation ) {
+
                         return;
+
                     }
 
                     this.renderFriendNetwork();
@@ -257,11 +301,17 @@ define( [
              * Creates an initial set of agents.
              */
             this.createInitialAgentPopulation = function() {
+
                 for ( var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++ ) {
+
                     this.agents.push( this.createAgent() );
+
                 }
+
                 this.buildAgentParticleSystem();
+
             };
+
 
             /**
              * Creates a single agent
@@ -299,6 +349,7 @@ define( [
              * @return {coordinate}
              */
             this.randomPointForAgent = function() {
+
                 var extent = fp.appConfig.terrainOptions.gridExtent;
                 var initExtent = ( fp.appConfig.agentOptions.initialExtent / 100 ) * extent * fp.appConfig.terrainOptions.multiplier;
                 var initX = ( fp.appConfig.agentOptions.initialX / 100 ) * extent - ( extent / 2 );
@@ -308,35 +359,48 @@ define( [
                 var point = null;
 
                 if ( fp.appConfig.agentOptions.initialCircle ) {
+
                     var normX = x - initX, normZ = z - initY;
                     var radius = Math.sqrt( normX * normX + normZ * normZ );
+
                     while ( radius > initExtent / 2 ) {
+
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
                         normX = x - initX;
                         normZ = z - initY;
                         radius = Math.sqrt( normX * normX + normZ * normZ );
+
                     }
+
                 }
 
                 var boundary = ( extent / 2 ) * fp.appConfig.terrainOptions.multiplier;
                 while ( ( x < -boundary || x > boundary ) || ( z < -boundary || z > boundary ) ) {
+
                     point = this.randomPointForAgent();
                     x = point.x;
                     z = point.z;
+
                 }
 
                 if ( fp.appConfig.agentOptions.noWater ) {
+
                     var y = fp.getHeight( x, z );
                     while ( y < 0 ) {
+
                         point = this.randomPointForAgent();
                         x = point.x;
                         z = point.z;
                         y = fp.getHeight( x, z );
+
                     }
+
                 }
+
                 return { x: x, z: z };
+
             };
 
 
@@ -503,6 +567,7 @@ define( [
                     colourValues[ i * 3 + 0 ] = colour.r;
                     colourValues[ i * 3 + 1 ] = colour.g;
                     colourValues[ i * 3 + 2 ] = colour.b;
+
                 }
 
                 agentGeometry.addAttribute( 'position', new THREE.BufferAttribute( positionValues, 3 ) );
@@ -510,11 +575,13 @@ define( [
                 agentGeometry.addAttribute( 'alpha', new THREE.BufferAttribute( alphaValues, 1 ) );
 
                 var discTexture = THREE.ImageUtils.loadTexture( "/images/sprites/stickman_180.png" );
+
                 if ( !fp.appConfig.agentOptions.useStickman ) {
 
                     discTexture = THREE.ImageUtils.loadTexture( "/images/sprites/disc.png" );
 
                 }
+
                 discTexture.minFilter = THREE.LinearFilter;
 
                 // uniforms
@@ -529,6 +596,7 @@ define( [
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
+
                     size: fp.appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
                     attributes: attributes, // r072
@@ -539,6 +607,7 @@ define( [
                     blending: THREE.NormalBlending,
                     transparent: true,
                     alphaTest: 0.5
+
                 } );
 
                 fp.scene.remove( this.particles );
@@ -577,5 +646,6 @@ define( [
         return FiercePlanet;
 
     }
+
 )
 

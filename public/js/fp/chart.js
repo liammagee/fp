@@ -10,13 +10,22 @@ define( [
 
         /**
          * Singleton Chart object.
-         * @type {Object}
+         * @type {FiercePlanet}
          */
         FiercePlanet.Chart = function( fp ) {
 
             this.chart = null;
 
-            this.setupChart = function ( ) {
+
+            /**
+             * Constructs the chart, using SmoothieChart.
+             *
+             * The default series are:
+             *  - the total of the agent population (blue)
+             *  - the average health of the population (red)
+             *  - the average value of the patches (green)
+             */
+            this.setupChart = function () {
 
                 var agentDiv = FiercePlanet.appConfig.agentOptions.initialPopulation * 2;
                 this.chart = new SmoothieChart( { maxValue: agentDiv, minValue: 0.0  } );
@@ -28,11 +37,18 @@ define( [
 
                     if ( FiercePlanet.AppState.runSimulation ) {
 
-                        agentPopulationSeries.append( new Date().getTime(), fp.agentNetwork.agents.length );
-                        agentHealthSeries.append( new Date().getTime(), agentDiv * jStat( _.map( fp.agentNetwork.agents, function( agent ) { return agent.health; } ) ).mean() / 100 );
-                        patchValuesSeries.append( new Date().getTime(), agentDiv * fp.patchNetwork.patchMeanValue );
+                        agentPopulationSeries.append( new Date().getTime(),
+                            fp.agentNetwork.agents.length
+                        );
+                        agentHealthSeries.append( new Date().getTime(),
+                            agentDiv * jStat( _.map( fp.agentNetwork.agents, function( agent ) { return agent.health; } ) ).mean() / 100
+                        );
+                        patchValuesSeries.append( new Date().getTime(),
+                            agentDiv * fp.patchNetwork.patchMeanValue
+                        );
 
                     }
+
                 }, 500 );
 
                 var chartCanvas = document.createElement( "canvas" );
@@ -49,16 +65,41 @@ define( [
                 this.updateGraphColors();
 
                 this.chart.streamTo( chartCanvas, 500 );
-                this.updateGraph();
+                this.toggleVisibility();
 
             };
 
-            this.updateGraph = function() {
 
-                $( "#chartCanvas-" + fp.container.id ).toggle( FiercePlanet.appConfig.displayOptions.chartShow );
+            /**
+             * Updates the visibility of the graph.
+             */
+            this.toggleVisibility = function() {
+
+                $( "#chartCanvas-" + fp.container.id ).toggle( fp.appConfig.displayOptions.chartShow );
 
             };
 
+
+
+            /**
+             * Adjusts the graph size if needed.
+             * @memberof fp
+             */
+            this.adjustGraphSize = function() {
+
+                if ( this.chart.seriesSet.length == 3 &&
+                    this.chart.options.maxValue <= fp.agentNetwork.agents.length ) {
+
+                    this.chart.options.maxValue *= 2;
+
+                }
+
+            };
+
+
+            /**
+             * Update the colors of the graph.
+             */
             this.updateGraphColors = function() {
 
                 var generateRGBA = function( colorValue, alpha ) {
@@ -87,11 +128,13 @@ define( [
                         fillStyle: generateRGBA( colorPop, 0.4 ),
                         lineWidth: 4
                     } );
+
                     _.extend( fp.chart.chart.seriesSet[ 1 ].options, {
                         strokeStyle: generateRGBA( colorHealth, 1.0 ),
                         fillStyle: generateRGBA( colorHealth, 0.4 ),
                         lineWidth: 4
                     } );
+
                     _.extend( fp.chart.chart.seriesSet[ 2 ].options, {
                         strokeStyle: generateRGBA( colorPatches, 1.0 ),
                         fillStyle: generateRGBA( colorPatches, 0.4 ),
@@ -100,11 +143,9 @@ define( [
 
                 }
 
-
             };
 
         };
-
 
         return FiercePlanet;
 
