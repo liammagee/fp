@@ -514,6 +514,7 @@ define(
                 fp.setupSky();
                 fp.setOutputHUD();
                 fp.setupChart();
+                fp.toggleHUDState(); // Add HUD
                 fp.toggleStatsState(); // Add stats
                 window.addEventListener( "resize", fp.onWindowResize, false );
                 fp.loadTerrain( callback ); // Load the terrain asynchronously
@@ -560,11 +561,15 @@ define(
              * @memberof fp
              */
             fp.simDefault = function() {
+
                 return {
+
                     counter: 0,
                     setup: function() { /* console.log( "Default sim set up" ); */ },
                     tick: function()  { /* console.log( "Default sim tick: " + (++ fp.counter )); */ }
+
                 };
+
             };
 
             /**
@@ -572,8 +577,10 @@ define(
              * @memberof fp
              */
             fp.updateSimState = function() {
+
                 if ( FiercePlanet.AppState.stepSimulation )
                     FiercePlanet.AppState.runSimulation = false;
+
             };
 
             /**
@@ -660,19 +667,30 @@ define(
              */
             fp.updateYear = function() {
 
-                if ( !FiercePlanet.AppState.runSimulation )
-                    return;
+                if ( FiercePlanet.AppState.runSimulation ) {
 
-                fp.timescale.frameCounter++;
-                if ( fp.timescale.frameCounter % fp.timescale.framesToYear === 0 ) {
-                    if ( !fp.timescale.terminate || fp.timescale.currentYear <  fp.timescale.endYear ) {
-                        fp.timescale.currentYear++;
-                        fp.setOutputHUD();
+                    fp.timescale.frameCounter++;
+
+                    if ( fp.timescale.frameCounter % fp.timescale.framesToYear === 0 ) {
+
+                        if ( !fp.timescale.terminate || fp.timescale.currentYear <  fp.timescale.endYear ) {
+
+                            fp.timescale.currentYear++;
+                            fp.setOutputHUD();
+
+                        }
+                        else {
+
+                            fp.endSim();
+
+                        }
+
                     }
-                    else {
-                        fp.endSim();
-                    }
+
                 }
+
+                // Update the output with the current year
+                fp.setOutputHUD();
 
             };
 
