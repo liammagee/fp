@@ -52,8 +52,8 @@ define( [
 
                 }
                 chartCanvas.setAttribute( "id", 'chartDiv' );
-                chartCanvas.setAttribute( "width", "400" );
-                chartCanvas.setAttribute( "height", "100" );
+                chartCanvas.setAttribute( "width", "400px" );
+                chartCanvas.setAttribute( "height", "100px" );
                 chartCanvas.setAttribute( "style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  " );
 
                 for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
@@ -109,10 +109,14 @@ define( [
              */
             this.adjustGraphSize = function() {
 
-                if ( this.chart.seriesSet.length == 3 &&
-                    this.chart.options.maxValue <= fp.agentNetwork.agents.length ) {
+                for ( var i = 0; i < this.chart.seriesSet.length; i++ ) {
 
-                    // this.chart.options.maxValue *= 2;
+                    var series = this.chart.seriesSet[ i ];
+                    if ( this.chart.options.maxValue <= series.timeSeries.maxValue ) {
+
+                        this.chart.options.maxValue *= 2;
+
+                    }
 
                 }
 
@@ -150,7 +154,7 @@ define( [
 
                         strokeStyle: generateRGBA( color, 1.0 ),
                         fillStyle: generateRGBA( color, 0.2 ),
-                        lineWidth: 4
+                        lineWidth: 2
 
                     } );
 

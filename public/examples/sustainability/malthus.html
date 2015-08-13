@@ -41,6 +41,8 @@
                             "patchesShow": true,
                             "lightHemisphereShow": false,
                             "lightDirectionalShow": true,
+                            "hudShow": true,
+                            "statsShow": false,
 
                             "cameraOverride": true,
                             "cameraX": 0,
@@ -98,7 +100,7 @@
                                 if ( _.isUndefined( patchValue ) )
                                     console.log( this.position.x, this.position.z, index );
                                 var availableYield = patchValue.value / agentsOnPatch;
-                                patchValue.updatePatchValue( - fp.appConfig.malthusOptions.patchConsumptionRate );
+                                patchValue.updatePatchValue( - fp.appConfig.malthusOptions.rateOfConsumption );
                                 this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
                                 this.health = (this.health > 100) ? 100 : this.health;
                             }
@@ -139,7 +141,7 @@
                                 var patch = fp.patchNetwork.patchValues[i];
                                 // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
                                 if ( patch.value < patch.initialValue ) { // Recover
-                                    patch.updatePatchValue( fp.appConfig.malthusOptions.patchRecoveryRate );
+                                    patch.updatePatchValue( fp.appConfig.malthusOptions.rateOfRecovery );
                                 }
                                 fp.patchNetwork.patchMeanValue += patch.value;
                             }
@@ -176,15 +178,15 @@
                     fp.appConfig.malthusOptions.maxChildren = 10;
                     fp.appConfig.malthusOptions.energyLoss = 0.1;
                     fp.appConfig.malthusOptions.energyGain = 2;
-                    fp.appConfig.malthusOptions.patchConsumptionRate = 0.2;
-                    fp.appConfig.malthusOptions.patchRecoveryRate = 0.005;
+                    fp.appConfig.malthusOptions.rateOfConsumption = 0.2;
+                    fp.appConfig.malthusOptions.rateOfRecovery = 0.005;
                     var malthusFolder = fp.gui.addFolder( "Malthusian Options" );
                     malthusFolder.add( fp.appConfig.malthusOptions, "reproductionChance", 0, 1).step( 0.01 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "maxChildren", 1, 10).step( 1 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "energyLoss", 0, 1).step( 0.05 );
                     malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 10).step( 0.1 );
-                    malthusFolder.add( fp.appConfig.malthusOptions, "patchConsumptionRate", 0, 1).step( 0.005 );
-                    malthusFolder.add( fp.appConfig.malthusOptions, "patchRecoveryRate", 0, 0.1).step( 0.005 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "rateOfConsumption", 0, 1).step( 0.005 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "rateOfRecovery", 0, 0.1).step( 0.005 );
                     fp.appController.Setup();
 
                 } );
@@ -194,6 +196,16 @@
         </script>
     </head>
     <body>
+        <div id="hudDiv" style="display: none">
+            <div id="output">
+                <div id="year">
+                    <b>Year:</b> <span id="yearValue"></span>
+                </div>
+                <div id="population">
+                     <b>Pop.:</b> <span id="populationValue"></span>
+                </div>
+            </div>
+        </div>
         <div id="container"></div>
     </body>
 </html>

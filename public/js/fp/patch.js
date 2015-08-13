@@ -14,8 +14,10 @@ define( [
          * @inner
          */
         FiercePlanet.Patch = function( val ) {
+
             this.value = val;
             this.initialValue = val;
+            this.minValue = 0.0001;
 
             /**
              * Updates the value of the patch.
@@ -23,8 +25,8 @@ define( [
              */
             this.updatePatchValue = function( amount ) {
                 var val = this.value;
-                if ( val + amount < 0.0001 )
-                    val = 0.0001;
+                if ( val + amount < this.minValue )
+                    val = this.minValue;
                 else if ( val + amount > 1.0 )
                     val = 1.0;
                 else
