@@ -34,8 +34,6 @@ Demonstrates a scene where individual "patches" of the terrain have a
 randomly distributed health property.
 
 
-
-
 As agents move over the terrain, patches lose health.
 
 
@@ -44,6 +42,11 @@ As agents move over the terrain, patches lose health.
 Patches regain health once the agent has moved.
 
 
+The graph in the lower left corner shows three "output" variables:
+
+ - The *total* agent population (in blue)
+ - The *average health* of the agent population (in green)
+ - The *average health* of the patches (in red)
 
 
 [Open in a new window](examples/sustainability/petri-dish.html)

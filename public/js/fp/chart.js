@@ -51,6 +51,7 @@ define( [
                     fp.container.insertBefore( chartCanvas, fp.container.firstChild );
 
                 }
+
                 chartCanvas.setAttribute( "id", 'chartDiv' );
                 chartCanvas.setAttribute( "width", "400px" );
                 chartCanvas.setAttribute( "height", "100px" );
