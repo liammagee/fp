@@ -388,44 +388,53 @@ define(
              */
             fp.setupWater = function() {
 
-                // Taken from Three.js examples, webgl_shaders_ocean.html
-                var parameters = {
-                    width: 2000,
-                    height: 2000,
-                    widthSegments: 250,
-                    heightSegments: 250,
-                    depth: 1500,
-                    param: 4,
-                    filterparam: 1
-                };
+                if ( !fp.appConfig.displayOptions.waterShow ) {
 
-                var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
-                waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
-                fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
-                    textureWidth: 512,
-                    textureHeight: 512,
-                    waterNormals: waterNormals,
-                    alpha:  1.0,
-                    //sunDirection: dirLight.position.normalize(),
-                    sunColor: 0xffffff,
-                    waterColor: 0x001e0f,
-                    distortionScale: 50.0,
-                } );
+                    return;
 
-                if ( !_.isUndefined( fp.waterMesh ) )
-                    fp.scene.remove( fp.waterMesh );
+                }
 
-                fp.waterMesh = new THREE.Mesh(
-                    new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
-                    fp.water.material
-                );
+                if ( _.isNull( fp.waterMesh ) ) {
 
-                fp.waterMesh.add( fp.water );
-                fp.waterMesh.rotation.x = - Math.PI * 0.5;
-                fp.waterMesh.position.y = -10;
+                    // Taken from Three.js examples, webgl_shaders_ocean.html
+                    var parameters = {
+                        width: 2000,
+                        height: 2000,
+                        widthSegments: 250,
+                        heightSegments: 250,
+                        depth: 1500,
+                        param: 4,
+                        filterparam: 1
+                    };
 
-                if ( fp.appConfig.displayOptions.waterShow )
-                    fp.scene.add( fp.waterMesh );
+                    var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
+                    waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+                    fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
+                        textureWidth: 512,
+                        textureHeight: 512,
+                        waterNormals: waterNormals,
+                        alpha:  1.0,
+                        //sunDirection: dirLight.position.normalize(),
+                        sunColor: 0xffffff,
+                        waterColor: 0x001e0f,
+                        distortionScale: 50.0,
+                    } );
+
+                    if ( !_.isUndefined( fp.waterMesh ) )
+                        fp.scene.remove( fp.waterMesh );
+
+                    fp.waterMesh = new THREE.Mesh(
+                        new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
+                        fp.water.material
+                    );
+
+                    fp.waterMesh.add( fp.water );
+                    fp.waterMesh.rotation.x = - Math.PI * 0.5;
+                    fp.waterMesh.position.y = -10;
+
+                }
+
+                fp.scene.add( fp.waterMesh );
 
             };
 
@@ -679,7 +688,7 @@ define(
              * @memberof fp
              */
             fp.updateWater = function() {
-                if ( !_.isUndefined( fp.water ) && !_.isUndefined( fp.water.material.uniforms.time ) ) {
+                if ( !_.isNull( fp.water ) && !_.isUndefined( fp.water.material.uniforms.time ) ) {
                     fp.water.material.uniforms.time.value += 1.0 / 60.0;
                     fp.water.render();
                 }
@@ -1245,10 +1254,20 @@ define(
              * @memberof fp
              */
             fp.toggleWaterState = function() {
-                if ( !fp.appConfig.displayOptions.waterShow )
+                if ( fp.appConfig.displayOptions.waterShow ) {
+
+                    if ( _.isNull( fp.waterMesh ) ) {
+
+                        fp.setupWater();
+
+                    }
+
+                }
+                else {
+
                     fp.scene.remove( fp.waterMesh );
-                else
-                    fp.scene.add( fp.waterMesh );
+
+                }
             };
 
             /**
