@@ -3,18 +3,17 @@
 
 # Sustainability and Sustainable Development
 
+The models below illustrate different interpretations of sustainability and sustainable development. They are intended to support an undergraduate sustainability course, and move from very basic models (such as the [Petri Dish](#petri-dish)) through to more complex models of conceptual arguments such as [Limits to Growth](#limits-to-growth), the [Green Revolution](#green-revolution) and the [Triple Bottom Line](#triple-bottom-line).
 
-These are a series of models designed to demonstrate different aspects
-and theories of urban sustainability.
 
 
 
 ## Preparatory Models
 
-### Petri Dish
+### Petri Dish {#petri-dish}
 
 
-*Description:* shows the interaction of agents and resources (embedded
+Shows the interaction of agents and resources (embedded
 within the spatial plane that these agents randomly traverse). The
 parameters of this simulation include a direct causal relationship
 between resource consumption by agents and the health of these
