@@ -3,17 +3,23 @@
 
 # Sustainability and Sustainable Development
 
-The models below illustrate different interpretations of sustainability and sustainable development. They are intended to support an undergraduate sustainability course, and move from very basic models (such as the [Petri Dish](#petri-dish)) through to more complex models of conceptual arguments such as [Limits to Growth](#limits-to-growth), the [Green Revolution](#green-revolution) and the [Triple Bottom Line](#triple-bottom-line).
+The models below illustrate different interpretations of sustainability and sustainable development. 
+
+They are designed to support an undergraduate sustainability course, and move from very basic models (such as the [Petri Dish](#petri-dish)) through to more complex models of conceptual arguments about sustainability. These include [Malthusian Population Growth](#malthus), [Limits to Growth](#limits-to-growth), the [Green Revolution](#green-revolution) and the [Triple Bottom Line](#triple-bottom-line).
 
 
 
 
-## Preparatory Models
+## Preparatory Models {#preparatory-models}
+
+The first three models are preparatory -- they introduce particular features that are later used in the sustainability models.
+
+
 
 ### Petri Dish {#petri-dish}
 
 
-Shows the interaction of agents and resources (embedded
+This model shows the interaction of agents and resources (embedded
 within the spatial plane that these agents randomly traverse). The
 parameters of this simulation include a direct causal relationship
 between resource consumption by agents and the health of these
@@ -47,11 +53,11 @@ Patches regain health once the agent has moved.
 
 
 
-### Terrain
+### Terrain {#terrain}
 
 
 
-*Description:* as above but including the vagaries of terrain (water and
+As above, but including the vagaries of terrain (water and
 topographical variation).
 
 
@@ -64,11 +70,11 @@ topographical variation).
 
 
 
-### Settlements
+### Settlements {#settlements}
 
 
 
-*Description:* again including all the assumptions of the previous two
+This model again including all the assumptions of the previous two
 scenarios but introducing settlement patterns and the path dependency
 (in terms of agent behaviour) that this implies.
 
@@ -82,11 +88,11 @@ scenarios but introducing settlement patterns and the path dependency
 
 ## Modelling Sustainability
 
-### Malthusian Populations
+### Malthusian Populations {#malthus}
 
 
 
-*Description:* this scenario again builds on the previous one by
+This scenario again builds on the previous one by
 introducing the dynamic of population growth as directly connected to
 resource consumption and availability.
 
@@ -96,11 +102,11 @@ resource consumption and availability.
 
 
 
-### Limits to Growth (the Club of Rome)
+### Limits to Growth {#limits-to-growth}
 
 
 
-*Description:* this scenario introduces a simplified suite of
+This model introduces a simplified set of
 assumptions from the 1972 (rereleased in 2004) report of the Club of
 Rome to again demonstrate the concept of limits to growth.
 
@@ -111,10 +117,10 @@ Rome to again demonstrate the concept of limits to growth.
 
 
 
-### The Green Revolution
+### The Green Revolution {#green-revolution}
 
 
-*Description:* builds upon (and critiques) the classic Malthusian
+This model builds upon (and critiques) the classic Malthusian
 scenario by acknowledging the role of technological advances in
 increasing both the effectiveness and efficiency of resource utilisation
 and the availability of new resource sources.
@@ -132,11 +138,11 @@ and the availability of new resource sources.
 
 
 
-### Triple Bottom Line
+### Triple Bottom Line {#triple-bottom-line}
 
 
 
-*Description:* further applies the assumptions of the concept of TBL
+This model further applies the assumptions of the concept of TBL
 accounting.
 
 
