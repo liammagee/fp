@@ -1382,13 +1382,16 @@ define(
              * @memberof fp
              */
             fp.toggleStatsState = function() {
+
                 if ( fp.appConfig.displayOptions.statsShow && fp.stats === null ) {
                     fp.stats = new Stats();
                     fp.stats.domElement.style.position = "absolute";
                     fp.stats.domElement.style.top = "0px";
                     fp.container.appendChild( fp.stats.domElement );
                 }
+
                 $( "#stats" ).toggle( fp.appConfig.displayOptions.statsShow );
+
             };
 
             /**
