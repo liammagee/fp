@@ -125,14 +125,11 @@ define( [
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
-                var patchAttributes = [ 'height', 'trail', 'patch' ];
-
                 var uniforms = fp.terrain.createUniforms();
 
                 var richTerrainMaterial = new THREE.ShaderMaterial( {
 
                     uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
-                    attributes: patchAttributes,
                     vertexShader:   FiercePlanet.ShaderUtils.phongShaderVertex(
 
                         FiercePlanet.ShaderUtils.terrainVertexShaderParams(),

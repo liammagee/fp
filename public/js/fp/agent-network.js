@@ -592,14 +592,11 @@ define( [
 
                 };
 
-                var attributes = [ 'alpha', 'color' ];
-
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
 
                     size: fp.appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
-                    attributes: attributes, // r072
                     vertexShader: FiercePlanet.ShaderUtils.agentVertexShader(),
                     fragmentShader: FiercePlanet.ShaderUtils.agentFragmentShader(),
                     sizeAttenuation: true,

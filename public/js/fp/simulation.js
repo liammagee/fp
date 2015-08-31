@@ -287,9 +287,9 @@ define(
                 fp.renderer.gammaInput = true;
                 fp.renderer.gammaOutput = true;
 
-                fp.renderer.shadowMapEnabled = true;
-                fp.renderer.shadowMapType = THREE.PCFSoftShadowMap;
-                fp.renderer.shadowMapCullFace = THREE.CullFaceBack;
+                fp.renderer.shadowMap.enabled = true;
+                fp.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                fp.renderer.shadowMap.cullFace = THREE.CullFaceBack;
 
                 fp.renderer.setClearColor( fp.appConfig.colorOptions.colorNightBackground, 1 );
                 fp.onWindowResize();

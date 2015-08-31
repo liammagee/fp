@@ -204,7 +204,6 @@ define(
                 fp.terrain.richTerrainMaterial = new THREE.ShaderMaterial( {
 
                     uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
-                    attributes: terrainAttributes,
                     vertexShader:   FiercePlanet.ShaderUtils.phongShaderVertex(
 
                         FiercePlanet.ShaderUtils.terrainVertexShaderParams(),

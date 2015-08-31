@@ -63,12 +63,24 @@ gulp.task( 'clean', function() {
  * Converts ES6 to ES5
  */
 gulp.task( 'babel-shader', [ 'clean' ], function() {
+
+    return gulp.src( fpShaderSrc )
+        // .pipe( sourcemaps.init() )
+        .pipe( babel( ) )
+        .pipe( concat( fpShaderCompiled ) )
+        // .pipe( sourcemaps.write( '.' ) )
+        .pipe( gulp.dest( fpSrc ) );
+
+    // WITH SOURCEMAPS - NOT WORKING CURRENTLY
+    /*
     return gulp.src( fpShaderSrc )
         .pipe( sourcemaps.init() )
         .pipe( babel( ) )
         .pipe( concat( fpShaderCompiled ) )
         .pipe( sourcemaps.write( '.' ) )
         .pipe( gulp.dest( fpSrc ) );
+    */
+
 } );
 
 
