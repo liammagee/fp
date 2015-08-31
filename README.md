@@ -1,13 +1,16 @@
+
+
 # fp
 
-
-Fierce Planet
+[Fierce Planet](http://www.fierce-planet.com) is an open source toolkit for developing agent-based models, with a particular focus on urban and social simulations.
 
 For more information, visit:
 
  - [Fierce Planet](http://www.fierce-planet.com)
  - [Technical docs](http://www.fierce-planet.com/demo)
  - [GitHub](https://github.com/liammagee/fp.git)
+
+
 
 ## Generating JavaDocs
 
