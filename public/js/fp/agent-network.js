@@ -416,6 +416,7 @@ define( [
                 }
 
                 var agents = this.agents;
+
                 if ( fp.appConfig.agentOptions.shuffle ) {
 
                     agents = _.shuffle( this.agents );
@@ -427,15 +428,19 @@ define( [
                     var agent = agents[ i ];
 
                     // Depending on the speed of the simulation, determine whether this agent needs to move
-                    var timeToMove = Math.floor( ( i / this.agents.length ) * fp.timescale.framesToYear );
-                    var interval = fp.timescale.frameCounter % fp.timescale.framesToYear;
+                    var speed = fp.timescale.framesToYear;
+                    var timeToMove = Math.floor( ( i / this.agents.length ) * speed );
+                    var interval = fp.timescale.frameCounter % speed;
 
                     if ( timeToMove === interval ) {
+                    // if ( true ) {
 
                         var underConstruction = agent.build() || agent.buildRoad();
 
                         if ( underConstruction ) {
+
                             continue;
+
                         }
 
                         // No water around or home built? Move on...
@@ -453,10 +458,11 @@ define( [
                         }
 
                         // Then add the position to this agent's trail
-                        var ai = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
-                        if ( ai > -1 ) {
+                        var agentIndex = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
 
-                            fp.trailNetwork.trails[ ai ] = ( fp.trailNetwork.trails[ ai ] ) ? fp.trailNetwork.trails[ ai ] + 1 : 1;
+                        if ( agentIndex > -1 ) {
+
+                            fp.trailNetwork.trails[ agentIndex ] = ( fp.trailNetwork.trails[ agentIndex ] ) ? fp.trailNetwork.trails[ agentIndex ] + 1 : 1;
 
                         }
 

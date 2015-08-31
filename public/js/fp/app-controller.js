@@ -160,6 +160,7 @@ define( [
 
                 if ( fp.timescale.framesToYear > fp.timescale.MIN_FRAMES_TO_YEAR )
                     fp.timescale.framesToYear = Math.ceil( fp.timescale.framesToYear / 2 );
+
                 console.log( "Speed: " + fp.timescale.framesToYear );
 
             };
@@ -171,6 +172,7 @@ define( [
 
                 if ( fp.timescale.framesToYear < fp.timescale.MAX_FRAMES_TO_YEAR )
                     fp.timescale.framesToYear *= 2;
+
                 console.log( "Speed: " + fp.timescale.framesToYear );
 
             };

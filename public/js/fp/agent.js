@@ -387,7 +387,10 @@ define( [
              * @memberof Agent
              */
             this.move = function() {
-                var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
+
+                // var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
+                var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / 16 );
+
                 // Multiply relative to patch size
                 var factor = fp.appConfig.terrainOptions.multiplier;
                 if ( fp.appConfig.agentOptions.movementRelativeToPatch ) {

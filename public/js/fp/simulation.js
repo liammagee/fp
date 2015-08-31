@@ -553,6 +553,7 @@ define(
             fp.setOutputHUD = function() {
 
                 $( "#yearValue" ).html( fp.timescale.currentYear );
+                $( "#speedValue" ).html( fp.timescale.framesToYear );
                 $( "#populationValue" ).html( fp.agentNetwork.agents.length );
 
             };
