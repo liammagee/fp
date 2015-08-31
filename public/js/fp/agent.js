@@ -16,11 +16,19 @@ define( [
         FiercePlanet.Agent = function( fp ) {
 
             /**
+             * Updates the ticks and age.
              * @memberof Agent
              */
             this.updateTick = function() {
+
                 this.ticks++;
-                this.age++;
+
+                if ( this.ticks % fp.timescale.ticksToYear == 0 ) {
+
+                    this.age++;
+
+                }
+
             };
 
             /**
@@ -152,10 +160,10 @@ define( [
                 var weight = 1.0, weightForRoadIsSet = false;
 
                 // Pre-calculate speed and current angle
-                var newSpeed = Math.random() * this.speed / 2,
-                    angle = Math.atan2( zd, xd ),
-                    hyp = Math.sqrt( xd * xd + zd * zd ),
-                    divisor = ( directionCount - 2 ) / 2;
+                var newSpeed = Math.random() * this.speed / 2;
+                var angle = Math.atan2( zd, xd );
+                var hyp = Math.sqrt( xd * xd + zd * zd );
+                var divisor = ( directionCount - 2 ) / 2;
 
                 for ( var i = 0; i < directionCount; i++ ) {
                     if ( ( i < 8 && ! this.grounded ) || ( i >= 8 && this.grounded ) )
@@ -388,26 +396,35 @@ define( [
              */
             this.move = function() {
 
-                // var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / fp.timescale.framesToYear );
-                var directionAtSpeed = this.direction.clone().multiplyScalar( 16 / 16 );
+                var directionAtSpeed = this.direction.clone();
 
                 // Multiply relative to patch size
                 var factor = fp.appConfig.terrainOptions.multiplier;
                 if ( fp.appConfig.agentOptions.movementRelativeToPatch ) {
+
                     factor *= fp.appConfig.terrainOptions.patchSize *
                                 ( fp.appConfig.agentOptions.movementInPatch / 100 );
+
                 }
+
                 directionAtSpeed.x *= factor;
                 directionAtSpeed.z *= factor;
                 var newPosition = this.position.clone().add( directionAtSpeed );
                 var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.gridExtent / 2;
+
                 // Simple check to ensure we're within terrain bounds
                 if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
+
                     this.setDirection( this.randomDirection() );
+                    this.move();
+
                 }
                 else {
+
                     this.position = newPosition;
+
                 }
+
             };
 
             /**
@@ -437,15 +454,48 @@ define( [
              * @memberof Agent
              */
             this.randomDirection = function() {
-                if ( fp.appConfig.agentOptions.movementStrictlyIntercardinal ) {
-                    return new THREE.Vector3( this.speed * ( Math.random() - 0.5 ), 0, this.speed * ( Math.random() - 0.5 ) );
+
+                var calcNewPercent = function( percent ) {
+                    // Divide speed by 100
+                    var r = Math.random();
+                    // Adjust random based on current percent - more likely to
+                    // increase for low values, decrease for high values
+                    var adjustedR = ( Math.pow( r, percent) - 0.5 ) * 2;
+                    // Distribute the random value between 0.5 and 2 (with equal likelihood of 1)
+                    // var adjust = 1 + ( 0.5 % adjustedR ) * 2 - ( adjustedR % 0.5 ) * ( 1 + ( 0.5 % adjustedR ) * 2 );
+                    // Distribute the random value between 0 and 2
+                    var adjust = 1.0 + adjustedR;
+                    // Multiply current percent with adjustment
+                    var newPercent = adjust * percent;
+                    // Clamp new percentage between 0 and 1
+                    newPercent = ( newPercent < 0 ) ? 0 : ( newPercent > 1 ? 1 : newPercent );
+                    return newPercent;
+                };
+
+                var speed = this.speed;
+                var percent = speed / 100;
+                var newPercent = percent; //calcNewPercent( percent );
+                // var newPercent = calcNewPercent( percent );
+                var patchSize = fp.appConfig.terrainOptions.patchSize;
+                // Calculute a new patch speed
+                var patchSpeed = patchSize * newPercent;
+                this.speed = newPercent * 100;
+
+                if ( ! fp.appConfig.agentOptions.movementStrictlyIntercardinal ) {
+
+                    var randomX = ( Math.random() - 0.5 ) * 2;
+                    var randomZ = ( Math.random() - 0.5 ) * 2;
+                    return new THREE.Vector3( patchSpeed * ( randomX ), 0, patchSpeed * ( randomZ ) );
+
                 }
                 else {
+
                     var directions = this.compassDirections();
                     var index = Math.floor( Math.random() * 8 );
                     var pos = directions[ index ];
-                    var vec = new THREE.Vector3( this.speed * pos[ 0 ], 0, this.speed * pos[ 1 ] );
+                    var vec = new THREE.Vector3( patchSpeed * pos[ 0 ], 0, patchSpeed * pos[ 1 ] );
                     return vec;
+
                 }
             };
 
@@ -629,6 +679,7 @@ define( [
                     width = Math.ceil( ( ( ( 1 / Math.log( distanceFromInitialPoint + 10 ) ) ) * Math.log( distanceFromEnd ) ) * fp.appConfig.roadOptions.roadWidth );
                 return fp.roadNetwork.addRoad( this.position, endPoint, width );
             };
+
             this.vertex = null;
             this.position = null;
             this.direction = null;

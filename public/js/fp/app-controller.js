@@ -26,7 +26,7 @@ define( [
                 fp.roadNetwork.roads = {};
 
                 fp.timescale.currentYear = fp.timescale.initialYear;
-                fp.updateYear();
+                fp.updateTick();
                 fp.timescale.frameCounter = 0;
                 if ( fp.trailNetwork.trailMeshes )
                     fp.trailNetwork.trailMeshes.forEach( function( trail ) { scene.remove( trail ); } );
@@ -158,10 +158,13 @@ define( [
              */
             this.SpeedUp = function() {
 
-                if ( fp.timescale.framesToYear > fp.timescale.MIN_FRAMES_TO_YEAR )
-                    fp.timescale.framesToYear = Math.ceil( fp.timescale.framesToYear / 2 );
+                if ( fp.timescale.framesToTick > fp.timescale.MIN_FRAMES_TO_TICK ) {
 
-                console.log( "Speed: " + fp.timescale.framesToYear );
+                    fp.timescale.framesToTick -= 1;
+
+                }
+
+                console.log( "Speed: " + fp.timescale.framesToTick );
 
             };
 
@@ -170,10 +173,13 @@ define( [
              */
             this.SlowDown = function() {
 
-                if ( fp.timescale.framesToYear < fp.timescale.MAX_FRAMES_TO_YEAR )
-                    fp.timescale.framesToYear *= 2;
+                if ( fp.timescale.framesToTick < fp.timescale.MAX_FRAMES_TO_TICK ) {
 
-                console.log( "Speed: " + fp.timescale.framesToYear );
+                    fp.timescale.framesToTick += 1;
+
+                }
+
+                console.log( "Speed: " + fp.timescale.framesToTick );
 
             };
 

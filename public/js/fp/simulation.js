@@ -553,7 +553,7 @@ define(
             fp.setOutputHUD = function() {
 
                 $( "#yearValue" ).html( fp.timescale.currentYear );
-                $( "#speedValue" ).html( fp.timescale.framesToYear );
+                $( "#speedValue" ).html( fp.timescale.framesToTick );
                 $( "#populationValue" ).html( fp.agentNetwork.agents.length );
 
             };
@@ -630,30 +630,55 @@ define(
                 if ( FiercePlanet.AppState.halt )
                     return;
 
-                // Must call this first!
-                fp.patchNetwork.updatePatchAgents();
+                // Update simulation-specific variables
+                fp.toTick();
 
-                if ( FiercePlanet.AppState.runSimulation )
-                    fp.sim.tick.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-
-                fp.agentNetwork.updateAgentNetwork();
-                fp.buildingNetwork.updateBuildings();
-                fp.patchNetwork.updatePatchValues();
-                fp.trailNetwork.updateTrails();
-                fp.terrain.updateTerrain();
-                fp.pathNetwork.updatePath();
-                fp.updateYear();
+                // Update year and state
+                fp.updateTick();
                 fp.updateSimState();
+
                 if ( !_.isNull( fp.chart ) )
                     fp.chart.adjustGraphSize();
-                fp.updateWater();
 
                 fp.updateStats();
                 fp.updateControls();
                 fp.updateCamera();
                 fp.updateKeyboard();
+                fp.updateWater();
+
                 requestAnimationFrame( fp.animate );
+
+                // Render
                 fp.renderer.render( fp.scene, fp.camera );
+
+            };
+
+            /**
+             * Runs the simulation-specific instructions
+             */
+            fp.toTick = function() {
+
+                if ( FiercePlanet.AppState.runSimulation ) {
+
+                    if ( fp.timescale.frameCounter % fp.timescale.framesToTick === 0 ) {
+
+                        // Must call this first!
+                        fp.patchNetwork.updatePatchAgents();
+
+                        fp.sim.tick.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+
+                        fp.agentNetwork.updateAgentNetwork();
+
+                        fp.buildingNetwork.updateBuildings();
+                        fp.patchNetwork.updatePatchValues();
+                        fp.trailNetwork.updateTrails();
+                        fp.terrain.updateTerrain();
+
+                        fp.pathNetwork.updatePath();
+
+                    }
+
+                }
 
             };
 
@@ -774,15 +799,15 @@ define(
              * Updates the year of the simulation.
              * @memberof fp
              */
-            fp.updateYear = function() {
+            fp.updateTick = function() {
 
                 if ( FiercePlanet.AppState.runSimulation ) {
 
                     fp.timescale.frameCounter++;
 
-                    if ( fp.timescale.frameCounter % fp.timescale.framesToYear === 0 ) {
+                    if ( fp.timescale.frameCounter % ( fp.timescale.framesToTick * fp.timescale.ticksToYear ) === 0 ) {
 
-                        if ( !fp.timescale.terminate || fp.timescale.currentYear <  fp.timescale.endYear ) {
+                        if ( !fp.timescale.terminate || fp.timescale.currentYear < fp.timescale.endYear ) {
 
                             fp.timescale.currentYear++;
                             fp.setOutputHUD();
@@ -1606,7 +1631,7 @@ define(
                     agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
                     agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
                     agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
-                    agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 10 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 100 ).step( 1 );
                     agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1 ).step( 0.05 );
                     agentsFolder.add( fp.appConfig.agentOptions, "movementRelativeToPatch" );
                     agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100 ).step( 1 );
@@ -1815,8 +1840,10 @@ define(
 
                 // Need to create the GUI to seed the parameters first.
                 if ( !fp.appConfig.displayOptions.guiShow ) {
+
                     fp.gui.destroy();
                     return;
+
                 }
             };
         }

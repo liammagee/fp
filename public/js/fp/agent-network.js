@@ -427,53 +427,44 @@ define( [
 
                     var agent = agents[ i ];
 
-                    // Depending on the speed of the simulation, determine whether this agent needs to move
-                    var speed = fp.timescale.framesToYear;
-                    var timeToMove = Math.floor( ( i / this.agents.length ) * speed );
-                    var interval = fp.timescale.frameCounter % speed;
+                    var underConstruction = agent.build() || agent.buildRoad();
 
-                    if ( timeToMove === interval ) {
-                    // if ( true ) {
+                    if ( underConstruction ) {
 
-                        var underConstruction = agent.build() || agent.buildRoad();
+                        continue;
 
-                        if ( underConstruction ) {
-
-                            continue;
-
-                        }
-
-                        // No water around or home built? Move on...
-                        agent.evaluateDirection();
-
-                        // Enlist the agent in available networks
-                        if ( fp.appConfig.agentOptions.establishLinks ) {
-
-                            for ( var j = this.networks.length - 1; j >= 0; j-- ) {
-
-                                this.networks[ j ].enlistAgent( agent );
-
-                            }
-
-                        }
-
-                        // Then add the position to this agent's trail
-                        var agentIndex = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
-
-                        if ( agentIndex > -1 ) {
-
-                            fp.trailNetwork.trails[ agentIndex ] = ( fp.trailNetwork.trails[ agentIndex ] ) ? fp.trailNetwork.trails[ agentIndex ] + 1 : 1;
-
-                        }
-
-                        if ( agent.grounded ) {
-
-                            agent.perturbDirection();
-
-                        }
-
-                        agent.updateTick();
                     }
+
+                    // No water around or home built? Move on...
+                    agent.evaluateDirection();
+
+                    // Enlist the agent in available networks
+                    if ( fp.appConfig.agentOptions.establishLinks ) {
+
+                        for ( var j = this.networks.length - 1; j >= 0; j-- ) {
+
+                            this.networks[ j ].enlistAgent( agent );
+
+                        }
+
+                    }
+
+                    // Then add the position to this agent's trail
+                    var agentIndex = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
+
+                    if ( agentIndex > -1 ) {
+
+                        fp.trailNetwork.trails[ agentIndex ] = ( fp.trailNetwork.trails[ agentIndex ] ) ? fp.trailNetwork.trails[ agentIndex ] + 1 : 1;
+
+                    }
+
+                    if ( agent.grounded ) {
+
+                        agent.perturbDirection();
+
+                    }
+
+                    agent.updateTick();
 
                     // Move the agent
                     agent.move();

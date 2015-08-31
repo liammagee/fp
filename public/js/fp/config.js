@@ -91,7 +91,7 @@ define( [
             size: 40,
             terrainOffset: 20,
             shuffle: false,
-            initialSpeed: 2,
+            initialSpeed: 20,
             initialPerturbBy: 0.05,
             movementRelativeToPatch: false,
             movementInPatch: 1,
