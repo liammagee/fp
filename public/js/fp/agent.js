@@ -419,6 +419,13 @@ define( [
                     this.move();
 
                 }
+                else if ( fp.getHeight( newPosition.x, newPosition.z ) === 0 &&
+                          fp.appConfig.agentOptions.noWater ) {
+
+                    this.setDirection( this.randomDirection() );
+                    this.move();
+
+                }
                 else {
 
                     this.position = newPosition;

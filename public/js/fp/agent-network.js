@@ -436,7 +436,11 @@ define( [
                     }
 
                     // No water around or home built? Move on...
-                    agent.evaluateDirection();
+                    if ( fp.timescale.frameCounter % ( fp.timescale.ticksToYear * fp.timescale.framesToTick ) === 0 ) {
+
+                        agent.evaluateDirection();
+
+                    }
 
                     // Enlist the agent in available networks
                     if ( fp.appConfig.agentOptions.establishLinks ) {
