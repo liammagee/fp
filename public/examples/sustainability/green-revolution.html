@@ -95,7 +95,7 @@
                     currentFoodEfficiency: 0,
 
                     getCurrentResources: function() {
-                        
+
                         return _.reduce( fp.patchNetwork.patchValues, function( memo, patch ) { return memo + patch.value; }, 0 );
 
                     },
@@ -243,7 +243,7 @@
                                  this.gender == "f" &&
                                  Math.random() * this.health > 50 &&
                                  this.age > 15 && this.age < 50 &&
-                                 this.health > 50 && 
+                                 this.health > 50 &&
                                  sim.getFoodYield() > 0.0001)  {
 
 
@@ -422,6 +422,9 @@
             <div id="output">
                 <div id="year">
                     <b>Year:</b> <span id="yearValue"></span>
+                </div>
+                <div id="speed">
+                    <b>Speed:</b> <span id="speedValue"></span>
                 </div>
                 <div id="population">
                      <b>Pop.:</b> <span id="populationValue"></span>
