@@ -631,14 +631,17 @@ define(
                     return;
 
                 // Update simulation-specific variables
-                fp.toTick();
+                fp.doTick();
 
                 // Update year and state
                 fp.updateTick();
                 fp.updateSimState();
 
-                if ( !_.isNull( fp.chart ) )
+                if ( !_.isNull( fp.chart ) ) {
+
                     fp.chart.adjustGraphSize();
+
+                }
 
                 fp.updateStats();
                 fp.updateControls();
@@ -656,7 +659,7 @@ define(
             /**
              * Runs the simulation-specific instructions
              */
-            fp.toTick = function() {
+            fp.doTick = function() {
 
                 if ( FiercePlanet.AppState.runSimulation ) {
 
