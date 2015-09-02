@@ -634,7 +634,7 @@ define(
                 fp.doTick();
 
                 // Update year and state
-                fp.updateTick();
+                fp.updateTime();
                 fp.updateSimState();
 
                 if ( !_.isNull( fp.chart ) ) {
@@ -802,7 +802,7 @@ define(
              * Updates the year of the simulation.
              * @memberof fp
              */
-            fp.updateTick = function() {
+            fp.updateTime = function() {
 
                 if ( FiercePlanet.AppState.runSimulation ) {
 
