@@ -346,8 +346,11 @@ define(
                 fp.lightDirectional.shadowBias = -0.0001;
                 //fp.lightDirectional.shadowBias = -0.05;
                 // fp.lightDirectional.shadowCameraVisible = true; // for debugging
-                if ( fp.appConfig.displayOptions.lightDirectionalShow )
+                if ( fp.appConfig.displayOptions.lightDirectionalShow ) {
+
                     fp.scene.add( fp.lightDirectional );
+
+                }
 
             };
 
@@ -1032,15 +1035,22 @@ define(
                         }
                     }
                 }
+
                 if ( localBuildings.length > 0 ) {
+
                     var localHeights = jStat( _.map( localBuildings, function( building ) {return building.maxHeight; } ) );
                     var meanLocalHeights = localHeights.mean();
 
                     // Take the difference between the local and total heights - return that difference as a multiple of total standard deviations
                     return ( meanLocalHeights - meanHeights ) / stdevHeights;
+
                 }
-                else
+                else {
+
                     return 0;
+
+                }
+
             };
 
             /**
@@ -1114,26 +1124,41 @@ define(
             };
 
             /**
+             * Response to keyboard shortcut strokes.
              * @memberof fp
              */
             fp.updateKeyboard = function() {
+
                 if ( fp.keyboard.pressed( "V" ) ) {
+
                     fp.appConfig.displayOptions.firstPersonView = !fp.appConfig.displayOptions.firstPersonView;
                     fp.resetControls();
+
                 }
-                if ( fp.appConfig.displayOptions.firstPersonView )
+                if ( fp.appConfig.displayOptions.firstPersonView ) {
+
                     return;
+
+                }
                 if ( fp.keyboard.pressed( "S" ) ) {
+
                     fp.appController.Setup();
+
                 }
                 else if ( fp.keyboard.pressed( "R" ) ) {
+
                     fp.appController.Run();
+
                 }
                 else if ( fp.keyboard.pressed( "U" ) ) {
+
                     fp.appController.SpeedUp();
+
                 }
                 else if ( fp.keyboard.pressed( "D" ) ) {
+
                     fp.appController.SlowDown();
+
                 }
                 else if ( fp.keyboard.pressed( "B" ) ) {
                     fp.appConfig.displayOptions.buildingsShow = !fp.appConfig.displayOptions.buildingsShow;
@@ -1144,48 +1169,70 @@ define(
                     fp.toggleRoadState();
                 }
                 else if ( fp.keyboard.pressed( "M" ) ) {
+
                     fp.appConfig.displayOptions.waterShow = !fp.appConfig.displayOptions.waterShow;
                     fp.toggleWaterState();
+
                 }
                 else if ( fp.keyboard.pressed( "N" ) ) {
+
                     fp.appConfig.displayOptions.networkShow = !fp.appConfig.displayOptions.networkShow;
                     fp.toggleAgentNetwork();
+
                 }
                 else if ( fp.keyboard.pressed( "P" ) ) {
+
                     fp.appConfig.displayOptions.patchesShow = !fp.appConfig.displayOptions.patchesShow;
                     fp.togglePatchesState();
+
                 }
                 else if ( fp.keyboard.pressed( "T" ) ) {
+
                     fp.appConfig.displayOptions.trailsShow = !fp.appConfig.displayOptions.trailsShow;
                     fp.toggleTrailState();
+
                 }
                 else if ( fp.keyboard.pressed( "C" ) ) {
+
                     fp.appConfig.displayOptions.cursorShow = !fp.appConfig.displayOptions.cursorShow;
                     fp.removeCursor();
+
                 }
                 else if ( fp.keyboard.pressed( "A" ) ) {
+
                     fp.appConfig.displayOptions.statsShow = !fp.appConfig.displayOptions.statsShow;
                     fp.toggleStatsState();
+
                 }
                 else if ( fp.keyboard.pressed( "W" ) ) {
+
                     fp.appConfig.displayOptions.wireframeShow = !fp.appConfig.displayOptions.wireframeShow;
                     fp.toggleWireframeState();
+
                 }
                 else if ( fp.keyboard.pressed( "Y" ) ) {
+
                     fp.appConfig.displayOptions.dayShow = !fp.appConfig.displayOptions.dayShow;
                     fp.toggleDayNight();
+
                 }
                 else if ( fp.keyboard.pressed( "G" ) ) {
+
                     fp.appConfig.displayOptions.chartShow = !fp.appConfig.displayOptions.chartShow;
                     fp.toggleChart();
+
                 }
                 else if ( fp.keyboard.pressed( "X" ) ) {
+
                     fp.appConfig.displayOptions.pathsShow = !fp.appConfig.displayOptions.pathsShow;
                     fp.togglePathsState();
+
                 }
                 else if ( fp.keyboard.pressed( "E" ) ) {
+
                     fp.appConfig.displayOptions.terrainShow = !fp.appConfig.displayOptions.terrainShow;
                     fp.toggleTerrainPlane();
+
                 }
             };
 
@@ -1405,14 +1452,29 @@ define(
              * @memberof fp
              */
             fp.toggleLights = function() {
-                if ( !fp.appConfig.displayOptions.lightHemisphereShow )
+
+                if ( !fp.appConfig.displayOptions.lightHemisphereShow ) {
+
                     fp.scene.remove( fp.lightHemisphere );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.lightHemisphere );
-                if ( !fp.appConfig.displayOptions.lightDirectionalShow )
+
+                }
+
+                if ( !fp.appConfig.displayOptions.lightDirectionalShow ) {
+
                     fp.scene.remove( fp.lightDirectional );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.lightDirectional );
+
+                }
+
             };
 
 
