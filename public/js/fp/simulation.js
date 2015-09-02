@@ -627,8 +627,11 @@ define(
              */
             fp.animate = function() {
 
-                if ( FiercePlanet.AppState.halt )
+                if ( FiercePlanet.AppState.halt ) {
+
                     return;
+
+                }
 
                 // Update simulation-specific variables
                 fp.doTick();
@@ -1546,9 +1549,14 @@ define(
                     // Toggle the patches, in case they need to be shown now
                     fp.togglePatchesState();
 
-                    fp.animate(); // Kick off the animation loop
-                    if ( _.isFunction( callback ) )
+                    // Kick off the animation loop
+                    fp.animate();
+
+                    if ( _.isFunction( callback ) ) {
+
                         callback(); // Run the callback
+
+                    }
 
                } );
 
