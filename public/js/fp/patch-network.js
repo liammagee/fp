@@ -168,11 +168,6 @@ define( [
                 this.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 this.plane.castShadow = true;
                 this.plane.receiveShadow = true;
-                //this.updateTerrainPatchAttributes();
-
-                // Toggle patches state
-                //this.togglePatchesState();
-                // fp.scene.add( this.plane );
 
             };
 
