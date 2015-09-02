@@ -597,27 +597,43 @@ define(
              * Updates terrain.
              */
             this.updateTerrain = function() {
+
                 if ( this.wrappingState === 1 ) {
+
                     fp.appConfig.displayOptions.waterShow = false;
+
                     if ( fp.terrain.wrappedPercent < 100 ) {
+
                         fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
                         fp.terrain.wrappedPercent += this.wrappingState;
+
                     }
                     else {
+
                         this.wrappingState = 0;
+
                     }
+
                 }
                 else if ( this.wrappingState === -1 ) {
+
                     if ( fp.terrain.wrappedPercent > 0 ) {
+
                         fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
                         fp.terrain.wrappedPercent += this.wrappingState;
+
                     }
                     else {
+
                         fp.appConfig.displayOptions.waterShow = fp.appConfig.displayOptions.waterShow;
                         this.wrappingState = 0;
+
                     }
+
                 }
+
                 fp.toggleWaterState();
+
             };
         };
 

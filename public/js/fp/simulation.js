@@ -1325,7 +1325,9 @@ define(
              * @memberof fp
              */
             fp.togglePatchesState = function() {
+
                 fp.patchNetwork.togglePatchesState();
+
             };
 
 
@@ -1539,12 +1541,16 @@ define(
                 var terrainLoader = new THREE.TerrainLoader();
                 var terrainFile = FiercePlanet.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ]
 
-                if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" )
+                if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" ) {
+
                     terrainFile = fp.terrain.terrainMapFile;
 
-                terrainLoader.load( terrainFile, function( data ) {
+                }
 
-                    fp.terrain.initTerrain( data );
+                // Load the terrain, with a callback for terrain data
+                terrainLoader.load( terrainFile, function( terrainData ) {
+
+                    fp.terrain.initTerrain( terrainData );
 
                     // Toggle the patches, in case they need to be shown now
                     fp.togglePatchesState();
