@@ -26,10 +26,17 @@ define( [
                 fp.roadNetwork.roads = {};
 
                 fp.timescale.currentYear = fp.timescale.initialYear;
-                fp.updateTick();
+                fp.updateTime();
                 fp.timescale.frameCounter = 0;
-                if ( fp.trailNetwork.trailMeshes )
-                    fp.trailNetwork.trailMeshes.forEach( function( trail ) { scene.remove( trail ); } );
+                if ( fp.trailNetwork.trailMeshes ) {
+
+                    fp.trailNetwork.trailMeshes.forEach( function( trail ) {
+
+                        scene.remove( trail );
+
+                    } );
+
+                }
 
                 var len = fp.terrain.plane.geometry.attributes.position.array.length / 3,
                     trailPoints = new Float32Array( len ),
@@ -81,44 +88,34 @@ define( [
                 fp.buildingNetwork.networkMesh.castShadow = true;
                 fp.buildingNetwork.networkMesh.receiveShadow = true;
 
-                if ( fp.appConfig.displayOptions.buildingsShow )
+                if ( fp.appConfig.displayOptions.buildingsShow ) {
+
                     fp.scene.add( fp.buildingNetwork.networkMesh );
+
+                }
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
                 fp.roadNetwork.planeVertices = [ ];
-                if ( fp.appConfig.displayOptions.roadsShow )
+                if ( fp.appConfig.displayOptions.roadsShow ) {
+
                     fp.scene.add( fp.roadNetwork.networkMesh );
 
+                }
+
                 fp.pathNetwork.networkMesh = new THREE.Object3D();
-                if ( fp.appConfig.displayOptions.pathsShow )
+                if ( fp.appConfig.displayOptions.pathsShow ) {
+
                     fp.scene.add( fp.pathNetwork.networkMesh );
 
+                }
+
+                if ( fp.appConfig.displayOptions.patchesShow ) {
+
+                    fp.patchNetwork.updateTerrainPatchAttributes();
+
+                }
+
                 fp.trailNetwork.buildTrailNetwork( false );
-                /*
-                fp.trailNetwork.globalTrailGeometry = new THREE.Geometry();
-                for ( var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++ ) {
-                    var vertices = new Array( fp.appConfig.displayOptions.trailLength );
-                    for ( var j = 0; j < fp.appConfig.displayOptions.trailLength ; j++ ) {
-                        fp.trailNetwork.globalTrailGeometry.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
-                    }
-                    var ai = fp.getIndex( fp.agentNetwork.agents[ i ].lastPosition.x / fp.appConfig.terrainOptions.multiplier, fp.agentNetwork.agents[ i ].lastPosition.z / fp.appConfig.terrainOptions.multiplier );
-                    if ( ai > -1 )
-                        fp.trailNetwork.trails[ ai ] = 1;
-                }
-                var trailMaterial = new THREE.LineBasicMaterial( {
-                    color: fp.appConfig.colorOptions.colorNightTrail,
-                var trailMaterial = new THREE.LineBasicMPath( {
-                    color: fp.appConfig.colorOptions.colorNightTrail,
-                    linewidth: 0.1,
-                    opacity: 0.1,
-                    blending: THREE.NormalBlending,
-                    transparent: true
-                } );
-                fp.trailNetwork.globalTrailLine = new THREE.Line( fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LineSegments );
-                if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
-                    fp.scene.add( fp.trailNetwork.globalTrailLine );
-                }
-                */
 
             };
 

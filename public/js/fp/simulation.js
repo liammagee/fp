@@ -565,23 +565,38 @@ define(
             fp.setupGUI = function( config ) {
 
                 if ( !_.isUndefined( config ) ) {
+
                     fp.doGUI( config );
+
                 }
                 else if ( !_.isUndefined( $ ) && !_.isUndefined( $.urlParam ) ) {
+
                     var recipe = $.urlParam( "recipe" ), recipeData = $.urlParam( "recipeData" );
                     if ( !_.isUndefined( recipeData ) ) {
+
                         fp.doGUI( $.parseJSON( decodeURIComponent( recipeData ) ) );
+
                     }
                     else if ( !_.isUndefined( recipe ) ) {
+
                         $.getJSON( "/recipes/" + recipe + ".json", function( data ) {
+
                             fp.doGUI( data );
+
                         } );
+
                     }
-                    else
+                    else {
+
                         fp.doGUI();
+
+                    }
                 }
-                else
+                else {
+
                     fp.doGUI();
+
+                }
 
             };
 
