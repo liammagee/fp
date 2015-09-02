@@ -120,6 +120,9 @@ define( [
             };
 
 
+            /**
+             * Runs the simulation.
+             */
             this.Run = function() {
 
                 FiercePlanet.AppState.runSimulation = !FiercePlanet.AppState.runSimulation;
@@ -143,6 +146,9 @@ define( [
             };
 
 
+            /**
+             * Runs one step of the simulation.
+             */
             this.Step = function() {
 
                 FiercePlanet.AppState.runSimulation = FiercePlanet.AppState.stepSimulation = true;
@@ -180,6 +186,9 @@ define( [
 
             };
 
+            /**
+             * Takes a snapshot of the current screen (only the canvas).
+             */
             this.Snapshot = function() {
 
                 var mimetype = mimetype  || "image/png";
@@ -188,20 +197,37 @@ define( [
 
             };
 
+            /**
+             * Toggles full screen view.
+             */
             this.FullScreen = function() {
 
                 if ( document.documentElement.requestFullscreen ) {
+
                     document.documentElement.requestFullscreen();
-                } else if ( document.documentElement.mozRequestFullScreen ) {
+
+                }
+                else if ( document.documentElement.mozRequestFullScreen ) {
+
                     document.documentElement.mozRequestFullScreen();
-                } else if ( document.documentElement.webkitRequestFullscreen ) {
+
+                }
+                else if ( document.documentElement.webkitRequestFullscreen ) {
+
                     document.documentElement.webkitRequestFullscreen();
-                } else if ( document.documentElement.msRequestFullscreen ) {
+
+                }
+                else if ( document.documentElement.msRequestFullscreen ) {
+
                     document.documentElement.msRequestFullscreen();
+
                 }
 
             };
 
+            /**
+             * Cycles through the list of available terrains.
+             */
             this.SwitchTerrain = function() {
 
                 fp.appConfig.Reset();
@@ -213,6 +239,10 @@ define( [
 
             };
 
+
+            /**
+             * Sets the terrain to wrap into a sphere.
+             */
             this.WrapTerrain = function() {
 
                 fp.appConfig.waterShow = false;
@@ -220,6 +250,9 @@ define( [
 
             };
 
+            /**
+             * Sets the terrain to return to a plane.
+             */
             this.UnwrapTerrain = function() {
 
                 fp.terrain.wrappingState = -1;
