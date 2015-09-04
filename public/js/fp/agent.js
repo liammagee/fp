@@ -8,7 +8,8 @@ define( [
 
 
         /**
-         * Represents a mobile and alive agent
+         * Represents a mobile and alive agent.
+         *
          * @constructor
          * @memberof fp
          * @inner
@@ -808,24 +809,102 @@ define( [
 
             };
 
+            /**
+             * The position of the agent.
+             * @type {THREE.Vector3} position
+             */
             this.position = null;
-            this.direction = null;
-            this.speed = fp.appConfig.agentOptions.initialSpeed;
-            this.perturbBy = fp.appConfig.agentOptions.initialPerturbBy;
+
+            /**
+             * The last position of the agent.
+             * @type {THREE.Vector3} position
+             */
             this.lastPosition = null;
+
+            /**
+             * The current direction of the agent.
+             * @type {THREE.Vector3} position
+             */
+            this.direction = null;
+
+            /**
+             * The speed at which the agent is moving.
+             * @type {Number}
+             */
+            this.speed = fp.appConfig.agentOptions.initialSpeed;
+
+            /**
+             * The amount by which to perturb the movement of the agent.
+             * @type {Number}
+             */
+            this.perturbBy = fp.appConfig.agentOptions.initialPerturbBy;
+
+            /**
+             * Whether the agent is currently on the ground.
+             * @type {Boolean}
+             */
             this.grounded = true;
+
+            /**
+             * The computed path, determining the agent's direction (if any).
+             * @type {Array}
+             */
+            this.pathComputed = undefined;
+
+            /**
+             * The current position along the path.
+             * @type {Number}
+             */
+            this.pathPosition = 0;
+
+            /**
+             * The amount of alpha (or transparency) of the agent.
+             * @type {Number}
+             */
             this.alpha =  0.5 + ( Math.random() / 2 );
-            this.color = "#ff0000"; // Red. Alternative for this model is blue: "#0000ff"
+
+            /**
+             * The color of the agent, in RGB hexadecimal notation.
+             * @type {String}
+             */
+            this.color = "#ff0000";
+
+            /**
+             * The number of ticks since the agent's birth.
+             * @type {Number}
+             */
             this.ticks = 0;
+            /**
+             * The age of the agent.
+             * @type {Number}
+             */
             this.age = 0;
 
+            /**
+             * The home of the agent.
+             * @type {fp.Building}
+             */
             this.home = null;
+
+            /**
+             * The health of an agent (ranging from 0 to 100).
+             * @type {Number}
+             */
             this.health = 100;
+
+            /**
+             * The gender of the agent.
+             * @type {String}
+             */
             this.gender = Math.random() < 0.5 ? "f": "m";
-            this.children = [ ];
-            this.friends = [ ];
-            this.pathComputed = undefined;
-            this.pathPosition = 0;
+
+            /**
+             * An array of children belonging to the agent.
+             * @type {Array}
+             */
+            this.children = [];
+
+
         };
 
 
