@@ -38064,10 +38064,17 @@ define( 'fp/app-controller',[
                 fp.roadNetwork.roads = {};
 
                 fp.timescale.currentYear = fp.timescale.initialYear;
-                fp.updateTick();
+                fp.updateTime();
                 fp.timescale.frameCounter = 0;
-                if ( fp.trailNetwork.trailMeshes )
-                    fp.trailNetwork.trailMeshes.forEach( function( trail ) { scene.remove( trail ); } );
+                if ( fp.trailNetwork.trailMeshes ) {
+
+                    fp.trailNetwork.trailMeshes.forEach( function( trail ) {
+
+                        scene.remove( trail );
+
+                    } );
+
+                }
 
                 var len = fp.terrain.plane.geometry.attributes.position.array.length / 3,
                     trailPoints = new Float32Array( len ),
@@ -38119,48 +38126,41 @@ define( 'fp/app-controller',[
                 fp.buildingNetwork.networkMesh.castShadow = true;
                 fp.buildingNetwork.networkMesh.receiveShadow = true;
 
-                if ( fp.appConfig.displayOptions.buildingsShow )
+                if ( fp.appConfig.displayOptions.buildingsShow ) {
+
                     fp.scene.add( fp.buildingNetwork.networkMesh );
+
+                }
 
                 fp.roadNetwork.networkMesh = new THREE.Object3D();
                 fp.roadNetwork.planeVertices = [ ];
-                if ( fp.appConfig.displayOptions.roadsShow )
+                if ( fp.appConfig.displayOptions.roadsShow ) {
+
                     fp.scene.add( fp.roadNetwork.networkMesh );
 
+                }
+
                 fp.pathNetwork.networkMesh = new THREE.Object3D();
-                if ( fp.appConfig.displayOptions.pathsShow )
+                if ( fp.appConfig.displayOptions.pathsShow ) {
+
                     fp.scene.add( fp.pathNetwork.networkMesh );
 
+                }
+
+                if ( fp.appConfig.displayOptions.patchesShow ) {
+
+                    fp.patchNetwork.updateTerrainPatchAttributes();
+
+                }
+
                 fp.trailNetwork.buildTrailNetwork( false );
-                /*
-                fp.trailNetwork.globalTrailGeometry = new THREE.Geometry();
-                for ( var i = 0; i < fp.appConfig.agentOptions.initialPopulation; i++ ) {
-                    var vertices = new Array( fp.appConfig.displayOptions.trailLength );
-                    for ( var j = 0; j < fp.appConfig.displayOptions.trailLength ; j++ ) {
-                        fp.trailNetwork.globalTrailGeometry.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
-                    }
-                    var ai = fp.getIndex( fp.agentNetwork.agents[ i ].lastPosition.x / fp.appConfig.terrainOptions.multiplier, fp.agentNetwork.agents[ i ].lastPosition.z / fp.appConfig.terrainOptions.multiplier );
-                    if ( ai > -1 )
-                        fp.trailNetwork.trails[ ai ] = 1;
-                }
-                var trailMaterial = new THREE.LineBasicMaterial( {
-                    color: fp.appConfig.colorOptions.colorNightTrail,
-                var trailMaterial = new THREE.LineBasicMPath( {
-                    color: fp.appConfig.colorOptions.colorNightTrail,
-                    linewidth: 0.1,
-                    opacity: 0.1,
-                    blending: THREE.NormalBlending,
-                    transparent: true
-                } );
-                fp.trailNetwork.globalTrailLine = new THREE.Line( fp.trailNetwork.globalTrailGeometry, trailMaterial, THREE.LineSegments );
-                if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
-                    fp.scene.add( fp.trailNetwork.globalTrailLine );
-                }
-                */
 
             };
 
 
+            /**
+             * Runs the simulation.
+             */
             this.Run = function() {
 
                 FiercePlanet.AppState.runSimulation = !FiercePlanet.AppState.runSimulation;
@@ -38184,6 +38184,9 @@ define( 'fp/app-controller',[
             };
 
 
+            /**
+             * Runs one step of the simulation.
+             */
             this.Step = function() {
 
                 FiercePlanet.AppState.runSimulation = FiercePlanet.AppState.stepSimulation = true;
@@ -38221,6 +38224,9 @@ define( 'fp/app-controller',[
 
             };
 
+            /**
+             * Takes a snapshot of the current screen (only the canvas).
+             */
             this.Snapshot = function() {
 
                 var mimetype = mimetype  || "image/png";
@@ -38229,20 +38235,37 @@ define( 'fp/app-controller',[
 
             };
 
+            /**
+             * Toggles full screen view.
+             */
             this.FullScreen = function() {
 
                 if ( document.documentElement.requestFullscreen ) {
+
                     document.documentElement.requestFullscreen();
-                } else if ( document.documentElement.mozRequestFullScreen ) {
+
+                }
+                else if ( document.documentElement.mozRequestFullScreen ) {
+
                     document.documentElement.mozRequestFullScreen();
-                } else if ( document.documentElement.webkitRequestFullscreen ) {
+
+                }
+                else if ( document.documentElement.webkitRequestFullscreen ) {
+
                     document.documentElement.webkitRequestFullscreen();
-                } else if ( document.documentElement.msRequestFullscreen ) {
+
+                }
+                else if ( document.documentElement.msRequestFullscreen ) {
+
                     document.documentElement.msRequestFullscreen();
+
                 }
 
             };
 
+            /**
+             * Cycles through the list of available terrains.
+             */
             this.SwitchTerrain = function() {
 
                 fp.appConfig.Reset();
@@ -38254,6 +38277,10 @@ define( 'fp/app-controller',[
 
             };
 
+
+            /**
+             * Sets the terrain to wrap into a sphere.
+             */
             this.WrapTerrain = function() {
 
                 fp.appConfig.waterShow = false;
@@ -38261,6 +38288,9 @@ define( 'fp/app-controller',[
 
             };
 
+            /**
+             * Sets the terrain to return to a plane.
+             */
             this.UnwrapTerrain = function() {
 
                 fp.terrain.wrappingState = -1;
@@ -38358,14 +38388,14 @@ define( 'fp/config',[
             chanceToFindPathToHome: 0.00,
             chanceToFindPathToOtherAgentHome: 0.00,
             initialCircle: true,
-            noWater: true,
+            noWater: false,
             noUphill: false, // Eventually remove for more fine-grained weight control
             useStickman: true,
             visitHomeBuilding: 0.02,
             visitOtherBuilding: 0.002,
             establishLinks: false,
             size: 40,
-            terrainOffset: 20,
+            terrainOffset: 0,
             shuffle: false,
             initialSpeed: 20,
             initialPerturbBy: 0.05,
@@ -39351,27 +39381,43 @@ define(
              * Updates terrain.
              */
             this.updateTerrain = function() {
+
                 if ( this.wrappingState === 1 ) {
+
                     fp.appConfig.displayOptions.waterShow = false;
+
                     if ( fp.terrain.wrappedPercent < 100 ) {
+
                         fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
                         fp.terrain.wrappedPercent += this.wrappingState;
+
                     }
                     else {
+
                         this.wrappingState = 0;
+
                     }
+
                 }
                 else if ( this.wrappingState === -1 ) {
+
                     if ( fp.terrain.wrappedPercent > 0 ) {
+
                         fp.terrain.wrapTerrainIntoSphere( fp.terrain.wrappedPercent );
                         fp.terrain.wrappedPercent += this.wrappingState;
+
                     }
                     else {
+
                         fp.appConfig.displayOptions.waterShow = fp.appConfig.displayOptions.waterShow;
                         this.wrappingState = 0;
+
                     }
+
                 }
+
                 fp.toggleWaterState();
+
             };
         };
 
@@ -39796,6 +39842,13 @@ define( 'fp/agent',[
 
                 // Simple check to ensure we're within terrain bounds
                 if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
+
+                    this.setDirection( this.randomDirection() );
+                    this.move();
+
+                }
+                else if ( fp.getHeight( newPosition.x, newPosition.z ) === 0 &&
+                          fp.appConfig.agentOptions.noWater ) {
 
                     this.setDirection( this.randomDirection() );
                     this.move();
@@ -40343,7 +40396,7 @@ define( 'fp/agent-network',[
                  */
                 this.enlistAgent = function( agent ) {
 
-                    var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
+                    var agents = fp.patchNetwork.agentsOnPatches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
 
                     if ( _.isUndefined( agents ) ) {
 
@@ -40528,7 +40581,11 @@ define( 'fp/agent-network',[
                     }
 
                     // No water around or home built? Move on...
-                    agent.evaluateDirection();
+                    if ( fp.timescale.frameCounter % ( fp.timescale.ticksToYear * fp.timescale.framesToTick ) === 0 ) {
+
+                        agent.evaluateDirection();
+
+                    }
 
                     // Enlist the agent in available networks
                     if ( fp.appConfig.agentOptions.establishLinks ) {
@@ -42136,25 +42193,48 @@ define( 'fp/patch',[
         FiercePlanet.Patch = function( val ) {
 
             this.value = val;
+            this.isDirty = true;
             this.initialValue = val;
             this.minValue = 0.0001;
 
             /**
              * Updates the value of the patch.
-             * @param  {Number} amount the amount to increment the value by.
+             * @param  {Number} change the change to increment the value by.
              */
-            this.updatePatchValue = function( amount ) {
-                var val = this.value;
-                if ( val + amount < this.minValue )
-                    val = this.minValue;
-                else if ( val + amount > 1.0 )
-                    val = 1.0;
-                else
-                    val += amount;
-                this.value = val;
-            };
-        };
+            this.updatePatchValue = function( change ) {
 
+                var val = this.value;
+                if ( val + change < this.minValue ) {
+
+                    val = this.minValue;
+
+                }
+                else if ( val + change > 1.0 ) {
+
+                    val = 1.0;
+
+                }
+                else {
+
+                    val += change;
+
+                }
+
+                if ( val != this.value ) {
+
+                    this.value = val;
+                    this.isDirty = true;
+
+                }
+                else {
+
+                    this.isDirty = false;
+
+                }
+
+            };
+
+        };
 
 
         return FiercePlanet;
@@ -42174,124 +42254,135 @@ define( 'fp/patch-network',[
 
         /**
          * Represents a network of patches. Also provides factory and utility methods.
+         *
+         * A 'patch' is a some section of terrain that can contain a value of interest
+         * to the simulation, such as the amount of food available.
+         *
          * @constructor
          * @memberof fp
          * @inner
          */
         FiercePlanet.PatchNetwork = function( fp, func ) {
 
-            this.plane = null;
-            this.patches = {};
-            this.patchValues = [ ];
-            this.patchPlaneArray = [ ];
-            this.patchSphereArray = [ ];
-            this.patchMeanValue = 0;
-            this.patchSize = fp.appConfig.terrainOptions.patchSize;
-            this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
+            /**
+             * Array of patches belonging to this network.
+             *
+             * @type {Array}
+             * @memberof PatchNetwork
+             */
+            this.patches = [];
 
             /**
-             * Initialises each patch value with a random value.
+             * Object that stores a collection of keys that reference a given patch,
+             * and an array of agents currently located on the patch.
+             * This serves as an optimised cache for obtaining agents on a patch.
+             *
+             * @type {Object}
+             * @memberof PatchNetwork
+             */
+            this.agentsOnPatches = {};
+
+            /**
+             * Represents the Mesh object displaying the patches.
+             *
+             * @type {THREE.Mesh}
+             * @memberof PatchNetwork
+             */
+            this.plane = null;
+
+            /**
+             * An array of geometry positions for the patches in plane formation.
+             *
+             * @type {Array}
+             * @memberof PatchNetwork
+             */
+            this.patchPlaneArray = [];
+
+            /**
+             * An array of geometry positions for the patches in sphere formation.
+             *
+             * @type {Array}
+             * @memberof PatchNetwork
+             */
+            this.patchSphereArray = [];
+
+            /**
+             * A copy of the mean of patch values.
+             *
+             * @type {Number}
+             * @memberof PatchNetwork
+             */
+            this.patchMeanValue = 0;
+
+            /**
+             * Local copy of the configured <em>patchSize</em>.
+             * Should be an integer that is a factor of the terrain.gridPoints - 1.
+             *
+             * @type {Number}
+             * @memberof PatchNetwork
+             */
+            this.patchSize = fp.appConfig.terrainOptions.patchSize;
+
+            /**
+             * Default initialise function - sets each patch value to a random number between 0 and 1
+             *
+             * @param  {Function} ) {            return Math.random( [description]
+             * @memberof PatchNetwork
+             */
+            this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
+
+
+            // FUNCTIONS
+
+            /**
+             * Obtain the number of patches along one size of the terrain.
+             * If the terrain contains 400 grid points, and the patch size is 21
+             * then the number of patches should be Math.ceil( 400 / 21 ) - 1 = 19.
+             *
+             * @memberof PatchNetwork
+             */
+            this.lengthOfPatchGrid = function() {
+                return Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
+            }
+
+            /**
+             * Constructs an array of patches, with values supplied by initialisePatchFunction().
+             *
+             * @memberof PatchNetwork
              */
             this.initialisePatches = function() {
 
-                var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
-                fp.patchNetwork.patchValues = new Array( dim * dim );
+                var lengthOfPatchGrid = this.lengthOfPatchGrid();
+                var sizeOfPatchGrid = lengthOfPatchGrid * lengthOfPatchGrid;
 
-                for ( var i = 0; i < fp.patchNetwork.patchValues.length; i++ ) {
+                // Make a single dimension array for the patch values (e.g. 19 x 19)
+                fp.patchNetwork.patches = [];
 
-                    fp.patchNetwork.patchValues[ i ] = new FiercePlanet.Patch( this.initialisePatchFunction() );
+                for ( var i = 0; i < sizeOfPatchGrid; i++ ) {
+
+                    // Create a new patch, with a value based on the return value of initialisePatchFunction().
+                    var patch = new FiercePlanet.Patch( fp.patchNetwork.initialisePatchFunction() );
+
+                    // Add the patch to the array of patch values
+                    fp.patchNetwork.patches.push( patch );
 
                 }
 
             };
 
+
             /**
-             * Construct a geometry with closed spaces.
+             * Constructs the plane material.
+             *
+             * @memberof PatchNetwork
              */
-            this.cloneGeometry = function() {
+            this.constructMaterial = function() {
 
-                var clone = fp.terrain.plane.geometry.clone();
-                var vertices = fp.terrain.plane.geometry.attributes.position.array;
-                var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
-                var patchSize = fp.patchNetwork.patchSize;
-                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
-                var newPoints = fp.terrain.gridPoints + dim;
-                var geometry = new THREE.PlaneBufferGeometry( size, size, newPoints - 1, newPoints - 1 );
-                // var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
-                var patchSizeOffset = fp.patchNetwork.patchSize + 1;
-                var newOffset = 0, oldOffset = 0;
-                var counter = 0;
-
-                for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
-
-                    for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
-
-                        geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                        geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                        geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
-
-                        if ( i % patchSize === 0 ) {
-
-                            newOffset += newPoints * 3 ;
-                            geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                            geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                            geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
-
-                            if ( j % patchSize === 0 ) {
-
-                                newOffset += 3;
-                                geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                                geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                                geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
-                                newOffset -= 3;
-
-                            }
-
-                            newOffset -= newPoints * 3;
-
-                        }
-
-                        if ( j % patchSize === 0 ) {
-
-                            newOffset += 3;
-                            geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                            geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                            geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
-
-                        }
-
-                        newOffset += 3;
-                        oldOffset += 3;
-
-                    }
-                    if ( i % patchSize === 0 ) {
-
-                        newOffset += newPoints * 3;
-
-                    }
-                }
-                geometry.computeVertexNormals();
-
-                var len = geometry.attributes.position.array.length / 3,
-                    heights = new Float32Array( len ),
-                    trailPoints = new Float32Array( len ),
-                    patchPoints = new Float32Array( len );
-
-                for ( i = 0; i < len; i++ ) {
-
-                    heights[ i ] = geometry.attributes.position.array[ i * 3 + 2 ];
-                    trailPoints[ i ] = 0;
-                    patchPoints[ i ] = 0;
-
-                }
-
-                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
-                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
-
+                // Obtain the terrain's uniforms
                 var uniforms = fp.terrain.createUniforms();
 
-                var richTerrainMaterial = new THREE.ShaderMaterial( {
+                // Constuct a material for the patch network mesh
+                var patchNetworkMaterial = new THREE.ShaderMaterial( {
 
                     uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
                     vertexShader:   FiercePlanet.ShaderUtils.phongShaderVertex(
@@ -42312,93 +42403,240 @@ define( 'fp/patch-network',[
 
                 } );
 
-                this.patchPlaneArray = geometry.attributes.position.clone();
-                this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
-
-                return new THREE.Mesh( geometry, richTerrainMaterial );
+                return patchNetworkMaterial;
 
             };
 
+
+            /**
+             * Construct a geometry with closed spaces.
+             * NOTE: this method depends upon the terrain's geometry being
+             * created first.
+             * The cloned geometry adds a new point for every patch, to
+             * fix shader blurring between patches.
+             *
+             * @memberof PatchNetwork
+             */
+            this.cloneGeometry = function() {
+
+                // Clone the terrain's geometry
+                var clone = fp.terrain.plane.geometry.clone();
+
+                // References the terrain's geometry positions
+                var terrainGeometryPositions = fp.terrain.plane.geometry.attributes.position.array;
+
+                // Get the length of the patch grid
+                var lengthOfPatchGrid = this.lengthOfPatchGrid();
+
+                // Copy existing parameters for convenience
+                var patchSize = fp.patchNetwork.patchSize;
+                var gridPoints = fp.terrain.gridPoints;
+
+                // Calculate the new dimension of the patch network
+                var newDimension = fp.terrain.gridPoints + lengthOfPatchGrid + 1;
+
+                // Construct a new geometry with 'hidden' duplicate positions
+                var patchGeometry = new THREE.PlaneBufferGeometry(
+                    fp.terrain.plane.geometry.parameters.width,
+                    fp.terrain.plane.geometry.parameters.height,
+                    newDimension - 1,
+                    newDimension - 1
+                );
+                var patchGeometryPositions = patchGeometry.attributes.position.array;
+
+                // Variables for copying offsets
+                var oldOffset = 0, newOffset = 0;
+
+                // Copy terrain geometry positions to the plane geometry
+                for ( var i = 0; i < gridPoints; i++ ) {
+
+                    for ( var j = 0; j < gridPoints; j++ ) {
+
+                        patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                        patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                        patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
+
+                        // Hitting a patch boundary, so duplicate the postions for the 'hidden' position
+                        if ( i % patchSize === 0 ) {
+
+                            newOffset += newDimension * 3 ;
+                            patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                            patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                            patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
+
+                            if ( j % patchSize === 0 ) {
+
+                                newOffset += 3;
+                                patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                                patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                                patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
+                                newOffset -= 3;
+
+                            }
+
+                            newOffset -= newDimension * 3;
+
+                        }
+
+                        if ( j % patchSize === 0 ) {
+
+                            newOffset += 3;
+                            patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                            patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                            patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
+
+                        }
+
+                        newOffset += 3;
+                        oldOffset += 3;
+
+                    }
+                    if ( i % patchSize === 0 ) {
+
+                        newOffset += newDimension * 3;
+
+                    }
+
+                }
+
+                // Compute normals
+                patchGeometry.computeVertexNormals();
+
+                // Add terrain attributes to the patch geometry
+                var len = patchGeometryPositions.length / 3,
+                    heights = new Float32Array( len ),
+                    trailPoints = new Float32Array( len ),
+                    patchValueAttributes = new Float32Array( len );
+
+                for ( i = 0; i < len; i++ ) {
+
+                    heights[ i ] = patchGeometryPositions[ i * 3 + 2 ];
+                    trailPoints[ i ] = 0;
+                    patchValueAttributes[ i ] = 0;
+
+                }
+
+                // Add heights, trail points and patch points - NECESSARY?
+                patchGeometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                patchGeometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                patchGeometry.addAttribute( "patch", new THREE.BufferAttribute( patchValueAttributes, 1 ) );
+
+                // Copy the plane positions
+                this.patchPlaneArray = patchGeometry.attributes.position.clone();
+                // Create a copy of the sphere positions
+                this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
+
+                // Sets the plane object to the mesh containing the geometry and material
+                this.plane = new THREE.Mesh(
+
+                    patchGeometry,
+                    this.constructMaterial()
+
+                );
+
+            };
+
+
             /**
              * Builds a plane mesh based on the current terrain geometry, but with its own material.
+             *
+             * @memberof PatchNetwork
              */
             this.buildPatchMesh = function() {
 
                 // var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
-                this.plane = this.cloneGeometry();
+                this.cloneGeometry();
+
                 // Rotate 90 degrees on X axis, to be the "ground"
                 this.plane.rotation.set( -Math.PI / 2, 0, 0 );
+
                 // Lift by 1, to ensure shaders doesn't clash with water
                 this.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 this.plane.castShadow = true;
                 this.plane.receiveShadow = true;
-                //this.updateTerrainPatchAttributes();
-
-                // Toggle patches state
-                //this.togglePatchesState();
-                // fp.scene.add( this.plane );
 
             };
+
 
             /**
              * Default revision of the values of each patch.
              */
             this.defaultReviseValues = function() {
 
+                // Reset the mean value
                 this.patchMeanValue = 0;
-                var popPatch = fp.patchNetwork.patchValues.length;
+
+                // Convenience variables
+                var popPatch = fp.patchNetwork.patches.length;
                 var popAgent = fp.agentNetwork.agents.length;
                 var r = popAgent / popPatch;
-                var change;
 
-                for ( var i = 0; i < this.patchValues.length; i++ ) {
+                // Iterate through the patches to reset their value
+                for ( var i = 0; i < this.patches.length; i++ ) {
 
-                    var patch = this.patchValues[ i ];
+                    var patch = this.patches[ i ];
+                    var change = 0;
 
-                    if ( !_.isUndefined( this.patches[ i ] ) ) {
+                    // If there are agents on the patch, revise accordingly
+                    if ( !_.isUndefined( this.agentsOnPatches[ i ] ) ) {
 
-                        var len = this.patches[ i ].length;
+                        var len = this.agentsOnPatches[ i ].length;
                         change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
-                        patch.updatePatchValue( change );
 
                     }
                     else { // if ( patch.value < patch.initialValue ) { // Recover
 
-                        change = Math.pow( r, 2 );
-                        patch.updatePatchValue( Math.pow( r, 3 ) );
+                        change = Math.pow( r, 3 );
 
                     }
+
+                    // ALWAYS update, so we can set / unset the patch's isDirty flag
+                    patch.updatePatchValue( change );
+
                     this.patchMeanValue += patch.value;
 
                 }
 
-                this.patchMeanValue /= this.patchValues.length;
+                this.patchMeanValue /= this.patches.length;
 
             };
 
+
             /**
              * Update the cached count of patch agents.
+             *
+             * @memberof PatchNetwork
              */
             this.updatePatchAgents = function() {
 
-                this.patches = {};
+                this.agentsOnPatches = {};
 
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
 
                     var agent =  fp.agentNetwork.agents[ i ];
-                    var index = fp.getPatchIndex( agent.position.x, agent.position.z );
 
-                    if ( !this.patches[ index ] )
-                        this.patches[ index ] = [ ];
+                    // Obtain
+                    var patchIndex = fp.getPatchIndex( agent.position.x, agent.position.z );
 
-                    this.patches[ index ].push( agent );
+                    // Create an empty array, if none exists
+                    if ( !this.agentsOnPatches[ patchIndex ] ) {
+
+                        this.agentsOnPatches[ patchIndex ] = [];
+
+                    }
+
+                    // Add the agent the array for this patchIndex value
+                    this.agentsOnPatches[ patchIndex ].push( agent );
 
                 }
 
             };
 
+
             /**
              * Updates values of all patches in the network.
+             *
+             * @memberof PatchNetwork
              */
             this.updatePatchValues = function() {
 
@@ -42429,24 +42667,42 @@ define( 'fp/patch-network',[
 
             /**
              * Updates the terrain's colors based on its patch attributes.
+             *
+             * @memberof PatchNetwork
              */
             this.updateTerrainPatchAttributes = function() {
 
-                if ( _.isUndefined( this.patchValues ))
+                if ( _.isUndefined( this.patches ))
                     return;
 
-                var pl = Math.sqrt( this.patchValues.length );
+                var pl = Math.sqrt( this.patches.length );
 
                 var counter = 0;
                 var gridPoints = fp.terrain.gridPoints;
                 var patchSize = fp.patchNetwork.patchSize;
                 var dim = Math.ceil( gridPoints / patchSize );
-                var newPoints = gridPoints + dim;
+                var newDimension = gridPoints + dim;
                 var oldVal = 0;
+                var networkRequiresUpdate = false;
 
-                for ( var i = 0; i < this.patchValues.length; i++ ) {
+                for ( var i = 0; i < this.patches.length; i++ ) {
 
-                    var val = this.patchValues[ i ].value;
+                    var patch = this.patches[ i ];
+
+                    // Only update the geometry's patch values if those values have been changed
+                    if ( !patch.isDirty ) {
+
+                        continue;
+
+                    }
+
+                    if ( !networkRequiresUpdate ) {
+
+                        networkRequiresUpdate = true;
+
+                    }
+
+                    var val = patch.value;
                     var patchCol = i % ( dim - 1 );
                     var patchRow = Math.floor( i / ( dim - 1 ) );
 
@@ -42467,11 +42723,8 @@ define( 'fp/patch-network',[
                                 continue;
 
                             var colOffset = patchCol * ( patchSize + 1 ) + k;
-                            var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newPoints;
+                            var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newDimension;
                             var cell = rowOffset + colOffset;
-                            // var rows = ( ( this.patchSize + 1 ) * Math.floor( i / pl ) ) * newPoints + j * newPoints;
-                            // var cols = ( i % pl ) * ( this.patchSize + 1 ) + k;
-                            // var cell = rows + cols;
                             counter++;
 
                             if ( oldVal != val ) {
@@ -42488,13 +42741,19 @@ define( 'fp/patch-network',[
 
                 }
 
-                this.plane.geometry.attributes.patch.needsUpdate = true;
+                if ( networkRequiresUpdate ) {
+
+                    this.plane.geometry.attributes.patch.needsUpdate = true;
+
+                }
 
             };
 
 
             /**
              * Adds or removes the patch network from the scene.
+             *
+             * @memberof PatchNetwork
              */
             this.togglePatchesState = function() {
 
@@ -43547,8 +43806,11 @@ define(
                 fp.lightDirectional.shadowBias = -0.0001;
                 //fp.lightDirectional.shadowBias = -0.05;
                 // fp.lightDirectional.shadowCameraVisible = true; // for debugging
-                if ( fp.appConfig.displayOptions.lightDirectionalShow )
+                if ( fp.appConfig.displayOptions.lightDirectionalShow ) {
+
                     fp.scene.add( fp.lightDirectional );
+
+                }
 
             };
 
@@ -43766,23 +44028,38 @@ define(
             fp.setupGUI = function( config ) {
 
                 if ( !_.isUndefined( config ) ) {
+
                     fp.doGUI( config );
+
                 }
                 else if ( !_.isUndefined( $ ) && !_.isUndefined( $.urlParam ) ) {
+
                     var recipe = $.urlParam( "recipe" ), recipeData = $.urlParam( "recipeData" );
                     if ( !_.isUndefined( recipeData ) ) {
+
                         fp.doGUI( $.parseJSON( decodeURIComponent( recipeData ) ) );
+
                     }
                     else if ( !_.isUndefined( recipe ) ) {
+
                         $.getJSON( "/recipes/" + recipe + ".json", function( data ) {
+
                             fp.doGUI( data );
+
                         } );
+
                     }
-                    else
+                    else {
+
                         fp.doGUI();
+
+                    }
                 }
-                else
+                else {
+
                     fp.doGUI();
+
+                }
 
             };
 
@@ -43828,18 +44105,24 @@ define(
              */
             fp.animate = function() {
 
-                if ( FiercePlanet.AppState.halt )
+                if ( FiercePlanet.AppState.halt ) {
+
                     return;
 
+                }
+
                 // Update simulation-specific variables
-                fp.toTick();
+                fp.doTick();
 
                 // Update year and state
-                fp.updateTick();
+                fp.updateTime();
                 fp.updateSimState();
 
-                if ( !_.isNull( fp.chart ) )
+                if ( !_.isNull( fp.chart ) ) {
+
                     fp.chart.adjustGraphSize();
+
+                }
 
                 fp.updateStats();
                 fp.updateControls();
@@ -43857,7 +44140,7 @@ define(
             /**
              * Runs the simulation-specific instructions
              */
-            fp.toTick = function() {
+            fp.doTick = function() {
 
                 if ( FiercePlanet.AppState.runSimulation ) {
 
@@ -44000,7 +44283,7 @@ define(
              * Updates the year of the simulation.
              * @memberof fp
              */
-            fp.updateTick = function() {
+            fp.updateTime = function() {
 
                 if ( FiercePlanet.AppState.runSimulation ) {
 
@@ -44034,6 +44317,7 @@ define(
              * @memberof fp
              */
             fp.getPatchIndex = function( x, y ) {
+
                 var multiplier = fp.appConfig.terrainOptions.multiplier;
                 x = Math.floor( x / multiplier );
                 y = Math.floor( y / multiplier );
@@ -44043,8 +44327,12 @@ define(
                 var pY = Math.floor( dim * ( y + halfGrid ) / fp.terrain.gridExtent );
                 var index = Math.floor( pY * dim + pX );
                 index = ( index < 0 ) ? 0 : index;
-                index = ( index >= fp.patchNetwork.patchValues.length ) ? fp.patchNetwork.patchValues.length - 1 : index;
+                index = ( index >= fp.patchNetwork.patches.length ) ?
+                        fp.patchNetwork.patches.length - 1 :
+                        index;
+
                 return index;
+
             };
 
             /**
@@ -44212,15 +44500,22 @@ define(
                         }
                     }
                 }
+
                 if ( localBuildings.length > 0 ) {
+
                     var localHeights = jStat( _.map( localBuildings, function( building ) {return building.maxHeight; } ) );
                     var meanLocalHeights = localHeights.mean();
 
                     // Take the difference between the local and total heights - return that difference as a multiple of total standard deviations
                     return ( meanLocalHeights - meanHeights ) / stdevHeights;
+
                 }
-                else
+                else {
+
                     return 0;
+
+                }
+
             };
 
             /**
@@ -44294,26 +44589,41 @@ define(
             };
 
             /**
+             * Response to keyboard shortcut strokes.
              * @memberof fp
              */
             fp.updateKeyboard = function() {
+
                 if ( fp.keyboard.pressed( "V" ) ) {
+
                     fp.appConfig.displayOptions.firstPersonView = !fp.appConfig.displayOptions.firstPersonView;
                     fp.resetControls();
+
                 }
-                if ( fp.appConfig.displayOptions.firstPersonView )
+                if ( fp.appConfig.displayOptions.firstPersonView ) {
+
                     return;
+
+                }
                 if ( fp.keyboard.pressed( "S" ) ) {
+
                     fp.appController.Setup();
+
                 }
                 else if ( fp.keyboard.pressed( "R" ) ) {
+
                     fp.appController.Run();
+
                 }
                 else if ( fp.keyboard.pressed( "U" ) ) {
+
                     fp.appController.SpeedUp();
+
                 }
                 else if ( fp.keyboard.pressed( "D" ) ) {
+
                     fp.appController.SlowDown();
+
                 }
                 else if ( fp.keyboard.pressed( "B" ) ) {
                     fp.appConfig.displayOptions.buildingsShow = !fp.appConfig.displayOptions.buildingsShow;
@@ -44324,48 +44634,70 @@ define(
                     fp.toggleRoadState();
                 }
                 else if ( fp.keyboard.pressed( "M" ) ) {
+
                     fp.appConfig.displayOptions.waterShow = !fp.appConfig.displayOptions.waterShow;
                     fp.toggleWaterState();
+
                 }
                 else if ( fp.keyboard.pressed( "N" ) ) {
+
                     fp.appConfig.displayOptions.networkShow = !fp.appConfig.displayOptions.networkShow;
                     fp.toggleAgentNetwork();
+
                 }
                 else if ( fp.keyboard.pressed( "P" ) ) {
+
                     fp.appConfig.displayOptions.patchesShow = !fp.appConfig.displayOptions.patchesShow;
                     fp.togglePatchesState();
+
                 }
                 else if ( fp.keyboard.pressed( "T" ) ) {
+
                     fp.appConfig.displayOptions.trailsShow = !fp.appConfig.displayOptions.trailsShow;
                     fp.toggleTrailState();
+
                 }
                 else if ( fp.keyboard.pressed( "C" ) ) {
+
                     fp.appConfig.displayOptions.cursorShow = !fp.appConfig.displayOptions.cursorShow;
                     fp.removeCursor();
+
                 }
                 else if ( fp.keyboard.pressed( "A" ) ) {
+
                     fp.appConfig.displayOptions.statsShow = !fp.appConfig.displayOptions.statsShow;
                     fp.toggleStatsState();
+
                 }
                 else if ( fp.keyboard.pressed( "W" ) ) {
+
                     fp.appConfig.displayOptions.wireframeShow = !fp.appConfig.displayOptions.wireframeShow;
                     fp.toggleWireframeState();
+
                 }
                 else if ( fp.keyboard.pressed( "Y" ) ) {
+
                     fp.appConfig.displayOptions.dayShow = !fp.appConfig.displayOptions.dayShow;
                     fp.toggleDayNight();
+
                 }
                 else if ( fp.keyboard.pressed( "G" ) ) {
+
                     fp.appConfig.displayOptions.chartShow = !fp.appConfig.displayOptions.chartShow;
                     fp.toggleChart();
+
                 }
                 else if ( fp.keyboard.pressed( "X" ) ) {
+
                     fp.appConfig.displayOptions.pathsShow = !fp.appConfig.displayOptions.pathsShow;
                     fp.togglePathsState();
+
                 }
                 else if ( fp.keyboard.pressed( "E" ) ) {
+
                     fp.appConfig.displayOptions.terrainShow = !fp.appConfig.displayOptions.terrainShow;
                     fp.toggleTerrainPlane();
+
                 }
             };
 
@@ -44520,7 +44852,9 @@ define(
              * @memberof fp
              */
             fp.togglePatchesState = function() {
+
                 fp.patchNetwork.togglePatchesState();
+
             };
 
 
@@ -44583,14 +44917,29 @@ define(
              * @memberof fp
              */
             fp.toggleLights = function() {
-                if ( !fp.appConfig.displayOptions.lightHemisphereShow )
+
+                if ( !fp.appConfig.displayOptions.lightHemisphereShow ) {
+
                     fp.scene.remove( fp.lightHemisphere );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.lightHemisphere );
-                if ( !fp.appConfig.displayOptions.lightDirectionalShow )
+
+                }
+
+                if ( !fp.appConfig.displayOptions.lightDirectionalShow ) {
+
                     fp.scene.remove( fp.lightDirectional );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.lightDirectional );
+
+                }
+
             };
 
 
@@ -44734,19 +45083,28 @@ define(
                 var terrainLoader = new THREE.TerrainLoader();
                 var terrainFile = FiercePlanet.TERRAIN_MAPS[ fp.terrain.terrainMapIndex ]
 
-                if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" )
+                if ( !_.isUndefined( fp.terrain.terrainMapFile ) && fp.terrain.terrainMapFile !== "" ) {
+
                     terrainFile = fp.terrain.terrainMapFile;
 
-                terrainLoader.load( terrainFile, function( data ) {
+                }
 
-                    fp.terrain.initTerrain( data );
+                // Load the terrain, with a callback for terrain data
+                terrainLoader.load( terrainFile, function( terrainData ) {
+
+                    fp.terrain.initTerrain( terrainData );
 
                     // Toggle the patches, in case they need to be shown now
                     fp.togglePatchesState();
 
-                    fp.animate(); // Kick off the animation loop
-                    if ( _.isFunction( callback ) )
+                    // Kick off the animation loop
+                    fp.animate();
+
+                    if ( _.isFunction( callback ) ) {
+
                         callback(); // Run the callback
+
+                    }
 
                } );
 
@@ -46860,7 +47218,7 @@ dat.utils.css = (function () {
 
 
 dat.utils.common = (function () {
-  
+
   var ARR_EACH = Array.prototype.forEach;
   var ARR_SLICE = Array.prototype.slice;
 
@@ -46870,38 +47228,38 @@ dat.utils.common = (function () {
    * http://documentcloud.github.com/underscore/
    */
 
-  return { 
-    
+  return {
+
     BREAK: {},
-  
+
     extend: function(target) {
-      
+
       this.each(ARR_SLICE.call(arguments, 1), function(obj) {
-        
+
         for (var key in obj)
-          if (!this.isUndefined(obj[key])) 
+          if (!this.isUndefined(obj[key]))
             target[key] = obj[key];
-        
+
       }, this);
-      
+
       return target;
-      
+
     },
-    
+
     defaults: function(target) {
-      
+
       this.each(ARR_SLICE.call(arguments, 1), function(obj) {
-        
+
         for (var key in obj)
-          if (this.isUndefined(target[key])) 
+          if (this.isUndefined(target[key]))
             target[key] = obj[key];
-        
+
       }, this);
-      
+
       return target;
-    
+
     },
-    
+
     compose: function() {
       var toCall = ARR_SLICE.call(arguments);
             return function() {
@@ -46912,35 +47270,35 @@ dat.utils.common = (function () {
               return args[0];
             }
     },
-    
+
     each: function(obj, itr, scope) {
 
       if (!obj) return;
 
-      if (ARR_EACH && obj.forEach && obj.forEach === ARR_EACH) { 
-        
+      if (ARR_EACH && obj.forEach && obj.forEach === ARR_EACH) {
+
         obj.forEach(itr, scope);
-        
+
       } else if (obj.length === obj.length + 0) { // Is number but not NaN
-        
+
         for (var key = 0, l = obj.length; key < l; key++)
-          if (key in obj && itr.call(scope, obj[key], key) === this.BREAK) 
+          if (key in obj && itr.call(scope, obj[key], key) === this.BREAK)
             return;
-            
+
       } else {
 
-        for (var key in obj) 
+        for (var key in obj)
           if (itr.call(scope, obj[key], key) === this.BREAK)
             return;
-            
+
       }
-            
+
     },
-    
+
     defer: function(fnc) {
       setTimeout(fnc, 0);
     },
-    
+
     toArray: function(obj) {
       if (obj.toArray) return obj.toArray();
       return ARR_SLICE.call(obj);
@@ -46949,41 +47307,41 @@ dat.utils.common = (function () {
     isUndefined: function(obj) {
       return obj === undefined;
     },
-    
+
     isNull: function(obj) {
       return obj === null;
     },
-    
+
     isNaN: function(obj) {
       return obj !== obj;
     },
-    
+
     isArray: Array.isArray || function(obj) {
       return obj.constructor === Array;
     },
-    
+
     isObject: function(obj) {
       return obj === Object(obj);
     },
-    
+
     isNumber: function(obj) {
       return obj === obj+0;
     },
-    
+
     isString: function(obj) {
       return obj === obj+'';
     },
-    
+
     isBoolean: function(obj) {
       return obj === false || obj === true;
     },
-    
+
     isFunction: function(obj) {
       return Object.prototype.toString.call(obj) === '[object Function]';
     }
-  
+
   };
-    
+
 })();
 
 
@@ -47158,7 +47516,7 @@ dat.dom.dom = (function (common) {
   var dom = {
 
     /**
-     * 
+     *
      * @param elem
      * @param selectable
      */
@@ -47378,7 +47736,7 @@ dat.dom.dom = (function (common) {
 
     // http://stackoverflow.com/posts/2684561/revisions
     /**
-     * 
+     *
      * @param elem
      */
     isActive: function(elem) {
@@ -47744,7 +48102,7 @@ dat.controllers.NumberControllerSlider = (function (NumberController, dom, css, 
    *
    * @extends dat.controllers.Controller
    * @extends dat.controllers.NumberController
-   * 
+   *
    * @param {Object} object The object to be manipulated
    * @param {string} property The name of the property to be manipulated
    * @param {Number} minValue Minimum allowed value
@@ -47761,11 +48119,11 @@ dat.controllers.NumberControllerSlider = (function (NumberController, dom, css, 
 
     this.__background = document.createElement('div');
     this.__foreground = document.createElement('div');
-    
+
 
 
     dom.bind(this.__background, 'mousedown', onMouseDown);
-    
+
     dom.addClass(this.__background, 'slider');
     dom.addClass(this.__foreground, 'slider-fg');
 
@@ -47783,7 +48141,7 @@ dat.controllers.NumberControllerSlider = (function (NumberController, dom, css, 
 
       var offset = dom.getOffset(_this.__background);
       var width = dom.getWidth(_this.__background);
-      
+
       _this.setValue(
       	map(e.clientX, offset.left, offset.left + width, _this.__min, _this.__max)
       );
@@ -47840,7 +48198,7 @@ dat.controllers.NumberControllerSlider = (function (NumberController, dom, css, 
 	}
 
   return NumberControllerSlider;
-  
+
 })(dat.controllers.NumberController,
 dat.dom.dom,
 dat.utils.css,
@@ -47888,7 +48246,7 @@ dat.controllers.FunctionController = (function (Controller, dom, common) {
       FunctionController.prototype,
       Controller.prototype,
       {
-        
+
         fire: function() {
           if (this.__onChange) {
             this.__onChange.call(this);
@@ -47963,10 +48321,10 @@ dat.controllers.BooleanController = (function (Controller, dom, common) {
         },
 
         updateDisplay: function() {
-          
+
           if (this.getValue() === true) {
             this.__checkbox.setAttribute('checked', 'checked');
-            this.__checkbox.checked = true;    
+            this.__checkbox.checked = true;
           } else {
               this.__checkbox.checked = false;
           }
@@ -48958,7 +49316,7 @@ dat.GUI = dat.gui.GUI = (function (css, saveDialogueContents, styleSheet, contro
          * the GUI grows. When remembering new objects, append them to the end
          * of the list.
          *
-         * @param {Object...} objects
+         * @param {Object} objects
          * @throws {Error} if not called on a top level GUI.
          * @instance
          */
@@ -49737,7 +50095,7 @@ dat.controllers.StringController = (function (Controller, dom, common) {
         this.blur();
       }
     });
-    
+
 
     function onChange() {
       _this.setValue(_this.__input.value);
@@ -49863,7 +50221,7 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
       borderRadius: '12px',
       zIndex: 1
     });
-    
+
     common.extend(this.__hue_knob.style, {
       position: 'absolute',
       width: '15px',
@@ -49886,7 +50244,7 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
       height: '100%',
       background: 'none'
     });
-    
+
     linearGradient(value_field, 'top', 'rgba(0,0,0,0)', '#000');
 
     common.extend(this.__hue_field.style, {
@@ -50073,16 +50431,16 @@ dat.controllers.ColorController = (function (Controller, dom, Color, interpret, 
       }
 
   );
-  
+
   var vendors = ['-moz-','-o-','-webkit-','-ms-',''];
-  
+
   function linearGradient(elem, x, a, b) {
     elem.style.background = '';
     common.each(vendors, function(vendor) {
       elem.style.cssText += 'background: ' + vendor + 'linear-gradient('+x+', '+a+' 0%, ' + b + ' 100%); ';
     });
   }
-  
+
   function hueGradient(elem) {
     elem.style.background = '';
     elem.style.cssText += 'background: -moz-linear-gradient(top,  #ff0000 0%, #ff00ff 17%, #0000ff 34%, #00ffff 50%, #00ff00 67%, #ffff00 84%, #ff0000 100%);'
@@ -50417,7 +50775,7 @@ dat.dom.CenteredDiv = (function (dom, common) {
   CenteredDiv.prototype.show = function() {
 
     var _this = this;
-    
+
 
 
     this.backgroundElement.style.display = 'block';
@@ -50467,7 +50825,7 @@ dat.dom.CenteredDiv = (function (dom, common) {
     this.domElement.style.left = window.innerWidth/2 - dom.getWidth(this.domElement) / 2 + 'px';
     this.domElement.style.top = window.innerHeight/2 - dom.getHeight(this.domElement) / 2 + 'px';
   };
-  
+
   function lockScroll(e) {
     console.log(e);
   }
@@ -50478,6 +50836,7 @@ dat.dom.CenteredDiv = (function (dom, common) {
 dat.utils.common),
 dat.dom.dom,
 dat.utils.common);
+
 define("ux/dat.gui", function(){});
 
 // MIT License:

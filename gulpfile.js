@@ -162,7 +162,7 @@ gulp.task('pandoc-site', function() {
  * Cleans compiled files.
  */
 gulp.task( 'jsdoc', shell.task( [
-  'jsdoc  -d public/api --package package.json --readme README.md --configure jsdoc-conf.json public/js/fp.js'
+  'jsdoc  -d public/api --package package.json --readme README.md --configure jsdoc-conf.json public/js/fp/'
 ] ) );
 
 
