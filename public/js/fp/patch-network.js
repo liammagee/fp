@@ -117,55 +117,69 @@ s             */
 
                 // Clone the terrain's geometry
                 var clone = fp.terrain.plane.geometry.clone();
-                // References the terrain's geometry positions
-                var vertices = fp.terrain.plane.geometry.attributes.position.array;
 
-                var newLengthOfPatchGrid = this.lengthOfPatchGrid() + 1;
+                // References the terrain's geometry positions
+                var terrainGeometryPositions = fp.terrain.plane.geometry.attributes.position.array;
+
+                // Get the length of the patch grid
+                var lengthOfPatchGrid = this.lengthOfPatchGrid();
+
+                // Copy existing parameters for convenience
                 var patchSize = fp.patchNetwork.patchSize;
-                var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
-                var newPoints = fp.terrain.gridPoints + newLengthOfPatchGrid;
-                var geometry = new THREE.PlaneBufferGeometry( size, size, newPoints - 1, newPoints - 1 );
-                // var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
-                var patchSizeOffset = fp.patchNetwork.patchSize + 1;
-                var newOffset = 0, oldOffset = 0;
-                var counter = 0;
                 var gridPoints = fp.terrain.gridPoints;
 
+                // Calculate the new dimension of the patch network
+                var newDimension = fp.terrain.gridPoints + lengthOfPatchGrid + 1;
+
+                // Construct a new geometry with 'hidden' duplicate positions
+                var patchGeometry = new THREE.PlaneBufferGeometry(
+                    fp.terrain.plane.geometry.parameters.width,
+                    fp.terrain.plane.geometry.parameters.height,
+                    newDimension - 1,
+                    newDimension - 1
+                );
+                var patchGeometryPositions = patchGeometry.attributes.position.array;
+
+                // Variables for copying offsets
+                var oldOffset = 0, newOffset = 0;
+
+                // Copy terrain geometry positions to the plane geometry
                 for ( var i = 0; i < gridPoints; i++ ) {
 
                     for ( var j = 0; j < gridPoints; j++ ) {
 
-                        geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                        geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                        geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                        patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                        patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                        patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
 
+                        // Hitting a patch boundary, so duplicate the postions for the 'hidden' position
                         if ( i % patchSize === 0 ) {
 
-                            newOffset += newPoints * 3 ;
-                            geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                            geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                            geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                            newOffset += newDimension * 3 ;
+                            patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                            patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                            patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
 
                             if ( j % patchSize === 0 ) {
 
                                 newOffset += 3;
-                                geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                                geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                                geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                                patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                                patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                                patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
                                 newOffset -= 3;
 
                             }
 
-                            newOffset -= newPoints * 3;
+                            newOffset -= newDimension * 3;
 
                         }
 
                         if ( j % patchSize === 0 ) {
 
                             newOffset += 3;
-                            geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
-                            geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
-                            geometry.attributes.position.array[ newOffset + 2 ] = vertices[ oldOffset + 2 ];
+                            patchGeometryPositions[ newOffset + 0 ] = terrainGeometryPositions[ oldOffset + 0 ];
+                            patchGeometryPositions[ newOffset + 1 ] = terrainGeometryPositions[ oldOffset + 1 ];
+                            patchGeometryPositions[ newOffset + 2 ] = terrainGeometryPositions[ oldOffset + 2 ];
 
                         }
 
@@ -175,29 +189,33 @@ s             */
                     }
                     if ( i % patchSize === 0 ) {
 
-                        newOffset += newPoints * 3;
+                        newOffset += newDimension * 3;
 
                     }
-                }
-                geometry.computeVertexNormals();
 
-                var len = geometry.attributes.position.array.length / 3,
+                }
+
+                // Compute normals
+                patchGeometry.computeVertexNormals();
+
+                // Add terrain attributes to the patch geometry
+                var len = patchGeometryPositions.length / 3,
                     heights = new Float32Array( len ),
                     trailPoints = new Float32Array( len ),
                     patchPoints = new Float32Array( len );
 
                 for ( i = 0; i < len; i++ ) {
 
-                    heights[ i ] = geometry.attributes.position.array[ i * 3 + 2 ];
+                    heights[ i ] = patchGeometryPositions[ i * 3 + 2 ];
                     trailPoints[ i ] = 0;
                     patchPoints[ i ] = 0;
 
                 }
 
                 // Add heights, trail points and patch points - NECESSARY?
-                geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
-                geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-                geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
+                patchGeometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
+                patchGeometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
+                patchGeometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
                 // Obtain the terrain's uniforms
                 var uniforms = fp.terrain.createUniforms();
@@ -225,11 +243,12 @@ s             */
                 } );
 
                 // Copy the plane positions
-                this.patchPlaneArray = geometry.attributes.position.clone();
+                this.patchPlaneArray = patchGeometry.attributes.position.clone();
                 // Create a copy of the sphere positions
                 this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
 
-                return new THREE.Mesh( geometry, richTerrainMaterial );
+                // Sets the plane object to the mesh containing the geometry and material
+                this.plane = new THREE.Mesh( patchGeometry, richTerrainMaterial );
 
             };
 
@@ -239,9 +258,11 @@ s             */
             this.buildPatchMesh = function() {
 
                 // var patchMaterial = new THREE.MeshBasicMaterial( { vertexColors: THREE.FaceColors } );
-                this.plane = this.cloneGeometry();
+                this.cloneGeometry();
+
                 // Rotate 90 degrees on X axis, to be the "ground"
                 this.plane.rotation.set( -Math.PI / 2, 0, 0 );
+
                 // Lift by 1, to ensure shaders doesn't clash with water
                 this.plane.position.set( 0, fp.appConfig.terrainOptions.defaultHeight, 0 );
                 this.plane.castShadow = true;
@@ -353,7 +374,7 @@ s             */
                 var gridPoints = fp.terrain.gridPoints;
                 var patchSize = fp.patchNetwork.patchSize;
                 var dim = Math.ceil( gridPoints / patchSize );
-                var newPoints = gridPoints + dim;
+                var newDimension = gridPoints + dim;
                 var oldVal = 0;
 
                 for ( var i = 0; i < this.patches.length; i++ ) {
@@ -379,9 +400,9 @@ s             */
                                 continue;
 
                             var colOffset = patchCol * ( patchSize + 1 ) + k;
-                            var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newPoints;
+                            var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newDimension;
                             var cell = rowOffset + colOffset;
-                            // var rows = ( ( this.patchSize + 1 ) * Math.floor( i / pl ) ) * newPoints + j * newPoints;
+                            // var rows = ( ( this.patchSize + 1 ) * Math.floor( i / pl ) ) * newDimension + j * newDimension;
                             // var cols = ( i % pl ) * ( this.patchSize + 1 ) + k;
                             // var cell = rows + cols;
                             counter++;
