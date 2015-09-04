@@ -409,6 +409,7 @@ define( [
              */
             this.updateAgents = function() {
 
+                // Return if not running
                 if ( !FiercePlanet.AppState.runSimulation || _.isUndefined( this.particles ) ) {
 
                     return;
@@ -416,7 +417,10 @@ define( [
                 }
 
                 var agents = this.agents;
+                var changeDirectionEveryTick = fp.appConfig.agentOptions.changeDirectionEveryTick;
+                var perturbDirectionEveryTick = fp.appConfig.agentOptions.perturbDirectionEveryTick;
 
+                // Optionally shuffle, to randomise order in which agents interact, move, etc.
                 if ( fp.appConfig.agentOptions.shuffle ) {
 
                     agents = _.shuffle( this.agents );
@@ -427,6 +431,7 @@ define( [
 
                     var agent = agents[ i ];
 
+                    // If the agent is otherwise engaged, move on
                     var underConstruction = agent.build() || agent.buildRoad();
 
                     if ( underConstruction ) {
@@ -435,10 +440,16 @@ define( [
 
                     }
 
-                    // No water around or home built? Move on...
-                    if ( fp.timescale.frameCounter % ( fp.timescale.ticksToYear * fp.timescale.framesToTick ) === 0 ) {
+                    // Periodically, re-assess direction
+                    if ( fp.timescale.frameCounter % changeDirectionEveryTick == i % changeDirectionEveryTick ) {
 
                         agent.evaluateDirection();
+
+                    }
+                    else if ( fp.timescale.frameCounter % perturbDirectionEveryTick == i % perturbDirectionEveryTick
+                        && agent.grounded) {
+
+                        agent.perturbDirection();
 
                     }
 
@@ -462,12 +473,8 @@ define( [
 
                     }
 
-                    if ( agent.grounded ) {
 
-                        agent.perturbDirection();
-
-                    }
-
+                    // Update time-based counters
                     agent.updateTick();
 
                     // Move the agent
@@ -639,6 +646,7 @@ define( [
             this.networks.push( new this.AgentNetworkNetwork() );
             this.particles = null;
             this.agentParticleSystemAttributes = null;
+
         };
 
         return FiercePlanet;

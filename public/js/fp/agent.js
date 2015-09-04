@@ -438,6 +438,7 @@ define( [
 
                 // Multiply relative to patch size
                 var factor = fp.appConfig.terrainOptions.multiplier;
+
                 if ( fp.appConfig.agentOptions.movementRelativeToPatch ) {
 
                     factor *= fp.appConfig.terrainOptions.patchSize *
@@ -466,6 +467,15 @@ define( [
                 }
                 else {
 
+                    // Irrespective of direction, constrain y position to the ground
+                    // if it is not moving in a vertical direction
+                    if ( directionAtSpeed.x != 0 || directionAtSpeed.z != 0 ) {
+
+                        newPosition.y = fp.getHeight( newPosition.x, newPosition.z ) +
+                                        fp.appConfig.agentOptions.terrainOffset +
+                                        fp.appConfig.agentOptions.size / 2;
+
+                    }
                     this.position = newPosition;
 
                 }

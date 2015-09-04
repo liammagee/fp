@@ -75,7 +75,13 @@ define( [
              * @inner
              */
             initialY: 50,
+
+            /**
+             * Whether the agent's age is randomly set, initially
+             * @type {Boolean}
+             */
             randomAge: true,
+
             chanceToJoinNetwork: 0.05,
             chanceToJoinNetworkWithHome: 0.05,
             chanceToJoinNetworkWithBothHomes: 0.05,
@@ -95,7 +101,10 @@ define( [
             initialPerturbBy: 0.05,
             movementRelativeToPatch: false,
             movementInPatch: 1,
-            movementStrictlyIntercardinal: false
+            movementStrictlyIntercardinal: false,
+
+            changeDirectionEveryTick: 100,
+            perturbDirectionEveryTick: 10,
 
         };
 
