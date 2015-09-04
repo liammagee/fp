@@ -471,6 +471,7 @@ define( [
                     // if it is not moving in a vertical direction
                     if ( directionAtSpeed.x != 0 || directionAtSpeed.z != 0 ) {
 
+                        // Set the y position to height of the ground + offset + half the size of the agent
                         newPosition.y = fp.getHeight( newPosition.x, newPosition.z ) +
                                         fp.appConfig.agentOptions.terrainOffset +
                                         fp.appConfig.agentOptions.size / 2;

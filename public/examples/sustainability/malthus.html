@@ -15,6 +15,7 @@
         });
 
         var _fp;
+
         require( [ 'fp' ],
             function( fp ) {
                 _fp = fp;
@@ -34,6 +35,7 @@
                         "2": { "create": false },
                         "3": { "create": false },
                         "4": {
+
                             "waterShow": false,
                             "terrainShow": true,
                             "buildingsShow": false,
@@ -46,11 +48,14 @@
                             "hudShow": true,
                             "statsShow": true,
 
+                            "coloriseAgentsByHealth": true,
+
                             "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 2500,
                             "cameraZ": 0,
                             // "guiShowColorFolder": false
+                            //
                         },
                         "5": {
                             "colorNightAgent": 0x00ff00,
@@ -66,8 +71,6 @@
                             "colorLightHemisphereIntensity": 1.0,
                             "colorLightDirectional": 0xffffff,
                             "colorLightDirectionalIntensity": 1.0,
-
-                            "coloriseAgentsByHealth": true,
                         },
                         "6": {
                             "mapIndex": 1,

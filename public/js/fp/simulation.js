@@ -877,48 +877,67 @@ define(
 
             /**
              * Gets the terrain index point for a given ( x, y ) co-ordinate.
-             * @memberof fp
+             *
+             * @param {Number} x
+             * @param {Number} y
              */
             fp.getIndex = function( x, y ) {
+
+                // Multiply values
                 var multiplier = fp.appConfig.terrainOptions.multiplier;
-                x = Math.floor( x / multiplier );
-                y = Math.floor( y / multiplier );
+                x = x / multiplier;
+                y = y / multiplier;
+
+                // Obtain the maximum extent agents can move
                 var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
-                var xRel = Math.floor( x ) + fp.terrain.halfExtent;
-                var yRel = Math.floor( y ) + fp.terrain.halfExtent;
-                if ( xRel < fp.terrain.halfExtent - maxExtent || yRel < fp.terrain.halfExtent - maxExtent ||
-                     xRel > fp.terrain.halfExtent + maxExtent || yRel > fp.terrain.halfExtent + maxExtent )
+
+                // Return a value if either x or y value is outside the maximum allowable
+                if ( x < - maxExtent || y < - maxExtent || x > + maxExtent || y > + maxExtent ) {
+
                     return -1;
-                var halfGrid = fp.terrain.gridExtent / 2;
-                var gridRatio = fp.terrain.gridExtent / fp.terrain.gridPoints;
-                // NOT SURE WHY THIS IS HERE?
-                y += gridRatio / 2;
-                //y = ( fp.terrain.gridPoints * fp.terrain.gridPoints ) - y - 1;
-                var xLoc = Math.floor( ( Math.round( x ) + halfGrid ) / gridRatio );
-                var yLoc = Math.floor( ( Math.round( y ) + halfGrid ) / gridRatio );
-                return Math.floor( fp.terrain.gridPoints * yLoc + xLoc );
+
+                }
+
+                // Grid ratio
+                var gr = fp.terrain.gridExtent / fp.terrain.gridPoints;
+                var h = fp.terrain.halfExtent;
+                // Top over patch boundaries,
+                y += gr / 2;
+
+                var indexedX = Math.floor( ( x + h ) / gr );
+                var indexedY = Math.floor( ( y + h ) / gr );
+
+                return fp.terrain.gridPoints * indexedY + indexedX;
+
             };
+
 
             /**
              * Gets the terrain height for a given ( x, y ) co-ordinate.
              * @memberof fp
              */
             fp.getHeight = function( x, y ) {
+
                 return fp.terrain.getHeightForIndex( fp.getIndex( x, y ) );
+
             };
 
             /**
              * @memberof fp
              */
             fp.speedOfSim = function() {
-                return true;
+
+                return 1.0;
+
             };
 
             /**
              * @memberof fp
              */
             fp.likelihoodOfGrowth = function() {
+
                 return ( 1 - ( fp.buildingNetwork.speedOfConstruction * fp.speedOfSim() ) );
+
             };
 
             /**
