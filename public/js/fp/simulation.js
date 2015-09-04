@@ -888,8 +888,11 @@ define(
                 x = x / multiplier;
                 y = y / multiplier;
 
+                // Half the extent of the terrain grid
+                var h = fp.terrain.halfExtent;
+
                 // Obtain the maximum extent agents can move
-                var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
+                var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * h;
 
                 // Return a value if either x or y value is outside the maximum allowable
                 if ( x < - maxExtent || y < - maxExtent || x > + maxExtent || y > + maxExtent ) {
@@ -900,7 +903,6 @@ define(
 
                 // Grid ratio
                 var gr = fp.terrain.gridExtent / fp.terrain.gridPoints;
-                var h = fp.terrain.halfExtent;
                 // Top over patch boundaries,
                 y += gr / 2;
 
