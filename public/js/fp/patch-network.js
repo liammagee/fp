@@ -75,20 +75,26 @@ s             */
             // FUNCTIONS
 
             /**
-             * Initialises each patch value with a random value.
+             * Obtain the number of patches along one size of the terrain.
+             * If the terrain contains 400 grid points, and the patch size is 21
+             * then the number of patches should be Math.ceil( 400 / 21 ) - 1 = 19.
+             */
+            this.lengthOfPatchGrid = function() {
+                return Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
+            }
+
+            /**
+             * Constructs an array of patches, with values supplied by initialisePatchFunction().
              */
             this.initialisePatches = function() {
 
-                // Obtain the number of patches along one size of the terrain.
-                // If the terrain contains 400 grid points, and the patch size is 21
-                // then the number of patches should be Math.ceil( 400 / 21 ) - 1 = 19.
-                var numberOfSidePatches = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
-                var lengthOfPatchGrid = numberOfSidePatches * numberOfSidePatches;
+                var lengthOfPatchGrid = this.lengthOfPatchGrid();
+                var sizeOfPatchGrid = lengthOfPatchGrid * lengthOfPatchGrid;
 
                 // Make a single dimension array for the patch values (e.g. 19 x 19)
                 fp.patchNetwork.patches = [];
 
-                for ( var i = 0; i < lengthOfPatchGrid; i++ ) {
+                for ( var i = 0; i < sizeOfPatchGrid; i++ ) {
 
                     // Create a new patch, with a value based on the return value of initialisePatchFunction().
                     var patch = new FiercePlanet.Patch( fp.patchNetwork.initialisePatchFunction() );
@@ -102,24 +108,32 @@ s             */
 
             /**
              * Construct a geometry with closed spaces.
+             * NOTE: this method depends upon the terrain's geometry being
+             * created first.
+             * The cloned geometry adds a new point for every patch, to
+             * fix shader blurring between patches.
              */
             this.cloneGeometry = function() {
 
+                // Clone the terrain's geometry
                 var clone = fp.terrain.plane.geometry.clone();
+                // References the terrain's geometry positions
                 var vertices = fp.terrain.plane.geometry.attributes.position.array;
-                var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize );
+
+                var newLengthOfPatchGrid = this.lengthOfPatchGrid() + 1;
                 var patchSize = fp.patchNetwork.patchSize;
                 var size = fp.terrain.gridExtent * fp.appConfig.terrainOptions.multiplier;
-                var newPoints = fp.terrain.gridPoints + dim;
+                var newPoints = fp.terrain.gridPoints + newLengthOfPatchGrid;
                 var geometry = new THREE.PlaneBufferGeometry( size, size, newPoints - 1, newPoints - 1 );
                 // var geometry = new THREE.PlaneBufferGeometry( size, size, fp.terrain.gridPoints - 1, fp.terrain.gridPoints - 1 );
                 var patchSizeOffset = fp.patchNetwork.patchSize + 1;
                 var newOffset = 0, oldOffset = 0;
                 var counter = 0;
+                var gridPoints = fp.terrain.gridPoints;
 
-                for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
+                for ( var i = 0; i < gridPoints; i++ ) {
 
-                    for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
+                    for ( var j = 0; j < gridPoints; j++ ) {
 
                         geometry.attributes.position.array[ newOffset + 0 ] = vertices[ oldOffset + 0 ];
                         geometry.attributes.position.array[ newOffset + 1 ] = vertices[ oldOffset + 1 ];
@@ -180,12 +194,15 @@ s             */
 
                 }
 
+                // Add heights, trail points and patch points - NECESSARY?
                 geometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
                 geometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
                 geometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
 
+                // Obtain the terrain's uniforms
                 var uniforms = fp.terrain.createUniforms();
 
+                // Constuct a material for the patch network mesh
                 var richTerrainMaterial = new THREE.ShaderMaterial( {
 
                     uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
@@ -207,7 +224,9 @@ s             */
 
                 } );
 
+                // Copy the plane positions
                 this.patchPlaneArray = geometry.attributes.position.clone();
+                // Create a copy of the sphere positions
                 this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
 
                 return new THREE.Mesh( geometry, richTerrainMaterial );

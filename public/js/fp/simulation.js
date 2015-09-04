@@ -857,6 +857,7 @@ define(
              * @memberof fp
              */
             fp.getPatchIndex = function( x, y ) {
+
                 var multiplier = fp.appConfig.terrainOptions.multiplier;
                 x = Math.floor( x / multiplier );
                 y = Math.floor( y / multiplier );
@@ -866,8 +867,12 @@ define(
                 var pY = Math.floor( dim * ( y + halfGrid ) / fp.terrain.gridExtent );
                 var index = Math.floor( pY * dim + pX );
                 index = ( index < 0 ) ? 0 : index;
-                index = ( index >= fp.patchNetwork.patchValues.length ) ? fp.patchNetwork.patchValues.length - 1 : index;
+                index = ( index >= fp.patchNetwork.patches.length ) ?
+                        fp.patchNetwork.patches.length - 1 :
+                        index;
+
                 return index;
+
             };
 
             /**
