@@ -291,29 +291,36 @@ s             */
              */
             this.defaultReviseValues = function() {
 
+                // Reset the mean value
                 this.patchMeanValue = 0;
+
+                // Convenience variables
                 var popPatch = fp.patchNetwork.patches.length;
                 var popAgent = fp.agentNetwork.agents.length;
                 var r = popAgent / popPatch;
-                var change;
 
+                // Iterate through the patches to reset their value
                 for ( var i = 0; i < this.patches.length; i++ ) {
 
                     var patch = this.patches[ i ];
+                    var change = 0;
 
+                    // If there are agents on the patch, revise accordingly
                     if ( !_.isUndefined( this.agentsOnPatches[ i ] ) ) {
 
                         var len = this.agentsOnPatches[ i ].length;
                         change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
-                        patch.updatePatchValue( change );
 
                     }
                     else { // if ( patch.value < patch.initialValue ) { // Recover
 
-                        change = Math.pow( r, 2 );
-                        patch.updatePatchValue( Math.pow( r, 3 ) );
+                        change = Math.pow( r, 3 );
 
                     }
+
+                    // ALWAYS update, so we can set / unset the patch's isDirty flag
+                    patch.updatePatchValue( change );
+
                     this.patchMeanValue += patch.value;
 
                 }
@@ -332,15 +339,19 @@ s             */
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
 
                     var agent =  fp.agentNetwork.agents[ i ];
-                    var index = fp.getPatchIndex( agent.position.x, agent.position.z );
 
-                    if ( !this.agentsOnPatches[ index ] ) {
+                    // Obtain
+                    var patchIndex = fp.getPatchIndex( agent.position.x, agent.position.z );
 
-                        this.agentsOnPatches[ index ] = [ ];
+                    // Create an empty array, if none exists
+                    if ( !this.agentsOnPatches[ patchIndex ] ) {
+
+                        this.agentsOnPatches[ patchIndex ] = [];
 
                     }
 
-                    this.agentsOnPatches[ index ].push( agent );
+                    // Add the agent the array for this patchIndex value
+                    this.agentsOnPatches[ patchIndex ].push( agent );
 
                 }
 
@@ -392,10 +403,26 @@ s             */
                 var dim = Math.ceil( gridPoints / patchSize );
                 var newDimension = gridPoints + dim;
                 var oldVal = 0;
+                var networkRequiresUpdate = false;
 
                 for ( var i = 0; i < this.patches.length; i++ ) {
 
-                    var val = this.patches[ i ].value;
+                    var patch = this.patches[ i ];
+
+                    // Only update the geometry's patch values if those values have been changed
+                    if ( !patch.isDirty ) {
+
+                        continue;
+
+                    }
+
+                    if ( !networkRequiresUpdate ) {
+
+                        networkRequiresUpdate = true;
+
+                    }
+
+                    var val = patch.value;
                     var patchCol = i % ( dim - 1 );
                     var patchRow = Math.floor( i / ( dim - 1 ) );
 
@@ -418,9 +445,6 @@ s             */
                             var colOffset = patchCol * ( patchSize + 1 ) + k;
                             var rowOffset = ( ( patchRow * ( patchSize + 1 ) ) + j ) * newDimension;
                             var cell = rowOffset + colOffset;
-                            // var rows = ( ( this.patchSize + 1 ) * Math.floor( i / pl ) ) * newDimension + j * newDimension;
-                            // var cols = ( i % pl ) * ( this.patchSize + 1 ) + k;
-                            // var cell = rows + cols;
                             counter++;
 
                             if ( oldVal != val ) {
@@ -437,7 +461,11 @@ s             */
 
                 }
 
-                this.plane.geometry.attributes.patch.needsUpdate = true;
+                if ( networkRequiresUpdate ) {
+
+                    this.plane.geometry.attributes.patch.needsUpdate = true;
+
+                }
 
             };
 

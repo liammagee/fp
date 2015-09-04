@@ -155,13 +155,16 @@
                             for (var i = 0; i < fp.patchNetwork.patches.length; i++) {
 
                                 var patch = fp.patchNetwork.patches[i];
+                                var change = 0;
 
                                 // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
                                 if ( patch.value < patch.initialValue ) { // Recover
 
-                                    patch.updatePatchValue( fp.appConfig.malthusOptions.rateOfRecovery );
+                                    change = fp.appConfig.malthusOptions.rateOfRecovery;
 
                                 }
+
+                                patch.updatePatchValue( change );
 
                                 fp.patchNetwork.patchMeanValue += patch.value;
 

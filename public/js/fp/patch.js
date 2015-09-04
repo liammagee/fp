@@ -16,25 +16,48 @@ define( [
         FiercePlanet.Patch = function( val ) {
 
             this.value = val;
+            this.isDirty = true;
             this.initialValue = val;
             this.minValue = 0.0001;
 
             /**
              * Updates the value of the patch.
-             * @param  {Number} amount the amount to increment the value by.
+             * @param  {Number} change the change to increment the value by.
              */
-            this.updatePatchValue = function( amount ) {
-                var val = this.value;
-                if ( val + amount < this.minValue )
-                    val = this.minValue;
-                else if ( val + amount > 1.0 )
-                    val = 1.0;
-                else
-                    val += amount;
-                this.value = val;
-            };
-        };
+            this.updatePatchValue = function( change ) {
 
+                var val = this.value;
+                if ( val + change < this.minValue ) {
+
+                    val = this.minValue;
+
+                }
+                else if ( val + change > 1.0 ) {
+
+                    val = 1.0;
+
+                }
+                else {
+
+                    val += change;
+
+                }
+
+                if ( val != this.value ) {
+
+                    this.value = val;
+                    this.isDirty = true;
+
+                }
+                else {
+
+                    this.isDirty = false;
+
+                }
+
+            };
+
+        };
 
 
         return FiercePlanet;
