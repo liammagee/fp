@@ -22,7 +22,9 @@ define( [
 
             /**
              * Array of patches belonging to this network.
+             *
              * @type {Array}
+             * @memberof PatchNetwork
              */
             this.patches = [];
 
@@ -30,45 +32,59 @@ define( [
              * Object that stores a collection of keys that reference a given patch,
              * and an array of agents currently located on the patch.
              * This serves as an optimised cache for obtaining agents on a patch.
+             *
              * @type {Object}
+             * @memberof PatchNetwork
              */
             this.agentsOnPatches = {};
 
             /**
-             * Represents the Mesh object displaying the patches
+             * Represents the Mesh object displaying the patches.
+             *
              * @type {[type]}
+             * @memberof PatchNetwork
              */
             this.plane = null;
 
             /**
              * An array of geometry positions for the patches in plane formation.
+             *
              * @type {Array}
+             * @memberof PatchNetwork
              */
             this.patchPlaneArray = [];
 
             /**
              * An array of geometry positions for the patches in sphere formation.
+             *
              * @type {Array}
+             * @memberof PatchNetwork
              */
             this.patchSphereArray = [];
 
             /**
              * A copy of the mean of patch values.
+             *
              * @type {Number}
+             * @memberof PatchNetwork
              */
             this.patchMeanValue = 0;
 
             /**
              * Local copy of the configured <em>patchSize</em>.
              * Should be an integer that is a factor of the terrain.gridPoints - 1.
+             *
              * @type {Number}
+             * @memberof PatchNetwork
              */
             this.patchSize = fp.appConfig.terrainOptions.patchSize;
 
             /**
              * Default initialise function - sets each patch value to a random number between 0 and 1
+             *
              * @param  {[type]} ) {            return Math.random( [description]
-s             */
+             * @memberof PatchNetwork
+s            */
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
 
@@ -78,6 +94,8 @@ s             */
              * Obtain the number of patches along one size of the terrain.
              * If the terrain contains 400 grid points, and the patch size is 21
              * then the number of patches should be Math.ceil( 400 / 21 ) - 1 = 19.
+             *
+             * @memberof PatchNetwork
              */
             this.lengthOfPatchGrid = function() {
                 return Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
@@ -85,6 +103,8 @@ s             */
 
             /**
              * Constructs an array of patches, with values supplied by initialisePatchFunction().
+             *
+             * @memberof PatchNetwork
              */
             this.initialisePatches = function() {
 
@@ -108,7 +128,9 @@ s             */
 
 
             /**
-             * Constructs the plane material
+             * Constructs the plane material.
+             *
+             * @memberof PatchNetwork
              */
             this.constructMaterial = function() {
 
@@ -148,6 +170,8 @@ s             */
              * created first.
              * The cloned geometry adds a new point for every patch, to
              * fix shader blurring between patches.
+             *
+             * @memberof PatchNetwork
              */
             this.cloneGeometry = function() {
 
@@ -268,8 +292,11 @@ s             */
 
             };
 
+
             /**
              * Builds a plane mesh based on the current terrain geometry, but with its own material.
+             *
+             * @memberof PatchNetwork
              */
             this.buildPatchMesh = function() {
 
@@ -285,6 +312,7 @@ s             */
                 this.plane.receiveShadow = true;
 
             };
+
 
             /**
              * Default revision of the values of each patch.
@@ -329,8 +357,11 @@ s             */
 
             };
 
+
             /**
              * Update the cached count of patch agents.
+             *
+             * @memberof PatchNetwork
              */
             this.updatePatchAgents = function() {
 
@@ -357,8 +388,11 @@ s             */
 
             };
 
+
             /**
              * Updates values of all patches in the network.
+             *
+             * @memberof PatchNetwork
              */
             this.updatePatchValues = function() {
 
@@ -389,6 +423,8 @@ s             */
 
             /**
              * Updates the terrain's colors based on its patch attributes.
+             *
+             * @memberof PatchNetwork
              */
             this.updateTerrainPatchAttributes = function() {
 
@@ -472,6 +508,8 @@ s             */
 
             /**
              * Adds or removes the patch network from the scene.
+             *
+             * @memberof PatchNetwork
              */
             this.togglePatchesState = function() {
 
