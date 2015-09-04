@@ -17,7 +17,6 @@ define( [
 
             /**
              * Updates the ticks and age.
-             * @memberof Agent
              */
             this.updateTick = function() {
 
@@ -32,55 +31,82 @@ define( [
             };
 
             /**
-             * @memberof Agent
+             * Sets the direction of the agent.
+             *
+             * @param {THREE.Vector3} dir The new direction
              */
             this.setDirection = function( dir ) {
                 this.direction = dir;
             };
 
-            /**
-             * @memberof Agent
-             */
-            this.setPosition = function( v ) {
-                this.lastPosition = this.position = v;
-            };
 
             /**
-             * @memberof Agent
+             * Sets the position of the agent.
+             *
+             * @param {THREE.Vector3} pos The new position
+             */
+            this.setPosition = function( pos ) {
+                this.lastPosition = this.position = pos;
+            };
+
+
+            /**
+             * Determines whether the agent is in a building or not.
+             *
+             * @return {Boolean}
              */
             this.findBuilding = function() {
                 var xl = this.lastPosition.x, zl = this.lastPosition.z;
                 return fp.buildingNetwork.buildingHash[ fp.getIndex( xl, zl ) ];
             };
 
+
             /**
-             * @memberof Agent
+             * Returns a value as to whether the agent should be going vertically
+             * rather than horizontally for a given building.
+             *
+             * @param {Building} building a building to test
+             * @return {Boolean}
              */
             this.goingUp = function( building ) {
                 return ( building == this.home ) ?
                     ( Math.random() < fp.appConfig.agentOptions.visitHomeBuilding ) :
                      ( Math.random() < fp.appConfig.agentOptions.visitOtherBuilding );
             };
+
+
             /**
-             * @memberof Agent
+             * Updates whether the agent is on the ground or not, within a building.
+             *
+             * @param {Building} building
              */
             this.updateGroundedState = function( building ) {
+
                 var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
                     xd = this.direction.x, yd = this.direction.y, zd = this.direction.z;
 
                 if ( !this.grounded ) {
+
                     var base = fp.getHeight( xl, zl ) + fp.appConfig.agentOptions.terrainOffset;
-                    if ( yl <= base && yd < 0 )
+
+                    if ( yl <= base && yd < 0 ) {
+
                         this.grounded = true;
+
+                    }
+
                 }
                 else if ( !_.isUndefined( building ) && this.goingUp( building ) ) { // grounded == true
+
                     this.grounded = false;
+
                 }
+
             };
+
 
             /**
              * Determines the next step for a computed direction.
-             * @memberof Agent
              */
             this.nextComputedDirection = function() {
 
@@ -132,7 +158,6 @@ define( [
 
             /**
              * Generates candicate directions from an existing direction.
-             * @memberof Agent
              */
             this.candidateDirections = function() {
                 // Check if we are in a building, and offer possibility of going up
@@ -360,12 +385,15 @@ define( [
                                 value();
 
                 return directions;
+
             };
 
+
             /**
-             * @memberof Agent
+             * Works out the best candidate direction for the agent.
              */
             this.bestCandidate = function() {
+
                 var directions = this.generateDirectionVectorsAndWeights( 0.1 );
 
                 // A direction is pulled from a weighted list of possibilities
@@ -380,19 +408,28 @@ define( [
                     value();
                 var r = Math.random();
                 var index = 0, runningTotal = 0, len = directions.length - 1;
+
                 // Note the interval array is initialisaed with an addition zero
                 for ( var i = 0; i < weightsNormed.length; i++ ) {
+
                     var a = weightsNormed[ i ];
                     runningTotal += a;
+
                     if ( r < runningTotal && i < directions.length ) {
+
                         return directions[ len - i ][ 0 ];
+
                     }
+
                 }
+
                 return this.randomDirection();
+
             };
 
+
             /**
-             * @memberof Agent
+             * Moves the agent,
              */
             this.move = function() {
 
@@ -435,53 +472,69 @@ define( [
             };
 
             /**
-             * @memberof Agent
+             * Sets the direction to the best candidate found.
              */
             this.evaluateDirection = function() {
                 this.lastPosition = this.position;
                 this.setDirection( this.bestCandidate() );
             };
 
+
             /**
              * Returns array of compass directions
              */
             this.compassDirections = function() {
+
                 var direction = 0, directions = [ ];
+
                 for ( var i = 0; i < 8; i++ ) {
+
                     var x = Math.cos( direction ) / 2;
                     var z = Math.sin( direction ) / 2;
                     directions.push( [ x, z ] );
                     direction += Math.PI / 4;
+
                 }
+
                 return directions;
+
             };
 
+
             /**
-             * Genenerates a random vector.
-             * @memberof Agent
+             * Generates a random vector to use as a new direction.
              */
             this.randomDirection = function() {
 
+                // Internal function, to calculate a new speed, as a percentage of patch size
                 var calcNewPercent = function( percent ) {
+
                     // Divide speed by 100
                     var r = Math.random();
+
                     // Adjust random based on current percent - more likely to
                     // increase for low values, decrease for high values
                     var adjustedR = ( Math.pow( r, percent) - 0.5 ) * 2;
+
                     // Distribute the random value between 0.5 and 2 (with equal likelihood of 1)
                     // var adjust = 1 + ( 0.5 % adjustedR ) * 2 - ( adjustedR % 0.5 ) * ( 1 + ( 0.5 % adjustedR ) * 2 );
                     // Distribute the random value between 0 and 2
                     var adjust = 1.0 + adjustedR;
+
                     // Multiply current percent with adjustment
                     var newPercent = adjust * percent;
+
                     // Clamp new percentage between 0 and 1
                     newPercent = ( newPercent < 0 ) ? 0 : ( newPercent > 1 ? 1 : newPercent );
+
                     return newPercent;
+
                 };
 
                 var speed = this.speed;
                 var percent = speed / 100;
-                var newPercent = percent; //calcNewPercent( percent );
+
+                var newPercent = percent;
                 // var newPercent = calcNewPercent( percent );
                 var patchSize = fp.appConfig.terrainOptions.patchSize;
                 // Calculute a new patch speed
@@ -504,38 +557,58 @@ define( [
                     return vec;
 
                 }
+
             };
 
+
             /**
-             * @memberof Agent
+             * Works out the nearest neighbour of the current agent.
              */
             this.nearestNeighbour = function( ignoreHeight ) {
+
                 var agents = fp.agentNetwork.agents;
                 var x = this.position.x, y = this.position.y, z = this.position.z;
                 var nearest = null, leastLen = 0;
+
                 for ( var i = 0; i < agents.length; i++ ) {
+
                     var agent = agents[ i ];
-                    if ( agent == this )
+                    if ( agent == this ) {
+
                         continue;
+
+                    }
+
                     var ox = agent.position.x, oy = agent.position.y, oz = agent.position.z;
                     var len = Math.sqrt( Math.pow( ox - x, 2 ) + Math.pow( oz - z, 2 ) );
+
                     if ( ! ignoreHeight ) {
+
                         len = Math.sqrt( Math.pow( len, 2 ) + Math.pow( oy - y, 2 ) );
+
                     }
+
                     if ( leastLen === 0 || len < leastLen ) {
+
                         nearest = agent;
                         leastLen = len;
+
                     }
+
                 }
+
                 return nearest;
+
             };
 
+
             /**
-             * @memberof Agent
+             * Sets a random direction.
              */
             this.setRandomDirection = function() {
                 this.setDirection( this.randomDirection() );
             };
+
 
             /**
              * Slightly changes to the direction of the agent.
@@ -545,28 +618,41 @@ define( [
                 this.direction.z += this.perturbBy * ( Math.random() - 0.5 );
             };
 
+
             /**
              * Calculate likelihood of building a home
              */
             this.calculateLikelihoodOfHome = function( index ) {
+
                 // Simple test of local roads, water, buildings and building height
                 var proximityTests = fp.buildingNetwork.proximityFunctions();
+
                 for ( var i = proximityTests.length - 1; i >= 0; i-- ) {
+
                     var proximityTest = proximityTests[ i ];
                     var func = _.first( proximityTest );
                     var values = _.rest( proximityTest );
                     var response = func.apply( fp, _.union( [ index ], values ) );
-                    if ( response )
+                    if ( response ) {
+
                         return true;
+
+                    }
+
                 }
+
                 return false;
+
             };
+
 
             /**
              * Builds a building on the agent's current position.
+             *
              * @return {Boolean} Whether the building construction was successful.
              */
             this.build = function() {
+
                 if ( !fp.appConfig.buildingOptions.create )
                     return false;
 
@@ -603,6 +689,7 @@ define( [
                 }
 
                 return false;
+
             };
 
             /**
@@ -610,8 +697,11 @@ define( [
              * @return {Boolean} Whether the road construction was successful.
              */
             this.buildRoad = function() {
-                if ( !fp.appConfig.roadOptions.create )
+                if ( !fp.appConfig.roadOptions.create ) {
+
                     return false;
+
+                }
 
                 var xOrig = this.position.x,
                     zOrig = this.position.z,
@@ -623,34 +713,62 @@ define( [
                     distanceFromInitialPoint = Math.sqrt( xd * xd + zd * zd ),
                     buildingIndex = _.map( fp.buildingNetwork.buildings, function( building ) { return fp.getIndex( building.lod.position.x, building.lod.position.z ); } );
 
-                if ( fp.roadNetwork.networkMesh.children.length >= fp.appConfig.roadOptions.maxNumber )
+                if ( fp.roadNetwork.networkMesh.children.length >= fp.appConfig.roadOptions.maxNumber ) {
+
                     return false;
 
-                if ( !_.isNull( fp.stats ) && fp.statss <= 10 )
+                }
+
+                if ( !_.isNull( fp.stats ) && fp.statss <= 10 ) {
+
                     return false;
+
+                }
 
                 if ( fp.appConfig.displayOptions.buildingsShow ) {
+
                     if ( fp.buildingNetwork.buildings.length === 0 ) {
+
                         return false;
+
                     }
                     else if ( fp.buildingNetwork.buildings.length == 1 ) {
-                        if ( buildingIndex.indexOf( index ) == -1 )
+                        if ( buildingIndex.indexOf( index ) == -1 ) {
+
                             return false;
+
+                        }
+
                     }
+
                 }
                 if ( fp.roadNetwork.indexValues.length === 0 ) {
-                    if ( distanceFromInitialPoint > fp.appConfig.roadOptions.initialRadius )
+                    if ( distanceFromInitialPoint > fp.appConfig.roadOptions.initialRadius ) {
+
                         return false;
+
+                    }
                 }
                 else {
-                    if ( fp.roadNetwork.indexValues.indexOf( index ) == -1 )
+
+                    if ( fp.roadNetwork.indexValues.indexOf( index ) == -1 ) {
+
                         return false;
+
+                    }
                     if ( buildingIndex.indexOf( index ) == -1 ) {
+
                         var r = Math.random();
                         var chance = 1 / ( Math.log( distanceFromInitialPoint + 1 ) * fp.appConfig.roadOptions.probability );
-                        if ( chance < r )
+
+                        if ( chance < r ) {
+
                             return false;
+
+                        }
+
                     }
+
                 }
 
                 // Pick a random direction to create a road
@@ -660,6 +778,7 @@ define( [
                     lenMaximum = fp.appConfig.roadOptions.lenMaximum,
                     lenFactor = Math.random();
                 var existingRoad = fp.roadNetwork.roads[ index ];
+
                 if ( existingRoad ) {
                     var ps = _.first( existingRoad.geometry.vertices ),
                         pe = _.last( existingRoad.geometry.vertices ),
@@ -684,10 +803,11 @@ define( [
                     ze = zOrig - zEnd,
                     distanceFromEnd = Math.sqrt( xe * xe + ze * ze ),
                     width = Math.ceil( ( ( ( 1 / Math.log( distanceFromInitialPoint + 10 ) ) ) * Math.log( distanceFromEnd ) ) * fp.appConfig.roadOptions.roadWidth );
+
                 return fp.roadNetwork.addRoad( this.position, endPoint, width );
+
             };
 
-            this.vertex = null;
             this.position = null;
             this.direction = null;
             this.speed = fp.appConfig.agentOptions.initialSpeed;
