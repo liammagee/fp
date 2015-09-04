@@ -18,11 +18,12 @@ define( [
 
             this.plane = null;
             this.patches = {};
-            this.patchValues = [ ];
-            this.patchPlaneArray = [ ];
-            this.patchSphereArray = [ ];
+            this.patchValues = [];
+            this.patchPlaneArray = [];
+            this.patchSphereArray = [];
             this.patchMeanValue = 0;
-            this.patchSize = fp.appConfig.terrainOptions.patchSize;
+
+            // Default initialise function - sets each patch value to a random number between 0 and 1
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
             /**
