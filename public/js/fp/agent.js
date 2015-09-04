@@ -574,6 +574,7 @@ define( [
                 for ( var i = 0; i < agents.length; i++ ) {
 
                     var agent = agents[ i ];
+
                     if ( agent == this ) {
 
                         continue;
@@ -607,7 +608,9 @@ define( [
              * Sets a random direction.
              */
             this.setRandomDirection = function() {
+
                 this.setDirection( this.randomDirection() );
+
             };
 
 
@@ -615,8 +618,10 @@ define( [
              * Slightly changes to the direction of the agent.
              */
             this.perturbDirection = function() {
+
                 this.direction.x += this.perturbBy * ( Math.random() - 0.5 );
                 this.direction.z += this.perturbBy * ( Math.random() - 0.5 );
+
             };
 
 
@@ -781,6 +786,7 @@ define( [
                 var existingRoad = fp.roadNetwork.roads[ index ];
 
                 if ( existingRoad ) {
+
                     var ps = _.first( existingRoad.geometry.vertices ),
                         pe = _.last( existingRoad.geometry.vertices ),
                         xChange = ps.x - pe.x,
@@ -790,7 +796,9 @@ define( [
                         angle90 = angle + Math.PI / 2 + Math.PI * turn;
                     xr = Math.cos( angle90 );
                     zr = Math.sin( angle90 );
+
                 }
+
                 var totalLen = lenMinimum +
                                 ( lenMaximum - lenMinimum ) *
                                 ( 1 - jStat.exponential.cdf( lenFactor, fp.appConfig.roadOptions.lenDistributionFactor ) ),
@@ -811,95 +819,109 @@ define( [
 
             /**
              * The position of the agent.
-             * @type {THREE.Vector3} position
+             *
+             * @type {THREE.Vector3}
              */
             this.position = null;
 
             /**
              * The last position of the agent.
-             * @type {THREE.Vector3} position
+             * @type {THREE.Vector3}
              */
             this.lastPosition = null;
 
             /**
              * The current direction of the agent.
-             * @type {THREE.Vector3} position
+             * @type {THREE.Vector3}
              */
             this.direction = null;
 
             /**
              * The speed at which the agent is moving.
+             *
              * @type {Number}
              */
             this.speed = fp.appConfig.agentOptions.initialSpeed;
 
             /**
              * The amount by which to perturb the movement of the agent.
+             *
              * @type {Number}
              */
             this.perturbBy = fp.appConfig.agentOptions.initialPerturbBy;
 
             /**
              * Whether the agent is currently on the ground.
+             *
              * @type {Boolean}
              */
             this.grounded = true;
 
             /**
              * The computed path, determining the agent's direction (if any).
+             *
              * @type {Array}
              */
             this.pathComputed = undefined;
 
             /**
              * The current position along the path.
+             *
              * @type {Number}
              */
             this.pathPosition = 0;
 
             /**
              * The amount of alpha (or transparency) of the agent.
+             *
              * @type {Number}
              */
             this.alpha =  0.5 + ( Math.random() / 2 );
 
             /**
              * The color of the agent, in RGB hexadecimal notation.
+             *
              * @type {String}
              */
             this.color = "#ff0000";
 
             /**
              * The number of ticks since the agent's birth.
+             *
              * @type {Number}
              */
             this.ticks = 0;
             /**
              * The age of the agent.
+             *
              * @type {Number}
              */
             this.age = 0;
 
             /**
              * The home of the agent.
-             * @type {fp.Building}
+             *
+             * @type {Building}
              */
             this.home = null;
 
             /**
              * The health of an agent (ranging from 0 to 100).
+             *
              * @type {Number}
              */
             this.health = 100;
 
             /**
              * The gender of the agent.
+             *
              * @type {String}
              */
             this.gender = Math.random() < 0.5 ? "f": "m";
 
             /**
              * An array of children belonging to the agent.
+             *
              * @type {Array}
              */
             this.children = [];
