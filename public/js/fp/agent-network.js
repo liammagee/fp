@@ -251,7 +251,7 @@ define( [
                  */
                 this.enlistAgent = function( agent ) {
 
-                    var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
+                    var agents = fp.patchNetwork.agentsOnPatches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
 
                     if ( _.isUndefined( agents ) ) {
 

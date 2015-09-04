@@ -91,8 +91,13 @@
 
                         // Set up an agent class that can exercise, consume, reproduce and die
                         fp.Agent.prototype.exercise = function() {
-                            if (this.health > 0)
+
+                            if (this.health > 0) {
+
                                 this.health -= fp.appConfig.malthusOptions.energyLoss;
+
+                            }
+
                         }
 
                         fp.Agent.prototype.consume = function() {
@@ -102,7 +107,7 @@
 
                             if ( !_.isUndefined( patch ) ) {
                                 var agentsOnPatch = patch.length;
-                                var patchValue = fp.patchNetwork.patchValues[index];
+                                var patchValue = fp.patchNetwork.patchValues[ index ];
                                 var availableYield = patchValue.value / agentsOnPatch;
                                 patchValue.updatePatchValue( - fp.appConfig.malthusOptions.rateOfConsumption );
                                 this.health += fp.appConfig.malthusOptions.energyGain * availableYield;

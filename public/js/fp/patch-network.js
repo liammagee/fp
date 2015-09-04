@@ -10,33 +10,91 @@ define( [
 
         /**
          * Represents a network of patches. Also provides factory and utility methods.
+         *
+         * A 'patch' is a some section of terrain that can contain a value of interest
+         * to the simulation, such as the amount of food available.
+         *
          * @constructor
          * @memberof fp
          * @inner
          */
         FiercePlanet.PatchNetwork = function( fp, func ) {
 
+            /**
+             * Array of patches belonging to this network.
+             * @type {Array}
+             */
+            this.patches = [];
+
+            /**
+             * Object that stores a collection of keys that reference a given patch,
+             * and an array of agents currently located on the patch.
+             * This serves as an optimised cache for obtaining agents on a patch.
+             * @type {Object}
+             */
+            this.agentsOnPatches = {};
+
+            /**
+             * Represents the Mesh object displaying the patches
+             * @type {[type]}
+             */
             this.plane = null;
-            this.patches = {};
-            this.patchValues = [];
+
+            /**
+             * An array of geometry positions for the patches in plane formation.
+             * @type {Array}
+             */
             this.patchPlaneArray = [];
+
+            /**
+             * An array of geometry positions for the patches in sphere formation.
+             * @type {Array}
+             */
             this.patchSphereArray = [];
+
+            /**
+             * A copy of the mean of patch values.
+             * @type {Number}
+             */
             this.patchMeanValue = 0;
 
-            // Default initialise function - sets each patch value to a random number between 0 and 1
+            /**
+             * Local copy of the configured <em>patchSize</em>.
+             * Should be an integer that is a factor of the terrain.gridPoints - 1.
+             * @type {Number}
+             */
+            this.patchSize = fp.appConfig.terrainOptions.patchSize;
+
+            /**
+             * Default initialise function - sets each patch value to a random number between 0 and 1
+             * @param  {[type]} ) {            return Math.random( [description]
+s             */
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
+
+
+            // FUNCTIONS
 
             /**
              * Initialises each patch value with a random value.
              */
             this.initialisePatches = function() {
 
-                var dim = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
-                fp.patchNetwork.patchValues = new Array( dim * dim );
+                // Obtain the number of patches along one size of the terrain.
+                // If the terrain contains 400 grid points, and the patch size is 21
+                // then the number of patches should be Math.ceil( 400 / 21 ) - 1 = 19.
+                var numberOfSidePatches = Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
+                var lengthOfPatchGrid = numberOfSidePatches * numberOfSidePatches;
 
-                for ( var i = 0; i < fp.patchNetwork.patchValues.length; i++ ) {
+                // Make a single dimension array for the patch values (e.g. 19 x 19)
+                fp.patchNetwork.patches = [];
 
-                    fp.patchNetwork.patchValues[ i ] = new FiercePlanet.Patch( this.initialisePatchFunction() );
+                for ( var i = 0; i < lengthOfPatchGrid; i++ ) {
+
+                    // Create a new patch, with a value based on the return value of initialisePatchFunction().
+                    var patch = new FiercePlanet.Patch( fp.patchNetwork.initialisePatchFunction() );
+
+                    // Add the patch to the array of patch values
+                    fp.patchNetwork.patches.push( patch );
 
                 }
 
@@ -178,18 +236,18 @@ define( [
             this.defaultReviseValues = function() {
 
                 this.patchMeanValue = 0;
-                var popPatch = fp.patchNetwork.patchValues.length;
+                var popPatch = fp.patchNetwork.patches.length;
                 var popAgent = fp.agentNetwork.agents.length;
                 var r = popAgent / popPatch;
                 var change;
 
-                for ( var i = 0; i < this.patchValues.length; i++ ) {
+                for ( var i = 0; i < this.patches.length; i++ ) {
 
-                    var patch = this.patchValues[ i ];
+                    var patch = this.patches[ i ];
 
-                    if ( !_.isUndefined( this.patches[ i ] ) ) {
+                    if ( !_.isUndefined( this.agentsOnPatches[ i ] ) ) {
 
-                        var len = this.patches[ i ].length;
+                        var len = this.agentsOnPatches[ i ].length;
                         change = -len * ( 1 / ( Math.pow( r, 2 ) ) );
                         patch.updatePatchValue( change );
 
@@ -204,7 +262,7 @@ define( [
 
                 }
 
-                this.patchMeanValue /= this.patchValues.length;
+                this.patchMeanValue /= this.patches.length;
 
             };
 
@@ -213,17 +271,20 @@ define( [
              */
             this.updatePatchAgents = function() {
 
-                this.patches = {};
+                this.agentsOnPatches = {};
 
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
 
                     var agent =  fp.agentNetwork.agents[ i ];
                     var index = fp.getPatchIndex( agent.position.x, agent.position.z );
 
-                    if ( !this.patches[ index ] )
-                        this.patches[ index ] = [ ];
+                    if ( !this.agentsOnPatches[ index ] ) {
 
-                    this.patches[ index ].push( agent );
+                        this.agentsOnPatches[ index ] = [ ];
+
+                    }
+
+                    this.agentsOnPatches[ index ].push( agent );
 
                 }
 
@@ -264,10 +325,10 @@ define( [
              */
             this.updateTerrainPatchAttributes = function() {
 
-                if ( _.isUndefined( this.patchValues ))
+                if ( _.isUndefined( this.patches ))
                     return;
 
-                var pl = Math.sqrt( this.patchValues.length );
+                var pl = Math.sqrt( this.patches.length );
 
                 var counter = 0;
                 var gridPoints = fp.terrain.gridPoints;
@@ -276,9 +337,9 @@ define( [
                 var newPoints = gridPoints + dim;
                 var oldVal = 0;
 
-                for ( var i = 0; i < this.patchValues.length; i++ ) {
+                for ( var i = 0; i < this.patches.length; i++ ) {
 
-                    var val = this.patchValues[ i ].value;
+                    var val = this.patches[ i ].value;
                     var patchCol = i % ( dim - 1 );
                     var patchRow = Math.floor( i / ( dim - 1 ) );
 
