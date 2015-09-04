@@ -106,6 +106,42 @@ s             */
 
             };
 
+
+            /**
+             * Constructs the plane material
+             */
+            this.constructMaterial = function() {
+
+                // Obtain the terrain's uniforms
+                var uniforms = fp.terrain.createUniforms();
+
+                // Constuct a material for the patch network mesh
+                var patchNetworkMaterial = new THREE.ShaderMaterial( {
+
+                    uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
+                    vertexShader:   FiercePlanet.ShaderUtils.phongShaderVertex(
+
+                        FiercePlanet.ShaderUtils.terrainVertexShaderParams(),
+                        FiercePlanet.ShaderUtils.terrainVertexShaderMain()
+
+                    ),
+                    fragmentShader: FiercePlanet.ShaderUtils.phongShaderFragment(
+
+                        FiercePlanet.ShaderUtils.terrainFragmentShaderParams(),
+                        FiercePlanet.ShaderUtils.terrainFragmentShaderMain()
+
+                    ),
+                    lights: true,
+                    fog: true,
+                    alphaTest: 0.5
+
+                } );
+
+                return patchNetworkMaterial;
+
+            };
+
+
             /**
              * Construct a geometry with closed spaces.
              * NOTE: this method depends upon the terrain's geometry being
@@ -202,45 +238,20 @@ s             */
                 var len = patchGeometryPositions.length / 3,
                     heights = new Float32Array( len ),
                     trailPoints = new Float32Array( len ),
-                    patchPoints = new Float32Array( len );
+                    patchValueAttributes = new Float32Array( len );
 
                 for ( i = 0; i < len; i++ ) {
 
                     heights[ i ] = patchGeometryPositions[ i * 3 + 2 ];
                     trailPoints[ i ] = 0;
-                    patchPoints[ i ] = 0;
+                    patchValueAttributes[ i ] = 0;
 
                 }
 
                 // Add heights, trail points and patch points - NECESSARY?
                 patchGeometry.addAttribute( "height", new THREE.BufferAttribute( heights, 1 ) );
                 patchGeometry.addAttribute( "trail", new THREE.BufferAttribute( trailPoints, 1 ) );
-                patchGeometry.addAttribute( "patch", new THREE.BufferAttribute( patchPoints, 1 ) );
-
-                // Obtain the terrain's uniforms
-                var uniforms = fp.terrain.createUniforms();
-
-                // Constuct a material for the patch network mesh
-                var richTerrainMaterial = new THREE.ShaderMaterial( {
-
-                    uniforms: FiercePlanet.ShaderUtils.phongUniforms( uniforms ),
-                    vertexShader:   FiercePlanet.ShaderUtils.phongShaderVertex(
-
-                        FiercePlanet.ShaderUtils.terrainVertexShaderParams(),
-                        FiercePlanet.ShaderUtils.terrainVertexShaderMain()
-
-                    ),
-                    fragmentShader: FiercePlanet.ShaderUtils.phongShaderFragment(
-
-                        FiercePlanet.ShaderUtils.terrainFragmentShaderParams(),
-                        FiercePlanet.ShaderUtils.terrainFragmentShaderMain()
-
-                    ),
-                    lights: true,
-                    fog: true,
-                    alphaTest: 0.5
-
-                } );
+                patchGeometry.addAttribute( "patch", new THREE.BufferAttribute( patchValueAttributes, 1 ) );
 
                 // Copy the plane positions
                 this.patchPlaneArray = patchGeometry.attributes.position.clone();
@@ -248,7 +259,12 @@ s             */
                 this.patchSphereArray = fp.terrain.constructSphere( this.patchPlaneArray );
 
                 // Sets the plane object to the mesh containing the geometry and material
-                this.plane = new THREE.Mesh( patchGeometry, richTerrainMaterial );
+                this.plane = new THREE.Mesh(
+
+                    patchGeometry,
+                    this.constructMaterial()
+
+                );
 
             };
 
