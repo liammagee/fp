@@ -22,37 +22,62 @@ define( [
              * Builds the initial trail network.
              */
             this.buildTrailNetwork = function( clone ) {
+
                 var len = fp.appConfig.displayOptions.trailLength;
                 var geom = new THREE.Geometry();
+
                 if ( clone ) {
+
                     geom = fp.trailNetwork.globalTrailLine.geometry.clone();
+
                 }
+
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+
+                    var agent = fp.agentNetwork.agents[ i ];
                     var vertices = new Array( len );
+
                     for ( var j = 0; j < len ; j++ ) {
+
                         var index = i * len  + j;
+
                         if ( !clone || index > geom.vertices.length ) {
-                            geom.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
+
+                            geom.vertices.push( agent.lastPosition );
+
                         }
+
                     }
-                    var ai = fp.getIndex(
-                        fp.agentNetwork.agents[ i ].lastPosition.x / fp.appConfig.terrainOptions.multiplier,
-                        fp.agentNetwork.agents[ i ].lastPosition.z / fp.appConfig.terrainOptions.multiplier
-                    );
-                    if ( ai > -1 )
+
+                    var ai = agent.lastIndex;
+
+                    // Add the last position index to the trail array
+                    if ( ai > -1 ) {
+
                         fp.trailNetwork.trails[ ai ] = 1;
+
+                    }
+
                 }
+
                 var trailMaterial = new THREE.LineBasicMaterial( {
+
                     color: fp.appConfig.colorOptions.colorNightTrail,
                     linewidth: 1.0,
                     opacity: 0.1,
                     blending: THREE.AdditiveBlending,
                     transparent: true
+
                 } );
+
                 fp.trailNetwork.globalTrailLine = new THREE.Line( geom, trailMaterial, THREE.LineSegments );
+
                 if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
+
                 }
+
             };
 
             /**
