@@ -467,16 +467,20 @@ define( [
 
                     }
 
-                    // Then add the position to this agent's trail
-                    if ( agent.lastIndex > -1 ) {
+                    // If capturing trail data
+                    if ( fp.appConfig.displayOptions.trailsUpdate ) {
 
-                        fp.trailNetwork.trails[ agent.lastIndex ] =
-                            ( fp.trailNetwork.trails[ agent.lastIndex ] ) ?
-                            fp.trailNetwork.trails[ agent.lastIndex ] + 1 :
-                            1;
+                        // Then add the position to this agent's trail
+                        if ( agent.lastIndex > -1 ) {
+
+                            fp.trailNetwork.trails[ agent.lastIndex ] =
+                                ( fp.trailNetwork.trails[ agent.lastIndex ] ) ?
+                                fp.trailNetwork.trails[ agent.lastIndex ] + 1 :
+                                1;
+
+                        }
 
                     }
-
 
                     // Update time-based counters
                     agent.updateTick();
