@@ -37,7 +37,9 @@ define( [
              * @param {THREE.Vector3} dir The new direction
              */
             this.setDirection = function( dir ) {
+
                 this.direction = dir;
+
             };
 
 
@@ -47,7 +49,9 @@ define( [
              * @param {THREE.Vector3} pos The new position
              */
             this.setPosition = function( pos ) {
+
                 this.lastPosition = this.position = pos;
+
             };
 
 
@@ -57,8 +61,11 @@ define( [
              * @return {Boolean}
              */
             this.findBuilding = function() {
+
                 var xl = this.lastPosition.x, zl = this.lastPosition.z;
+
                 return fp.buildingNetwork.buildingHash[ fp.getIndex( xl, zl ) ];
+
             };
 
 
@@ -70,9 +77,11 @@ define( [
              * @return {Boolean}
              */
             this.goingUp = function( building ) {
+
                 return ( building == this.home ) ?
                     ( Math.random() < fp.appConfig.agentOptions.visitHomeBuilding ) :
                      ( Math.random() < fp.appConfig.agentOptions.visitOtherBuilding );
+
             };
 
 
@@ -378,6 +387,7 @@ define( [
 
                     // Set the direction
                     directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
+
                 }
                 directions = _.chain( directions ).
                                 compact().
@@ -446,10 +456,16 @@ define( [
 
                 }
 
+                // Multiply by factor
                 directionAtSpeed.x *= factor;
                 directionAtSpeed.z *= factor;
+
+                // Obtain new position and index
                 var newPosition = this.position.clone().add( directionAtSpeed );
-                var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.gridExtent / 2;
+                var newIndex = fp.getIndex( newPosition.x, newPosition.z );
+
+                // Calculate bound
+                var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.halfExtent;
 
                 // Simple check to ensure we're within terrain bounds
                 if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
@@ -458,8 +474,8 @@ define( [
                     this.move();
 
                 }
-                else if ( fp.getHeight( newPosition.x, newPosition.z ) === 0 &&
-                          fp.appConfig.agentOptions.noWater ) {
+                else if ( fp.appConfig.agentOptions.noWater &&
+                          fp.terrain.getHeightForIndex( newIndex ) === 0 ) {
 
                     this.setDirection( this.randomDirection() );
                     this.move();
@@ -472,12 +488,17 @@ define( [
                     if ( directionAtSpeed.x != 0 || directionAtSpeed.z != 0 ) {
 
                         // Set the y position to height of the ground + offset + half the size of the agent
-                        newPosition.y = fp.getHeight( newPosition.x, newPosition.z ) +
+                        newPosition.y = fp.terrain.getHeightForIndex( newIndex ) +
                                         fp.appConfig.agentOptions.terrainOffset +
                                         fp.appConfig.agentOptions.size / 2;
 
                     }
+
+                    // Set the current to the new position
+                    this.lastPosition = this.position;
+                    this.lastIndex = this.index;
                     this.position = newPosition;
+                    this.index = newIndex;
 
                 }
 
@@ -487,8 +508,12 @@ define( [
              * Sets the direction to the best candidate found.
              */
             this.evaluateDirection = function() {
-                this.lastPosition = this.position;
+
+                // this.lastPosition = this.position;
+                // this.lastIndex = this.index;
+
                 this.setDirection( this.bestCandidate() );
+
             };
 
 
@@ -840,6 +865,20 @@ define( [
              * @type {THREE.Vector3}
              */
             this.lastPosition = null;
+
+            /**
+             * The terrain index of the agent, used as a cache.
+             *
+             * @type {Number}
+             */
+            this.index = null;
+
+            /**
+             * The previous terrain index of the agent, used as a cache.
+             *
+             * @type {Number}
+             */
+            this.lastIndex = null;
 
             /**
              * The current direction of the agent.

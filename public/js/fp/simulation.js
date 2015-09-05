@@ -876,6 +876,7 @@ define(
 
             };
 
+
             /**
              * Gets the terrain index point for a given ( x, y ) co-ordinate.
              *
@@ -884,34 +885,38 @@ define(
              */
             fp.getIndex = function( x, y ) {
 
-                // Multiply values
+                // Get config variables
                 var multiplier = fp.appConfig.terrainOptions.multiplier;
-                x = x / multiplier;
-                y = y / multiplier;
+                var halfExtent = fp.terrain.halfExtent;
+                var maxExtent = fp.appConfig.agentOptions.maxExtent;
+                var gridExtent = fp.terrain.gridExtent;
+                var gridPoints = fp.terrain.gridPoints;
 
-                // Half the extent of the terrain grid
-                var h = fp.terrain.halfExtent;
+                // Normalise: Divide by terrain multiplier
+                x /= multiplier;
+                y /= multiplier;
 
                 // Obtain the maximum extent agents can move
-                var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * h;
+                var bounds = ( maxExtent / 100 ) * halfExtent;
 
                 // Return a value if either x or y value is outside the maximum allowable
-                if ( x < - maxExtent || y < - maxExtent || x > + maxExtent || y > + maxExtent ) {
+                if ( x < -bounds || y < -bounds || x > bounds || y > bounds ) {
 
                     return -1;
 
                 }
 
                 // Grid ratio
-                var gr = fp.terrain.gridExtent / fp.terrain.gridPoints;
+                var gridRatio = gridExtent / gridPoints;
 
-                // Top over patch boundaries,
-                y += gr / 2;
+                // Shift by half the patch width
+                x += gridRatio / 2;
+                y += gridRatio / 2;
 
                 // Get indexed values
-                var indexedX = Math.floor( ( x + h ) / gr );
-                var indexedY = Math.floor( ( y + h ) / gr );
-                var index = fp.terrain.gridPoints * indexedY + indexedX;
+                var indexedX = Math.floor( ( x + halfExtent ) / gridRatio );
+                var indexedY = Math.floor( ( y + halfExtent ) / gridRatio );
+                var index = gridPoints * indexedY + indexedX;
 
                 return index;
 

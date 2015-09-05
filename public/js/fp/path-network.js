@@ -45,14 +45,16 @@ define( [
                     closest: true
                 };
 
-                for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
+                var gridPoints = fp.terrain.gridPoints;
 
-                    var nodeRow = [ ];
+                for ( var i = 0; i < gridPoints; i++ ) {
 
-                    for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
+                    var nodeRow = [];
 
-                        var weight = 1 - fp.terrain.getHeightForIndex( i * fp.terrain.gridPoints + j ) / fp.terrain.maxTerrainHeight;
-                        weight = ( weight == 1 ? 0 : weight );
+                    for ( var j = 0; j < gridPoints; j++ ) {
+
+                        var weight = 1 - fp.terrain.getHeightForIndex( i * gridPoints + j ) / fp.terrain.maxTerrainHeight;
+                        weight = ( weight === 1 ? 0 : weight );
                         nodeRow.push( weight );
 
                     }
@@ -60,6 +62,7 @@ define( [
                     this.nodes.push( nodeRow );
 
                 }
+
                 this.graphAStar = new astar.Graph( this.nodes );
                 this.graphAStar.diagonal = true;
 

@@ -441,11 +441,14 @@ define( [
                     }
 
                     // Periodically, re-assess direction
+
+                    // Evaluation examines lots of possible paths - use sparingly
                     if ( fp.timescale.frameCounter % changeDirectionEveryTick == i % changeDirectionEveryTick ) {
 
                         agent.evaluateDirection();
 
                     }
+                    // Perturbation only makes a minor adjustment to the current direction
                     else if ( fp.timescale.frameCounter % perturbDirectionEveryTick == i % perturbDirectionEveryTick
                         && agent.grounded) {
 
@@ -465,11 +468,12 @@ define( [
                     }
 
                     // Then add the position to this agent's trail
-                    var agentIndex = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
+                    if ( agent.lastIndex > -1 ) {
 
-                    if ( agentIndex > -1 ) {
-
-                        fp.trailNetwork.trails[ agentIndex ] = ( fp.trailNetwork.trails[ agentIndex ] ) ? fp.trailNetwork.trails[ agentIndex ] + 1 : 1;
+                        fp.trailNetwork.trails[ agent.lastIndex ] =
+                            ( fp.trailNetwork.trails[ agent.lastIndex ] ) ?
+                            fp.trailNetwork.trails[ agent.lastIndex ] + 1 :
+                            1;
 
                     }
 
