@@ -14,9 +14,21 @@ define( [
          * @inner
          */
         FiercePlanet.TrailNetwork = function( fp ) {
+
+            /**
+             * Object containing a list of position indexes, and number of times
+             * those positions have been traversed.
+             *
+             * @type {Object}
+             */
             this.trails = {};
+
+            // REMOVE?
             this.trailMeshes = null;
+
+
             this.globalTrailLine = null;
+
 
             /**
              * Builds the initial trail network.
@@ -49,12 +61,12 @@ define( [
 
                     }
 
-                    var ai = agent.lastIndex;
+                    var agentIndex = agent.lastIndex;
 
                     // Add the last position index to the trail array
-                    if ( ai > -1 ) {
+                    if ( agentIndex > -1 ) {
 
-                        fp.trailNetwork.trails[ ai ] = 1;
+                        fp.trailNetwork.trails[ agentIndex ] = 1;
 
                     }
 
@@ -80,47 +92,78 @@ define( [
 
             };
 
+
             /**
              * Updates the trail network.
              */
             this.updateTrails = function() {
-                if ( !FiercePlanet.AppState.runSimulation )
+
+                if ( !FiercePlanet.AppState.runSimulation ) {
+
                     return;
 
+                }
+
                 if ( fp.appConfig.displayOptions.trailsShow ) {
+
                     if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                         for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+
                             var agent =  fp.agentNetwork.agents[ i ];
+
                             // Creates a cycle of trail 'pieces'
                             var len = fp.appConfig.displayOptions.trailLength;
                             var offset = agent.ticks * 2 % len;
+
                             if ( offset === 0 ) {
+
                                 for ( var j = 0; j < len; j++ ) {
+
                                     fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + j ] = agent.lastPosition;
+
                                 }
+
                             }
+
                             fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + offset ] = agent.lastPosition;
                             fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + offset + 1 ] = agent.position;
+
                         }
+
                         fp.trailNetwork.globalTrailLine.geometry.verticesNeedUpdate = true;
+
                     }
                     else {
+
                         var weightMax = _.chain( fp.trailNetwork.trails ).values().max().value();
+
                         for ( var k in fp.trailNetwork.trails ) {
+
                             var weight = fp.trailNetwork.trails[ k ];
                             var weightNormed = weight / weightMax;
                             var weightAdjusted = Math.pow( weightNormed, 0.2 );
                             fp.terrain.plane.geometry.attributes.trail.array[ k ] = weightAdjusted;
+
                         }
+
                     }
+
                 }
                 else if ( fp.appConfig.displayOptions.trailsUpdate ) {
+
                     for ( var l in fp.trailNetwork.trails )  {
+
                         fp.terrain.plane.geometry.attributes.trail.array[ l ] = 0.0;
+
                     }
+
                     fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
+
                 }
+
             };
+
         };
 
         return FiercePlanet;
