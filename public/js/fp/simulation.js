@@ -749,7 +749,9 @@ define(
              * @memberof fp
              */
             fp.updateControls = function() {
+
                 if ( !fp.appConfig.displayOptions.cursorShow ) {
+
                     fp.controls.update( fp.clock.getDelta() );
 
                     if ( !_.isUndefined( fp.controls.getObject ) ) {
@@ -766,7 +768,9 @@ define(
                         }
                         //obj.translateY( fp.getHeight( obj.position.x, obj.position.z ) );
                     }
+
                 }
+
             };
 
 
@@ -847,9 +851,6 @@ define(
 
                 }
 
-                // Update the output with the current year
-                fp.setOutputHUD();
-
             };
 
             /**
@@ -903,13 +904,16 @@ define(
 
                 // Grid ratio
                 var gr = fp.terrain.gridExtent / fp.terrain.gridPoints;
+
                 // Top over patch boundaries,
                 y += gr / 2;
 
+                // Get indexed values
                 var indexedX = Math.floor( ( x + h ) / gr );
                 var indexedY = Math.floor( ( y + h ) / gr );
+                var index = fp.terrain.gridPoints * indexedY + indexedX;
 
-                return fp.terrain.gridPoints * indexedY + indexedX;
+                return index;
 
             };
 
