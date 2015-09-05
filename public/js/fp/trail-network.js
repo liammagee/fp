@@ -27,6 +27,11 @@ define( [
             this.trailMeshes = null;
 
 
+            /**
+             * Global mesh containing all trails
+             *
+             * @type {THREE.Mesh}
+             */
             this.globalTrailLine = null;
 
 
