@@ -38713,7 +38713,7 @@ define(
 
                 }
 
-                fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( {
+                fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( {
 
                     color: new THREE.Color( 0xffffff ),  // diffuse
                     emissive: new THREE.Color( 0x111111 ),
