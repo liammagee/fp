@@ -31,37 +31,41 @@ define(
         FiercePlanet.Simulation = function() {
             var fp = this;
 
+            // Export the entire namespace, so classes can be instantiated
+            // just with reference to this instance
+            fp.FiercePlanet = FiercePlanet;
+
             // Copy class definitions into this instance, to simplify imports
             fp.Agent = FiercePlanet.Agent;
             fp.PatchNetwork = FiercePlanet.PatchNetwork;
 
-            this.container = null;
-            this.scene = null;
-            this.appConfig = null;
-            this.camera = null;
-            this.renderer = null;
-            this.clock = new THREE.Clock();
-            this.mouse = { x: 0, y: 0, z: 1 };
-            this.mouseVector = new THREE.Vector3();
-            this.keyboard = new THREEx.KeyboardState();
-            this.stats = null;
-            this.terrain = null;
-            this.controls = null;
-            this.gui = null;
-            this.chart = null;
-            this.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
-            this.skyBox = null;
-            this.waterMesh = null;
-            this.water = null;
-            this.agentNetwork = null;
-            this.pathNetwork = null;
-            this.trailNetwork = null;
-            this.cursor = null;
-            this.sim = null;
-            this.lightHemisphere = null;
-            this.lightDirectional = null;
-            this.chart = null;
-            this.appState = FiercePlanet.appState;
+            fp.container = null;
+            fp.scene = null;
+            fp.appConfig = null;
+            fp.camera = null;
+            fp.renderer = null;
+            fp.clock = new THREE.Clock();
+            fp.mouse = { x: 0, y: 0, z: 1 };
+            fp.mouseVector = new THREE.Vector3();
+            fp.keyboard = new THREEx.KeyboardState();
+            fp.stats = null;
+            fp.terrain = null;
+            fp.controls = null;
+            fp.gui = null;
+            fp.chart = null;
+            fp.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
+            fp.skyBox = null;
+            fp.waterMesh = null;
+            fp.water = null;
+            fp.agentNetwork = null;
+            fp.pathNetwork = null;
+            fp.trailNetwork = null;
+            fp.cursor = null;
+            fp.sim = null;
+            fp.lightHemisphere = null;
+            fp.lightDirectional = null;
+            fp.chart = null;
+            fp.appState = FiercePlanet.appState;
 
 
             /**

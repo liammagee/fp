@@ -8,13 +8,19 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
 
         });
 
+        var _fp;
+
         require( [ 'fp' ],
+
             function( fp ) {
+
+                _fp = fp;
+
                 var config = {
                   "preset": "Default",
                   "remembered": {
@@ -46,11 +52,11 @@
                             // "terrainOffset": 20,
                             "useStickman": true,
                             "shuffle": true,
-                            "initialSpeed": 1,
+                            "initialSpeed": 100,
                             "initialPerturbBy": 0,
                             "movementRelativeToPatch": 100,
                             "movementInPatch": 100,
-                            "movementStrictlyIntercardinal": true,
+                            // "movementStrictlyIntercardinal": true,
                          },
                         // Building options
                         "2": {
@@ -273,8 +279,12 @@
                     }
                   }
                 };
+
+
                 var GeoLanguageAgent = function() {
-                    fp.Agent.call( this );
+
+                    fp.FiercePlanet.Agent.call( this, fp );
+
                     this.lexicon = 0.0;
                     this.origState = null;
                     this.spokenState = 0;
@@ -432,9 +442,9 @@
 
 
                 var sim =  {
+
                     counter: 0,
                     positions: [],
-
 
                     updateAgentColor: function( agent ) {
                         var lexicon = agent.lexicon;
@@ -520,19 +530,21 @@
                         for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
                             var agent = fp.agentNetwork.agents[ i ];
 
-                            var agents = fp.patchNetwork.patches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
-                            if ( _.isUndefined( agents ) )
+                            var allAgentsOnPatch = fp.patchNetwork.agentsOnPatches[ fp.getPatchIndex( agent.position.x, agent.position.z ) ];
+                            if ( _.isUndefined( allAgentsOnPatch ) )
                                 continue;
-                            if ( agents.length <= 1 )
+                            if ( allAgentsOnPatch.length <= 1 )
                                 continue;
                             var wordIndex = Math.floor( Math.random() * 10 );
                             var result = 5;
                             // Pick a partner at random
-                            var otherAgent = agents[ Math.floor( Math.random() * agents.length ) ]
+                            var otherAgent = allAgentsOnPatch[ Math.floor( Math.random() * allAgentsOnPatch.length ) ]
                             if ( otherAgent == agent )
                                 continue;
+
                             var otherWordIndex = Math.floor( Math.random() * 10 );
-                            this.chooseLanguage( otherAgent, otherWordIndex );
+                            sim.chooseLanguage( otherAgent, otherWordIndex );
+
                             if ( otherAgent.spokenState == 0 ) { // i.e. if partner uses language 0
                                 if ( agent.spokenState == 0 ) { // and self-agent also choose language 0 then success
                                     // so they are encouraged in their use of 0 for that item by decreasing likelihood of using 1 by whatever the rate has been set to in the slider.
@@ -583,7 +595,7 @@
 
                     haveBaby: function( agent ) {
                         // i.e. if a year or more has passed since her previous baby was born
-                        if ( agent.ticksSinceReproduction > fp.appConfig.geoGamesOptions.ticksPerYear ) {
+                        if ( agent.ticksSinceReproduction > fp.timescale.ticksToYear ) {
 
                             var eligibleHusbands = _.select( fp.agentNetwork.agents, function( male ) {
                                 return ( male.sex == 0 && male.age > 18 && male.motherNode != agent.motherNode );
@@ -591,7 +603,7 @@
                             var husband = _.chain( eligibleHusbands ).shuffle().first().value();
 
                             // ;; this needs to equal approximately 30% chance over a year, but it's going to depend on ticks-per-year rate.
-                            if ( Math.random() * 100 <= ( 300 * fp.timescale.ticksPerYear ) ) {
+                            if ( Math.random() * 100 <= ( 300 * fp.timescale.ticksToYTick ) ) {
                                 var child = fp.agentNetwork.createAgent();
                                 child.sex = Math.floor( Math.random() * 2 );
                                 child.size = 2;
@@ -641,7 +653,9 @@
                     },
 
                     checkBirthDeath: function() {
-                        if ( fp.timescale.frameCounter % fp.appConfig.geoGamesOptions.ticksPerYear == 0 ) {
+
+                        if ( fp.timescale.frameCouTick % fp.timescale.ticksToYTick == 0 ) {
+
                             var rate = fp.appConfig.geoGamesOptions.rate;
                             for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
                                 var agent = fp.agentNetwork.agents[ i ];
@@ -668,7 +682,7 @@
 
 
                     setup: function() {
-                        fp.timescale.framesToYear = 1;
+                        fp.timescale.framesToTick = 1;
 
                         this.marsters = null;
                         this.elevation = null;
@@ -677,19 +691,28 @@
 
                         this.distributeGrammars();
                     },
+
                     tick: function() {
-                        if ( fp.timescale.frameCounter % fp.appConfig.geoGamesOptions.ticksPerYear == 0 )
+                        if ( fp.timescale.frameCounter % fp.timescale.ticksToYear == 0 )
                             console.log( "Years: " + fp.timescale.frameCounter / 100  );
-                        var sim = this;
-                         this.interact();
+
+                         var sim = this;
+                         sim.interact();
+
                          fp.agentNetwork.agents.forEach( function( agent ) {
                              sim.updateAgentColor( agent );
                          });
-                         this.updateTicks();
+
+                         sim.updateTicks();
+
                          if ( fp.appConfig.geoGamesOptions.reproduction == true ) {
-                             this.checkBirthDeath();
+
+                             sim.checkBirthDeath();
+
                          }
+
                     }
+
                 }
 
                 fp.init( config, sim, function() {
@@ -703,7 +726,6 @@
                     fp.appConfig.geoGamesOptions.reproduction = true;
                     fp.appConfig.geoGamesOptions.languageSplitByGender = true;
                     fp.appConfig.geoGamesOptions.leavingRate = 0.15;
-                    fp.appConfig.geoGamesOptions.ticksPerYear = 100;
                     var geoLangGamesFolder = fp.gui.addFolder( "GeoLang Games Options" );
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "percentageLanguage1", 0, 1).step( 0.01 );
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "rate", 0, 1).step( 0.01 );
@@ -713,7 +735,6 @@
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "reproduction");
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "languageSplitByGender");
                     geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "leavingRate", 0, 0.3).step( 0.01 );
-                    geoLangGamesFolder.add( fp.appConfig.geoGamesOptions, "ticksPerYear", 1, 1000).step( 1 );
 
                     // Add custom class
                     fp.agentNetwork.AgentClass = GeoLanguageAgent;
@@ -724,8 +745,10 @@
                     // Hack around using TerrainLoader, which assumes binary data type
                     var wholeFile;
                     fp.scene.remove( fp.terrain.plane );
-                    fp.terrain = new fp.Terrain();
-                    $.get("../assets/local-elevation.asc", function( data) {
+                    fp.terrain = new fp.FiercePlanet.Terrain( fp );
+
+                    $.get("/assets/local-elevation.asc", function( data) {
+
                         wholeFile = data;
                         var lines = wholeFile.split( '\n' );
                         var cols = lines[ 0 ].split( ' ' )[ 1 ];
@@ -740,39 +763,55 @@
                         heights = _.map( heights, function( h ) { return 65535 * ( ( h - min ) / ( max - min ) ); } );
                         fp.appConfig.terrainOptions.loadHeights  = true;
                         fp.terrain.initTerrain( heights );
+
                         fp.animate(); // Kick off the animation loop
 
                         // Update chart - keep population
-                        var series = fp.chart.seriesSet;
-                        fp.chart.removeTimeSeries( series[ 2 ].timeSeries );
-                        fp.chart.removeTimeSeries( series[ 1 ].timeSeries );
+
+                        var chart = fp.chart;
+                        var series = chart.chart.seriesSet;
+
                         for ( var i = series.length - 1; i >= 0 ; i-- ) {
+
                             var timeSeries = series[ i ].timeSeries;
-                            fp.chart.removeTimeSeries( timeSeries );
+                            chart.chart.removeTimeSeries( timeSeries );
+
                         }
+
                         var colorPop = "#ff0000", colorLexicon= "#0000ff";
                         var popSeries = new TimeSeries( { strokeStyle: colorPop } );
                         var lexiconSeries = new TimeSeries( { strokeStyle: colorLexicon } );
                         var initPop = fp.appConfig.agentOptions.initialPopulation;
 
-                        setInterval( function() {
-                            if ( fp.AppState.runSimulation ) {
-                                var popProportion = fp.agentNetwork.agents.length / ( initPop * 2 );
-                                var lexiconMean = jStat.mean( _.map( fp.agentNetwork.agents, function( agent ) { return agent.lexicon; } ) );
-                                popSeries.append( new Date().getTime(), popProportion );
-                                lexiconSeries.append( new Date().getTime(), lexiconMean );
-                            }
-                        }, 500 );
-                        fp.chart.addTimeSeries( popSeries, { strokeStyle: colorPop, fillStyle: "rgba( 255, 0, 0, 0.2 )", lineWidth: 4 } );
-                        fp.chart.addTimeSeries( lexiconSeries, { strokeStyle: colorLexicon, fillStyle: "rgba( 0, 0, 255, 0.2 )", lineWidth: 4 } );
+                        var popSeriesFunc = function() {
+
+                            var popProportion = fp.agentNetwork.agents.length / ( initPop * 2 );
+                            return popProportion;
+
+                        }
+                        var lexiconSeriesFunc = function() {
+
+                            var lexiconMean = jStat.mean( _.map( fp.agentNetwork.agents, function( agent ) { return agent.lexicon; } ) );
+                            return lexiconMean;
+
+                        }
+
+                        chart.setupChart( [
+                            popSeriesFunc, lexiconSeriesFunc
+                        ] );
+
+
                         // Force new min / max values
-                        fp.chart.options = _.extend( { minValue: 0.0, maxValue: 1.0 }, SmoothieChart.defaultChartOptions );
-                        fp.chart.updateValueRange();
+                        chart.chart.options = _.extend( { minValue: 0.0, maxValue: 1.0 }, SmoothieChart.defaultChartOptions );
+                        chart.chart.updateValueRange();
 
                         fp.appController.Setup();
                         fp.appController.Run();
+
                     } )
+
                 } );
+
             }
         );
 
@@ -780,6 +819,5 @@
     </head>
     <body>
         <div id="container"></div>
-        <div id="links"></div>
     </body>
 </html>
