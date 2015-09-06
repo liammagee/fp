@@ -126,7 +126,8 @@
 
     $$(document.links).filter(function() {
 
-      return this.pathname.indexOf('examples/') > -1;
+      return this.pathname.indexOf('examples/') > -1 ||
+             this.pathname.indexOf('projects/') > -1;
 
     }).attr('target', '_blank');
 

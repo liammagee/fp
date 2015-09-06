@@ -7,4 +7,4 @@ This model has been developed by [Rachel Hendery](http://www.uws.edu.au/staff_pr
 <!-- Below is a copy of the paper abstract: -->
 
 
-[Open in a new window](examples/geolanguagegames/basic.html)
+[Open in a new window](projects/geolanguagegames/basic.html)

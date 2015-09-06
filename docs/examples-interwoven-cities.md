@@ -13,7 +13,7 @@ forthcoming book on \*Interwoven Cities\*.
 Basic Agent Movement
 --------------------
 
-[Open in a new window](examples/fabric/1.html)
+[Open in a new window](projects/fabric/1.html)
 
 
 
@@ -24,7 +24,7 @@ Basic Agent Movement
 Synchronised 'threads'
 ----------------------
 
-[Open in a new window](examples/fabric/2.html)
+[Open in a new window](projects/fabric/2.html)
 
 
 
@@ -35,7 +35,7 @@ Synchronised 'threads'
 Interwoven model
 ----------------
 
-[Open in a new window](examples/fabric/3.html)
+[Open in a new window](projects/fabric/3.html)
 
 
 
@@ -46,7 +46,7 @@ Interwoven model
 Interwoven model 2
 ------------------
 
-[Open in a new window](examples/fabric/4.html)
+[Open in a new window](projects/fabric/4.html)
 
 
 

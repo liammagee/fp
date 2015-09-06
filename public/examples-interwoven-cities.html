@@ -60,13 +60,13 @@
         <h1 id="interwoven-cities">Interwoven Cities</h1>
         <p>These are a series of urban fabric models demonstrating aspects of a forthcoming book on *Interwoven Cities*.</p>
         <h2 id="basic-agent-movement">Basic Agent Movement</h2>
-        <p><a href="examples/fabric/1.html">Open in a new window</a></p>
+        <p><a href="projects/fabric/1.html">Open in a new window</a></p>
         <h2 id="synchronised-threads">Synchronised ‘threads’</h2>
-        <p><a href="examples/fabric/2.html">Open in a new window</a></p>
+        <p><a href="projects/fabric/2.html">Open in a new window</a></p>
         <h2 id="interwoven-model">Interwoven model</h2>
-        <p><a href="examples/fabric/3.html">Open in a new window</a></p>
+        <p><a href="projects/fabric/3.html">Open in a new window</a></p>
         <h2 id="interwoven-model-2">Interwoven model 2</h2>
-        <p><a href="examples/fabric/4.html">Open in a new window</a></p>
+        <p><a href="projects/fabric/4.html">Open in a new window</a></p>
         <div class="references">
         
         </div>
@@ -107,7 +107,8 @@
 
     $(document.links).filter(function() {
 
-      return this.pathname.indexOf('examples/') > -1;
+      return this.pathname.indexOf('examples/') > -1 ||
+             this.pathname.indexOf('projects/') > -1;
 
     }).attr('target', '_blank');
 

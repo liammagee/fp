@@ -73,26 +73,26 @@
         <li>The <em>average health</em> of the agent population (in green)</li>
         <li>The <em>average health</em> of the patches (in red)</li>
         </ul>
-        <p><a href="examples/sustainability/petri-dish.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/petri-dish.html">Open in a new window</a></p>
         <h3 id="terrain">Terrain</h3>
         <p>As above, but including the vagaries of terrain (water and topographical variation).</p>
-        <p><a href="examples/sustainability/terrain.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/terrain.html">Open in a new window</a></p>
         <h3 id="settlements">Settlements</h3>
         <p>This model again including all the assumptions of the previous two scenarios but introducing settlement patterns and the path dependency (in terms of agent behaviour) that this implies.</p>
-        <p><a href="examples/sustainability/settlements.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/settlements.html">Open in a new window</a></p>
         <h2 id="modelling-sustainability">Modelling Sustainability</h2>
         <h3 id="malthus">Malthusian Populations</h3>
         <p>This scenario again builds on the previous one by introducing the dynamic of population growth as directly connected to resource consumption and availability.</p>
-        <p><a href="examples/sustainability/malthus.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/malthus.html">Open in a new window</a></p>
         <h3 id="limits-to-growth">Limits to Growth</h3>
         <p>This model introduces a simplified set of assumptions from the 1972 (rereleased in 2004) report of the Club of Rome to again demonstrate the concept of limits to growth.</p>
-        <p><a href="examples/sustainability/limits-to-growth.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/limits-to-growth.html">Open in a new window</a></p>
         <h3 id="green-revolution">The Green Revolution</h3>
         <p>This model builds upon (and critiques) the classic Malthusian scenario by acknowledging the role of technological advances in increasing both the effectiveness and efficiency of resource utilisation and the availability of new resource sources.</p>
-        <p><a href="examples/sustainability/green-revolution.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/green-revolution.html">Open in a new window</a></p>
         <h3 id="triple-bottom-line">Triple Bottom Line</h3>
         <p>This model further applies the assumptions of the concept of TBL accounting.</p>
-        <p><a href="examples/sustainability/triple-bottom-line.html">Open in a new window</a></p>
+        <p><a href="projects/sustainability/triple-bottom-line.html">Open in a new window</a></p>
         <!-- ## The 4 pillars of sustainability and the social ecology model -->
         <!-- *Description:* as above it includes the assumptions of these two related
         approaches to sustainability. -->
@@ -140,7 +140,8 @@
 
     $(document.links).filter(function() {
 
-      return this.pathname.indexOf('examples/') > -1;
+      return this.pathname.indexOf('examples/') > -1 ||
+             this.pathname.indexOf('projects/') > -1;
 
     }).attr('target', '_blank');
 

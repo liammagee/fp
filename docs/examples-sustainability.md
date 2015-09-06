@@ -50,7 +50,7 @@ The graph in the lower left corner shows three "output" variables:
  - The *average health* of the patches (in red)
 
 
-[Open in a new window](examples/sustainability/petri-dish.html)
+[Open in a new window](projects/sustainability/petri-dish.html)
 
 
 
@@ -67,7 +67,7 @@ topographical variation).
 
 
 
-[Open in a new window](examples/sustainability/terrain.html)
+[Open in a new window](projects/sustainability/terrain.html)
 
 
 
@@ -85,7 +85,7 @@ scenarios but introducing settlement patterns and the path dependency
 
 
 
-[Open in a new window](examples/sustainability/settlements.html)
+[Open in a new window](projects/sustainability/settlements.html)
 
 
 
@@ -101,7 +101,7 @@ introducing the dynamic of population growth as directly connected to
 resource consumption and availability.
 
 
-[Open in a new window](examples/sustainability/malthus.html)
+[Open in a new window](projects/sustainability/malthus.html)
 
 
 
@@ -115,7 +115,7 @@ assumptions from the 1972 (rereleased in 2004) report of the Club of
 Rome to again demonstrate the concept of limits to growth.
 
 
-[Open in a new window](examples/sustainability/limits-to-growth.html)
+[Open in a new window](projects/sustainability/limits-to-growth.html)
 
 
 
@@ -130,7 +130,7 @@ increasing both the effectiveness and efficiency of resource utilisation
 and the availability of new resource sources.
 
 
-[Open in a new window](examples/sustainability/green-revolution.html)
+[Open in a new window](projects/sustainability/green-revolution.html)
 
 
 
@@ -151,7 +151,7 @@ accounting.
 
 
 
-[Open in a new window](examples/sustainability/triple-bottom-line.html)
+[Open in a new window](projects/sustainability/triple-bottom-line.html)
 
 
 
