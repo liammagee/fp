@@ -10,7 +10,6 @@ forthcoming book on \*Interwoven Cities\*.
 
 
 
-
 Basic Agent Movement
 --------------------
 

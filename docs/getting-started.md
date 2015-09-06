@@ -5,6 +5,7 @@
 *Fierce Planet* is designed to be highly configurable. The examples show some of the "out-of-the-box" options. It is also possible to add functional hooks to "setup" and "run" actions, to customise agent, terrain, building and road behaviour.
 
 
+
 ## Basic usage
 
 To include the default configuration of *Fierce Planet*, a page needs to add:

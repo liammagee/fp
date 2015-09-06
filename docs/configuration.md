@@ -5,6 +5,7 @@
 These notes cover a range of different topics for using or extending the *Fierce Planet* application.
 
 
+
 ## Adding 1 Arc-Second (30m) resolution terrain:
 
 1. Visit http://earthexplorer.usgs.gov/ (register if necessary)

@@ -18,8 +18,6 @@ These examples show various features and uses of *Fierce Planet*.
 
 
 
-
-
 ## Basic Configuration {#heading-example-usage-basic}
 
 Shows *Fierce Planet* in its default configuration.

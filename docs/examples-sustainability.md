@@ -10,6 +10,7 @@ They are designed to support an undergraduate sustainability course, and move fr
 
 
 
+
 ## Preparatory Models {#preparatory-models}
 
 The first three models are preparatory -- they introduce particular features that are later used in the sustainability models.
