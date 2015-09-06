@@ -37,12 +37,21 @@ var pathsToWatch = [
 gulp.task( 'default', [ 'watch' ] );
 
 
+
+/**
+ * Builds the Fierce Planet distribution
+ */
+gulp.task( 'dist', [ 'babel-shader', 'require' ] );
+
+
 /**
  * Watch for babel
  */
 gulp.task( 'watch', [ 'clean' ], function() {
     return gulp.watch( pathsToWatch, [ 'pandoc-site', 'babel-shader' ] );
 } );
+
+
 
 
 /**
@@ -127,8 +136,9 @@ gulp.task('require', function () {
  */
 gulp.task('uglify', [ ], function() {
   gulp.src( fpDistSrc )
-    .pipe( uglify( { outSourceMap: true }) )
-    .pipe( gulp.dest( fpDist ) )
+    // .pipe( uglify( { outSourceMap: true }) )
+    .pipe( uglify() )
+    .pipe( gulp.dest( fpDistCompiled ) )
 });
 
 

@@ -38309,7 +38309,7 @@ define( 'fp/app-controller',[
 )
 ;
 
-define( 'fp/config',[
+define( 'fp/app-config',[
         'fp/fp-base'
     ],
 
@@ -38556,6 +38556,7 @@ define( 'fp/config',[
             cursorShowCell: true,
             statsShow: true,
             hudShow: true,
+            guiControlsShow: true,
             wireframeShow: false,
             dayShow: false,
             skyboxShow: true,
@@ -38833,7 +38834,7 @@ define('fpShaderUtils',["fp/fp-base"], function (FiercePlanet) {
 define(
     'fp/terrain',[
         'fp/fp-base',
-        'fp/config',
+        'fp/app-config',
         'fpShaderUtils'
     ],
 
@@ -42577,7 +42578,7 @@ define( 'fp/patch',[
 
 define( 'fp/patch-network',[
         'fp/fp-base',
-        'fp/config',
+        'fp/app-config',
         'fp/patch'
     ],
 
@@ -43288,7 +43289,7 @@ require.config({
 define( 'fp/path-network',[
         'fp/fp-base',
         'astar',
-        'fp/config'
+        'fp/app-config'
 
     ],
 
@@ -43659,7 +43660,7 @@ define( 'fp/cursor',[
 
 define( 'fp/chart',[
         'fp/fp-base',
-        'fp/config'
+        'fp/app-config'
     ],
 
     function( FiercePlanet ) {
@@ -43855,7 +43856,7 @@ define(
          'fp/fp-base',
          'fp/app-state',
          'fp/app-controller',
-         'fp/config',
+         'fp/app-config',
          'fp/terrain',
          'fp/agent-network',
          'fp/building-network',
@@ -44487,6 +44488,7 @@ define(
                 fp.setupSky();
                 fp.setOutputHUD();
                 fp.setupChart();
+                fp.toggleGuiControlsState(); // Add GUI Controls
                 fp.toggleHUDState(); // Add HUD
                 fp.toggleStatsState(); // Add stats
 
@@ -45399,15 +45401,28 @@ define(
 
             };
 
+
             /**
              * Toggles the visibility of the heads-up display.
              * @memberof fp
              */
             fp.toggleHUDState = function() {
 
-                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.hudShow );
+                $( "#hudShow" ).toggle( fp.appConfig.displayOptions.hudShow );
 
             };
+
+
+            /**
+             * Toggles the visibility of the gui controls.
+             * @memberof fp
+             */
+            fp.toggleGuiControlsState = function() {
+
+                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.guiControlsShow );
+
+            };
+
 
             /**
              * Toggles the visibility of the wireframe.
@@ -45747,6 +45762,7 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "cursorShow" ).onFinishChange( fp.removeCursor );
                     displayFolder.add( fp.appConfig.displayOptions, "statsShow" ).onFinishChange( fp.toggleStatsState );
                     displayFolder.add( fp.appConfig.displayOptions, "hudShow" ).onFinishChange( fp.toggleHUDState );
+                    displayFolder.add( fp.appConfig.displayOptions, "guiControlsShow" ).onFinishChange( fp.toggleGuiControlsState );
                     displayFolder.add( fp.appConfig.displayOptions, "wireframeShow" ).onFinishChange( fp.toggleWireframeState );
                     displayFolder.add( fp.appConfig.displayOptions, "dayShow" ).onFinishChange( fp.toggleDayNight );
                     displayFolder.add( fp.appConfig.displayOptions, "skyboxShow" ).onFinishChange( fp.toggleDayNight );

@@ -2,7 +2,7 @@
 
 define( [
         'fp/fp-base',
-        'fp/config'
+        'fp/app-config'
     ],
 
     function( FiercePlanet ) {

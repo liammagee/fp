@@ -11,7 +11,7 @@ require.config({
 define( [
         'fp/fp-base',
         'astar',
-        'fp/config'
+        'fp/app-config'
 
     ],
 

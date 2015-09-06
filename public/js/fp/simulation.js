@@ -5,7 +5,7 @@ define(
          'fp/fp-base',
          'fp/app-state',
          'fp/app-controller',
-         'fp/config',
+         'fp/app-config',
          'fp/terrain',
          'fp/agent-network',
          'fp/building-network',
