@@ -27,10 +27,6 @@ define( [
                 var shader = `
                         pos = position;
                         vMixin = mixin;
-
-                        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-
-                        gl_Position = projectionMatrix * mvPosition;
                     `;
                 return shader;
             },
@@ -159,10 +155,6 @@ define( [
                             vHeight = height;
                             vTrail = trail;
                             vPatch = patch;
-
-                            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-
-                            gl_Position = projectionMatrix * mvPosition;
                         `;
                     return shader;
                 },
@@ -557,7 +549,7 @@ define( [
                         THREE.ShaderChunk[ "displacementmap_vertex" ],
                         THREE.ShaderChunk[ "morphtarget_vertex" ],
                         THREE.ShaderChunk[ "skinning_vertex" ],
-                        THREE.ShaderChunk[ "default_vertex" ],
+                        THREE.ShaderChunk[ "project_vertex" ],
                         THREE.ShaderChunk[ "logdepthbuf_vertex" ],
 
                     "   vViewPosition = - mvPosition.xyz;",

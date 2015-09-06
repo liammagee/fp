@@ -12,7 +12,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
             return shader;
         },
         buildingVertexShaderMain: function buildingVertexShaderMain() {
-            var shader = "\n                        pos = position;\n                        vMixin = mixin;\n\n                        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n\n                        gl_Position = projectionMatrix * mvPosition;\n                    ";
+            var shader = "\n                        pos = position;\n                        vMixin = mixin;\n                    ";
             return shader;
         },
 
@@ -30,7 +30,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
             return shader;
         },
         terrainVertexShaderMain: function terrainVertexShaderMain() {
-            var shader = "\n                            vHeight = height;\n                            vTrail = trail;\n                            vPatch = patch;\n\n                            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n\n                            gl_Position = projectionMatrix * mvPosition;\n                        ";
+            var shader = "\n                            vHeight = height;\n                            vTrail = trail;\n                            vPatch = patch;\n                        ";
             return shader;
         },
 
@@ -111,7 +111,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
         phongShaderVertex: function phongShaderVertex(customParams, customCode) {
             var vertexShader = [customParams, "#define PHONG", "varying vec3 vViewPosition;", "#ifndef FLAT_SHADED", "   varying vec3 vNormal;", "#endif", THREE.ShaderChunk["common"], THREE.ShaderChunk["uv_pars_vertex"], THREE.ShaderChunk["uv2_pars_vertex"], THREE.ShaderChunk["displacementmap_pars_vertex"], THREE.ShaderChunk["envmap_pars_vertex"], THREE.ShaderChunk["lights_phong_pars_vertex"], THREE.ShaderChunk["color_pars_vertex"], THREE.ShaderChunk["morphtarget_pars_vertex"], THREE.ShaderChunk["skinning_pars_vertex"], THREE.ShaderChunk["shadowmap_pars_vertex"], THREE.ShaderChunk["logdepthbuf_pars_vertex"], "void main() {", customCode, THREE.ShaderChunk["uv_vertex"], THREE.ShaderChunk["uv2_vertex"], THREE.ShaderChunk["color_vertex"], THREE.ShaderChunk["beginnormal_vertex"], THREE.ShaderChunk["morphnormal_vertex"], THREE.ShaderChunk["skinbase_vertex"], THREE.ShaderChunk["skinnormal_vertex"], THREE.ShaderChunk["defaultnormal_vertex"], "#ifndef FLAT_SHADED", // Normal computed with derivatives when FLAT_SHADED
 
-            "   vNormal = normalize( transformedNormal );", "#endif", THREE.ShaderChunk["begin_vertex"], THREE.ShaderChunk["displacementmap_vertex"], THREE.ShaderChunk["morphtarget_vertex"], THREE.ShaderChunk["skinning_vertex"], THREE.ShaderChunk["default_vertex"], THREE.ShaderChunk["logdepthbuf_vertex"], "   vViewPosition = - mvPosition.xyz;", THREE.ShaderChunk["worldpos_vertex"], THREE.ShaderChunk["envmap_vertex"], THREE.ShaderChunk["lights_phong_vertex"], THREE.ShaderChunk["shadowmap_vertex"], "}"].join("\n");
+            "   vNormal = normalize( transformedNormal );", "#endif", THREE.ShaderChunk["begin_vertex"], THREE.ShaderChunk["displacementmap_vertex"], THREE.ShaderChunk["morphtarget_vertex"], THREE.ShaderChunk["skinning_vertex"], THREE.ShaderChunk["project_vertex"], THREE.ShaderChunk["logdepthbuf_vertex"], "   vViewPosition = - mvPosition.xyz;", THREE.ShaderChunk["worldpos_vertex"], THREE.ShaderChunk["envmap_vertex"], THREE.ShaderChunk["lights_phong_vertex"], THREE.ShaderChunk["shadowmap_vertex"], "}"].join("\n");
 
             return vertexShader;
         },

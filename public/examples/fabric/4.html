@@ -8,19 +8,25 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
 
         });
 
+
         require( [ 'fp' ],
+
             function( fp ) {
+
+                window.fp = fp;
+
                 var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
                         // Agent options
                         "1": {
+                            "noWater": true,
                             "initialPopulation": 1000,
                             "initialExtent": 100,
                             // "maxExtent": 100,

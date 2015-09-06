@@ -389,7 +389,7 @@ define( [
 
                     var y = fp.getHeight( x, z );
 
-                    while ( y < 0 ) {
+                    while ( y <= 0 ) {
 
                         point = this.randomPointForAgent();
                         x = point.x;
