@@ -379,8 +379,6 @@ define( [
                     yn += fp.appConfig.terrainOptions.defaultHeight;
                     // Offset relative to the terrain
                     yn += fp.appConfig.agentOptions.terrainOffset;
-                    // Add half the agent's own size
-                    yn += fp.appConfig.agentOptions.size / 2;
 
                     // Smooth the transition between heights
                     yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;
@@ -489,8 +487,7 @@ define( [
 
                         // Set the y position to height of the ground + offset + half the size of the agent
                         newPosition.y = fp.terrain.getHeightForIndex( newIndex ) +
-                                        fp.appConfig.agentOptions.terrainOffset +
-                                        fp.appConfig.agentOptions.size / 2;
+                                        fp.appConfig.agentOptions.terrainOffset;
 
                     }
 

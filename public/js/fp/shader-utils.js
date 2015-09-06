@@ -262,10 +262,16 @@ define( [
                         varying float vAlpha;
                         varying vec3 vColor;
 
+
                         void main() {
                             vAlpha = alpha;
                             vColor = color; // set RGB color associated to vertex; use later in fragment shader.
-                            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+
+                            // Add half the size, so the agent is drawn from the feet up.
+                            vec3 modifiedPosition = position;
+                            modifiedPosition.y += size / 2.0;
+                            vec4 mvPosition = modelViewMatrix * vec4( modifiedPosition, 1.0 );
+
                             // option ( 1 ): draw particles at constant size on screen
                             // gl_PointSize = size;
                             // option ( 2 ): scale particles as objects in 3D space
@@ -277,8 +283,9 @@ define( [
                 },
                 agentFragmentShader: function() {
                     var shader = `
-                        varying vec3 vColor;
+                        uniform float size;
                         uniform sampler2D texture;
+                        varying vec3 vColor;
                         varying float vAlpha;
 
                         void main() {

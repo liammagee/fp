@@ -324,8 +324,7 @@ define( [
                 var x = point.x;
                 var z = point.z;
                 var y = fp.getHeight( x, z ) +
-                        fp.appConfig.agentOptions.terrainOffset +
-                        fp.appConfig.agentOptions.size / 2;
+                        fp.appConfig.agentOptions.terrainOffset;
                 position.x = x;
                 position.y = y;
                 position.z = z;
@@ -377,6 +376,7 @@ define( [
                 }
 
                 var boundary = ( extent / 2 ) * fp.appConfig.terrainOptions.multiplier;
+
                 while ( ( x < -boundary || x > boundary ) || ( z < -boundary || z > boundary ) ) {
 
                     point = this.randomPointForAgent();
@@ -388,6 +388,7 @@ define( [
                 if ( fp.appConfig.agentOptions.noWater ) {
 
                     var y = fp.getHeight( x, z );
+
                     while ( y < 0 ) {
 
                         point = this.randomPointForAgent();

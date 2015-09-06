@@ -45,11 +45,11 @@ define(["fp/fp-base"], function (FiercePlanet) {
         },
 
         agentVertexShader: function agentVertexShader() {
-            var shader = "\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n                        void main() {\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n                            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n                        }\n                        ";
+            var shader = "\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n\n                        void main() {\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n\n                            // Add half the size, so the agent is drawn from the feet up.\n                            vec3 modifiedPosition = position;\n                            modifiedPosition.y += size / 2.0;\n                            vec4 mvPosition = modelViewMatrix * vec4( modifiedPosition, 1.0 );\n\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n                        }\n                        ";
             return shader;
         },
         agentFragmentShader: function agentFragmentShader() {
-            var shader = "\n                        varying vec3 vColor;\n                        uniform sampler2D texture;\n                        varying float vAlpha;\n\n                        void main() {\n                            gl_FragColor = vec4( vColor, vAlpha );\n                            // sets a white particle texture to desired color\n                            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\n                        }\n                        ";
+            var shader = "\n                        uniform float size;\n                        uniform sampler2D texture;\n                        varying vec3 vColor;\n                        varying float vAlpha;\n\n                        void main() {\n                            gl_FragColor = vec4( vColor, vAlpha );\n                            // sets a white particle texture to desired color\n                            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\n                        }\n                        ";
             return shader;
         },
 
@@ -138,4 +138,3 @@ define(["fp/fp-base"], function (FiercePlanet) {
 
     return FiercePlanet;
 });
-//# sourceMappingURL=shader-utils-compiled.js.map

@@ -89,7 +89,7 @@ define(
                     stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
                     stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
 
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
+                    size: { type: "f", value: 0 },
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier },
 
                     shadowMix: { type: "f", value: fp.appConfig.terrainOptions.shaderShadowMix },
