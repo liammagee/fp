@@ -7,7 +7,7 @@ require.config({
         jquery: "utils/jquery",
         astar: "utils/astar",
         underscore: "utils/underscore",
-        three: "three-72",
+        three: "three",
         jstat: "utils/jstat.min",
         smoothie: "ux/smoothie",
         stats: "ux/stats.min",
