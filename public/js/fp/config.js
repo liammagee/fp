@@ -286,7 +286,7 @@ define( [
             mapIndex: 0,
             mapFile: "",
             patchSize: 4,
-            defaultHeight: 10
+            defaultHeight: 0
 
         };
 

@@ -256,6 +256,7 @@ define( [
 
                 agentVertexShader: function() {
                     var shader = `
+
                         uniform float size;
                         attribute float alpha;
                         attribute vec3 color;
@@ -264,6 +265,7 @@ define( [
 
 
                         void main() {
+
                             vAlpha = alpha;
                             vColor = color; // set RGB color associated to vertex; use later in fragment shader.
 
@@ -277,7 +279,9 @@ define( [
                             // option ( 2 ): scale particles as objects in 3D space
                             gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );
                             gl_Position = projectionMatrix * mvPosition;
+
                         }
+
                         `;
                     return shader;
                 },

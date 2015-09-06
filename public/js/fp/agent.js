@@ -51,6 +51,9 @@ define( [
             this.setPosition = function( pos ) {
 
                 this.lastPosition = this.position = pos;
+                var x = pos.x, z = pos.z;
+                var index = fp.getIndex( x, z );
+                this.lastIndex = this.index = index;
 
             };
 
@@ -62,9 +65,7 @@ define( [
              */
             this.findBuilding = function() {
 
-                var xl = this.lastPosition.x, zl = this.lastPosition.z;
-
-                return fp.buildingNetwork.buildingHash[ fp.getIndex( xl, zl ) ];
+                return fp.buildingNetwork.buildingHash[ this.lastIndex ];
 
             };
 
