@@ -1,0 +1,314 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
+        <script>
+
+        require.config({
+
+          baseUrl: '/js',
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
+
+        });
+
+
+        require( [ 'fp' ],
+
+            function( fp ) {
+
+                window.fp = fp;
+
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        // Agent options
+                        "1": {
+                            "noWater": true,
+                            "initialPopulation": 1000,
+                            "initialExtent": 100,
+                            // "maxExtent": 100,
+                            // "initialX": 50,
+                            // "initialY": 50,
+                            // "randomAge": true,
+                            "chanceToJoinNetwork": 0.01,
+                            "chanceToJoinNetworkWithHome": 0.25,
+                            "chanceToJoinNetworkWithBothHomes": 0.5,
+                            "chanceToFindPathToHome": 0.01,
+                            "chanceToFindPathToOtherAgentHome": 0.01,
+                            // "initialCircle": true,
+                            // "noWater": true,
+                            // "noUphill": false,
+                            // "useStickman": true,
+                            // "visitHomeBuilding": 0.02,
+                            // "visitOtherBuilding": 0.002,
+                            "establishLinks": true,
+                            // "size": 40,
+                            // "terrainOffset": 20,
+                            "shuffle": true
+                         },
+                        // Building options
+                        "2": {
+                            "roads": 0.0,
+                            "water": 0.0,
+                            "otherBuildings": 0.25,
+                            "distanceFromOtherBuildingsMin": 5000,
+                            "distanceFromOtherBuildingsMax": 5500,
+                            "buildingHeight": 0.0,
+                            "detectBuildingCollisions": true,
+
+                            "create": true,
+
+                            // "maxNumber": 250,
+
+                            // // Carry over from generation
+                            // "heightA": 2,
+                            // "heightB": 10,
+
+                            // // Influences
+
+                            // // Building form
+                            // "buildingForm": "rectangle",
+                            // "spread": 10,
+                            // "randomForm": false,
+                            // "rotateRandomly": false,
+                            // "rotateSetAngle": 0,
+
+                            // "destroyOnComplete": false,
+                            // "loopCreateDestroy": false,
+
+                            // // Visualisation
+                            // "turning": false,
+                            // "falling": false,
+                            "riseRate": 1,
+
+                            // // Dimensions
+                            "minHeight": 10,
+                            "maxHeight": 70,
+                            // "minWidth": 40,
+                            // "maxWidth": 200,
+                            // "minLength": 40,
+                            // "maxLength": 200,
+                            // "maxLevels": 0,
+                            // "maxLevels": 0,
+                            // "width": 0,
+                            // "length": 0,
+                            // "levelHeight": 40,
+
+                            // // View parameters
+                            // "useShader": true,
+                            // "useLevelOfDetail": true,
+                            // "highResDistance": 1000,
+                            // "lowResDistance": 7500,
+                            // "opacity": 1.0,
+
+                            // // Fill parameters
+                            // "showFill": true,
+                            // "fillRooves": false,
+
+                            // // Stroke parameters
+                            // "showLines": true,
+                            // "linewidth": 1.0,
+
+                            // // Window parameters
+                            // "showWindows": true,
+                            // "windowsRandomise": false,
+                            // "windowWidth": 15,
+                            // "windowPercent": 60,
+                            // "windowsStartY": 40,
+                            // "windowsEndY": 80,
+                            // "windowsLine": true,
+                            // "windowsFill": false,
+
+                            // // Stagger
+                            // "stagger": true,
+                            // "staggerAmount": 40,
+
+                            // // Taper
+                            // "taper": true,
+                            // "taperExponent": 2,
+                            // "taperDistribution": 1,
+
+                            // // Collision detection
+                            // "detectBuildingCollisions": true,
+                            // "detectRoadCollisions": true
+
+                        },
+                        // Road options
+                        "3": {
+                            "create": false
+
+                            // "maxNumber": 200,  // Maximum number of roads - for performance reasons
+                            // "roadWidth": 20,
+                            // "roadDeviation": 20,
+                            // "roadRadiusSegments": 10,
+                            // "roadSegments": 10,
+                            // "initialRadius": 100,
+                            // "probability": 1,
+                            // "lenMinimum": 100,
+                            // "lenMaximum": 2000,
+                            // "lenDistributionFactor": 3,
+                            // "overlapThreshold": 3,
+                            // "flattenAdjustment": 0.025,
+                            // "flattenLift": 20
+                        },
+                        // Display options
+                        "4": {
+                            // "agentsShow": true,
+                            "buildingsShow": true,
+                            // "roadsShow": true,
+                            "waterShow": false,
+                            "networkShow": false,
+                            "networkCurve": false,
+                            // "networkCurvePoints": 20,
+                            // "patchesShow": false,
+                            // "patchesUpdate": true,
+                            // "patchesUseShader": true,
+                            // "trailsShow": false,
+                            // "trailsShowAsLines": false,
+                            // "trailLength": 10000,
+                            // "cursorShow": false,
+                            // "cursorShowCell": true,
+                            // "statsShow": true,
+                            // "hudShow": true,
+                            // "wireframeShow": false,
+                            // "dayShow": false,
+                            // "skyboxShow": true,
+                            // "chartShow": true,
+                            // "guiShow": true,
+                            // "guiShowControls": true,
+                            // "guiShowAgentFolder": true,
+                            // "guiShowBuildingsFolder": true,
+                            // "guiShowRoadsFolder": true,
+                            // "guiShowTerrainFolder": true,
+                            // "guiShowDisplayFolder": true,
+                            // "guiShowColorFolder": true,
+                            // "pathsShow": true,
+                            // "terrainShow": true,
+                            // "coloriseAgentsByHealth": false,
+                            // "firstPersonView": false,
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 500,
+                            "cameraZ": 2250,
+                            // "maximiseView": true,
+                        },
+                        // Color options
+                        "5": {
+                            // "colorDayBackground": 0x000000,
+                            // "colorDayRoad": 0x474747,
+                            // "colorDayAgent": 0x4747b3,
+                            // "colorDayNetwork": 0x474747,
+                            // "colorDayTrail": 0x474747,
+                            // "colorDayPath": 0x474747,
+                            // "colorDayBuildingFill": 0xb1abab,
+                            // "colorDayBuildingLine": 0x222222,
+                            // "colorDayBuildingWindow": 0x222222,
+                            // "colorDayTerrainGroundLevel": 0x969696,
+                            // "colorDayTerrainLowland1": 0x2d5828,
+                            // "colorDayTerrainLowland2": 0x6d915b,
+                            // "colorDayTerrainMidland1": 0x89450e,
+                            // "colorDayTerrainHighland": 0x8c8c8c,
+
+                            "colorNightBackground": 0x030303,
+                            "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
+                            "colorNightAgent": 0xffffff,
+                            "colorNightNetwork": 0xffffff,
+                            // "colorNightTrail": 0x47b347,
+                            "colorNightPath": 0xffffff,
+                            "colorNightBuildingFill": 0xd3d3d3,
+                            // "colorNightBuildingLine": 0x838383,
+                            "colorNightBuildingWindow": 0xffffff,
+                            // "colorNightTerrainGroundLevel": 0x000000,
+                            "colorNightTerrainLowland1": 0x000000,
+                            "colorNightTerrainLowland2": 0x040404,
+                            "colorNightTerrainMidland1": 0x080808,
+                            "colorNightTerrainHighland": 0x0c0c0c,
+                            // "colorGraphPopulation": 0x4747b3,
+                            // "colorGraphHealth": 0xb34747,
+                            // "colorGraphPatchValues": 0x47b347,
+                            //
+                            "colorLightHemisphereSky": 0xbfbfbf,
+                            "colorLightHemisphereGround": 0xbfbfbf,
+                            "colorLightHemisphereIntensity": 1.0,
+                            "colorLightDirectional": 0xffffff,
+                            "colorLightDirectionalIntensity": 1.0,
+
+                        },
+                        // Terrain options
+                        "6": {
+                            // "renderAsSphere": true,
+                            "loadHeights": true ,
+                            "gridExtent": 8000,
+                            "gridPoints": 400,
+                            // "maxTerrainHeight": 400,
+                            // "shaderUse": true,
+                            "multiplier": 2,
+                            // "mapIndex": 0,
+                            // "patchSize": 4
+
+                         },
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+                    positions: [],
+                    setup: function() {
+                        fp.timescale.framesToYear = 1;
+                        /*
+                        for ( var i = 0; i < 5; i++ ) {
+                            var x = Math.floor( Math.random() * 2000 );
+                            var y = Math.floor( Math.random() * 2000 );
+                            var z = Math.floor( Math.random() * 2000 );
+                            this.positions.push( [ x, y, z ] );
+                        }
+                        */
+
+                        // Default
+                        //this.positions.push( [ fp.camera.position.x, fp.camera.position.y, fp.camera.position.z ] );
+                    },
+                    tick: function() {
+                        /*
+                        if ( fp.timescale.frameCounter % 500 == 0  ) {
+                            for ( var i = 0; i < this.positions.length; i++ ) {
+                                var pos = this.positions[ i ];
+                                var x = pos[ 0 ];
+                                var y = pos[ 1 ];
+                                var z = pos[ 2 ];
+                                fp.camera.position.x = x;
+                                fp.camera.position.y = y;
+                                fp.camera.position.z = z;
+
+                                var mimetype = mimetype  || "image/png";
+                                var url = fp.renderer.domElement.toDataURL( mimetype );
+                                var anchor = $( "<img>" ).attr( "src", url );
+                                anchor.attr( "src", url )
+                                anchor.attr( "id",  "img-" + fp.timescale.frameCounter + "-" + i )
+                                $( "#links" ).append( anchor );
+                                console.log( fp.timescale.frameCounter );
+                            }
+                        }
+                        if ( fp.timescale.frameCounter > 10000 ) {
+                            fp.appController.Setup();
+                        }
+                        */
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    fp.appController.Setup();
+                    // fp.appController.Run();
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+        <div id="links"></div>
+    </body>
+</html>

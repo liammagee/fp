@@ -1,0 +1,76 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
+        <script>
+
+        require.config({
+
+          baseUrl: '/js',
+          // paths: {  'fp': 'fp' }
+          paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
+            function( fp ) {
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        "1": {  },
+                        "2": { },
+                        "3": { "create": false },
+                        "4": {
+                            "waterShow": true,
+                            "terrainShow": true,
+                            "buildingsShow": false,
+                            "roadsShow": false,
+                            "dayShow": false,
+                            "patchesShow": false,
+
+                            "lightDirectionalShow": false,
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 1000,
+                        },
+                        "5": {
+                            "colorNightTerrainGroundLevel": 0x000000,
+                            "colorNightTerrainLowland1": 0x272727,
+                            "colorNightTerrainLowland2": 0x3F3F3F,
+                            "colorNightTerrainMidland1": 0x696969,
+                            "colorNightTerrainMidland2": 0xA2A2A2,
+                            "colorNightTerrainHighland": 0xFDFDFD,
+
+                            "coloriseAgentsByHealth": false,
+                        },
+                        "6": {
+                            "multiplier": 2,
+
+                        },
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+
+                    setup: function() {
+                    },
+                    tick: function() {
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    fp.appController.Setup();
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
