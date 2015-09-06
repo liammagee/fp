@@ -428,8 +428,11 @@ define(
                         distortionScale: 50.0,
                     } );
 
-                    if ( !_.isUndefined( fp.waterMesh ) )
+                    if ( !_.isUndefined( fp.waterMesh ) ) {
+
                         fp.scene.remove( fp.waterMesh );
+
+                    }
 
                     fp.waterMesh = new THREE.Mesh(
                         new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
@@ -738,21 +741,30 @@ define(
              */
             fp.updateSimState = function() {
 
-                if ( FiercePlanet.appState.stepSimulation )
+                if ( FiercePlanet.appState.stepSimulation ) {
+
                     FiercePlanet.appState.runSimulation = false;
 
+                }
+
             };
+
 
             /**
              * Updates the water object, if it exists.
              * @memberof fp
              */
             fp.updateWater = function() {
+
                 if ( !_.isNull( fp.water ) && !_.isUndefined( fp.water.material.uniforms.time ) ) {
+
                     fp.water.material.uniforms.time.value += 1.0 / 60.0;
                     fp.water.render();
+
                 }
+
             };
+
 
             /**
              * Updates the controls.

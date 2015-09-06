@@ -14,7 +14,8 @@ require.config({
         javascriptUtil: "utils/javascript.util",
         jsts: "utils/jsts",
         datGui: "ux/dat.gui",
-        water: "objects/water-material",
+        mirror: "objects/Mirror",
+        water: "objects/WaterShader",
         KeyboardState: "controls/THREEx.KeyboardState",
         TerrainLoader: "loaders/TerrainLoader",
         TrackballControls: "controls/TrackballControls",
@@ -36,14 +37,15 @@ require.config({
         smoothie: { exports: "SmoothieChart" },
         stats: { exports: "Stats" },
         jsts: { deps: [ "javascriptUtil" ] },
-        water: { exports: "THREE.Water", deps: [ "three" ] },
+        mirror: { deps: [ "three" ] },
+        water: { exports: "THREE.Water", deps: [ "three", "mirror" ] },
         KeyboardState: { deps: [ "three" ] },
         TerrainLoader: { deps: [ "three" ] },
         TrackballControls: { deps: [ "three" ] },
         OrbitControls: { deps: [ "three" ] },
         PointerLockControls: { deps: [ "three" ] },
 
-        fp: { exports: "fp" },
+        fpInstance: { exports: "fp", deps: [ "three", "KeyboardState" ] },
 
     },
 
