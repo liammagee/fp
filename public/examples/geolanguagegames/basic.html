@@ -28,9 +28,9 @@
                         // Agent options
                         "1": {
                             "noWater": true,
-                            "initialPopulation": 20,
+                            "initialPopulation": 200,
                             "initialExtent": 100,
-                            // "maxExtent": 100,
+                            "maxExtent": 100,
                             // "initialX": 50,
                             // "initialY": 50,
                             // "randomAge": true,
@@ -54,8 +54,8 @@
                             "shuffle": true,
                             "initialSpeed": 100,
                             "initialPerturbBy": 0,
-                            "movementRelativeToPatch": 100,
-                            "movementInPatch": 100,
+                            // "movementRelativeToPatch": 100,
+                            // "movementInPatch": 100,
                             // "movementStrictlyIntercardinal": true,
                          },
                         // Building options
@@ -603,7 +603,7 @@
                             var husband = _.chain( eligibleHusbands ).shuffle().first().value();
 
                             // ;; this needs to equal approximately 30% chance over a year, but it's going to depend on ticks-per-year rate.
-                            if ( Math.random() * 100 <= ( 300 * fp.timescale.ticksToYTick ) ) {
+                            if ( Math.random() * 100 <= ( 300 * fp.timescale.ticksToYear ) ) {
                                 var child = fp.agentNetwork.createAgent();
                                 child.sex = Math.floor( Math.random() * 2 );
                                 child.size = 2;
@@ -632,15 +632,16 @@
 
                     reproduce: function() {
                         var reproducibles = _.select( fp.agentNetwork.agents, function( agent ) {
-                            return ( agent.size == 2 && agent.sex == 1 && agent.age > 18 && agent < 40 );
+                            return ( agent.sex == 1 && agent.age > 18 && agent.age < 40 );
                         } );
+
                         for ( var i = 0; i < reproducibles.length; i++ ) {
                             var agent = reproducibles[ i ];
                             this.haveBaby( agent );
                         }
                         //;; import extra woman
                         var importedWoman = fp.agentNetwork.createAgent();
-                        importedWoman.size = 1;
+                        importedWoman.gender = 1;
                         importedWoman.sex = 1;
                         importedWoman.age = 18 + Math.floor( Math.random() * 20 );
                         importedWoman.ticksSinceReproduction = 0;
@@ -654,7 +655,7 @@
 
                     checkBirthDeath: function() {
 
-                        if ( fp.timescale.frameCouTick % fp.timescale.ticksToYTick == 0 ) {
+                        if ( fp.timescale.frameCounter % fp.timescale.ticksToYear == 0 ) {
 
                             var rate = fp.appConfig.geoGamesOptions.rate;
                             for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
@@ -683,6 +684,7 @@
 
                     setup: function() {
                         fp.timescale.framesToTick = 1;
+                        fp.timescale.ticksToYear = 100;
 
                         this.marsters = null;
                         this.elevation = null;
@@ -694,7 +696,7 @@
 
                     tick: function() {
                         if ( fp.timescale.frameCounter % fp.timescale.ticksToYear == 0 )
-                            console.log( "Years: " + fp.timescale.frameCounter / 100  );
+                            console.log( "Years: " + fp.timescale.frameCounter / fp.timescale.ticksToYear  );
 
                          var sim = this;
                          sim.interact();
