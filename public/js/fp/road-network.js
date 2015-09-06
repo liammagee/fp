@@ -144,7 +144,7 @@ define( [
                 if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
                     return false;
 
-                var extrudePath = new THREE.SplineCurve3( points );
+                var extrudePath = new THREE.CatmullRomCurve3( points );
                 var roadColor = ( fp.appConfig.displayOptions.dayShow ) ? fp.appConfig.colorOptions.colorDayRoad : fp.appConfig.colorOptions.colorNightRoad;
                 // var roadMaterial = new THREE.MeshBasicMaterial( { color: roadColor } );
                 var roadMaterial = new THREE.MeshLambertMaterial( { color: roadColor } );
