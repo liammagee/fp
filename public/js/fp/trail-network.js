@@ -103,7 +103,7 @@ define( [
              */
             this.updateTrails = function() {
 
-                if ( !FiercePlanet.AppState.runSimulation ) {
+                if ( !FiercePlanet.appState.runSimulation ) {
 
                     return;
 

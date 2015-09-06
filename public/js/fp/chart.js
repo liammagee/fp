@@ -71,7 +71,7 @@ define( [
 
                 this.intervalID = setInterval( function() {
 
-                    if ( FiercePlanet.AppState.runSimulation ) {
+                    if ( FiercePlanet.appState.runSimulation ) {
 
                         for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
 

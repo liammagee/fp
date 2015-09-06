@@ -40,7 +40,6 @@
           window.fp = fp;
 
           require(["spec-helper", "specs"], function() {
-            console.log('got here', fp)
             window.onload();
           })
 
@@ -50,7 +49,7 @@
               "Default": {
                   // Agent options
                   "1": {
-                      "initialPopulation": 1000,
+                      "initialPopulation": 10,
                       "initialExtent": 30,
                       // "maxExtent": 100,
                       // "initialX": 50,
@@ -268,18 +267,10 @@
             }
           }
 
-          var sim =  {
-              counter: 0,
 
-              setup: function() {
-                  fp.timescale.framesToTick = 1;
-              },
-              tick: function() {
-              }
-          }
+          fp.init( config, undefined, function() {
 
-          fp.init( config, sim, function() {
-
+              fp.appState.animate = false;
               fp.appController.Setup();
 
           } );

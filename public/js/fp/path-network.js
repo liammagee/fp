@@ -195,7 +195,7 @@ define( [
              */
             this.updatePath = function() {
 
-                if ( !FiercePlanet.AppState.runSimulation )
+                if ( !FiercePlanet.appState.runSimulation )
                     return;
 
                 var children = fp.pathNetwork.networkMesh.children;

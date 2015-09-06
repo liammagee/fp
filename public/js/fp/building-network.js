@@ -178,7 +178,7 @@ define( [
              * Updates each building.
              */
             this.updateBuildings = function() {
-                if ( ! FiercePlanet.AppState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
+                if ( ! FiercePlanet.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
                     return;
                 for ( var i = 0; i < fp.buildingNetwork.buildings.length; i++ ) {
                     var building = fp.buildingNetwork.buildings[ i ];
@@ -199,8 +199,8 @@ define( [
 
                 if ( fp.appConfig.buildingOptions.randomForm ) {
 
-                    buildingForm = FiercePlanet.BUILDING_FORMS.names[ 
-                        Math.floor( Math.random() * FiercePlanet.BUILDING_FORMS.names.length ) 
+                    buildingForm = FiercePlanet.BUILDING_FORMS.names[
+                        Math.floor( Math.random() * FiercePlanet.BUILDING_FORMS.names.length )
                     ];
 
                 }

@@ -13,7 +13,8 @@ define( [
          * @memberof fp
          * @inner
          */
-        FiercePlanet.AppState = {
+        FiercePlanet.appState = {
+            animate: true,
             runSimulation: false,
             stepSimulation: false
         };

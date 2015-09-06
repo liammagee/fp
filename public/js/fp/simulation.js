@@ -61,6 +61,7 @@ define(
             this.lightHemisphere = null;
             this.lightDirectional = null;
             this.chart = null;
+            this.appState = FiercePlanet.appState;
 
 
             /**
@@ -634,8 +635,12 @@ define(
                 fp.setupChart();
                 fp.toggleHUDState(); // Add HUD
                 fp.toggleStatsState(); // Add stats
+
                 window.addEventListener( "resize", fp.onWindowResize, false );
-                fp.loadTerrain( callback ); // Load the terrain asynchronously
+
+                // Load the terrain asynchronously
+                // Only execute the callback once terrain is loaded
+                fp.loadTerrain( callback );
 
             };
 
@@ -645,7 +650,7 @@ define(
              */
             fp.animate = function() {
 
-                if ( FiercePlanet.AppState.halt ) {
+                if ( !fp.appState.animate ) {
 
                     return;
 
@@ -682,7 +687,7 @@ define(
              */
             fp.doTick = function() {
 
-                if ( FiercePlanet.AppState.runSimulation ) {
+                if ( FiercePlanet.appState.runSimulation ) {
 
                     if ( fp.timescale.frameCounter % fp.timescale.framesToTick === 0 ) {
 
@@ -728,8 +733,8 @@ define(
              */
             fp.updateSimState = function() {
 
-                if ( FiercePlanet.AppState.stepSimulation )
-                    FiercePlanet.AppState.runSimulation = false;
+                if ( FiercePlanet.appState.stepSimulation )
+                    FiercePlanet.appState.runSimulation = false;
 
             };
 
@@ -817,7 +822,7 @@ define(
              */
             fp.endSim = function() {
 
-                FiercePlanet.AppState.runSimulation = false;
+                FiercePlanet.appState.runSimulation = false;
                 fp.appConfig.displayOptions.buildingsShow = false;
                 fp.appConfig.displayOptions.patchesUpdate = false;
 
@@ -829,7 +834,7 @@ define(
              */
             fp.updateTime = function() {
 
-                if ( FiercePlanet.AppState.runSimulation ) {
+                if ( FiercePlanet.appState.runSimulation ) {
 
                     fp.timescale.frameCounter++;
 

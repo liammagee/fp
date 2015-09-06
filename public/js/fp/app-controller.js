@@ -128,12 +128,12 @@ define( [
              */
             this.Run = function() {
 
-                FiercePlanet.AppState.runSimulation = !FiercePlanet.AppState.runSimulation;
-                FiercePlanet.AppState.stepSimulation = false;
+                FiercePlanet.appState.runSimulation = !FiercePlanet.appState.runSimulation;
+                FiercePlanet.appState.stepSimulation = false;
 
                 if ( !_.isUndefined( fp.chart ) ) {
 
-                    if ( FiercePlanet.AppState.runSimulation ) {
+                    if ( FiercePlanet.appState.runSimulation ) {
 
                         fp.chart.chart.start();
 
@@ -154,7 +154,7 @@ define( [
              */
             this.Step = function() {
 
-                FiercePlanet.AppState.runSimulation = FiercePlanet.AppState.stepSimulation = true;
+                FiercePlanet.appState.runSimulation = FiercePlanet.appState.stepSimulation = true;
 
             };
 
