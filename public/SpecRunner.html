@@ -14,53 +14,36 @@
   <!-- include source files here... -->
   <script src="js/require.js"></script>
   <script>
-  requirejs.config({
-      baseUrl: 'js',
+
+
+  require.config({
+
+      baseUrl: '/js',
       // paths: maps ids with paths (no extension)
       paths: {
           'jasmine': ['jasmine/lib/jasmine-2.3.4/jasmine'],
           'jasmine-html': ['jasmine/lib/jasmine-2.3.4/jasmine-html'],
           'jasmine-boot': ['jasmine/lib/jasmine-2.3.4/boot'],
           'spec-helper': ['jasmine/spec/SpecHelper'],
-          'specs': ['jasmine/spec/AgentSpec']
-      },
-      shim: {
-          "underscore": { exports: "_" },
-          "dat.gui": { exports: "dat.gui" },
-          "smoothie": { exports: "SmoothieChart" },
-          "stats.min": { exports: "Stats" },
-          "jstat.min": { exports: "jStat" },
-          "three": { exports: "THREE" },
-          "Mirror": ["three"],
-          "WaterShader": ["three"],
-          "TerrainLoader": { deps: ["three"], exports: "TerrainLoader" },
-          "TrackballControls": {  deps: ["three"], exports: "TrackballControls" },
-          "OrbitControls": {  deps: ["three"], exports: "OrbitControls" },
-          "PointerLockControls": {  deps: ["three"], exports: "PointerLockControls" },
-          'jasmine-html': { deps : ['jasmine'] },
-          'jasmine-boot': { deps : ['jasmine', 'jasmine-html'] }
+          'specs': ['jasmine/spec/AgentSpec'],
+          'fp': 'fp'
       }
+
   })
-  requirejs([
+  require([
           "fp",
-          "dat.gui",
-          "smoothie",
-          "stats.min",
-          "jstat.min",
-          "javascript.util",
-          "jsts",
-          "Mirror",
-          "WaterShader",
-          "TerrainLoader",
-          "THREEx.KeyboardState",
-          "TrackballControls",
-          "PointerLockControls",
-          "jasmine-boot"          
+          "jasmine-boot"
       ],
-      function() {
-          requirejs(["spec-helper", "specs"], function() {
+
+      function( fp ) {
+
+          window.fp = fp;
+
+          require(["spec-helper", "specs"], function() {
+            console.log('got here', fp)
             window.onload();
           })
+
           var config = {
             "preset": "Default",
             "remembered": {
@@ -211,7 +194,7 @@
                       // "cursorShow": false,
                       // "cursorShowCell": true,
                       // "statsShow": true,
-                      // "hudShow": true,
+                      "hudShow": false,
                       // "wireframeShow": false,
                       // "dayShow": false,
                       // "skyboxShow": true,
@@ -284,20 +267,25 @@
               }
             }
           }
+
           var sim =  {
               counter: 0,
 
               setup: function() {
-                  fp.timescale.framesToYear = 1;
+                  fp.timescale.framesToTick = 1;
               },
               tick: function() {
               }
           }
 
           fp.init( config, sim, function() {
-              fp.appConfig.Setup();
+
+              fp.appController.Setup();
+
           } );
+
       }
+
   );
 
   </script>

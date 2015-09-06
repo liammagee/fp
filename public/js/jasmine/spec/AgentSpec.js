@@ -1,8 +1,9 @@
 describe("Agent", function() {
+
   var agent;
 
   beforeEach(function() {
-    agent = fp.agentNetwork.agents[0];
+    agent = window.fp.agentNetwork.agents[0];
   });
 
   describe( "#movement", function() {
@@ -27,7 +28,7 @@ describe("Agent", function() {
 
       it( "should be report correct heights", function() {
         var position = agent.position;
-        expect( position.y ).toEqual( fp.getHeight( position.x, position.z ) + fp.appConfig.agentOptions.terrainOffset );
+        expect( position.y ).toEqual( window.fp.getHeight( position.x, position.z ) + window.fp.appConfig.agentOptions.terrainOffset );
       } );
     });
 
@@ -36,12 +37,12 @@ describe("Agent", function() {
 
       beforeEach(function() {
         // Make sure the agent's direction points to the cell immediately on the left
-        agent.direction = new THREE.Vector3( - fp.terrain.ratioExtentToPoint * 2, 0, 0 );
-        var index = fp.getIndex( agent.position.x, agent.position.z );
+        agent.direction = new THREE.Vector3( - window.fp.terrain.ratioExtentToPoint * 2, 0, 0 );
+        var index = window.fp.getIndex( agent.position.x, agent.position.z );
         // Modify the y coordinate immediate to the left of the current agent's position
         offset = index * 3 - 1;
-        originalHeight = fp.terrain.planeArray.array[ offset ];
-        fp.terrain.planeArray.array[ offset ] = 0;
+        originalHeight = window.fp.terrain.planeArray.array[ offset ];
+        window.fp.terrain.planeArray.array[ offset ] = 0;
         directions = agent.generateDirectionVectorsAndWeights( 0.5 );
       });
 
@@ -53,7 +54,7 @@ describe("Agent", function() {
       });
 
       afterEach(function() {
-        fp.terrain.planeArray.array[ offset ] = originalHeight;
+        window.fp.terrain.planeArray.array[ offset ] = originalHeight;
       });
     });
 
@@ -63,8 +64,8 @@ describe("Agent", function() {
       beforeEach(function() {
         // Make sure the agent's direction points to the cell immediately on the left
         originalPosition = agent.position;
-        agent.position = agent.lastPosition = new THREE.Vector3( -fp.terrain.gridExtent, fp.getHeight( -fp.terrain.gridExtent, 0 ), 0 );
-        agent.direction = new THREE.Vector3( - fp.terrain.ratioExtentToPoint * 2, 0, 0 );
+        agent.position = agent.lastPosition = new THREE.Vector3( -window.fp.terrain.gridExtent, window.fp.getHeight( -window.fp.terrain.gridExtent, 0 ), 0 );
+        agent.direction = new THREE.Vector3( - window.fp.terrain.ratioExtentToPoint * 2, 0, 0 );
         directions = agent.generateDirectionVectorsAndWeights( 0.5 );
       });
 
@@ -79,13 +80,13 @@ describe("Agent", function() {
     });
 
     describe("building home and pre-computed path", function() {
-      var directions, stepDistance; 
+      var directions, stepDistance;
 
       beforeEach( function() {
-        fp.appConfig.agentOptions.chanceToFindPathToHome = 1.0;
+        window.fp.appConfig.agentOptions.chanceToFindPathToHome = 1.0;
         var homePosition = agent.position.clone();
         // Move three grid positions to the left
-        stepDistance = fp.appConfig.terrainOptions.multiplier * fp.terrain.ratioExtentToPoint
+        stepDistance = window.fp.appConfig.terrainOptions.multiplier * window.fp.terrain.ratioExtentToPoint
         var offset = stepDistance * 3;
         homePosition.x = homePosition.x - offset;
         var dimensions = fp.buildingNetwork.generateRandomDimensions();

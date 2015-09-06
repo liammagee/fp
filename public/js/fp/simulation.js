@@ -1545,7 +1545,9 @@ define(
              * @memberof fp
              */
             fp.toggleHUDState = function() {
-                $( "#hudDiv" ).toggle( fp.appConfig.displayOptions.hudShow );
+
+                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.hudShow );
+
             };
 
             /**
