@@ -1569,7 +1569,7 @@ define(
              */
             fp.toggleHUDState = function() {
 
-                $( "#hudShow" ).toggle( fp.appConfig.displayOptions.hudShow );
+                $( "#hudDiv" ).toggle( fp.appConfig.displayOptions.hudShow );
 
             };
 
