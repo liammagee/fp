@@ -6,7 +6,6 @@ define( [
 
     function( FiercePlanet ) {
 
-
         /**
          * Represents a network of roads. Also provides factory and utility methods.
          * @constructor
@@ -14,6 +13,7 @@ define( [
          * @inner
          */
         FiercePlanet.RoadNetwork = function( fp ) {
+
             this.networkMesh = null;
             this.planeVertices = [ ];
             this.networkJstsCache = [ ];
@@ -29,6 +29,7 @@ define( [
              * if the fp.terrain has variable height, effectively "curving"
              * around increases in height.
              * Taken from webgl_geometry_extrude_splines.html
+             *
              * @param  {THREE.Vector3} p1
              * @param  {THREE.Vector3} p2
              * @return {Array} points

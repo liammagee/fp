@@ -183,18 +183,18 @@ define( [
 
                 var base = this.levels * fp.appConfig.buildingOptions.levelHeight;
                 var points = FiercePlanet.BUILDING_FORMS[ this.buildingForm ]( this.localWidth, this.localLength, base );
-                
+
                 if ( !fp.appConfig.buildingOptions.useShader ) {
-                    
+
                     if ( fp.appConfig.buildingOptions.showLines ) {
                         this.geometry.dynamic = true;
                         this.generateSkeleton( points );
                         this.geometry.verticesNeedUpdate = true;
                     }
-                    
+
                     if ( fp.appConfig.buildingOptions.showFill )
                         this.generateExtrudedShape( points );
-                    
+
                     if ( fp.appConfig.buildingOptions.showWindows )
                         this.generateWindows( points );
 
@@ -211,28 +211,28 @@ define( [
 
                 // Do tapering and staggering here
                 if ( fp.appConfig.buildingOptions.stagger ) {
-                
+
                     if ( fp.appConfig.buildingOptions.taper ) {
-                
+
                         var percentage = this.levels / this.localMaxLevels;
                         var sq = Math.pow( percentage, fp.appConfig.buildingOptions.taperExponent );
                         var hurdle = jStat.exponential.cdf( sq, fp.appConfig.buildingOptions.taperDistribution );
-                
+
                         if ( Math.random() < hurdle ) {
-                
+
                             this.localWidth -= fp.appConfig.buildingOptions.staggerAmount;
                             this.localLength -= fp.appConfig.buildingOptions.staggerAmount;
-                
+
                         }
-                
+
                     }
                     else {
-                
+
                         this.localWidth -= fp.appConfig.buildingOptions.staggerAmount;
                         this.localLength -= fp.appConfig.buildingOptions.staggerAmount;
-                
+
                     }
-                
+
                 }
             };
 
@@ -315,7 +315,7 @@ define( [
             };
 
             this.generateWindows = function ( points ) {
-                
+
                 var base = points[ 0 ].y + fp.appConfig.agentOptions.terrainOffset;
                 var offset = fp.getOffset( this.levels, points.length );
 
@@ -501,12 +501,9 @@ define( [
                         }
                         shapeGeometry.addAttribute( 'mixin', new THREE.BufferAttribute( mixins, 1 ) );
 
-                        var attributes = [ 'mixin' ];
-
                         var shaderMaterial = new THREE.ShaderMaterial( {
 
                             uniforms: FiercePlanet.ShaderUtils.lambertUniforms( this.uniforms ),
-                            attributes: attributes,
                             vertexShader: FiercePlanet.ShaderUtils.lambertShaderVertex(
 
                                 FiercePlanet.ShaderUtils.buildingVertexShaderParams(),

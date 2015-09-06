@@ -38319,11 +38319,13 @@ define( 'fp/config',[
      * @inner
      */
     FiercePlanet.AppConfig = function() {
+
         /**
          * World options.
          * @namespace fp~AppConfig~worldOptions
          */
         this.worldOptions = {
+
             /**
              * Maximum depth to search for land.
              * @memberOf fp~AppConfig~worldOptions
@@ -38337,12 +38339,15 @@ define( 'fp/config',[
              * @inner
              */
             searchIncrement: 2
+
         };
+
         /**
          * Agent options.
          * @namespace fp~AppConfig~agentOptions
          */
         this.agentOptions = {
+
             /**
              * Initial population of agents.
              * @type {Number}
@@ -38350,38 +38355,55 @@ define( 'fp/config',[
              * @inner
              */
             initialPopulation: 100,
+
             /**
-             * The <em>initial</em> extent, or diameter, around the point of origin, where agents can be
-            spawned, expressed as a percentage ( 0-100 ).
+             * The <em>initial</em> extent, or diameter, around the point of
+             * origin, where agents can be spawned, expressed as a percentage ( 0-100 ).
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             initialExtent: 10,
+
             /**
-             * The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be
-            spawed, expressed as a percentage ( 0-100 ).
+             * The <em>maximum</em> extent, or diameter, around the point of
+             *  origin, where agents can be spawed, expressed as a percentage ( 0-100 ).
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             maxExtent: 100,
-            // initialX: -500, initialY: -1500, // Melbourne
+
+            // NOTE: Settings for Melbourne: initialX: -500, initialY: -1500,
+
             /**
-             * The <em>x</em> co-ordinate of the point of origin, expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             * The <em>x</em> co-ordinate of the point of origin,
+             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             initialX: 50,
+
             /**
-             * The <em>y</em> co-ordinate of the point of origin, expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             * The <em>y</em> co-ordinate of the point of origin,
+             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             initialY: 50,
+
+            /**
+             * Whether the agent's age is randomly set, initially
+             * @type {Boolean}
+             */
             randomAge: true,
+
             chanceToJoinNetwork: 0.05,
             chanceToJoinNetworkWithHome: 0.05,
             chanceToJoinNetworkWithBothHomes: 0.05,
@@ -38401,11 +38423,15 @@ define( 'fp/config',[
             initialPerturbBy: 0.05,
             movementRelativeToPatch: false,
             movementInPatch: 1,
-            movementStrictlyIntercardinal: false
+            movementStrictlyIntercardinal: false,
+
+            changeDirectionEveryTick: 100,
+            perturbDirectionEveryTick: 10,
 
         };
 
         this.buildingOptions = {
+
             create: true,
 
             maxNumber: 250, // Maximum number of buildings - for performance reasons
@@ -38489,7 +38515,8 @@ define( 'fp/config',[
             detectRoadCollisions: true
         };
         this.roadOptions = {
-            create: true,
+
+            create: false,
             maxNumber: 200,  // Maximum number of roads - for performance reasons
             roadWidth: 20,
             roadDeviation: 20,
@@ -38503,8 +38530,11 @@ define( 'fp/config',[
             overlapThreshold: 3,
             flattenAdjustment: 0.025,
             flattenLift: 20
+
         };
+
         this.displayOptions = {
+
             agentsShow: true,
             buildingsShow: true,
             roadsShow: true,
@@ -38544,9 +38574,13 @@ define( 'fp/config',[
             cameraX: 0,
             cameraY: 200,
             cameraZ: 800,
-            maximiseView: true,
+            maximiseView: true
+
         };
+
+
         this.terrainOptions = {
+
             renderAsSphere: true,
             loadHeights: true,
             gridExtent: 8000,
@@ -38559,8 +38593,12 @@ define( 'fp/config',[
             mapFile: "",
             patchSize: 4,
             defaultHeight: 10
+
         };
+
+
         this.colorOptions = {
+
             colorDayBackground: 0x000000,
             colorDayRoad: 0x474747,
             colorDayAgent: 0x4747b3,
@@ -38615,14 +38653,17 @@ define( 'fp/config',[
             colorTerrainStop4: 0.8,
             colorTerrainStop5: 1.0,
 
-            colorTerrainOpacity: 1.0,
+            colorTerrainOpacity: 1.0
+
         };
+
         this.buildingOptions.maxHeight = ( this.buildingOptions.minHeight > this.buildingOptions.maxHeight ) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
         this.buildingOptions.maxWidth = ( this.buildingOptions.minWidth > this.buildingOptions.maxWidth ) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
         this.buildingOptions.maxLength = ( this.buildingOptions.minLength > this.buildingOptions.maxLength ) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
         this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor( Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight );
         this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor( Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth );
         this.buildingOptions.length = this.buildingOptions.minLength + Math.floor( Math.random() * this.buildingOptions.maxLength - this.buildingOptions.minLength );
+
         this.sunOptions  = {
             turbidity: 10,
             reileigh: 2,
@@ -38632,7 +38673,9 @@ define( 'fp/config',[
             inclination: 0.49, // elevation / inclination
             azimuth: 0.25, // Facing front,
             sun: !true
+
         };
+
     };
 
     FiercePlanet.appConfig = new FiercePlanet.AppConfig();
@@ -38689,11 +38732,11 @@ define('fpShaderUtils',["fp/fp-base"], function (FiercePlanet) {
         },
 
         agentVertexShader: function agentVertexShader() {
-            var shader = "\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n                        void main() {\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n                            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n                        }\n                        ";
+            var shader = "\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n\n                        void main() {\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n\n                            // Add half the size, so the agent is drawn from the feet up.\n                            vec3 modifiedPosition = position;\n                            modifiedPosition.y += size / 2.0;\n                            vec4 mvPosition = modelViewMatrix * vec4( modifiedPosition, 1.0 );\n\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n                        }\n                        ";
             return shader;
         },
         agentFragmentShader: function agentFragmentShader() {
-            var shader = "\n                        varying vec3 vColor;\n                        uniform sampler2D texture;\n                        varying float vAlpha;\n\n                        void main() {\n                            gl_FragColor = vec4( vColor, vAlpha );\n                            // sets a white particle texture to desired color\n                            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\n                        }\n                        ";
+            var shader = "\n                        uniform float size;\n                        uniform sampler2D texture;\n                        varying vec3 vColor;\n                        varying float vAlpha;\n\n                        void main() {\n                            gl_FragColor = vec4( vColor, vAlpha );\n                            // sets a white particle texture to desired color\n                            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\n                        }\n                        ";
             return shader;
         },
 
@@ -38873,7 +38916,7 @@ define(
                     stop4: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop4 },
                     stop5: { type: "f", value: fp.appConfig.colorOptions.colorTerrainStop5 },
 
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size / 2 )},
+                    size: { type: "f", value: 0 },
                     maxHeight: { type: "f", value: fp.terrain.maxTerrainHeight * fp.appConfig.terrainOptions.multiplier },
 
                     shadowMix: { type: "f", value: fp.appConfig.terrainOptions.shaderShadowMix },
@@ -39436,7 +39479,8 @@ define( 'fp/agent',[
 
 
         /**
-         * Represents a mobile and alive agent
+         * Represents a mobile and alive agent.
+         *
          * @constructor
          * @memberof fp
          * @inner
@@ -39445,7 +39489,6 @@ define( 'fp/agent',[
 
             /**
              * Updates the ticks and age.
-             * @memberof Agent
              */
             this.updateTick = function() {
 
@@ -39460,55 +39503,91 @@ define( 'fp/agent',[
             };
 
             /**
-             * @memberof Agent
+             * Sets the direction of the agent.
+             *
+             * @param {THREE.Vector3} dir The new direction
              */
             this.setDirection = function( dir ) {
+
                 this.direction = dir;
+
             };
 
+
             /**
-             * @memberof Agent
+             * Sets the position of the agent.
+             *
+             * @param {THREE.Vector3} pos The new position
              */
-            this.setPosition = function( v ) {
-                this.lastPosition = this.position = v;
+            this.setPosition = function( pos ) {
+
+                this.lastPosition = this.position = pos;
+
             };
 
+
             /**
-             * @memberof Agent
+             * Determines whether the agent is in a building or not.
+             *
+             * @return {Boolean}
              */
             this.findBuilding = function() {
+
                 var xl = this.lastPosition.x, zl = this.lastPosition.z;
+
                 return fp.buildingNetwork.buildingHash[ fp.getIndex( xl, zl ) ];
+
             };
 
+
             /**
-             * @memberof Agent
+             * Returns a value as to whether the agent should be going vertically
+             * rather than horizontally for a given building.
+             *
+             * @param {Building} building a building to test
+             * @return {Boolean}
              */
             this.goingUp = function( building ) {
+
                 return ( building == this.home ) ?
                     ( Math.random() < fp.appConfig.agentOptions.visitHomeBuilding ) :
                      ( Math.random() < fp.appConfig.agentOptions.visitOtherBuilding );
+
             };
+
+
             /**
-             * @memberof Agent
+             * Updates whether the agent is on the ground or not, within a building.
+             *
+             * @param {Building} building
              */
             this.updateGroundedState = function( building ) {
+
                 var xl = this.lastPosition.x, yl = this.lastPosition.y, zl = this.lastPosition.z,
                     xd = this.direction.x, yd = this.direction.y, zd = this.direction.z;
 
                 if ( !this.grounded ) {
+
                     var base = fp.getHeight( xl, zl ) + fp.appConfig.agentOptions.terrainOffset;
-                    if ( yl <= base && yd < 0 )
+
+                    if ( yl <= base && yd < 0 ) {
+
                         this.grounded = true;
+
+                    }
+
                 }
                 else if ( !_.isUndefined( building ) && this.goingUp( building ) ) { // grounded == true
+
                     this.grounded = false;
+
                 }
+
             };
+
 
             /**
              * Determines the next step for a computed direction.
-             * @memberof Agent
              */
             this.nextComputedDirection = function() {
 
@@ -39560,7 +39639,6 @@ define( 'fp/agent',[
 
             /**
              * Generates candicate directions from an existing direction.
-             * @memberof Agent
              */
             this.candidateDirections = function() {
                 // Check if we are in a building, and offer possibility of going up
@@ -39772,14 +39850,13 @@ define( 'fp/agent',[
                     yn += fp.appConfig.terrainOptions.defaultHeight;
                     // Offset relative to the terrain
                     yn += fp.appConfig.agentOptions.terrainOffset;
-                    // Add half the agent's own size
-                    yn += fp.appConfig.agentOptions.size / 2;
 
                     // Smooth the transition between heights
                     yd = ( yn - yl ) / fp.terrain.ratioExtentToPoint;
 
                     // Set the direction
                     directions[ i ] = [ new THREE.Vector3( xd, yd, zd ), weight ];
+
                 }
                 directions = _.chain( directions ).
                                 compact().
@@ -39788,12 +39865,15 @@ define( 'fp/agent',[
                                 value();
 
                 return directions;
+
             };
 
+
             /**
-             * @memberof Agent
+             * Works out the best candidate direction for the agent.
              */
             this.bestCandidate = function() {
+
                 var directions = this.generateDirectionVectorsAndWeights( 0.1 );
 
                 // A direction is pulled from a weighted list of possibilities
@@ -39808,19 +39888,28 @@ define( 'fp/agent',[
                     value();
                 var r = Math.random();
                 var index = 0, runningTotal = 0, len = directions.length - 1;
+
                 // Note the interval array is initialisaed with an addition zero
                 for ( var i = 0; i < weightsNormed.length; i++ ) {
+
                     var a = weightsNormed[ i ];
                     runningTotal += a;
+
                     if ( r < runningTotal && i < directions.length ) {
+
                         return directions[ len - i ][ 0 ];
+
                     }
+
                 }
+
                 return this.randomDirection();
+
             };
 
+
             /**
-             * @memberof Agent
+             * Moves the agent,
              */
             this.move = function() {
 
@@ -39828,6 +39917,7 @@ define( 'fp/agent',[
 
                 // Multiply relative to patch size
                 var factor = fp.appConfig.terrainOptions.multiplier;
+
                 if ( fp.appConfig.agentOptions.movementRelativeToPatch ) {
 
                     factor *= fp.appConfig.terrainOptions.patchSize *
@@ -39835,10 +39925,16 @@ define( 'fp/agent',[
 
                 }
 
+                // Multiply by factor
                 directionAtSpeed.x *= factor;
                 directionAtSpeed.z *= factor;
+
+                // Obtain new position and index
                 var newPosition = this.position.clone().add( directionAtSpeed );
-                var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.gridExtent / 2;
+                var newIndex = fp.getIndex( newPosition.x, newPosition.z );
+
+                // Calculate bound
+                var bound = fp.appConfig.terrainOptions.multiplier * fp.terrain.halfExtent;
 
                 // Simple check to ensure we're within terrain bounds
                 if ( newPosition.x < -bound || newPosition.x >= bound || newPosition.z < -bound || newPosition.z >= bound ) {
@@ -39847,8 +39943,8 @@ define( 'fp/agent',[
                     this.move();
 
                 }
-                else if ( fp.getHeight( newPosition.x, newPosition.z ) === 0 &&
-                          fp.appConfig.agentOptions.noWater ) {
+                else if ( fp.appConfig.agentOptions.noWater &&
+                          fp.terrain.getHeightForIndex( newIndex ) === 0 ) {
 
                     this.setDirection( this.randomDirection() );
                     this.move();
@@ -39856,60 +39952,94 @@ define( 'fp/agent',[
                 }
                 else {
 
+                    // Irrespective of direction, constrain y position to the ground
+                    // if it is not moving in a vertical direction
+                    if ( directionAtSpeed.x != 0 || directionAtSpeed.z != 0 ) {
+
+                        // Set the y position to height of the ground + offset + half the size of the agent
+                        newPosition.y = fp.terrain.getHeightForIndex( newIndex ) +
+                                        fp.appConfig.agentOptions.terrainOffset;
+
+                    }
+
+                    // Set the current to the new position
+                    this.lastPosition = this.position;
+                    this.lastIndex = this.index;
                     this.position = newPosition;
+                    this.index = newIndex;
 
                 }
 
             };
 
             /**
-             * @memberof Agent
+             * Sets the direction to the best candidate found.
              */
             this.evaluateDirection = function() {
-                this.lastPosition = this.position;
+
+                // this.lastPosition = this.position;
+                // this.lastIndex = this.index;
+
                 this.setDirection( this.bestCandidate() );
+
             };
+
 
             /**
              * Returns array of compass directions
              */
             this.compassDirections = function() {
+
                 var direction = 0, directions = [ ];
+
                 for ( var i = 0; i < 8; i++ ) {
+
                     var x = Math.cos( direction ) / 2;
                     var z = Math.sin( direction ) / 2;
                     directions.push( [ x, z ] );
                     direction += Math.PI / 4;
+
                 }
+
                 return directions;
+
             };
 
+
             /**
-             * Genenerates a random vector.
-             * @memberof Agent
+             * Generates a random vector to use as a new direction.
              */
             this.randomDirection = function() {
 
+                // Internal function, to calculate a new speed, as a percentage of patch size
                 var calcNewPercent = function( percent ) {
+
                     // Divide speed by 100
                     var r = Math.random();
+
                     // Adjust random based on current percent - more likely to
                     // increase for low values, decrease for high values
                     var adjustedR = ( Math.pow( r, percent) - 0.5 ) * 2;
+
                     // Distribute the random value between 0.5 and 2 (with equal likelihood of 1)
                     // var adjust = 1 + ( 0.5 % adjustedR ) * 2 - ( adjustedR % 0.5 ) * ( 1 + ( 0.5 % adjustedR ) * 2 );
                     // Distribute the random value between 0 and 2
                     var adjust = 1.0 + adjustedR;
+
                     // Multiply current percent with adjustment
                     var newPercent = adjust * percent;
+
                     // Clamp new percentage between 0 and 1
                     newPercent = ( newPercent < 0 ) ? 0 : ( newPercent > 1 ? 1 : newPercent );
+
                     return newPercent;
+
                 };
 
                 var speed = this.speed;
                 var percent = speed / 100;
-                var newPercent = percent; //calcNewPercent( percent );
+
+                var newPercent = percent;
                 // var newPercent = calcNewPercent( percent );
                 var patchSize = fp.appConfig.terrainOptions.patchSize;
                 // Calculute a new patch speed
@@ -39932,69 +40062,107 @@ define( 'fp/agent',[
                     return vec;
 
                 }
+
             };
 
+
             /**
-             * @memberof Agent
+             * Works out the nearest neighbour of the current agent.
              */
             this.nearestNeighbour = function( ignoreHeight ) {
+
                 var agents = fp.agentNetwork.agents;
                 var x = this.position.x, y = this.position.y, z = this.position.z;
                 var nearest = null, leastLen = 0;
+
                 for ( var i = 0; i < agents.length; i++ ) {
+
                     var agent = agents[ i ];
-                    if ( agent == this )
+
+                    if ( agent == this ) {
+
                         continue;
+
+                    }
+
                     var ox = agent.position.x, oy = agent.position.y, oz = agent.position.z;
                     var len = Math.sqrt( Math.pow( ox - x, 2 ) + Math.pow( oz - z, 2 ) );
+
                     if ( ! ignoreHeight ) {
+
                         len = Math.sqrt( Math.pow( len, 2 ) + Math.pow( oy - y, 2 ) );
+
                     }
+
                     if ( leastLen === 0 || len < leastLen ) {
+
                         nearest = agent;
                         leastLen = len;
+
                     }
+
                 }
+
                 return nearest;
+
             };
 
+
             /**
-             * @memberof Agent
+             * Sets a random direction.
              */
             this.setRandomDirection = function() {
+
                 this.setDirection( this.randomDirection() );
+
             };
+
 
             /**
              * Slightly changes to the direction of the agent.
              */
             this.perturbDirection = function() {
+
                 this.direction.x += this.perturbBy * ( Math.random() - 0.5 );
                 this.direction.z += this.perturbBy * ( Math.random() - 0.5 );
+
             };
+
 
             /**
              * Calculate likelihood of building a home
              */
             this.calculateLikelihoodOfHome = function( index ) {
+
                 // Simple test of local roads, water, buildings and building height
                 var proximityTests = fp.buildingNetwork.proximityFunctions();
+
                 for ( var i = proximityTests.length - 1; i >= 0; i-- ) {
+
                     var proximityTest = proximityTests[ i ];
                     var func = _.first( proximityTest );
                     var values = _.rest( proximityTest );
                     var response = func.apply( fp, _.union( [ index ], values ) );
-                    if ( response )
+                    if ( response ) {
+
                         return true;
+
+                    }
+
                 }
+
                 return false;
+
             };
+
 
             /**
              * Builds a building on the agent's current position.
+             *
              * @return {Boolean} Whether the building construction was successful.
              */
             this.build = function() {
+
                 if ( !fp.appConfig.buildingOptions.create )
                     return false;
 
@@ -40031,6 +40199,7 @@ define( 'fp/agent',[
                 }
 
                 return false;
+
             };
 
             /**
@@ -40038,8 +40207,11 @@ define( 'fp/agent',[
              * @return {Boolean} Whether the road construction was successful.
              */
             this.buildRoad = function() {
-                if ( !fp.appConfig.roadOptions.create )
+                if ( !fp.appConfig.roadOptions.create ) {
+
                     return false;
+
+                }
 
                 var xOrig = this.position.x,
                     zOrig = this.position.z,
@@ -40051,34 +40223,62 @@ define( 'fp/agent',[
                     distanceFromInitialPoint = Math.sqrt( xd * xd + zd * zd ),
                     buildingIndex = _.map( fp.buildingNetwork.buildings, function( building ) { return fp.getIndex( building.lod.position.x, building.lod.position.z ); } );
 
-                if ( fp.roadNetwork.networkMesh.children.length >= fp.appConfig.roadOptions.maxNumber )
+                if ( fp.roadNetwork.networkMesh.children.length >= fp.appConfig.roadOptions.maxNumber ) {
+
                     return false;
 
-                if ( !_.isNull( fp.stats ) && fp.statss <= 10 )
+                }
+
+                if ( !_.isNull( fp.stats ) && fp.statss <= 10 ) {
+
                     return false;
+
+                }
 
                 if ( fp.appConfig.displayOptions.buildingsShow ) {
+
                     if ( fp.buildingNetwork.buildings.length === 0 ) {
+
                         return false;
+
                     }
                     else if ( fp.buildingNetwork.buildings.length == 1 ) {
-                        if ( buildingIndex.indexOf( index ) == -1 )
+                        if ( buildingIndex.indexOf( index ) == -1 ) {
+
                             return false;
+
+                        }
+
                     }
+
                 }
                 if ( fp.roadNetwork.indexValues.length === 0 ) {
-                    if ( distanceFromInitialPoint > fp.appConfig.roadOptions.initialRadius )
+                    if ( distanceFromInitialPoint > fp.appConfig.roadOptions.initialRadius ) {
+
                         return false;
+
+                    }
                 }
                 else {
-                    if ( fp.roadNetwork.indexValues.indexOf( index ) == -1 )
+
+                    if ( fp.roadNetwork.indexValues.indexOf( index ) == -1 ) {
+
                         return false;
+
+                    }
                     if ( buildingIndex.indexOf( index ) == -1 ) {
+
                         var r = Math.random();
                         var chance = 1 / ( Math.log( distanceFromInitialPoint + 1 ) * fp.appConfig.roadOptions.probability );
-                        if ( chance < r )
+
+                        if ( chance < r ) {
+
                             return false;
+
+                        }
+
                     }
+
                 }
 
                 // Pick a random direction to create a road
@@ -40088,7 +40288,9 @@ define( 'fp/agent',[
                     lenMaximum = fp.appConfig.roadOptions.lenMaximum,
                     lenFactor = Math.random();
                 var existingRoad = fp.roadNetwork.roads[ index ];
+
                 if ( existingRoad ) {
+
                     var ps = _.first( existingRoad.geometry.vertices ),
                         pe = _.last( existingRoad.geometry.vertices ),
                         xChange = ps.x - pe.x,
@@ -40098,7 +40300,9 @@ define( 'fp/agent',[
                         angle90 = angle + Math.PI / 2 + Math.PI * turn;
                     xr = Math.cos( angle90 );
                     zr = Math.sin( angle90 );
+
                 }
+
                 var totalLen = lenMinimum +
                                 ( lenMaximum - lenMinimum ) *
                                 ( 1 - jStat.exponential.cdf( lenFactor, fp.appConfig.roadOptions.lenDistributionFactor ) ),
@@ -40112,28 +40316,135 @@ define( 'fp/agent',[
                     ze = zOrig - zEnd,
                     distanceFromEnd = Math.sqrt( xe * xe + ze * ze ),
                     width = Math.ceil( ( ( ( 1 / Math.log( distanceFromInitialPoint + 10 ) ) ) * Math.log( distanceFromEnd ) ) * fp.appConfig.roadOptions.roadWidth );
+
                 return fp.roadNetwork.addRoad( this.position, endPoint, width );
+
             };
 
-            this.vertex = null;
+            /**
+             * The position of the agent.
+             *
+             * @type {THREE.Vector3}
+             */
             this.position = null;
-            this.direction = null;
-            this.speed = fp.appConfig.agentOptions.initialSpeed;
-            this.perturbBy = fp.appConfig.agentOptions.initialPerturbBy;
+
+            /**
+             * The last position of the agent.
+             * @type {THREE.Vector3}
+             */
             this.lastPosition = null;
+
+            /**
+             * The terrain index of the agent, used as a cache.
+             *
+             * @type {Number}
+             */
+            this.index = null;
+
+            /**
+             * The previous terrain index of the agent, used as a cache.
+             *
+             * @type {Number}
+             */
+            this.lastIndex = null;
+
+            /**
+             * The current direction of the agent.
+             * @type {THREE.Vector3}
+             */
+            this.direction = null;
+
+            /**
+             * The speed at which the agent is moving.
+             *
+             * @type {Number}
+             */
+            this.speed = fp.appConfig.agentOptions.initialSpeed;
+
+            /**
+             * The amount by which to perturb the movement of the agent.
+             *
+             * @type {Number}
+             */
+            this.perturbBy = fp.appConfig.agentOptions.initialPerturbBy;
+
+            /**
+             * Whether the agent is currently on the ground.
+             *
+             * @type {Boolean}
+             */
             this.grounded = true;
+
+            /**
+             * The computed path, determining the agent's direction (if any).
+             *
+             * @type {Array}
+             */
+            this.pathComputed = undefined;
+
+            /**
+             * The current position along the path.
+             *
+             * @type {Number}
+             */
+            this.pathPosition = 0;
+
+            /**
+             * The amount of alpha (or transparency) of the agent.
+             *
+             * @type {Number}
+             */
             this.alpha =  0.5 + ( Math.random() / 2 );
-            this.color = "#ff0000"; // Red. Alternative for this model is blue: "#0000ff"
+
+            /**
+             * The color of the agent, in RGB hexadecimal notation.
+             *
+             * @type {String}
+             */
+            this.color = "#ff0000";
+
+            /**
+             * The number of ticks since the agent's birth.
+             *
+             * @type {Number}
+             */
             this.ticks = 0;
+            /**
+             * The age of the agent.
+             *
+             * @type {Number}
+             */
             this.age = 0;
 
+            /**
+             * The home of the agent.
+             *
+             * @type {Building}
+             */
             this.home = null;
+
+            /**
+             * The health of an agent (ranging from 0 to 100).
+             *
+             * @type {Number}
+             */
             this.health = 100;
+
+            /**
+             * The gender of the agent.
+             *
+             * @type {String}
+             */
             this.gender = Math.random() < 0.5 ? "f": "m";
-            this.children = [ ];
-            this.friends = [ ];
-            this.pathComputed = undefined;
-            this.pathPosition = 0;
+
+            /**
+             * An array of children belonging to the agent.
+             *
+             * @type {Array}
+             */
+            this.children = [];
+
+
         };
 
 
@@ -40469,8 +40780,7 @@ define( 'fp/agent-network',[
                 var x = point.x;
                 var z = point.z;
                 var y = fp.getHeight( x, z ) +
-                        fp.appConfig.agentOptions.terrainOffset +
-                        fp.appConfig.agentOptions.size / 2;
+                        fp.appConfig.agentOptions.terrainOffset;
                 position.x = x;
                 position.y = y;
                 position.z = z;
@@ -40522,6 +40832,7 @@ define( 'fp/agent-network',[
                 }
 
                 var boundary = ( extent / 2 ) * fp.appConfig.terrainOptions.multiplier;
+
                 while ( ( x < -boundary || x > boundary ) || ( z < -boundary || z > boundary ) ) {
 
                     point = this.randomPointForAgent();
@@ -40533,6 +40844,7 @@ define( 'fp/agent-network',[
                 if ( fp.appConfig.agentOptions.noWater ) {
 
                     var y = fp.getHeight( x, z );
+
                     while ( y < 0 ) {
 
                         point = this.randomPointForAgent();
@@ -40554,6 +40866,7 @@ define( 'fp/agent-network',[
              */
             this.updateAgents = function() {
 
+                // Return if not running
                 if ( !FiercePlanet.AppState.runSimulation || _.isUndefined( this.particles ) ) {
 
                     return;
@@ -40561,7 +40874,10 @@ define( 'fp/agent-network',[
                 }
 
                 var agents = this.agents;
+                var changeDirectionEveryTick = fp.appConfig.agentOptions.changeDirectionEveryTick;
+                var perturbDirectionEveryTick = fp.appConfig.agentOptions.perturbDirectionEveryTick;
 
+                // Optionally shuffle, to randomise order in which agents interact, move, etc.
                 if ( fp.appConfig.agentOptions.shuffle ) {
 
                     agents = _.shuffle( this.agents );
@@ -40572,6 +40888,7 @@ define( 'fp/agent-network',[
 
                     var agent = agents[ i ];
 
+                    // If the agent is otherwise engaged, move on
                     var underConstruction = agent.build() || agent.buildRoad();
 
                     if ( underConstruction ) {
@@ -40580,10 +40897,19 @@ define( 'fp/agent-network',[
 
                     }
 
-                    // No water around or home built? Move on...
-                    if ( fp.timescale.frameCounter % ( fp.timescale.ticksToYear * fp.timescale.framesToTick ) === 0 ) {
+                    // Periodically, re-assess direction
+
+                    // Evaluation examines lots of possible paths - use sparingly
+                    if ( fp.timescale.frameCounter % changeDirectionEveryTick == i % changeDirectionEveryTick ) {
 
                         agent.evaluateDirection();
+
+                    }
+                    // Perturbation only makes a minor adjustment to the current direction
+                    else if ( fp.timescale.frameCounter % perturbDirectionEveryTick == i % perturbDirectionEveryTick
+                        && agent.grounded) {
+
+                        agent.perturbDirection();
 
                     }
 
@@ -40598,21 +40924,22 @@ define( 'fp/agent-network',[
 
                     }
 
-                    // Then add the position to this agent's trail
-                    var agentIndex = fp.getIndex( this.agents[ i ].lastPosition.x, this.agents[ i ].lastPosition.z );
+                    // If capturing trail data
+                    if ( fp.appConfig.displayOptions.trailsUpdate ) {
 
-                    if ( agentIndex > -1 ) {
+                        // Then add the position to this agent's trail
+                        if ( agent.lastIndex > -1 ) {
 
-                        fp.trailNetwork.trails[ agentIndex ] = ( fp.trailNetwork.trails[ agentIndex ] ) ? fp.trailNetwork.trails[ agentIndex ] + 1 : 1;
+                            fp.trailNetwork.trails[ agent.lastIndex ] =
+                                ( fp.trailNetwork.trails[ agent.lastIndex ] ) ?
+                                fp.trailNetwork.trails[ agent.lastIndex ] + 1 :
+                                1;
+
+                        }
 
                     }
 
-                    if ( agent.grounded ) {
-
-                        agent.perturbDirection();
-
-                    }
-
+                    // Update time-based counters
                     agent.updateTick();
 
                     // Move the agent
@@ -40784,6 +41111,7 @@ define( 'fp/agent-network',[
             this.networks.push( new this.AgentNetworkNetwork() );
             this.particles = null;
             this.agentParticleSystemAttributes = null;
+
         };
 
         return FiercePlanet;
@@ -40978,18 +41306,18 @@ define( 'fp/building',[
 
                 var base = this.levels * fp.appConfig.buildingOptions.levelHeight;
                 var points = FiercePlanet.BUILDING_FORMS[ this.buildingForm ]( this.localWidth, this.localLength, base );
-                
+
                 if ( !fp.appConfig.buildingOptions.useShader ) {
-                    
+
                     if ( fp.appConfig.buildingOptions.showLines ) {
                         this.geometry.dynamic = true;
                         this.generateSkeleton( points );
                         this.geometry.verticesNeedUpdate = true;
                     }
-                    
+
                     if ( fp.appConfig.buildingOptions.showFill )
                         this.generateExtrudedShape( points );
-                    
+
                     if ( fp.appConfig.buildingOptions.showWindows )
                         this.generateWindows( points );
 
@@ -41006,28 +41334,28 @@ define( 'fp/building',[
 
                 // Do tapering and staggering here
                 if ( fp.appConfig.buildingOptions.stagger ) {
-                
+
                     if ( fp.appConfig.buildingOptions.taper ) {
-                
+
                         var percentage = this.levels / this.localMaxLevels;
                         var sq = Math.pow( percentage, fp.appConfig.buildingOptions.taperExponent );
                         var hurdle = jStat.exponential.cdf( sq, fp.appConfig.buildingOptions.taperDistribution );
-                
+
                         if ( Math.random() < hurdle ) {
-                
+
                             this.localWidth -= fp.appConfig.buildingOptions.staggerAmount;
                             this.localLength -= fp.appConfig.buildingOptions.staggerAmount;
-                
+
                         }
-                
+
                     }
                     else {
-                
+
                         this.localWidth -= fp.appConfig.buildingOptions.staggerAmount;
                         this.localLength -= fp.appConfig.buildingOptions.staggerAmount;
-                
+
                     }
-                
+
                 }
             };
 
@@ -41110,7 +41438,7 @@ define( 'fp/building',[
             };
 
             this.generateWindows = function ( points ) {
-                
+
                 var base = points[ 0 ].y + fp.appConfig.agentOptions.terrainOffset;
                 var offset = fp.getOffset( this.levels, points.length );
 
@@ -41296,12 +41624,9 @@ define( 'fp/building',[
                         }
                         shapeGeometry.addAttribute( 'mixin', new THREE.BufferAttribute( mixins, 1 ) );
 
-                        var attributes = [ 'mixin' ];
-
                         var shaderMaterial = new THREE.ShaderMaterial( {
 
                             uniforms: FiercePlanet.ShaderUtils.lambertUniforms( this.uniforms ),
-                            attributes: attributes,
                             vertexShader: FiercePlanet.ShaderUtils.lambertShaderVertex(
 
                                 FiercePlanet.ShaderUtils.buildingVertexShaderParams(),
@@ -42268,7 +42593,6 @@ define( 'fp/patch-network',[
              * Array of patches belonging to this network.
              *
              * @type {Array}
-             * @memberof PatchNetwork
              */
             this.patches = [];
 
@@ -42278,7 +42602,6 @@ define( 'fp/patch-network',[
              * This serves as an optimised cache for obtaining agents on a patch.
              *
              * @type {Object}
-             * @memberof PatchNetwork
              */
             this.agentsOnPatches = {};
 
@@ -42286,7 +42609,6 @@ define( 'fp/patch-network',[
              * Represents the Mesh object displaying the patches.
              *
              * @type {THREE.Mesh}
-             * @memberof PatchNetwork
              */
             this.plane = null;
 
@@ -42294,7 +42616,6 @@ define( 'fp/patch-network',[
              * An array of geometry positions for the patches in plane formation.
              *
              * @type {Array}
-             * @memberof PatchNetwork
              */
             this.patchPlaneArray = [];
 
@@ -42302,7 +42623,6 @@ define( 'fp/patch-network',[
              * An array of geometry positions for the patches in sphere formation.
              *
              * @type {Array}
-             * @memberof PatchNetwork
              */
             this.patchSphereArray = [];
 
@@ -42310,7 +42630,6 @@ define( 'fp/patch-network',[
              * A copy of the mean of patch values.
              *
              * @type {Number}
-             * @memberof PatchNetwork
              */
             this.patchMeanValue = 0;
 
@@ -42319,7 +42638,6 @@ define( 'fp/patch-network',[
              * Should be an integer that is a factor of the terrain.gridPoints - 1.
              *
              * @type {Number}
-             * @memberof PatchNetwork
              */
             this.patchSize = fp.appConfig.terrainOptions.patchSize;
 
@@ -42327,7 +42645,6 @@ define( 'fp/patch-network',[
              * Default initialise function - sets each patch value to a random number between 0 and 1
              *
              * @param  {Function} ) {            return Math.random( [description]
-             * @memberof PatchNetwork
              */
             this.initialisePatchFunction = !_.isUndefined( func ) ? func : function() { return Math.random(); };
 
@@ -42339,7 +42656,6 @@ define( 'fp/patch-network',[
              * If the terrain contains 400 grid points, and the patch size is 21
              * then the number of patches should be Math.ceil( 400 / 21 ) - 1 = 19.
              *
-             * @memberof PatchNetwork
              */
             this.lengthOfPatchGrid = function() {
                 return Math.ceil( fp.terrain.gridPoints / fp.patchNetwork.patchSize ) - 1;
@@ -42348,7 +42664,6 @@ define( 'fp/patch-network',[
             /**
              * Constructs an array of patches, with values supplied by initialisePatchFunction().
              *
-             * @memberof PatchNetwork
              */
             this.initialisePatches = function() {
 
@@ -42374,7 +42689,6 @@ define( 'fp/patch-network',[
             /**
              * Constructs the plane material.
              *
-             * @memberof PatchNetwork
              */
             this.constructMaterial = function() {
 
@@ -42415,7 +42729,6 @@ define( 'fp/patch-network',[
              * The cloned geometry adds a new point for every patch, to
              * fix shader blurring between patches.
              *
-             * @memberof PatchNetwork
              */
             this.cloneGeometry = function() {
 
@@ -42540,7 +42853,6 @@ define( 'fp/patch-network',[
             /**
              * Builds a plane mesh based on the current terrain geometry, but with its own material.
              *
-             * @memberof PatchNetwork
              */
             this.buildPatchMesh = function() {
 
@@ -42605,7 +42917,6 @@ define( 'fp/patch-network',[
             /**
              * Update the cached count of patch agents.
              *
-             * @memberof PatchNetwork
              */
             this.updatePatchAgents = function() {
 
@@ -42636,7 +42947,6 @@ define( 'fp/patch-network',[
             /**
              * Updates values of all patches in the network.
              *
-             * @memberof PatchNetwork
              */
             this.updatePatchValues = function() {
 
@@ -42668,7 +42978,6 @@ define( 'fp/patch-network',[
             /**
              * Updates the terrain's colors based on its patch attributes.
              *
-             * @memberof PatchNetwork
              */
             this.updateTerrainPatchAttributes = function() {
 
@@ -42753,7 +43062,6 @@ define( 'fp/patch-network',[
             /**
              * Adds or removes the patch network from the scene.
              *
-             * @memberof PatchNetwork
              */
             this.togglePatchesState = function() {
 
@@ -42799,88 +43107,161 @@ define( 'fp/trail-network',[
          * @inner
          */
         FiercePlanet.TrailNetwork = function( fp ) {
+
+            /**
+             * Object containing a list of position indexes, and number of times
+             * those positions have been traversed.
+             *
+             * @type {Object}
+             */
             this.trails = {};
+
+            // REMOVE?
             this.trailMeshes = null;
+
+
+            /**
+             * Global mesh containing all trails
+             *
+             * @type {THREE.Mesh}
+             */
             this.globalTrailLine = null;
+
 
             /**
              * Builds the initial trail network.
              */
             this.buildTrailNetwork = function( clone ) {
+
                 var len = fp.appConfig.displayOptions.trailLength;
                 var geom = new THREE.Geometry();
+
                 if ( clone ) {
+
                     geom = fp.trailNetwork.globalTrailLine.geometry.clone();
+
                 }
+
                 for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+
+                    var agent = fp.agentNetwork.agents[ i ];
                     var vertices = new Array( len );
+
                     for ( var j = 0; j < len ; j++ ) {
+
                         var index = i * len  + j;
+
                         if ( !clone || index > geom.vertices.length ) {
-                            geom.vertices.push( fp.agentNetwork.agents[ i ].lastPosition );
+
+                            geom.vertices.push( agent.lastPosition );
+
                         }
+
                     }
-                    var ai = fp.getIndex(
-                        fp.agentNetwork.agents[ i ].lastPosition.x / fp.appConfig.terrainOptions.multiplier,
-                        fp.agentNetwork.agents[ i ].lastPosition.z / fp.appConfig.terrainOptions.multiplier
-                    );
-                    if ( ai > -1 )
-                        fp.trailNetwork.trails[ ai ] = 1;
+
+                    var agentIndex = agent.lastIndex;
+
+                    // Add the last position index to the trail array
+                    if ( agentIndex > -1 ) {
+
+                        fp.trailNetwork.trails[ agentIndex ] = 1;
+
+                    }
+
                 }
+
                 var trailMaterial = new THREE.LineBasicMaterial( {
+
                     color: fp.appConfig.colorOptions.colorNightTrail,
                     linewidth: 1.0,
                     opacity: 0.1,
                     blending: THREE.AdditiveBlending,
                     transparent: true
+
                 } );
+
                 fp.trailNetwork.globalTrailLine = new THREE.Line( geom, trailMaterial, THREE.LineSegments );
+
                 if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
+
                 }
+
             };
+
 
             /**
              * Updates the trail network.
              */
             this.updateTrails = function() {
-                if ( !FiercePlanet.AppState.runSimulation )
+
+                if ( !FiercePlanet.AppState.runSimulation ) {
+
                     return;
 
+                }
+
                 if ( fp.appConfig.displayOptions.trailsShow ) {
+
                     if ( fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                         for ( var i = 0; i < fp.agentNetwork.agents.length; i++ ) {
+
                             var agent =  fp.agentNetwork.agents[ i ];
+
                             // Creates a cycle of trail 'pieces'
                             var len = fp.appConfig.displayOptions.trailLength;
                             var offset = agent.ticks * 2 % len;
+
                             if ( offset === 0 ) {
+
                                 for ( var j = 0; j < len; j++ ) {
+
                                     fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + j ] = agent.lastPosition;
+
                                 }
+
                             }
+
                             fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + offset ] = agent.lastPosition;
                             fp.trailNetwork.globalTrailLine.geometry.vertices[ i * len + offset + 1 ] = agent.position;
+
                         }
+
                         fp.trailNetwork.globalTrailLine.geometry.verticesNeedUpdate = true;
+
                     }
                     else {
+
                         var weightMax = _.chain( fp.trailNetwork.trails ).values().max().value();
+
                         for ( var k in fp.trailNetwork.trails ) {
+
                             var weight = fp.trailNetwork.trails[ k ];
                             var weightNormed = weight / weightMax;
                             var weightAdjusted = Math.pow( weightNormed, 0.2 );
                             fp.terrain.plane.geometry.attributes.trail.array[ k ] = weightAdjusted;
+
                         }
+
                     }
+
                 }
                 else if ( fp.appConfig.displayOptions.trailsUpdate ) {
+
                     for ( var l in fp.trailNetwork.trails )  {
+
                         fp.terrain.plane.geometry.attributes.trail.array[ l ] = 0.0;
+
                     }
+
                     fp.terrain.plane.geometry.attributes.trail.needsUpdate = true;
+
                 }
+
             };
+
         };
 
         return FiercePlanet;
@@ -42935,14 +43316,16 @@ define( 'fp/path-network',[
                     closest: true
                 };
 
-                for ( var i = 0; i < fp.terrain.gridPoints; i++ ) {
+                var gridPoints = fp.terrain.gridPoints;
 
-                    var nodeRow = [ ];
+                for ( var i = 0; i < gridPoints; i++ ) {
 
-                    for ( var j = 0; j < fp.terrain.gridPoints; j++ ) {
+                    var nodeRow = [];
 
-                        var weight = 1 - fp.terrain.getHeightForIndex( i * fp.terrain.gridPoints + j ) / fp.terrain.maxTerrainHeight;
-                        weight = ( weight == 1 ? 0 : weight );
+                    for ( var j = 0; j < gridPoints; j++ ) {
+
+                        var weight = 1 - fp.terrain.getHeightForIndex( i * gridPoints + j ) / fp.terrain.maxTerrainHeight;
+                        weight = ( weight === 1 ? 0 : weight );
                         nodeRow.push( weight );
 
                     }
@@ -42950,6 +43333,7 @@ define( 'fp/path-network',[
                     this.nodes.push( nodeRow );
 
                 }
+
                 this.graphAStar = new astar.Graph( this.nodes );
                 this.graphAStar.diagonal = true;
 
@@ -44209,7 +44593,9 @@ define(
              * @memberof fp
              */
             fp.updateControls = function() {
+
                 if ( !fp.appConfig.displayOptions.cursorShow ) {
+
                     fp.controls.update( fp.clock.getDelta() );
 
                     if ( !_.isUndefined( fp.controls.getObject ) ) {
@@ -44226,7 +44612,9 @@ define(
                         }
                         //obj.translateY( fp.getHeight( obj.position.x, obj.position.z ) );
                     }
+
                 }
+
             };
 
 
@@ -44307,9 +44695,6 @@ define(
 
                 }
 
-                // Update the output with the current year
-                fp.setOutputHUD();
-
             };
 
             /**
@@ -44335,50 +44720,79 @@ define(
 
             };
 
+
             /**
              * Gets the terrain index point for a given ( x, y ) co-ordinate.
-             * @memberof fp
+             *
+             * @param {Number} x
+             * @param {Number} y
              */
             fp.getIndex = function( x, y ) {
+
+                // Get config variables
                 var multiplier = fp.appConfig.terrainOptions.multiplier;
-                x = Math.floor( x / multiplier );
-                y = Math.floor( y / multiplier );
-                var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
-                var xRel = Math.floor( x ) + fp.terrain.halfExtent;
-                var yRel = Math.floor( y ) + fp.terrain.halfExtent;
-                if ( xRel < fp.terrain.halfExtent - maxExtent || yRel < fp.terrain.halfExtent - maxExtent ||
-                     xRel > fp.terrain.halfExtent + maxExtent || yRel > fp.terrain.halfExtent + maxExtent )
+                var halfExtent = fp.terrain.halfExtent;
+                var maxExtent = fp.appConfig.agentOptions.maxExtent;
+                var gridExtent = fp.terrain.gridExtent;
+                var gridPoints = fp.terrain.gridPoints;
+
+                // Normalise: Divide by terrain multiplier
+                x /= multiplier;
+                y /= multiplier;
+
+                // Obtain the maximum extent agents can move
+                var bounds = ( maxExtent / 100 ) * halfExtent;
+
+                // Return a value if either x or y value is outside the maximum allowable
+                if ( x < -bounds || y < -bounds || x > bounds || y > bounds ) {
+
                     return -1;
-                var halfGrid = fp.terrain.gridExtent / 2;
-                var gridRatio = fp.terrain.gridExtent / fp.terrain.gridPoints;
-                // NOT SURE WHY THIS IS HERE?
+
+                }
+
+                // Grid ratio
+                var gridRatio = gridExtent / gridPoints;
+
+                // Shift by half the patch width
+                x += gridRatio / 2;
                 y += gridRatio / 2;
-                //y = ( fp.terrain.gridPoints * fp.terrain.gridPoints ) - y - 1;
-                var xLoc = Math.floor( ( Math.round( x ) + halfGrid ) / gridRatio );
-                var yLoc = Math.floor( ( Math.round( y ) + halfGrid ) / gridRatio );
-                return Math.floor( fp.terrain.gridPoints * yLoc + xLoc );
+
+                // Get indexed values
+                var indexedX = Math.floor( ( x + halfExtent ) / gridRatio );
+                var indexedY = Math.floor( ( y + halfExtent ) / gridRatio );
+                var index = gridPoints * indexedY + indexedX;
+
+                return index;
+
             };
+
 
             /**
              * Gets the terrain height for a given ( x, y ) co-ordinate.
              * @memberof fp
              */
             fp.getHeight = function( x, y ) {
+
                 return fp.terrain.getHeightForIndex( fp.getIndex( x, y ) );
+
             };
 
             /**
              * @memberof fp
              */
             fp.speedOfSim = function() {
-                return true;
+
+                return 1.0;
+
             };
 
             /**
              * @memberof fp
              */
             fp.likelihoodOfGrowth = function() {
+
                 return ( 1 - ( fp.buildingNetwork.speedOfConstruction * fp.speedOfSim() ) );
+
             };
 
             /**

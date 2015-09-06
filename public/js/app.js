@@ -1,9 +1,12 @@
 define( [ "fp" ], function( fp ) {
 
-    fp.init( );
+    fp.init();
 
     // Trigger Jasmine
-    if ( window.onload !== null )
+    if ( window.onload !== null ) {
+
         window.onload();
+
+    }
 
 });

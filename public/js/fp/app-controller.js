@@ -76,13 +76,14 @@ define( [
              */
             this.Setup = function() {
 
-                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-
                 fp.appController.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
 
-                if ( fp.appConfig.displayOptions.agentsShow )
+                if ( fp.appConfig.displayOptions.agentsShow ) {
+
                     fp.scene.add( fp.agentNetwork.particles );
+
+                }
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 fp.buildingNetwork.networkMesh.castShadow = true;
@@ -116,6 +117,8 @@ define( [
                 }
 
                 fp.trailNetwork.buildTrailNetwork( false );
+
+                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
 
             };
 
