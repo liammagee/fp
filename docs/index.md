@@ -24,16 +24,16 @@ Click on some of the examples below to view the toolkit in action:
 [![Patches][12]][11]
 
 
-
 [1]: /examples/usage/basic.html
 [2]: /images/usage-basic.png
 [3]: /examples/usage/day.html
 [4]: /images/usage-day.png
 [5]: /examples/usage/colorised.html
 [6]: /images/usage-colorised.png
-[7]: /examples/usage/gridbasic.html
+[7]: /examples/usage/grid.html
 [8]: /images/usage-grid.png
 [9]: /examples/usage/networks.html
 [10]: /images/usage-networks.png
 [11]: /examples/usage/patch-grid.html
 [12]: /images/usage-patch-grid.png
+
