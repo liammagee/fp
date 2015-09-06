@@ -38026,7 +38026,8 @@ define( 'fp/app-state',[
          * @memberof fp
          * @inner
          */
-        FiercePlanet.AppState = {
+        FiercePlanet.appState = {
+            animate: true,
             runSimulation: false,
             stepSimulation: false
         };
@@ -38114,13 +38115,14 @@ define( 'fp/app-controller',[
              */
             this.Setup = function() {
 
-                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
-
                 fp.appController.Reset();
                 fp.agentNetwork.createInitialAgentPopulation();
 
-                if ( fp.appConfig.displayOptions.agentsShow )
+                if ( fp.appConfig.displayOptions.agentsShow ) {
+
                     fp.scene.add( fp.agentNetwork.particles );
+
+                }
 
                 fp.buildingNetwork.networkMesh = new THREE.Object3D();
                 fp.buildingNetwork.networkMesh.castShadow = true;
@@ -38155,6 +38157,8 @@ define( 'fp/app-controller',[
 
                 fp.trailNetwork.buildTrailNetwork( false );
 
+                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+
             };
 
 
@@ -38163,12 +38167,12 @@ define( 'fp/app-controller',[
              */
             this.Run = function() {
 
-                FiercePlanet.AppState.runSimulation = !FiercePlanet.AppState.runSimulation;
-                FiercePlanet.AppState.stepSimulation = false;
+                FiercePlanet.appState.runSimulation = !FiercePlanet.appState.runSimulation;
+                FiercePlanet.appState.stepSimulation = false;
 
                 if ( !_.isUndefined( fp.chart ) ) {
 
-                    if ( FiercePlanet.AppState.runSimulation ) {
+                    if ( FiercePlanet.appState.runSimulation ) {
 
                         fp.chart.chart.start();
 
@@ -38189,7 +38193,7 @@ define( 'fp/app-controller',[
              */
             this.Step = function() {
 
-                FiercePlanet.AppState.runSimulation = FiercePlanet.AppState.stepSimulation = true;
+                FiercePlanet.appState.runSimulation = FiercePlanet.appState.stepSimulation = true;
 
             };
 
@@ -38592,7 +38596,7 @@ define( 'fp/config',[
             mapIndex: 0,
             mapFile: "",
             patchSize: 4,
-            defaultHeight: 10
+            defaultHeight: 0
 
         };
 
@@ -38732,7 +38736,7 @@ define('fpShaderUtils',["fp/fp-base"], function (FiercePlanet) {
         },
 
         agentVertexShader: function agentVertexShader() {
-            var shader = "\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n\n                        void main() {\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n\n                            // Add half the size, so the agent is drawn from the feet up.\n                            vec3 modifiedPosition = position;\n                            modifiedPosition.y += size / 2.0;\n                            vec4 mvPosition = modelViewMatrix * vec4( modifiedPosition, 1.0 );\n\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n                        }\n                        ";
+            var shader = "\n\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n\n                        void main() {\n\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n\n                            // Add half the size, so the agent is drawn from the feet up.\n                            vec3 modifiedPosition = position;\n                            modifiedPosition.y += size / 2.0;\n                            vec4 mvPosition = modelViewMatrix * vec4( modifiedPosition, 1.0 );\n\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n\n                        }\n\n                        ";
             return shader;
         },
         agentFragmentShader: function agentFragmentShader() {
@@ -39522,6 +39526,9 @@ define( 'fp/agent',[
             this.setPosition = function( pos ) {
 
                 this.lastPosition = this.position = pos;
+                var x = pos.x, z = pos.z;
+                var index = fp.getIndex( x, z );
+                this.lastIndex = this.index = index;
 
             };
 
@@ -39533,9 +39540,7 @@ define( 'fp/agent',[
              */
             this.findBuilding = function() {
 
-                var xl = this.lastPosition.x, zl = this.lastPosition.z;
-
-                return fp.buildingNetwork.buildingHash[ fp.getIndex( xl, zl ) ];
+                return fp.buildingNetwork.buildingHash[ this.lastIndex ];
 
             };
 
@@ -40597,7 +40602,7 @@ define( 'fp/agent-network',[
                  */
                 this.renderFriendNetwork = function() {
 
-                    if ( !FiercePlanet.AppState.runSimulation || !
+                    if ( !FiercePlanet.appState.runSimulation || !
                         fp.appConfig.displayOptions.networkShow ) {
 
                         return;
@@ -40740,7 +40745,7 @@ define( 'fp/agent-network',[
                  */
                 this.updateAgentNetworkRendering = function() {
 
-                    if ( !FiercePlanet.AppState.runSimulation ) {
+                    if ( !FiercePlanet.appState.runSimulation ) {
 
                         return;
 
@@ -40867,7 +40872,7 @@ define( 'fp/agent-network',[
             this.updateAgents = function() {
 
                 // Return if not running
-                if ( !FiercePlanet.AppState.runSimulation || _.isUndefined( this.particles ) ) {
+                if ( !FiercePlanet.appState.runSimulation || _.isUndefined( this.particles ) ) {
 
                     return;
 
@@ -42144,7 +42149,7 @@ define( 'fp/building-network',[
              * Updates each building.
              */
             this.updateBuildings = function() {
-                if ( ! FiercePlanet.AppState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
+                if ( ! FiercePlanet.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
                     return;
                 for ( var i = 0; i < fp.buildingNetwork.buildings.length; i++ ) {
                     var building = fp.buildingNetwork.buildings[ i ];
@@ -42165,8 +42170,8 @@ define( 'fp/building-network',[
 
                 if ( fp.appConfig.buildingOptions.randomForm ) {
 
-                    buildingForm = FiercePlanet.BUILDING_FORMS.names[ 
-                        Math.floor( Math.random() * FiercePlanet.BUILDING_FORMS.names.length ) 
+                    buildingForm = FiercePlanet.BUILDING_FORMS.names[
+                        Math.floor( Math.random() * FiercePlanet.BUILDING_FORMS.names.length )
                     ];
 
                 }
@@ -42262,7 +42267,6 @@ define( 'fp/road-network',[
 
     function( FiercePlanet ) {
 
-
         /**
          * Represents a network of roads. Also provides factory and utility methods.
          * @constructor
@@ -42270,6 +42274,7 @@ define( 'fp/road-network',[
          * @inner
          */
         FiercePlanet.RoadNetwork = function( fp ) {
+
             this.networkMesh = null;
             this.planeVertices = [ ];
             this.networkJstsCache = [ ];
@@ -42285,6 +42290,7 @@ define( 'fp/road-network',[
              * if the fp.terrain has variable height, effectively "curving"
              * around increases in height.
              * Taken from webgl_geometry_extrude_splines.html
+             *
              * @param  {THREE.Vector3} p1
              * @param  {THREE.Vector3} p2
              * @return {Array} points
@@ -42399,7 +42405,7 @@ define( 'fp/road-network',[
                 if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
                     return false;
 
-                var extrudePath = new THREE.SplineCurve3( points );
+                var extrudePath = new THREE.CatmullRomCurve3( points );
                 var roadColor = ( fp.appConfig.displayOptions.dayShow ) ? fp.appConfig.colorOptions.colorDayRoad : fp.appConfig.colorOptions.colorNightRoad;
                 // var roadMaterial = new THREE.MeshBasicMaterial( { color: roadColor } );
                 var roadMaterial = new THREE.MeshLambertMaterial( { color: roadColor } );
@@ -42950,7 +42956,7 @@ define( 'fp/patch-network',[
              */
             this.updatePatchValues = function() {
 
-                if ( fp.appConfig.displayOptions.patchesUpdate && FiercePlanet.AppState.runSimulation ) {
+                if ( fp.appConfig.displayOptions.patchesUpdate && FiercePlanet.appState.runSimulation ) {
 
                     // Allow for overriding of the patch values
                     if ( !_.isUndefined( fp.patchNetwork.reviseValues ) ) {
@@ -43196,7 +43202,7 @@ define( 'fp/trail-network',[
              */
             this.updateTrails = function() {
 
-                if ( !FiercePlanet.AppState.runSimulation ) {
+                if ( !FiercePlanet.appState.runSimulation ) {
 
                     return;
 
@@ -43466,7 +43472,7 @@ define( 'fp/path-network',[
              */
             this.updatePath = function() {
 
-                if ( !FiercePlanet.AppState.runSimulation )
+                if ( !FiercePlanet.appState.runSimulation )
                     return;
 
                 var children = fp.pathNetwork.networkMesh.children;
@@ -43722,7 +43728,7 @@ define( 'fp/chart',[
 
                 this.intervalID = setInterval( function() {
 
-                    if ( FiercePlanet.AppState.runSimulation ) {
+                    if ( FiercePlanet.appState.runSimulation ) {
 
                         for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
 
@@ -43875,36 +43881,41 @@ define(
         FiercePlanet.Simulation = function() {
             var fp = this;
 
+            // Export the entire namespace, so classes can be instantiated
+            // just with reference to this instance
+            fp.FiercePlanet = FiercePlanet;
+
             // Copy class definitions into this instance, to simplify imports
             fp.Agent = FiercePlanet.Agent;
             fp.PatchNetwork = FiercePlanet.PatchNetwork;
 
-            this.container = null;
-            this.scene = null;
-            this.appConfig = null;
-            this.camera = null;
-            this.renderer = null;
-            this.clock = new THREE.Clock();
-            this.mouse = { x: 0, y: 0, z: 1 };
-            this.mouseVector = new THREE.Vector3();
-            this.keyboard = new THREEx.KeyboardState();
-            this.stats = null;
-            this.terrain = null;
-            this.controls = null;
-            this.gui = null;
-            this.chart = null;
-            this.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
-            this.skyBox = null;
-            this.waterMesh = null;
-            this.water = null;
-            this.agentNetwork = null;
-            this.pathNetwork = null;
-            this.trailNetwork = null;
-            this.cursor = null;
-            this.sim = null;
-            this.lightHemisphere = null;
-            this.lightDirectional = null;
-            this.chart = null;
+            fp.container = null;
+            fp.scene = null;
+            fp.appConfig = null;
+            fp.camera = null;
+            fp.renderer = null;
+            fp.clock = new THREE.Clock();
+            fp.mouse = { x: 0, y: 0, z: 1 };
+            fp.mouseVector = new THREE.Vector3();
+            fp.keyboard = new THREEx.KeyboardState();
+            fp.stats = null;
+            fp.terrain = null;
+            fp.controls = null;
+            fp.gui = null;
+            fp.chart = null;
+            fp.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
+            fp.skyBox = null;
+            fp.waterMesh = null;
+            fp.water = null;
+            fp.agentNetwork = null;
+            fp.pathNetwork = null;
+            fp.trailNetwork = null;
+            fp.cursor = null;
+            fp.sim = null;
+            fp.lightHemisphere = null;
+            fp.lightDirectional = null;
+            fp.chart = null;
+            fp.appState = FiercePlanet.appState;
 
 
             /**
@@ -44478,8 +44489,12 @@ define(
                 fp.setupChart();
                 fp.toggleHUDState(); // Add HUD
                 fp.toggleStatsState(); // Add stats
+
                 window.addEventListener( "resize", fp.onWindowResize, false );
-                fp.loadTerrain( callback ); // Load the terrain asynchronously
+
+                // Load the terrain asynchronously
+                // Only execute the callback once terrain is loaded
+                fp.loadTerrain( callback );
 
             };
 
@@ -44489,7 +44504,7 @@ define(
              */
             fp.animate = function() {
 
-                if ( FiercePlanet.AppState.halt ) {
+                if ( !fp.appState.animate ) {
 
                     return;
 
@@ -44526,7 +44541,7 @@ define(
              */
             fp.doTick = function() {
 
-                if ( FiercePlanet.AppState.runSimulation ) {
+                if ( FiercePlanet.appState.runSimulation ) {
 
                     if ( fp.timescale.frameCounter % fp.timescale.framesToTick === 0 ) {
 
@@ -44572,8 +44587,8 @@ define(
              */
             fp.updateSimState = function() {
 
-                if ( FiercePlanet.AppState.stepSimulation )
-                    FiercePlanet.AppState.runSimulation = false;
+                if ( FiercePlanet.appState.stepSimulation )
+                    FiercePlanet.appState.runSimulation = false;
 
             };
 
@@ -44661,7 +44676,7 @@ define(
              */
             fp.endSim = function() {
 
-                FiercePlanet.AppState.runSimulation = false;
+                FiercePlanet.appState.runSimulation = false;
                 fp.appConfig.displayOptions.buildingsShow = false;
                 fp.appConfig.displayOptions.patchesUpdate = false;
 
@@ -44673,7 +44688,7 @@ define(
              */
             fp.updateTime = function() {
 
-                if ( FiercePlanet.AppState.runSimulation ) {
+                if ( FiercePlanet.appState.runSimulation ) {
 
                     fp.timescale.frameCounter++;
 
@@ -45389,7 +45404,9 @@ define(
              * @memberof fp
              */
             fp.toggleHUDState = function() {
-                $( "#hudDiv" ).toggle( fp.appConfig.displayOptions.hudShow );
+
+                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.hudShow );
+
             };
 
             /**
@@ -54106,7 +54123,7 @@ require.config({
 
     },
 
-    waitSeconds: 200
+    waitSeconds: 500
 
 });
 

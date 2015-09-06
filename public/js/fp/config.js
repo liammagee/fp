@@ -246,6 +246,7 @@ define( [
             cursorShowCell: true,
             statsShow: true,
             hudShow: true,
+            guiControlsShow: true,
             wireframeShow: false,
             dayShow: false,
             skyboxShow: true,

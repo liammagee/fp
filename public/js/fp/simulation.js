@@ -637,6 +637,7 @@ define(
                 fp.setupSky();
                 fp.setOutputHUD();
                 fp.setupChart();
+                fp.toggleGuiControlsState(); // Add GUI Controls
                 fp.toggleHUDState(); // Add HUD
                 fp.toggleStatsState(); // Add stats
 
@@ -1549,15 +1550,28 @@ define(
 
             };
 
+
             /**
              * Toggles the visibility of the heads-up display.
              * @memberof fp
              */
             fp.toggleHUDState = function() {
 
-                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.hudShow );
+                $( "#hudShow" ).toggle( fp.appConfig.displayOptions.hudShow );
 
             };
+
+
+            /**
+             * Toggles the visibility of the gui controls.
+             * @memberof fp
+             */
+            fp.toggleGuiControlsState = function() {
+
+                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.guiControlsShow );
+
+            };
+
 
             /**
              * Toggles the visibility of the wireframe.
@@ -1897,6 +1911,7 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "cursorShow" ).onFinishChange( fp.removeCursor );
                     displayFolder.add( fp.appConfig.displayOptions, "statsShow" ).onFinishChange( fp.toggleStatsState );
                     displayFolder.add( fp.appConfig.displayOptions, "hudShow" ).onFinishChange( fp.toggleHUDState );
+                    displayFolder.add( fp.appConfig.displayOptions, "guiControlsShow" ).onFinishChange( fp.toggleGuiControlsState );
                     displayFolder.add( fp.appConfig.displayOptions, "wireframeShow" ).onFinishChange( fp.toggleWireframeState );
                     displayFolder.add( fp.appConfig.displayOptions, "dayShow" ).onFinishChange( fp.toggleDayNight );
                     displayFolder.add( fp.appConfig.displayOptions, "skyboxShow" ).onFinishChange( fp.toggleDayNight );
