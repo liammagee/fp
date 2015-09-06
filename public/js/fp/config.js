@@ -13,11 +13,13 @@ define( [
      * @inner
      */
     FiercePlanet.AppConfig = function() {
+
         /**
          * World options.
          * @namespace fp~AppConfig~worldOptions
          */
         this.worldOptions = {
+
             /**
              * Maximum depth to search for land.
              * @memberOf fp~AppConfig~worldOptions
@@ -31,12 +33,15 @@ define( [
              * @inner
              */
             searchIncrement: 2
+
         };
+
         /**
          * Agent options.
          * @namespace fp~AppConfig~agentOptions
          */
         this.agentOptions = {
+
             /**
              * Initial population of agents.
              * @type {Number}
@@ -44,32 +49,43 @@ define( [
              * @inner
              */
             initialPopulation: 100,
+
             /**
-             * The <em>initial</em> extent, or diameter, around the point of origin, where agents can be
-            spawned, expressed as a percentage ( 0-100 ).
+             * The <em>initial</em> extent, or diameter, around the point of
+             * origin, where agents can be spawned, expressed as a percentage ( 0-100 ).
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             initialExtent: 10,
+
             /**
-             * The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be
-            spawed, expressed as a percentage ( 0-100 ).
+             * The <em>maximum</em> extent, or diameter, around the point of
+             *  origin, where agents can be spawed, expressed as a percentage ( 0-100 ).
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             maxExtent: 100,
-            // initialX: -500, initialY: -1500, // Melbourne
+
+            // NOTE: Settings for Melbourne: initialX: -500, initialY: -1500,
+
             /**
-             * The <em>x</em> co-ordinate of the point of origin, expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             * The <em>x</em> co-ordinate of the point of origin,
+             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             initialX: 50,
+
             /**
-             * The <em>y</em> co-ordinate of the point of origin, expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             * The <em>y</em> co-ordinate of the point of origin,
+             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
@@ -109,6 +125,7 @@ define( [
         };
 
         this.buildingOptions = {
+
             create: true,
 
             maxNumber: 250, // Maximum number of buildings - for performance reasons
@@ -192,7 +209,8 @@ define( [
             detectRoadCollisions: true
         };
         this.roadOptions = {
-            create: true,
+
+            create: false,
             maxNumber: 200,  // Maximum number of roads - for performance reasons
             roadWidth: 20,
             roadDeviation: 20,
@@ -206,8 +224,11 @@ define( [
             overlapThreshold: 3,
             flattenAdjustment: 0.025,
             flattenLift: 20
+
         };
+
         this.displayOptions = {
+
             agentsShow: true,
             buildingsShow: true,
             roadsShow: true,
@@ -247,9 +268,13 @@ define( [
             cameraX: 0,
             cameraY: 200,
             cameraZ: 800,
-            maximiseView: true,
+            maximiseView: true
+
         };
+
+
         this.terrainOptions = {
+
             renderAsSphere: true,
             loadHeights: true,
             gridExtent: 8000,
@@ -262,8 +287,12 @@ define( [
             mapFile: "",
             patchSize: 4,
             defaultHeight: 10
+
         };
+
+
         this.colorOptions = {
+
             colorDayBackground: 0x000000,
             colorDayRoad: 0x474747,
             colorDayAgent: 0x4747b3,
@@ -318,14 +347,17 @@ define( [
             colorTerrainStop4: 0.8,
             colorTerrainStop5: 1.0,
 
-            colorTerrainOpacity: 1.0,
+            colorTerrainOpacity: 1.0
+
         };
+
         this.buildingOptions.maxHeight = ( this.buildingOptions.minHeight > this.buildingOptions.maxHeight ) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
         this.buildingOptions.maxWidth = ( this.buildingOptions.minWidth > this.buildingOptions.maxWidth ) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
         this.buildingOptions.maxLength = ( this.buildingOptions.minLength > this.buildingOptions.maxLength ) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
         this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor( Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight );
         this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor( Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth );
         this.buildingOptions.length = this.buildingOptions.minLength + Math.floor( Math.random() * this.buildingOptions.maxLength - this.buildingOptions.minLength );
+
         this.sunOptions  = {
             turbidity: 10,
             reileigh: 2,
@@ -335,7 +367,9 @@ define( [
             inclination: 0.49, // elevation / inclination
             azimuth: 0.25, // Facing front,
             sun: !true
+
         };
+
     };
 
     FiercePlanet.appConfig = new FiercePlanet.AppConfig();
