@@ -253,9 +253,9 @@ define(
                     fp.controls.zoomSpeed = 0.6;
                     fp.controls.panSpeed = 0.3;
 
-                    fp.controls.noRotate = false;
-                    fp.controls.noZoom = false;
-                    fp.controls.noPan = false;
+                    fp.controls.enableRotate = true;
+                    fp.controls.enableZoom = true;
+                    fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
                     fp.controls.minDistance = 250.0;
                     fp.controls.maxDistance = 10000.0;
