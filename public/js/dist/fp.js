@@ -43829,9 +43829,9 @@ define(
                     fp.controls.zoomSpeed = 0.6;
                     fp.controls.panSpeed = 0.3;
 
-                    fp.controls.noRotate = false;
-                    fp.controls.noZoom = false;
-                    fp.controls.noPan = false;
+                    fp.controls.enableRotate = true;
+                    fp.controls.enableZoom = true;
+                    fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
                     fp.controls.minDistance = 250.0;
                     fp.controls.maxDistance = 10000.0;
@@ -51819,6 +51819,310 @@ a+"px",m=b,r=0);return b},update:function(){l=this.end()}}};
 define("stats", function(){});
 
 /**
+ * @author Slayvin / http://slayvin.net
+ */
+
+THREE.ShaderLib[ 'mirror' ] = {
+
+	uniforms: { "mirrorColor": { type: "c", value: new THREE.Color( 0x7F7F7F ) },
+				"mirrorSampler": { type: "t", value: null },
+				"textureMatrix" : { type: "m4", value: new THREE.Matrix4() }
+	},
+
+	vertexShader: [
+
+		"uniform mat4 textureMatrix;",
+
+		"varying vec4 mirrorCoord;",
+
+		"void main() {",
+
+			"vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );",
+			"vec4 worldPosition = modelMatrix * vec4( position, 1.0 );",
+			"mirrorCoord = textureMatrix * worldPosition;",
+
+			"gl_Position = projectionMatrix * mvPosition;",
+
+		"}"
+
+	].join( "\n" ),
+
+	fragmentShader: [
+
+		"uniform vec3 mirrorColor;",
+		"uniform sampler2D mirrorSampler;",
+
+		"varying vec4 mirrorCoord;",
+
+		"float blendOverlay(float base, float blend) {",
+			"return( base < 0.5 ? ( 2.0 * base * blend ) : (1.0 - 2.0 * ( 1.0 - base ) * ( 1.0 - blend ) ) );",
+		"}",
+
+		"void main() {",
+
+			"vec4 color = texture2DProj(mirrorSampler, mirrorCoord);",
+			"color = vec4(blendOverlay(mirrorColor.r, color.r), blendOverlay(mirrorColor.g, color.g), blendOverlay(mirrorColor.b, color.b), 1.0);",
+
+			"gl_FragColor = color;",
+
+		"}"
+
+	].join( "\n" )
+
+};
+
+THREE.Mirror = function ( renderer, camera, options ) {
+
+	THREE.Object3D.call( this );
+
+	this.name = 'mirror_' + this.id;
+
+	options = options || {};
+
+	this.matrixNeedsUpdate = true;
+
+	var width = options.textureWidth !== undefined ? options.textureWidth : 512;
+	var height = options.textureHeight !== undefined ? options.textureHeight : 512;
+
+	this.clipBias = options.clipBias !== undefined ? options.clipBias : 0.0;
+
+	var mirrorColor = options.color !== undefined ? new THREE.Color( options.color ) : new THREE.Color( 0x7F7F7F );
+
+	this.renderer = renderer;
+	this.mirrorPlane = new THREE.Plane();
+	this.normal = new THREE.Vector3( 0, 0, 1 );
+	this.mirrorWorldPosition = new THREE.Vector3();
+	this.cameraWorldPosition = new THREE.Vector3();
+	this.rotationMatrix = new THREE.Matrix4();
+	this.lookAtPosition = new THREE.Vector3( 0, 0, - 1 );
+	this.clipPlane = new THREE.Vector4();
+
+	// For debug only, show the normal and plane of the mirror
+	var debugMode = options.debugMode !== undefined ? options.debugMode : false;
+
+	if ( debugMode ) {
+
+		var arrow = new THREE.ArrowHelper( new THREE.Vector3( 0, 0, 1 ), new THREE.Vector3( 0, 0, 0 ), 10, 0xffff80 );
+		var planeGeometry = new THREE.Geometry();
+		planeGeometry.vertices.push( new THREE.Vector3( - 10, - 10, 0 ) );
+		planeGeometry.vertices.push( new THREE.Vector3( 10, - 10, 0 ) );
+		planeGeometry.vertices.push( new THREE.Vector3( 10, 10, 0 ) );
+		planeGeometry.vertices.push( new THREE.Vector3( - 10, 10, 0 ) );
+		planeGeometry.vertices.push( planeGeometry.vertices[ 0 ] );
+		var plane = new THREE.Line( planeGeometry, new THREE.LineBasicMaterial( { color: 0xffff80 } ) );
+
+		this.add( arrow );
+		this.add( plane );
+
+	}
+
+	if ( camera instanceof THREE.PerspectiveCamera ) {
+
+		this.camera = camera;
+
+	} else {
+
+		this.camera = new THREE.PerspectiveCamera();
+		console.log( this.name + ': camera is not a Perspective Camera!' );
+
+	}
+
+	this.textureMatrix = new THREE.Matrix4();
+
+	this.mirrorCamera = this.camera.clone();
+	this.mirrorCamera.matrixAutoUpdate = true;
+
+	var parameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: false };
+
+	this.texture = new THREE.WebGLRenderTarget( width, height, parameters );
+	this.tempTexture = new THREE.WebGLRenderTarget( width, height, parameters );
+
+	var mirrorShader = THREE.ShaderLib[ "mirror" ];
+	var mirrorUniforms = THREE.UniformsUtils.clone( mirrorShader.uniforms );
+
+	this.material = new THREE.ShaderMaterial( {
+
+		fragmentShader: mirrorShader.fragmentShader,
+		vertexShader: mirrorShader.vertexShader,
+		uniforms: mirrorUniforms
+
+	} );
+
+	this.material.uniforms.mirrorSampler.value = this.texture;
+	this.material.uniforms.mirrorColor.value = mirrorColor;
+	this.material.uniforms.textureMatrix.value = this.textureMatrix;
+
+	if ( ! THREE.Math.isPowerOfTwo( width ) || ! THREE.Math.isPowerOfTwo( height ) ) {
+
+		this.texture.generateMipmaps = false;
+		this.tempTexture.generateMipmaps = false;
+
+	}
+
+	this.updateTextureMatrix();
+	this.render();
+
+};
+
+THREE.Mirror.prototype = Object.create( THREE.Object3D.prototype );
+THREE.Mirror.prototype.constructor = THREE.Mirror;
+
+THREE.Mirror.prototype.renderWithMirror = function ( otherMirror ) {
+
+	// update the mirror matrix to mirror the current view
+	this.updateTextureMatrix();
+	this.matrixNeedsUpdate = false;
+
+	// set the camera of the other mirror so the mirrored view is the reference view
+	var tempCamera = otherMirror.camera;
+	otherMirror.camera = this.mirrorCamera;
+
+	// render the other mirror in temp texture
+	otherMirror.renderTemp();
+	otherMirror.material.uniforms.mirrorSampler.value = otherMirror.tempTexture;
+
+	// render the current mirror
+	this.render();
+	this.matrixNeedsUpdate = true;
+
+	// restore material and camera of other mirror
+	otherMirror.material.uniforms.mirrorSampler.value = otherMirror.texture;
+	otherMirror.camera = tempCamera;
+
+	// restore texture matrix of other mirror
+	otherMirror.updateTextureMatrix();
+
+};
+
+THREE.Mirror.prototype.updateTextureMatrix = function () {
+
+	this.updateMatrixWorld();
+	this.camera.updateMatrixWorld();
+
+	this.mirrorWorldPosition.setFromMatrixPosition( this.matrixWorld );
+	this.cameraWorldPosition.setFromMatrixPosition( this.camera.matrixWorld );
+
+	this.rotationMatrix.extractRotation( this.matrixWorld );
+
+	this.normal.set( 0, 0, 1 );
+	this.normal.applyMatrix4( this.rotationMatrix );
+
+	var view = this.mirrorWorldPosition.clone().sub( this.cameraWorldPosition );
+	view.reflect( this.normal ).negate();
+	view.add( this.mirrorWorldPosition );
+
+	this.rotationMatrix.extractRotation( this.camera.matrixWorld );
+
+	this.lookAtPosition.set( 0, 0, - 1 );
+	this.lookAtPosition.applyMatrix4( this.rotationMatrix );
+	this.lookAtPosition.add( this.cameraWorldPosition );
+
+	var target = this.mirrorWorldPosition.clone().sub( this.lookAtPosition );
+	target.reflect( this.normal ).negate();
+	target.add( this.mirrorWorldPosition );
+
+	this.up.set( 0, - 1, 0 );
+	this.up.applyMatrix4( this.rotationMatrix );
+	this.up.reflect( this.normal ).negate();
+
+	this.mirrorCamera.position.copy( view );
+	this.mirrorCamera.up = this.up;
+	this.mirrorCamera.lookAt( target );
+
+	this.mirrorCamera.updateProjectionMatrix();
+	this.mirrorCamera.updateMatrixWorld();
+	this.mirrorCamera.matrixWorldInverse.getInverse( this.mirrorCamera.matrixWorld );
+
+	// Update the texture matrix
+	this.textureMatrix.set( 0.5, 0.0, 0.0, 0.5,
+							0.0, 0.5, 0.0, 0.5,
+							0.0, 0.0, 0.5, 0.5,
+							0.0, 0.0, 0.0, 1.0 );
+	this.textureMatrix.multiply( this.mirrorCamera.projectionMatrix );
+	this.textureMatrix.multiply( this.mirrorCamera.matrixWorldInverse );
+
+	// Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
+	// Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
+	this.mirrorPlane.setFromNormalAndCoplanarPoint( this.normal, this.mirrorWorldPosition );
+	this.mirrorPlane.applyMatrix4( this.mirrorCamera.matrixWorldInverse );
+
+	this.clipPlane.set( this.mirrorPlane.normal.x, this.mirrorPlane.normal.y, this.mirrorPlane.normal.z, this.mirrorPlane.constant );
+
+	var q = new THREE.Vector4();
+	var projectionMatrix = this.mirrorCamera.projectionMatrix;
+
+	q.x = ( Math.sign( this.clipPlane.x ) + projectionMatrix.elements[ 8 ] ) / projectionMatrix.elements[ 0 ];
+	q.y = ( Math.sign( this.clipPlane.y ) + projectionMatrix.elements[ 9 ] ) / projectionMatrix.elements[ 5 ];
+	q.z = - 1.0;
+	q.w = ( 1.0 + projectionMatrix.elements[ 10 ] ) / projectionMatrix.elements[ 14 ];
+
+	// Calculate the scaled plane vector
+	var c = new THREE.Vector4();
+	c = this.clipPlane.multiplyScalar( 2.0 / this.clipPlane.dot( q ) );
+
+	// Replacing the third row of the projection matrix
+	projectionMatrix.elements[ 2 ] = c.x;
+	projectionMatrix.elements[ 6 ] = c.y;
+	projectionMatrix.elements[ 10 ] = c.z + 1.0 - this.clipBias;
+	projectionMatrix.elements[ 14 ] = c.w;
+
+};
+
+THREE.Mirror.prototype.render = function () {
+
+	if ( this.matrixNeedsUpdate ) this.updateTextureMatrix();
+
+	this.matrixNeedsUpdate = true;
+
+	// Render the mirrored view of the current scene into the target texture
+	var scene = this;
+
+	while ( scene.parent !== null ) {
+
+		scene = scene.parent;
+
+	}
+
+	if ( scene !== undefined && scene instanceof THREE.Scene ) {
+
+		// We can't render ourself to ourself
+		var visible = this.material.visible;
+		this.material.visible = false;
+
+		this.renderer.render( scene, this.mirrorCamera, this.texture, true );
+
+		this.material.visible = visible;
+
+	}
+
+};
+
+THREE.Mirror.prototype.renderTemp = function () {
+
+	if ( this.matrixNeedsUpdate ) this.updateTextureMatrix();
+
+	this.matrixNeedsUpdate = true;
+
+	// Render the mirrored view of the current scene into the target texture
+	var scene = this;
+
+	while ( scene.parent !== null ) {
+
+		scene = scene.parent;
+
+	}
+
+	if ( scene !== undefined && scene instanceof THREE.Scene ) {
+
+		this.renderer.render( scene, this.mirrorCamera, this.tempTexture, true );
+
+	}
+
+};
+
+define("mirror", function(){});
+
+/**
  * @author jbouny / https://github.com/jbouny
  *
  * Work based on :
@@ -51827,354 +52131,290 @@ define("stats", function(){});
  * @author Jonas Wagner / http://29a.ch/ && http://29a.ch/slides/2012/webglwater/ : Water shader explanations in WebGL
  */
 
-THREE.ShaderLib['water'] = {
+THREE.ShaderLib[ 'water' ] = {
 
-  uniforms: THREE.UniformsUtils.merge( [
-    THREE.UniformsLib[ "fog" ], {
-      "normalSampler":    { type: "t", value: null },
-      "mirrorSampler":    { type: "t", value: null },
-      "alpha":            { type: "f", value: 1.0 },
-      "time":             { type: "f", value: 0.0 },
-      "distortionScale":  { type: "f", value: 20.0 },
-      "noiseScale":       { type: "f", value: 1.0 },
-      "textureMatrix" :   { type: "m4", value: new THREE.Matrix4() },
-      "sunColor":         { type: "c", value: new THREE.Color(0x7F7F7F) },
-      "sunDirection":     { type: "v3", value: new THREE.Vector3(0.70707, 0.70707, 0) },
-      "eye":              { type: "v3", value: new THREE.Vector3(0, 0, 0) },
-      "waterColor":       { type: "c", value: new THREE.Color(0x555555) }
-    }
-  ] ),
+	uniforms: THREE.UniformsUtils.merge( [
+		THREE.UniformsLib[ "fog" ], {
+			"normalSampler":    { type: "t", value: null },
+			"mirrorSampler":    { type: "t", value: null },
+			"alpha":            { type: "f", value: 1.0 },
+			"time":             { type: "f", value: 0.0 },
+			"distortionScale":  { type: "f", value: 20.0 },
+			"noiseScale":       { type: "f", value: 1.0 },
+			"textureMatrix" :   { type: "m4", value: new THREE.Matrix4() },
+			"sunColor":         { type: "c", value: new THREE.Color(0x7F7F7F) },
+			"sunDirection":     { type: "v3", value: new THREE.Vector3(0.70707, 0.70707, 0) },
+			"eye":              { type: "v3", value: new THREE.Vector3(0, 0, 0) },
+			"waterColor":       { type: "c", value: new THREE.Color(0x555555) }
+		}
+	] ),
 
-  vertexShader: [
-    'uniform mat4 textureMatrix;',
-    'uniform float time;',
+	vertexShader: [
+		'uniform mat4 textureMatrix;',
+		'uniform float time;',
 
-    'varying vec4 mirrorCoord;',
-    'varying vec3 worldPosition;',
-    'varying vec3 modelPosition;',
-    'varying vec3 surfaceX;',
-    'varying vec3 surfaceY;',
-    'varying vec3 surfaceZ;',
+		'varying vec4 mirrorCoord;',
+		'varying vec3 worldPosition;',
 
-    'void main()',
-    '{',
-    '  mirrorCoord = modelMatrix * vec4(position, 1.0);',
-    '  worldPosition = mirrorCoord.xyz;',
-    '  modelPosition = position;',
-    '  surfaceX = vec3( modelMatrix[0][0], modelMatrix[0][1], modelMatrix[0][2]);',
-    '  surfaceY = vec3( modelMatrix[1][0], modelMatrix[1][1], modelMatrix[1][2]);',
-    '  surfaceZ = vec3( modelMatrix[2][0], modelMatrix[2][1], modelMatrix[2][2]);',
+		'void main()',
+		'{',
+		'	mirrorCoord = modelMatrix * vec4( position, 1.0 );',
+		'	worldPosition = mirrorCoord.xyz;',
+		'	mirrorCoord = textureMatrix * mirrorCoord;',
+		'	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+		'}'
+	].join( '\n' ),
 
-    '  mirrorCoord = textureMatrix * mirrorCoord;',
-    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    '}'
-  ].join('\n'),
+	fragmentShader: [
+		'precision highp float;',
 
-  fragmentShader: [
-    'uniform sampler2D mirrorSampler;',
-    'uniform float alpha;',
-    'uniform float time;',
-    'uniform float distortionScale;',
-    'uniform float noiseScale;',
-    'uniform sampler2D normalSampler;',
-    'uniform vec3 sunColor;',
-    'uniform vec3 sunDirection;',
-    'uniform vec3 eye;',
-    'uniform vec3 waterColor;',
+		'uniform sampler2D mirrorSampler;',
+		'uniform float alpha;',
+		'uniform float time;',
+		'uniform float distortionScale;',
+		'uniform sampler2D normalSampler;',
+		'uniform vec3 sunColor;',
+		'uniform vec3 sunDirection;',
+		'uniform vec3 eye;',
+		'uniform vec3 waterColor;',
 
-    'varying vec4 mirrorCoord;',
-    'varying vec3 worldPosition;',
-    'varying vec3 modelPosition;',
-    'varying vec3 surfaceX;',
-    'varying vec3 surfaceY;',
-    'varying vec3 surfaceZ;',
+		'varying vec4 mirrorCoord;',
+		'varying vec3 worldPosition;',
 
-    'void sunLight(const vec3 surfaceNormal, const vec3 eyeDirection, in float shiny, in float spec, in float diffuse, inout vec3 diffuseColor, inout vec3 specularColor)',
-    '{',
-    '  vec3 reflection = normalize(reflect(-sunDirection, surfaceNormal));',
-    '  float direction = max(0.0, dot(eyeDirection, reflection));',
-    '  specularColor += pow(direction, shiny) * sunColor * spec;',
-    '  diffuseColor += max(dot(sunDirection, surfaceNormal), 0.0) * sunColor * diffuse;',
-    '}',
+		'vec4 getNoise( vec2 uv )',
+		'{',
+		'	vec2 uv0 = ( uv / 103.0 ) + vec2(time / 17.0, time / 29.0);',
+		'	vec2 uv1 = uv / 107.0-vec2( time / -19.0, time / 31.0 );',
+		'	vec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( time / 101.0, time / 97.0 );',
+		'	vec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( time / 109.0, time / -113.0 );',
+		'	vec4 noise = ( texture2D( normalSampler, uv0 ) ) +',
+        '		( texture2D( normalSampler, uv1 ) ) +',
+        '		( texture2D( normalSampler, uv2 ) ) +',
+		'		( texture2D( normalSampler, uv3 ) );',
+		'	return noise * 0.5 - 1.0;',
+		'}',
 
-    'vec3 getNoise(in vec2 uv)',
-    '{',
-    '  vec2 uv0 = uv / (103.0 * noiseScale) + vec2(time / 17.0, time / 29.0);',
-    '  vec2 uv1 = uv / (107.0 * noiseScale) - vec2(time / -19.0, time / 31.0);',
-    '  vec2 uv2 = uv / (vec2(8907.0, 9803.0) * noiseScale) + vec2(time / 101.0, time /   97.0);',
-    '  vec2 uv3 = uv / (vec2(1091.0, 1027.0) * noiseScale) - vec2(time / 109.0, time / -113.0);',
-    '  vec4 noise = texture2D(normalSampler, uv0) +',
-    '    texture2D(normalSampler, uv1) +',
-    '    texture2D(normalSampler, uv2) +',
-    '    texture2D(normalSampler, uv3);',
-    '  return noise.xyz * 0.5 - 1.0;',
-    '}',
+		'void sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor )',
+		'{',
+		'	vec3 reflection = normalize( reflect( -sunDirection, surfaceNormal ) );',
+		'	float direction = max( 0.0, dot( eyeDirection, reflection ) );',
+		'	specularColor += pow( direction, shiny ) * sunColor * spec;',
+		'	diffuseColor += max( dot( sunDirection, surfaceNormal ), 0.0 ) * sunColor * diffuse;',
+		'}',
 
-    THREE.ShaderChunk[ "common" ],
-    THREE.ShaderChunk[ "fog_pars_fragment" ],
+		THREE.ShaderChunk[ "common" ],
+		THREE.ShaderChunk[ "fog_pars_fragment" ],
 
-    'void main()',
-    '{',
-    '  vec3 worldToEye = eye - worldPosition;',
-    '  vec3 eyeDirection = normalize(worldToEye);',
+		'void main()',
+		'{',
+		'	vec4 noise = getNoise( worldPosition.xz );',
+		'	vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );',
 
-    // Get noise based on the 3d position
-    '  vec3 noise = getNoise(modelPosition.xy * 1.0);',
-    '  vec3 distordCoord = noise.x * surfaceX + noise.y * surfaceY;',
-    '  vec3 distordNormal = distordCoord + surfaceZ;',
+		'	vec3 diffuseLight = vec3(0.0);',
+		'	vec3 specularLight = vec3(0.0);',
 
-    // Revert normal if the eye is bellow the mesh
-    '  if(dot(eyeDirection, surfaceZ) < 0.0)',
-    '    distordNormal = distordNormal * -1.0;',
+		'	vec3 worldToEye = eye-worldPosition;',
+		'	vec3 eyeDirection = normalize( worldToEye );',
+		'	sunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );',
 
-    // Compute diffuse and specular light (use normal and eye direction)
-    '  vec3 diffuseLight = vec3(0.0);',
-    '  vec3 specularLight = vec3(0.0);',
-    '  sunLight(distordNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight);',
+		'	float distance = length(worldToEye);',
 
-    // Compute final 3d distortion, and project it to get the mirror sampling
-    '  float distance = length(worldToEye);',
-    '  vec2 distortion = distordCoord.xy * distortionScale * sqrt(distance) * 0.07;',
-    ' vec3 mirrorDistord = mirrorCoord.xyz + vec3(distortion.x, distortion.y, 1.0);',
-    ' vec3 reflectionSample = texture2DProj(mirrorSampler, mirrorDistord).xyz;',
+		'	vec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * distortionScale;',
+		'	vec3 reflectionSample = vec3( texture2D( mirrorSampler, mirrorCoord.xy / mirrorCoord.z + distortion ) );',
 
-    // Compute other parameters as the reflectance and the water appareance
-    '  float theta = max(dot(eyeDirection, distordNormal), 0.0);',
-    '  float reflectance = 0.3 + (1.0 - 0.3) * pow((1.0 - theta), 3.0);',
-    '  vec3 scatter = max(0.0, dot(distordNormal, eyeDirection)) * waterColor;',
-
-    // Compute final pixel color
-    '  vec3 albedo = mix(sunColor * diffuseLight * 0.3 + scatter, (vec3(0.1) + reflectionSample * 0.9 + reflectionSample * specularLight), reflectance);',
-
-    ' vec3 outgoingLight = albedo;',
-    THREE.ShaderChunk[ "fog_fragment" ],
-
-    ' gl_FragColor = vec4( outgoingLight, alpha );',
-    '}'
-  ].join('\n')
+		'	float theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );',
+		'	float rf0 = 0.3;',
+		'	float reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );',
+		'	vec3 scatter = max( 0.0, dot( surfaceNormal, eyeDirection ) ) * waterColor;',
+		'	vec3 albedo = mix( sunColor * diffuseLight * 0.3 + scatter, ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance );',
+		'	vec3 outgoingLight = albedo;',
+			THREE.ShaderChunk[ "fog_fragment" ],
+		'	gl_FragColor = vec4( outgoingLight, alpha );',
+		'}'
+	].join( '\n' )
 
 };
 
-THREE.Water = function (renderer, camera, scene, options) {
+THREE.Water = function ( renderer, camera, scene, options ) {
 
-  THREE.Object3D.call(this);
-  this.name = 'water_' + this.id;
+	THREE.Object3D.call( this );
+	this.name = 'water_' + this.id;
 
-  function optionalParameter (value, defaultValue) {
-    return value !== undefined ? value : defaultValue;
-  };
+	function optionalParameter ( value, defaultValue ) {
 
-  options = options || {};
+		return value !== undefined ? value : defaultValue;
 
-  this.matrixNeedsUpdate = true;
+	}
 
-  var width = optionalParameter(options.textureWidth, 512);
-  var height = optionalParameter(options.textureHeight, 512);
-  this.clipBias = optionalParameter(options.clipBias, -0.0001);
-  this.alpha = optionalParameter(options.alpha, 1.0);
-  this.time = optionalParameter(options.time, 0.0);
-  this.normalSampler = optionalParameter(options.waterNormals, null);
-  this.sunDirection = optionalParameter(options.sunDirection, new THREE.Vector3(0.70707, 0.70707, 0.0));
-  this.sunColor = new THREE.Color(optionalParameter(options.sunColor, 0xffffff));
-  this.waterColor = new THREE.Color(optionalParameter(options.waterColor, 0x7F7F7F));
-  this.eye = optionalParameter(options.eye, new THREE.Vector3(0, 0, 0));
-  this.distortionScale = optionalParameter(options.distortionScale, 20.0);
-  this.noiseScale = optionalParameter(options.noiseScale, 1.0);
-  this.side = optionalParameter(options.side, THREE.FrontSide);
-  this.fog = optionalParameter(options.fog, false);
+	options = options || {};
 
-  this.renderer = renderer;
-  this.scene = scene;
-  this.mirrorPlane = new THREE.Plane();
-  this.normal = new THREE.Vector3(0, 0, 1);
-  this.cameraWorldPosition = new THREE.Vector3();
-  this.rotationMatrix = new THREE.Matrix4();
-  this.lookAtPosition = new THREE.Vector3(0, 0, -1);
-  this.clipPlane = new THREE.Vector4();
+	this.matrixNeedsUpdate = true;
 
-  if ( camera instanceof THREE.PerspectiveCamera ) {
-    this.camera = camera;
-  }
-  else  {
-    this.camera = new THREE.PerspectiveCamera();
-    console.log(this.name + ': camera is not a Perspective Camera!')
-  }
+	var width = optionalParameter( options.textureWidth, 512 );
+	var height = optionalParameter( options.textureHeight, 512 );
+	this.clipBias = optionalParameter( options.clipBias, 0.0 );
+	this.alpha = optionalParameter( options.alpha, 1.0 );
+	this.time = optionalParameter( options.time, 0.0 );
+	this.normalSampler = optionalParameter( options.waterNormals, null );
+	this.sunDirection = optionalParameter( options.sunDirection, new THREE.Vector3( 0.70707, 0.70707, 0.0 ) );
+	this.sunColor = new THREE.Color( optionalParameter( options.sunColor, 0xffffff ) );
+	this.waterColor = new THREE.Color( optionalParameter( options.waterColor, 0x7F7F7F ) );
+	this.eye = optionalParameter( options.eye, new THREE.Vector3( 0, 0, 0 ) );
+	this.distortionScale = optionalParameter( options.distortionScale, 20.0 );
+	this.side = optionalParameter(options.side, THREE.FrontSide);
+	this.fog = optionalParameter(options.fog, false);
 
-  this.textureMatrix = new THREE.Matrix4();
+	this.renderer = renderer;
+	this.scene = scene;
+	this.mirrorPlane = new THREE.Plane();
+	this.normal = new THREE.Vector3( 0, 0, 1 );
+	this.mirrorWorldPosition = new THREE.Vector3();
+	this.cameraWorldPosition = new THREE.Vector3();
+	this.rotationMatrix = new THREE.Matrix4();
+	this.lookAtPosition = new THREE.Vector3( 0, 0, - 1 );
+	this.clipPlane = new THREE.Vector4();
 
-  this.mirrorCamera = this.camera.clone();
+	if ( camera instanceof THREE.PerspectiveCamera )
+		this.camera = camera;
+	else {
 
-  this.texture = new THREE.WebGLRenderTarget(width, height);
-  this.tempTexture = new THREE.WebGLRenderTarget(width, height);
-  this.dummyTexture = new THREE.WebGLRenderTarget(1, 1);
+		this.camera = new THREE.PerspectiveCamera();
+		console.log( this.name + ': camera is not a Perspective Camera!' )
 
-  var mirrorShader = THREE.ShaderLib["water"];
-  var mirrorUniforms = THREE.UniformsUtils.clone(mirrorShader.uniforms);
+	}
 
-  this.material = new THREE.ShaderMaterial({
-    fragmentShader: mirrorShader.fragmentShader,
-    vertexShader: mirrorShader.vertexShader,
-    uniforms: mirrorUniforms,
-    transparent: true,
-    side: this.side,
-    fog: this.fog
-  });
+	this.textureMatrix = new THREE.Matrix4();
 
-  this.mesh = new THREE.Object3D();
+	this.mirrorCamera = this.camera.clone();
 
-  this.material.uniforms.mirrorSampler.value = this.texture;
-  this.material.uniforms.textureMatrix.value = this.textureMatrix;
-  this.material.uniforms.alpha.value = this.alpha;
-  this.material.uniforms.time.value = this.time;
-  this.material.uniforms.normalSampler.value = this.normalSampler;
-  this.material.uniforms.sunColor.value = this.sunColor;
-  this.material.uniforms.waterColor.value = this.waterColor;
-  this.material.uniforms.sunDirection.value = this.sunDirection;
-  this.material.uniforms.distortionScale.value = this.distortionScale;
-  this.material.uniforms.noiseScale.value = this.noiseScale;
+	this.texture = new THREE.WebGLRenderTarget( width, height );
+	this.tempTexture = new THREE.WebGLRenderTarget( width, height );
 
-  this.material.uniforms.eye.value = this.eye;
+	var mirrorShader = THREE.ShaderLib[ "water" ];
+	var mirrorUniforms = THREE.UniformsUtils.clone( mirrorShader.uniforms );
 
-  if ( !THREE.Math.isPowerOfTwo(width) || !THREE.Math.isPowerOfTwo(height) ) {
-    this.texture.generateMipmaps = false;
-    this.tempTexture.generateMipmaps = false;
-  }
+	this.material = new THREE.ShaderMaterial( {
+		fragmentShader: mirrorShader.fragmentShader,
+		vertexShader: mirrorShader.vertexShader,
+		uniforms: mirrorUniforms,
+		transparent: true,
+		side: this.side,
+		fog: this.fog
+	} );
 
-  this.updateTextureMatrix();
-  this.render();
+	this.material.uniforms.mirrorSampler.value = this.texture;
+	this.material.uniforms.textureMatrix.value = this.textureMatrix;
+	this.material.uniforms.alpha.value = this.alpha;
+	this.material.uniforms.time.value = this.time;
+	this.material.uniforms.normalSampler.value = this.normalSampler;
+	this.material.uniforms.sunColor.value = this.sunColor;
+	this.material.uniforms.waterColor.value = this.waterColor;
+	this.material.uniforms.sunDirection.value = this.sunDirection;
+	this.material.uniforms.distortionScale.value = this.distortionScale;
+
+	this.material.uniforms.eye.value = this.eye;
+
+	if ( ! THREE.Math.isPowerOfTwo( width ) || ! THREE.Math.isPowerOfTwo( height ) ) {
+
+		this.texture.generateMipmaps = false;
+		this.texture.minFilter = THREE.LinearFilter;
+		this.tempTexture.generateMipmaps = false;
+		this.tempTexture.minFilter = THREE.LinearFilter;
+
+	}
+
+	this.updateTextureMatrix();
+	this.render();
+
 };
 
-THREE.Water.prototype = Object.create(THREE.Object3D.prototype);
+THREE.Water.prototype = Object.create( THREE.Mirror.prototype );
+THREE.Water.prototype.constructor = THREE.Water;
 
-THREE.Water.prototype.renderWithMirror = function (otherMirror) {
-
-  // update the mirror matrix to mirror the current view
-  this.updateTextureMatrix();
-  this.matrixNeedsUpdate = false;
-
-  // set the camera of the other mirror so the mirrored view is the reference view
-  var tempCamera = otherMirror.camera;
-  otherMirror.camera = this.mirrorCamera;
-
-  // render the other mirror in temp texture
-  otherMirror.render(true);
-
-  // render the current mirror
-  this.render();
-  this.matrixNeedsUpdate = true;
-
-  // restore material and camera of other mirror
-  otherMirror.camera = tempCamera;
-
-  // restore texture matrix of other mirror
-  otherMirror.updateTextureMatrix();
-};
 
 THREE.Water.prototype.updateTextureMatrix = function () {
-  if ( this.parent !== null ) {
-    this.mesh = this.parent;
-  }
-  function sign(x) { return x ? x < 0 ? -1 : 1 : 0; }
 
-  this.updateMatrixWorld();
-  this.camera.updateMatrixWorld();
+	function sign( x ) {
 
-  this.cameraWorldPosition.setFromMatrixPosition(this.camera.matrixWorld);
+		return x ? x < 0 ? - 1 : 1 : 0;
 
-  this.rotationMatrix.extractRotation(this.matrixWorld);
+	}
 
-  this.normal = (new THREE.Vector3(0, 0, 1)).applyEuler(this.mesh.rotation);
-  var cameraPosition = this.camera.position.clone().sub( this.mesh.position );
-  if ( this.normal.dot(cameraPosition) < 0 ) {
-    var meshNormal = (new THREE.Vector3(0, 0, 1)).applyEuler(this.mesh.rotation);
-    this.normal.reflect(meshNormal);
-  }
+	this.updateMatrixWorld();
+	this.camera.updateMatrixWorld();
 
-  var view = this.mesh.position.clone().sub(this.cameraWorldPosition);
-  view.reflect(this.normal).negate();
-  view.add(this.mesh.position);
+	this.mirrorWorldPosition.setFromMatrixPosition( this.matrixWorld );
+	this.cameraWorldPosition.setFromMatrixPosition( this.camera.matrixWorld );
 
-  this.rotationMatrix.extractRotation(this.camera.matrixWorld);
+	this.rotationMatrix.extractRotation( this.matrixWorld );
 
-  this.lookAtPosition.set(0, 0, -1);
-  this.lookAtPosition.applyMatrix4(this.rotationMatrix);
-  this.lookAtPosition.add(this.cameraWorldPosition);
+	this.normal.set( 0, 0, 1 );
+	this.normal.applyMatrix4( this.rotationMatrix );
 
-  var target = this.mesh.position.clone().sub(this.lookAtPosition);
-  target.reflect(this.normal).negate();
-  target.add(this.mesh.position);
+	var view = this.mirrorWorldPosition.clone().sub( this.cameraWorldPosition );
+	view.reflect( this.normal ).negate();
+	view.add( this.mirrorWorldPosition );
 
-  this.up.set(0, -1, 0);
-  this.up.applyMatrix4(this.rotationMatrix);
-  this.up.reflect(this.normal).negate();
+	this.rotationMatrix.extractRotation( this.camera.matrixWorld );
 
-  this.mirrorCamera.position.copy(view);
-  this.mirrorCamera.up = this.up;
-  this.mirrorCamera.lookAt(target);
-  this.mirrorCamera.aspect = this.camera.aspect;
+	this.lookAtPosition.set( 0, 0, - 1 );
+	this.lookAtPosition.applyMatrix4( this.rotationMatrix );
+	this.lookAtPosition.add( this.cameraWorldPosition );
 
-  this.mirrorCamera.updateProjectionMatrix();
-  this.mirrorCamera.updateMatrixWorld();
-  this.mirrorCamera.matrixWorldInverse.getInverse(this.mirrorCamera.matrixWorld);
+	var target = this.mirrorWorldPosition.clone().sub( this.lookAtPosition );
+	target.reflect( this.normal ).negate();
+	target.add( this.mirrorWorldPosition );
 
-  // Update the texture matrix
-  this.textureMatrix.set(0.5, 0.0, 0.0, 0.5,
-              0.0, 0.5, 0.0, 0.5,
-              0.0, 0.0, 0.5, 0.5,
-              0.0, 0.0, 0.0, 1.0);
-  this.textureMatrix.multiply(this.mirrorCamera.projectionMatrix);
-  this.textureMatrix.multiply(this.mirrorCamera.matrixWorldInverse);
+	this.up.set( 0, - 1, 0 );
+	this.up.applyMatrix4( this.rotationMatrix );
+	this.up.reflect( this.normal ).negate();
 
-  // Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
-  // Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
-  this.mirrorPlane.setFromNormalAndCoplanarPoint(this.normal, this.mesh.position);
-  this.mirrorPlane.applyMatrix4(this.mirrorCamera.matrixWorldInverse);
+	this.mirrorCamera.position.copy( view );
+	this.mirrorCamera.up = this.up;
+	this.mirrorCamera.lookAt( target );
+	this.mirrorCamera.aspect = this.camera.aspect;
 
-  this.clipPlane.set(this.mirrorPlane.normal.x, this.mirrorPlane.normal.y, this.mirrorPlane.normal.z, this.mirrorPlane.constant);
+	this.mirrorCamera.updateProjectionMatrix();
+	this.mirrorCamera.updateMatrixWorld();
+	this.mirrorCamera.matrixWorldInverse.getInverse( this.mirrorCamera.matrixWorld );
 
-  var q = new THREE.Vector4();
-  var projectionMatrix = this.mirrorCamera.projectionMatrix;
+	// Update the texture matrix
+	this.textureMatrix.set( 0.5, 0.0, 0.0, 0.5,
+							0.0, 0.5, 0.0, 0.5,
+							0.0, 0.0, 0.5, 0.5,
+							0.0, 0.0, 0.0, 1.0 );
+	this.textureMatrix.multiply( this.mirrorCamera.projectionMatrix );
+	this.textureMatrix.multiply( this.mirrorCamera.matrixWorldInverse );
 
-  q.x = (sign(this.clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
-  q.y = (sign(this.clipPlane.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
-  q.z = -1.0;
-  q.w = (1.0 + projectionMatrix.elements[10]) / projectionMatrix.elements[14];
+	// Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
+	// Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
+	this.mirrorPlane.setFromNormalAndCoplanarPoint( this.normal, this.mirrorWorldPosition );
+	this.mirrorPlane.applyMatrix4( this.mirrorCamera.matrixWorldInverse );
 
-  // Calculate the scaled plane vector
-  var c = new THREE.Vector4();
-  c = this.clipPlane.multiplyScalar(2.0 / this.clipPlane.dot(q));
+	this.clipPlane.set( this.mirrorPlane.normal.x, this.mirrorPlane.normal.y, this.mirrorPlane.normal.z, this.mirrorPlane.constant );
 
-  // Replacing the third row of the projection matrix
-  projectionMatrix.elements[2] = c.x;
-  projectionMatrix.elements[6] = c.y;
-  projectionMatrix.elements[10] = c.z + 1.0 - this.clipBias;
-  projectionMatrix.elements[14] = c.w;
+	var q = new THREE.Vector4();
+	var projectionMatrix = this.mirrorCamera.projectionMatrix;
 
-  var worldCoordinates = new THREE.Vector3();
-  worldCoordinates.setFromMatrixPosition(this.camera.matrixWorld);
-  this.eye = worldCoordinates;
-  this.material.uniforms.eye.value = this.eye;
-};
+	q.x = ( sign( this.clipPlane.x ) + projectionMatrix.elements[ 8 ] ) / projectionMatrix.elements[ 0 ];
+	q.y = ( sign( this.clipPlane.y ) + projectionMatrix.elements[ 9 ] ) / projectionMatrix.elements[ 5 ];
+	q.z = - 1.0;
+	q.w = ( 1.0 + projectionMatrix.elements[ 10 ] ) / projectionMatrix.elements[ 14 ];
 
-THREE.Water.prototype.render = function (isTempTexture) {
+	// Calculate the scaled plane vector
+	var c = new THREE.Vector4();
+	c = this.clipPlane.multiplyScalar( 2.0 / this.clipPlane.dot( q ) );
 
-  if ( this.matrixNeedsUpdate ) {
-    this.updateTextureMatrix();
-  }
+	// Replacing the third row of the projection matrix
+	projectionMatrix.elements[ 2 ] = c.x;
+	projectionMatrix.elements[ 6 ] = c.y;
+	projectionMatrix.elements[ 10 ] = c.z + 1.0 - this.clipBias;
+	projectionMatrix.elements[ 14 ] = c.w;
 
-  this.matrixNeedsUpdate = true;
-
-  // Render the mirrored view of the current scene into the target texture
-  if ( this.scene !== undefined && this.scene instanceof THREE.Scene ) {
-    // Remove the mirror texture from the scene the moment it is used as render texture
-    // https://github.com/jbouny/ocean/issues/7
-    this.material.uniforms.mirrorSampler.value = this.dummyTexture;
-
-    var renderTexture = (isTempTexture !== undefined && isTempTexture)? this.tempTexture : this.texture;
-    this.renderer.render(this.scene, this.mirrorCamera, renderTexture, true);
-
-    this.material.uniforms.mirrorSampler.value = renderTexture;
-  }
+	var worldCoordinates = new THREE.Vector3();
+	worldCoordinates.setFromMatrixPosition( this.camera.matrixWorld );
+	this.eye = worldCoordinates;
+	this.material.uniforms.eye.value = this.eye;
 
 };
 
@@ -52374,12 +52614,14 @@ define("KeyboardState", function(){});
 /**
  * @author Eberhard Graether / http://egraether.com/
  * @author Mark Lundin 	/ http://mark-lundin.com
+ * @author Simone Manini / http://daron1337.github.io
+ * @author Luca Antiga 	/ http://lantiga.github.io
  */
 
 THREE.TrackballControls = function ( object, domElement ) {
 
 	var _this = this;
-	var STATE = { NONE: -1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
+	var STATE = { NONE: - 1, ROTATE: 0, ZOOM: 1, PAN: 2, TOUCH_ROTATE: 3, TOUCH_ZOOM_PAN: 4 };
 
 	this.object = object;
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
@@ -52397,7 +52639,6 @@ THREE.TrackballControls = function ( object, domElement ) {
 	this.noRotate = false;
 	this.noZoom = false;
 	this.noPan = false;
-	this.noRoll = false;
 
 	this.staticMoving = false;
 	this.dynamicDampingFactor = 0.2;
@@ -52420,8 +52661,11 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	_eye = new THREE.Vector3(),
 
-	_rotateStart = new THREE.Vector3(),
-	_rotateEnd = new THREE.Vector3(),
+	_movePrev = new THREE.Vector2(),
+	_moveCurr = new THREE.Vector2(),
+
+	_lastAxis = new THREE.Vector3(),
+	_lastAngle = 0,
 
 	_zoomStart = new THREE.Vector2(),
 	_zoomEnd = new THREE.Vector2(),
@@ -52441,8 +52685,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 	// events
 
 	var changeEvent = { type: 'change' };
-	var startEvent = { type: 'start'};
-	var endEvent = { type: 'end'};
+	var startEvent = { type: 'start' };
+	var endEvent = { type: 'end' };
 
 
 	// methods
@@ -52484,7 +52728,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		var vector = new THREE.Vector2();
 
-		return function ( pageX, pageY ) {
+		return function getMouseOnScreen( pageX, pageY ) {
 
 			vector.set(
 				( pageX - _this.screen.left ) / _this.screen.width,
@@ -52497,49 +52741,16 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	}() );
 
-	var getMouseProjectionOnBall = ( function () {
+	var getMouseOnCircle = ( function () {
 
-		var vector = new THREE.Vector3();
-		var objectUp = new THREE.Vector3();
-		var mouseOnBall = new THREE.Vector3();
+		var vector = new THREE.Vector2();
 
-		return function ( pageX, pageY ) {
+		return function getMouseOnCircle( pageX, pageY ) {
 
-			mouseOnBall.set(
-				( pageX - _this.screen.width * 0.5 - _this.screen.left ) / (_this.screen.width*.5),
-				( _this.screen.height * 0.5 + _this.screen.top - pageY ) / (_this.screen.height*.5),
-				0.0
+			vector.set(
+				( ( pageX - _this.screen.width * 0.5 - _this.screen.left ) / ( _this.screen.width * 0.5 ) ),
+				( ( _this.screen.height + 2 * ( _this.screen.top - pageY ) ) / _this.screen.width ) // screen.width intentional
 			);
-
-			var length = mouseOnBall.length();
-
-			if ( _this.noRoll ) {
-
-				if ( length < Math.SQRT1_2 ) {
-
-					mouseOnBall.z = Math.sqrt( 1.0 - length*length );
-
-				} else {
-
-					mouseOnBall.z = .5 / length;
-
-				}
-
-			} else if ( length > 1.0 ) {
-
-				mouseOnBall.normalize();
-
-			} else {
-
-				mouseOnBall.z = Math.sqrt( 1.0 - length * length );
-
-			}
-
-			_eye.copy( _this.object.position ).sub( _this.target );
-
-			vector.copy( _this.object.up ).setLength( mouseOnBall.y )
-			vector.add( objectUp.copy( _this.object.up ).cross( _eye ).setLength( mouseOnBall.x ) );
-			vector.add( _eye.setLength( mouseOnBall.z ) );
 
 			return vector;
 
@@ -52547,60 +52758,75 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	}() );
 
-	this.rotateCamera = (function(){
+	this.rotateCamera = ( function() {
 
 		var axis = new THREE.Vector3(),
-			quaternion = new THREE.Quaternion();
+			quaternion = new THREE.Quaternion(),
+			eyeDirection = new THREE.Vector3(),
+			objectUpDirection = new THREE.Vector3(),
+			objectSidewaysDirection = new THREE.Vector3(),
+			moveDirection = new THREE.Vector3(),
+			angle;
 
+		return function rotateCamera() {
 
-		return function () {
-
-			var angle = Math.acos( _rotateStart.dot( _rotateEnd ) / _rotateStart.length() / _rotateEnd.length() );
+			moveDirection.set( _moveCurr.x - _movePrev.x, _moveCurr.y - _movePrev.y, 0 );
+			angle = moveDirection.length();
 
 			if ( angle ) {
 
-				axis.crossVectors( _rotateStart, _rotateEnd ).normalize();
+				_eye.copy( _this.object.position ).sub( _this.target );
+
+				eyeDirection.copy( _eye ).normalize();
+				objectUpDirection.copy( _this.object.up ).normalize();
+				objectSidewaysDirection.crossVectors( objectUpDirection, eyeDirection ).normalize();
+
+				objectUpDirection.setLength( _moveCurr.y - _movePrev.y );
+				objectSidewaysDirection.setLength( _moveCurr.x - _movePrev.x );
+
+				moveDirection.copy( objectUpDirection.add( objectSidewaysDirection ) );
+
+				axis.crossVectors( moveDirection, _eye ).normalize();
 
 				angle *= _this.rotateSpeed;
+				quaternion.setFromAxisAngle( axis, angle );
 
-				quaternion.setFromAxisAngle( axis, -angle );
+				_eye.applyQuaternion( quaternion );
+				_this.object.up.applyQuaternion( quaternion );
 
-				// Liam's change to prevent rotation below the horizon
-				var testEye = _eye.clone();
-				testEye.applyQuaternion( quaternion )
-				// if ( testEye.y > 10 ) {
-					_eye.applyQuaternion( quaternion );
-					_this.object.up.applyQuaternion( quaternion );
+				_lastAxis.copy( axis );
+				_lastAngle = angle;
 
-					_rotateEnd.applyQuaternion( quaternion );
+			} else if ( ! _this.staticMoving && _lastAngle ) {
 
-					if ( _this.staticMoving ) {
+				_lastAngle *= Math.sqrt( 1.0 - _this.dynamicDampingFactor );
+				_eye.copy( _this.object.position ).sub( _this.target );
+				quaternion.setFromAxisAngle( _lastAxis, _lastAngle );
+				_eye.applyQuaternion( quaternion );
+				_this.object.up.applyQuaternion( quaternion );
 
-						_rotateStart.copy( _rotateEnd );
-
-					} else {
-
-						quaternion.setFromAxisAngle( axis, angle * ( _this.dynamicDampingFactor - 1.0 ) );
-						_rotateStart.applyQuaternion( quaternion );
-
-					}
-				// }
 			}
-		}
 
-	}());
+			_movePrev.copy( _moveCurr );
+
+		};
+
+	}() );
+
 
 	this.zoomCamera = function () {
 
+		var factor;
+
 		if ( _state === STATE.TOUCH_ZOOM_PAN ) {
 
-			var factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
+			factor = _touchZoomDistanceStart / _touchZoomDistanceEnd;
 			_touchZoomDistanceStart = _touchZoomDistanceEnd;
 			_eye.multiplyScalar( factor );
 
 		} else {
 
-			var factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
+			factor = 1.0 + ( _zoomEnd.y - _zoomStart.y ) * _this.zoomSpeed;
 
 			if ( factor !== 1.0 && factor > 0.0 ) {
 
@@ -52622,13 +52848,13 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	};
 
-	this.panCamera = (function(){
+	this.panCamera = ( function() {
 
 		var mouseChange = new THREE.Vector2(),
 			objectUp = new THREE.Vector3(),
 			pan = new THREE.Vector3();
 
-		return function () {
+		return function panCamera() {
 
 			mouseChange.copy( _panEnd ).sub( _panStart );
 
@@ -52653,23 +52879,26 @@ THREE.TrackballControls = function ( object, domElement ) {
 				}
 
 			}
-		}
 
-	}());
+		};
+
+	}() );
 
 	this.checkDistances = function () {
 
-		if ( !_this.noZoom || !_this.noPan ) {
+		if ( ! _this.noZoom || ! _this.noPan ) {
 
 			if ( _eye.lengthSq() > _this.maxDistance * _this.maxDistance ) {
 
 				_this.object.position.addVectors( _this.target, _eye.setLength( _this.maxDistance ) );
+				_zoomStart.copy( _zoomEnd );
 
 			}
 
 			if ( _eye.lengthSq() < _this.minDistance * _this.minDistance ) {
 
 				_this.object.position.addVectors( _this.target, _eye.setLength( _this.minDistance ) );
+				_zoomStart.copy( _zoomEnd );
 
 			}
 
@@ -52681,19 +52910,19 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		_eye.subVectors( _this.object.position, _this.target );
 
-		if ( !_this.noRotate ) {
+		if ( ! _this.noRotate ) {
 
 			_this.rotateCamera();
 
 		}
 
-		if ( !_this.noZoom ) {
+		if ( ! _this.noZoom ) {
 
 			_this.zoomCamera();
 
 		}
 
-		if ( !_this.noPan ) {
+		if ( ! _this.noPan ) {
 
 			_this.panCamera();
 
@@ -52748,15 +52977,15 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			return;
 
-		} else if ( event.keyCode === _this.keys[ STATE.ROTATE ] && !_this.noRotate ) {
+		} else if ( event.keyCode === _this.keys[ STATE.ROTATE ] && ! _this.noRotate ) {
 
 			_state = STATE.ROTATE;
 
-		} else if ( event.keyCode === _this.keys[ STATE.ZOOM ] && !_this.noZoom ) {
+		} else if ( event.keyCode === _this.keys[ STATE.ZOOM ] && ! _this.noZoom ) {
 
 			_state = STATE.ZOOM;
 
-		} else if ( event.keyCode === _this.keys[ STATE.PAN ] && !_this.noPan ) {
+		} else if ( event.keyCode === _this.keys[ STATE.PAN ] && ! _this.noPan ) {
 
 			_state = STATE.PAN;
 
@@ -52787,20 +53016,20 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		}
 
-		if ( _state === STATE.ROTATE && !_this.noRotate ) {
+		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
 
-			_rotateStart.copy( getMouseProjectionOnBall( event.pageX, event.pageY ) );
-			_rotateEnd.copy( _rotateStart );
+			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
+			_movePrev.copy( _moveCurr );
 
-		} else if ( _state === STATE.ZOOM && !_this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
 
 			_zoomStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-			_zoomEnd.copy(_zoomStart);
+			_zoomEnd.copy( _zoomStart );
 
-		} else if ( _state === STATE.PAN && !_this.noPan ) {
+		} else if ( _state === STATE.PAN && ! _this.noPan ) {
 
 			_panStart.copy( getMouseOnScreen( event.pageX, event.pageY ) );
-			_panEnd.copy(_panStart)
+			_panEnd.copy( _panStart );
 
 		}
 
@@ -52818,15 +53047,16 @@ THREE.TrackballControls = function ( object, domElement ) {
 		event.preventDefault();
 		event.stopPropagation();
 
-		if ( _state === STATE.ROTATE && !_this.noRotate ) {
+		if ( _state === STATE.ROTATE && ! _this.noRotate ) {
 
-			_rotateEnd.copy( getMouseProjectionOnBall( event.pageX, event.pageY ) );
+			_movePrev.copy( _moveCurr );
+			_moveCurr.copy( getMouseOnCircle( event.pageX, event.pageY ) );
 
-		} else if ( _state === STATE.ZOOM && !_this.noZoom ) {
+		} else if ( _state === STATE.ZOOM && ! _this.noZoom ) {
 
 			_zoomEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 
-		} else if ( _state === STATE.PAN && !_this.noPan ) {
+		} else if ( _state === STATE.PAN && ! _this.noPan ) {
 
 			_panEnd.copy( getMouseOnScreen( event.pageX, event.pageY ) );
 
@@ -52858,11 +53088,15 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 		var delta = 0;
 
-		if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
+		if ( event.wheelDelta ) {
+
+			// WebKit / Opera / Explorer 9
 
 			delta = event.wheelDelta / 40;
 
-		} else if ( event.detail ) { // Firefox
+		} else if ( event.detail ) {
+
+			// Firefox
 
 			delta = - event.detail / 3;
 
@@ -52882,8 +53116,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 			case 1:
 				_state = STATE.TOUCH_ROTATE;
-				_rotateStart.copy( getMouseProjectionOnBall( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_rotateEnd.copy( _rotateStart );
+				_moveCurr.copy( getMouseOnCircle( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				_movePrev.copy( _moveCurr );
 				break;
 
 			case 2:
@@ -52917,7 +53151,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 		switch ( event.touches.length ) {
 
 			case 1:
-				_rotateEnd.copy( getMouseProjectionOnBall( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
+				_movePrev.copy( _moveCurr );
+				_moveCurr.copy( getMouseOnCircle(  event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
 				break;
 
 			case 2:
@@ -52944,8 +53179,8 @@ THREE.TrackballControls = function ( object, domElement ) {
 		switch ( event.touches.length ) {
 
 			case 1:
-				_rotateEnd.copy( getMouseProjectionOnBall( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
-				_rotateStart.copy( _rotateEnd );
+				_movePrev.copy( _moveCurr );
+				_moveCurr.copy( getMouseOnCircle(  event.touches[ 0 ].pageX, event.touches[ 0 ].pageY ) );
 				break;
 
 			case 2:
@@ -52964,10 +53199,33 @@ THREE.TrackballControls = function ( object, domElement ) {
 
 	}
 
-	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
+	function contextmenu( event ) {
 
+		event.preventDefault();
+
+	}
+
+	this.dispose = function() {
+
+		this.domElement.removeEventListener( 'contextmenu', contextmenu, false );
+		this.domElement.removeEventListener( 'mousedown', mousedown, false );
+		this.domElement.removeEventListener( 'mousewheel', mousewheel, false );
+		this.domElement.removeEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
+
+		this.domElement.removeEventListener( 'touchstart', touchstart, false );
+		this.domElement.removeEventListener( 'touchend', touchend, false );
+		this.domElement.removeEventListener( 'touchmove', touchmove, false );
+
+		document.removeEventListener( 'mousemove', mousemove, false );
+		document.removeEventListener( 'mouseup', mouseup, false );
+
+		window.removeEventListener( 'keydown', keydown, false );
+		window.removeEventListener( 'keyup', keyup, false );
+
+	}
+
+	this.domElement.addEventListener( 'contextmenu', contextmenu, false );
 	this.domElement.addEventListener( 'mousedown', mousedown, false );
-
 	this.domElement.addEventListener( 'mousewheel', mousewheel, false );
 	this.domElement.addEventListener( 'DOMMouseScroll', mousewheel, false ); // firefox
 
@@ -52986,6 +53244,7 @@ THREE.TrackballControls = function ( object, domElement ) {
 };
 
 THREE.TrackballControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+THREE.TrackballControls.prototype.constructor = THREE.TrackballControls;
 
 define("TrackballControls", function(){});
 
@@ -52998,644 +53257,1112 @@ define("TrackballControls", function(){});
  */
 /*global THREE, console */
 
-// This set of controls performs orbiting, dollying (zooming), and panning. It maintains
-// the "up" direction as +Y, unlike the TrackballControls. Touch on tablet and phones is
-// supported.
-//
-//    Orbit - left mouse / touch: one finger move
-//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
-//    Pan - right mouse, or arrow keys / touch: three finter swipe
-//
-// This is a drop-in replacement for (most) TrackballControls used in examples.
-// That is, include this js file and wherever you see:
-//    	controls = new THREE.TrackballControls( camera );
-//      controls.target.z = 150;
-// Simple substitute "OrbitControls" and the control should work as-is.
+( function () {
 
-THREE.OrbitControls = function ( object, domElement ) {
+	function OrbitConstraint ( object ) {
 
-	this.object = object;
-	this.domElement = ( domElement !== undefined ) ? domElement : document;
+		this.object = object;
 
-	// API
+		// "target" sets the location of focus, where the object orbits around
+		// and where it pans with respect to.
+		this.target = new THREE.Vector3();
 
-	// Set to false to disable this control
-	this.enabled = true;
+		// Limits to how far you can dolly in and out ( PerspectiveCamera only )
+		this.minDistance = 0;
+		this.maxDistance = Infinity;
 
-	// "target" sets the location of focus, where the control orbits around
-	// and where it pans with respect to.
-	this.target = new THREE.Vector3();
+		// Limits to how far you can zoom in and out ( OrthographicCamera only )
+		this.minZoom = 0;
+		this.maxZoom = Infinity;
 
-	// center is old, deprecated; use "target" instead
-	this.center = this.target;
+		// How far you can orbit vertically, upper and lower limits.
+		// Range is 0 to Math.PI radians.
+		this.minPolarAngle = 0; // radians
+		this.maxPolarAngle = Math.PI; // radians
 
-	// This option actually enables dollying in and out; left as "zoom" for
-	// backwards compatibility
-	this.noZoom = false;
-	this.zoomSpeed = 1.0;
+		// How far you can orbit horizontally, upper and lower limits.
+		// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
+		this.minAzimuthAngle = - Infinity; // radians
+		this.maxAzimuthAngle = Infinity; // radians
 
-	// Limits to how far you can dolly in and out
-	this.minDistance = 0;
-	this.maxDistance = Infinity;
+		// Set to true to enable damping (inertia)
+		// If damping is enabled, you must call controls.update() in your animation loop
+		this.enableDamping = false;
+		this.dampingFactor = 0.25;
 
-	// Set to true to disable this control
-	this.noRotate = false;
-	this.rotateSpeed = 1.0;
+		////////////
+		// internals
 
-	// Set to true to disable this control
-	this.noPan = false;
-	this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
+		var scope = this;
 
-	// Set to true to automatically rotate around the target
-	this.autoRotate = false;
-	this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
+		var EPS = 0.000001;
 
-	// How far you can orbit vertically, upper and lower limits.
-	// Range is 0 to Math.PI radians.
-	this.minPolarAngle = 0; // radians
-	this.maxPolarAngle = Math.PI; // radians
+		// Current position in spherical coordinate system.
+		var theta;
+		var phi;
 
-	// Set to true to disable use of the keys
-	this.noKeys = false;
+		// Pending changes
+		var phiDelta = 0;
+		var thetaDelta = 0;
+		var scale = 1;
+		var panOffset = new THREE.Vector3();
+		var zoomChanged = false;
 
-	// The four arrow keys
-	this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+		// API
 
-	////////////
-	// internals
+		this.getPolarAngle = function () {
 
-	var scope = this;
+			return phi;
 
-	var EPS = 0.000001;
+		};
 
-	var rotateStart = new THREE.Vector2();
-	var rotateEnd = new THREE.Vector2();
-	var rotateDelta = new THREE.Vector2();
+		this.getAzimuthalAngle = function () {
 
-	var panStart = new THREE.Vector2();
-	var panEnd = new THREE.Vector2();
-	var panDelta = new THREE.Vector2();
-	var panOffset = new THREE.Vector3();
+			return theta;
 
-	var offset = new THREE.Vector3();
+		};
 
-	var dollyStart = new THREE.Vector2();
-	var dollyEnd = new THREE.Vector2();
-	var dollyDelta = new THREE.Vector2();
+		this.rotateLeft = function ( angle ) {
 
-	var phiDelta = 0;
-	var thetaDelta = 0;
-	var scale = 1;
-	var pan = new THREE.Vector3();
+			thetaDelta -= angle;
 
-	var lastPosition = new THREE.Vector3();
-	var lastQuaternion = new THREE.Quaternion();
+		};
 
-	var STATE = { NONE : -1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+		this.rotateUp = function ( angle ) {
 
-	var state = STATE.NONE;
+			phiDelta -= angle;
 
-	// for reset
+		};
 
-	this.target0 = this.target.clone();
-	this.position0 = this.object.position.clone();
+		// pass in distance in world space to move left
+		this.panLeft = function() {
 
-	// so camera.up is the orbit axis
+			var v = new THREE.Vector3();
 
-	var quat = new THREE.Quaternion().setFromUnitVectors( object.up, new THREE.Vector3( 0, 1, 0 ) );
-	var quatInverse = quat.clone().inverse();
+			return function panLeft ( distance ) {
 
-	// events
+				var te = this.object.matrix.elements;
 
-	var changeEvent = { type: 'change' };
-	var startEvent = { type: 'start'};
-	var endEvent = { type: 'end'};
+				// get X column of matrix
+				v.set( te[ 0 ], te[ 1 ], te[ 2 ] );
+				v.multiplyScalar( - distance );
 
-	this.rotateLeft = function ( angle ) {
+				panOffset.add( v );
 
-		if ( angle === undefined ) {
+			};
 
-			angle = getAutoRotationAngle();
+		}();
 
-		}
+		// pass in distance in world space to move up
+		this.panUp = function() {
 
-		thetaDelta -= angle;
+			var v = new THREE.Vector3();
 
-	};
+			return function panUp ( distance ) {
 
-	this.rotateUp = function ( angle ) {
+				var te = this.object.matrix.elements;
 
-		if ( angle === undefined ) {
+				// get Y column of matrix
+				v.set( te[ 4 ], te[ 5 ], te[ 6 ] );
+				v.multiplyScalar( distance );
 
-			angle = getAutoRotationAngle();
+				panOffset.add( v );
 
-		}
+			};
 
-		phiDelta -= angle;
+		}();
 
-	};
+		// pass in x,y of change desired in pixel space,
+		// right and down are positive
+		this.pan = function ( deltaX, deltaY, screenWidth, screenHeight ) {
 
-	// pass in distance in world space to move left
-	this.panLeft = function ( distance ) {
+			if ( scope.object instanceof THREE.PerspectiveCamera ) {
 
-		var te = this.object.matrix.elements;
+				// perspective
+				var position = scope.object.position;
+				var offset = position.clone().sub( scope.target );
+				var targetDistance = offset.length();
 
-		// get X column of matrix
-		panOffset.set( te[ 0 ], te[ 1 ], te[ 2 ] );
-		panOffset.multiplyScalar( - distance );
-		
-		pan.add( panOffset );
+				// half of the fov is center to top of screen
+				targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
 
-	};
+				// we actually don't use screenWidth, since perspective camera is fixed to screen height
+				scope.panLeft( 2 * deltaX * targetDistance / screenHeight );
+				scope.panUp( 2 * deltaY * targetDistance / screenHeight );
 
-	// pass in distance in world space to move up
-	this.panUp = function ( distance ) {
+			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
 
-		var te = this.object.matrix.elements;
-
-		// get Y column of matrix
-		panOffset.set( te[ 4 ], te[ 5 ], te[ 6 ] );
-		panOffset.multiplyScalar( distance );
-		
-		pan.add( panOffset );
-
-	};
-	
-	// pass in x,y of change desired in pixel space,
-	// right and down are positive
-	this.pan = function ( deltaX, deltaY ) {
-
-		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
-		if ( scope.object.fov !== undefined ) {
-
-			// perspective
-			var position = scope.object.position;
-			var offset = position.clone().sub( scope.target );
-			var targetDistance = offset.length();
-
-			// half of the fov is center to top of screen
-			targetDistance *= Math.tan( ( scope.object.fov / 2 ) * Math.PI / 180.0 );
-
-			// we actually don't use screenWidth, since perspective camera is fixed to screen height
-			scope.panLeft( 2 * deltaX * targetDistance / element.clientHeight );
-			scope.panUp( 2 * deltaY * targetDistance / element.clientHeight );
-
-		} else if ( scope.object.top !== undefined ) {
-
-			// orthographic
-			scope.panLeft( deltaX * (scope.object.right - scope.object.left) / element.clientWidth );
-			scope.panUp( deltaY * (scope.object.top - scope.object.bottom) / element.clientHeight );
-
-		} else {
-
-			// camera neither orthographic or perspective
-			console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
-
-		}
-
-	};
-
-	this.dollyIn = function ( dollyScale ) {
-
-		if ( dollyScale === undefined ) {
-
-			dollyScale = getZoomScale();
-
-		}
-
-		scale /= dollyScale;
-
-	};
-
-	this.dollyOut = function ( dollyScale ) {
-
-		if ( dollyScale === undefined ) {
-
-			dollyScale = getZoomScale();
-
-		}
-
-		scale *= dollyScale;
-
-	};
-
-	this.update = function () {
-
-		var position = this.object.position;
-
-		offset.copy( position ).sub( this.target );
-
-		// rotate offset to "y-axis-is-up" space
-		offset.applyQuaternion( quat );
-
-		// angle from z-axis around y-axis
-
-		var theta = Math.atan2( offset.x, offset.z );
-
-		// angle from y-axis
-
-		var phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
-
-		if ( this.autoRotate ) {
-
-			this.rotateLeft( getAutoRotationAngle() );
-
-		}
-
-		theta += thetaDelta;
-		phi += phiDelta;
-
-		// restrict phi to be between desired limits
-		phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
-
-		// restrict phi to be betwee EPS and PI-EPS
-		phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
-
-		var radius = offset.length() * scale;
-
-		// restrict radius to be between desired limits
-		radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
-		
-		// move target to panned location
-		this.target.add( pan );
-
-		offset.x = radius * Math.sin( phi ) * Math.sin( theta );
-		offset.y = radius * Math.cos( phi );
-		offset.z = radius * Math.sin( phi ) * Math.cos( theta );
-
-		// rotate offset back to "camera-up-vector-is-up" space
-		offset.applyQuaternion( quatInverse );
-
-		position.copy( this.target ).add( offset );
-
-		this.object.lookAt( this.target );
-
-		thetaDelta = 0;
-		phiDelta = 0;
-		scale = 1;
-		pan.set( 0, 0, 0 );
-
-		// update condition is:
-		// min(camera displacement, camera rotation in radians)^2 > EPS
-		// using small-angle approximation cos(x/2) = 1 - x^2 / 8
-
-		if ( lastPosition.distanceToSquared( this.object.position ) > EPS
-		    || 8 * (1 - lastQuaternion.dot(this.object.quaternion)) > EPS ) {
-
-			this.dispatchEvent( changeEvent );
-
-			lastPosition.copy( this.object.position );
-			lastQuaternion.copy (this.object.quaternion );
-
-		}
-
-	};
-
-
-	this.reset = function () {
-
-		state = STATE.NONE;
-
-		this.target.copy( this.target0 );
-		this.object.position.copy( this.position0 );
-
-		this.update();
-
-	};
-
-	function getAutoRotationAngle() {
-
-		return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
-
-	}
-
-	function getZoomScale() {
-
-		return Math.pow( 0.95, scope.zoomSpeed );
-
-	}
-
-	function onMouseDown( event ) {
-
-		if ( scope.enabled === false ) return;
-		event.preventDefault();
-
-		if ( event.button === 0 ) {
-			if ( scope.noRotate === true ) return;
-
-			state = STATE.ROTATE;
-
-			rotateStart.set( event.clientX, event.clientY );
-
-		} else if ( event.button === 1 ) {
-			if ( scope.noZoom === true ) return;
-
-			state = STATE.DOLLY;
-
-			dollyStart.set( event.clientX, event.clientY );
-
-		} else if ( event.button === 2 ) {
-			if ( scope.noPan === true ) return;
-
-			state = STATE.PAN;
-
-			panStart.set( event.clientX, event.clientY );
-
-		}
-
-		document.addEventListener( 'mousemove', onMouseMove, false );
-		document.addEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( startEvent );
-
-	}
-
-	function onMouseMove( event ) {
-
-		if ( scope.enabled === false ) return;
-
-		event.preventDefault();
-
-		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
-
-		if ( state === STATE.ROTATE ) {
-
-			if ( scope.noRotate === true ) return;
-
-			rotateEnd.set( event.clientX, event.clientY );
-			rotateDelta.subVectors( rotateEnd, rotateStart );
-
-			// rotating across whole screen goes 360 degrees around
-			scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
-
-			// rotating up and down along whole screen attempts to go 360, but limited to 180
-			scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
-
-			rotateStart.copy( rotateEnd );
-
-		} else if ( state === STATE.DOLLY ) {
-
-			if ( scope.noZoom === true ) return;
-
-			dollyEnd.set( event.clientX, event.clientY );
-			dollyDelta.subVectors( dollyEnd, dollyStart );
-
-			if ( dollyDelta.y > 0 ) {
-
-				scope.dollyIn();
+				// orthographic
+				scope.panLeft( deltaX * ( scope.object.right - scope.object.left ) / screenWidth );
+				scope.panUp( deltaY * ( scope.object.top - scope.object.bottom ) / screenHeight );
 
 			} else {
 
-				scope.dollyOut();
+				// camera neither orthographic or perspective
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - pan disabled.' );
 
 			}
 
-			dollyStart.copy( dollyEnd );
+		};
 
-		} else if ( state === STATE.PAN ) {
+		this.dollyIn = function ( dollyScale ) {
 
-			if ( scope.noPan === true ) return;
+			if ( scope.object instanceof THREE.PerspectiveCamera ) {
 
-			panEnd.set( event.clientX, event.clientY );
-			panDelta.subVectors( panEnd, panStart );
-			
-			scope.pan( panDelta.x, panDelta.y );
+				scale /= dollyScale;
 
-			panStart.copy( panEnd );
+			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
+
+				scope.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom * dollyScale ) );
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+
+			} else {
+
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+
+			}
+
+		};
+
+		this.dollyOut = function ( dollyScale ) {
+
+			if ( scope.object instanceof THREE.PerspectiveCamera ) {
+
+				scale *= dollyScale;
+
+			} else if ( scope.object instanceof THREE.OrthographicCamera ) {
+
+				scope.object.zoom = Math.max( this.minZoom, Math.min( this.maxZoom, this.object.zoom / dollyScale ) );
+				scope.object.updateProjectionMatrix();
+				zoomChanged = true;
+
+			} else {
+
+				console.warn( 'WARNING: OrbitControls.js encountered an unknown camera type - dolly/zoom disabled.' );
+
+			}
+
+		};
+
+		this.update = function() {
+
+			var offset = new THREE.Vector3();
+
+			// so camera.up is the orbit axis
+			var quat = new THREE.Quaternion().setFromUnitVectors( object.up, new THREE.Vector3( 0, 1, 0 ) );
+			var quatInverse = quat.clone().inverse();
+
+			var lastPosition = new THREE.Vector3();
+			var lastQuaternion = new THREE.Quaternion();
+
+			return function () {
+
+				var position = this.object.position;
+
+				offset.copy( position ).sub( this.target );
+
+				// rotate offset to "y-axis-is-up" space
+				offset.applyQuaternion( quat );
+
+				// angle from z-axis around y-axis
+
+				theta = Math.atan2( offset.x, offset.z );
+
+				// angle from y-axis
+
+				phi = Math.atan2( Math.sqrt( offset.x * offset.x + offset.z * offset.z ), offset.y );
+
+				theta += thetaDelta;
+				phi += phiDelta;
+
+				// restrict theta to be between desired limits
+				theta = Math.max( this.minAzimuthAngle, Math.min( this.maxAzimuthAngle, theta ) );
+
+				// restrict phi to be between desired limits
+				phi = Math.max( this.minPolarAngle, Math.min( this.maxPolarAngle, phi ) );
+
+				// restrict phi to be betwee EPS and PI-EPS
+				phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
+
+				var radius = offset.length() * scale;
+
+				// restrict radius to be between desired limits
+				radius = Math.max( this.minDistance, Math.min( this.maxDistance, radius ) );
+
+				// move target to panned location
+				this.target.add( panOffset );
+
+				offset.x = radius * Math.sin( phi ) * Math.sin( theta );
+				offset.y = radius * Math.cos( phi );
+				offset.z = radius * Math.sin( phi ) * Math.cos( theta );
+
+				// rotate offset back to "camera-up-vector-is-up" space
+				offset.applyQuaternion( quatInverse );
+
+				position.copy( this.target ).add( offset );
+
+				this.object.lookAt( this.target );
+
+				if ( this.enableDamping === true ) {
+
+					thetaDelta *= ( 1 - this.dampingFactor );
+					phiDelta *= ( 1 - this.dampingFactor );
+
+				} else {
+
+					thetaDelta = 0;
+					phiDelta = 0;
+
+				}
+
+				scale = 1;
+				panOffset.set( 0, 0, 0 );
+
+				// update condition is:
+				// min(camera displacement, camera rotation in radians)^2 > EPS
+				// using small-angle approximation cos(x/2) = 1 - x^2 / 8
+
+				if ( zoomChanged ||
+					 lastPosition.distanceToSquared( this.object.position ) > EPS ||
+				    8 * ( 1 - lastQuaternion.dot( this.object.quaternion ) ) > EPS ) {
+
+					lastPosition.copy( this.object.position );
+					lastQuaternion.copy( this.object.quaternion );
+					zoomChanged = false;
+
+					return true;
+
+				}
+
+				return false;
+
+			};
+
+		}();
+
+	};
+
+
+	// This set of controls performs orbiting, dollying (zooming), and panning. It maintains
+	// the "up" direction as +Y, unlike the TrackballControls. Touch on tablet and phones is
+	// supported.
+	//
+	//    Orbit - left mouse / touch: one finger move
+	//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
+	//    Pan - right mouse, or arrow keys / touch: three finter swipe
+
+	THREE.OrbitControls = function ( object, domElement ) {
+
+		var constraint = new OrbitConstraint( object );
+
+		this.domElement = ( domElement !== undefined ) ? domElement : document;
+
+		// API
+
+		Object.defineProperty( this, 'constraint', {
+
+			get: function() {
+
+				return constraint;
+
+			}
+
+		} );
+
+		this.getPolarAngle = function () {
+
+			return constraint.getPolarAngle();
+
+		};
+
+		this.getAzimuthalAngle = function () {
+
+			return constraint.getAzimuthalAngle();
+
+		};
+
+		// Set to false to disable this control
+		this.enabled = true;
+
+		// center is old, deprecated; use "target" instead
+		this.center = this.target;
+
+		// This option actually enables dollying in and out; left as "zoom" for
+		// backwards compatibility.
+		// Set to false to disable zooming
+		this.enableZoom = true;
+		this.zoomSpeed = 1.0;
+
+		// Set to false to disable rotating
+		this.enableRotate = true;
+		this.rotateSpeed = 1.0;
+
+		// Set to false to disable panning
+		this.enablePan = true;
+		this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
+
+		// Set to true to automatically rotate around the target
+		// If auto-rotate is enabled, you must call controls.update() in your animation loop
+		this.autoRotate = false;
+		this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
+
+		// Set to false to disable use of the keys
+		this.enableKeys = true;
+
+		// The four arrow keys
+		this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
+
+		// Mouse buttons
+		this.mouseButtons = { ORBIT: THREE.MOUSE.LEFT, ZOOM: THREE.MOUSE.MIDDLE, PAN: THREE.MOUSE.RIGHT };
+
+		////////////
+		// internals
+
+		var scope = this;
+
+		var rotateStart = new THREE.Vector2();
+		var rotateEnd = new THREE.Vector2();
+		var rotateDelta = new THREE.Vector2();
+
+		var panStart = new THREE.Vector2();
+		var panEnd = new THREE.Vector2();
+		var panDelta = new THREE.Vector2();
+
+		var dollyStart = new THREE.Vector2();
+		var dollyEnd = new THREE.Vector2();
+		var dollyDelta = new THREE.Vector2();
+
+		var STATE = { NONE : - 1, ROTATE : 0, DOLLY : 1, PAN : 2, TOUCH_ROTATE : 3, TOUCH_DOLLY : 4, TOUCH_PAN : 5 };
+
+		var state = STATE.NONE;
+
+		// for reset
+
+		this.target0 = this.target.clone();
+		this.position0 = this.object.position.clone();
+		this.zoom0 = this.object.zoom;
+
+		// events
+
+		var changeEvent = { type: 'change' };
+		var startEvent = { type: 'start' };
+		var endEvent = { type: 'end' };
+
+		// pass in x,y of change desired in pixel space,
+		// right and down are positive
+		function pan( deltaX, deltaY ) {
+
+			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+
+			constraint.pan( deltaX, deltaY, element.clientWidth, element.clientHeight );
 
 		}
 
-		scope.update();
+		this.update = function () {
 
-	}
+			if ( this.autoRotate && state === STATE.NONE ) {
 
-	function onMouseUp( /* event */ ) {
+				constraint.rotateLeft( getAutoRotationAngle() );
 
-		if ( scope.enabled === false ) return;
+			}
 
-		document.removeEventListener( 'mousemove', onMouseMove, false );
-		document.removeEventListener( 'mouseup', onMouseUp, false );
-		scope.dispatchEvent( endEvent );
-		state = STATE.NONE;
+			if ( constraint.update() === true ) {
 
-	}
+				this.dispatchEvent( changeEvent );
 
-	function onMouseWheel( event ) {
+			}
 
-		if ( scope.enabled === false || scope.noZoom === true ) return;
+		};
 
-		event.preventDefault();
-		event.stopPropagation();
+		this.reset = function () {
 
-		var delta = 0;
+			state = STATE.NONE;
 
-		if ( event.wheelDelta !== undefined ) { // WebKit / Opera / Explorer 9
+			this.target.copy( this.target0 );
+			this.object.position.copy( this.position0 );
+			this.object.zoom = this.zoom0;
 
-			delta = event.wheelDelta;
+			this.object.updateProjectionMatrix();
+			this.dispatchEvent( changeEvent );
 
-		} else if ( event.detail !== undefined ) { // Firefox
+			this.update();
 
-			delta = - event.detail;
+		};
 
-		}
+		function getAutoRotationAngle() {
 
-		if ( delta > 0 ) {
-
-			scope.dollyOut();
-
-		} else {
-
-			scope.dollyIn();
+			return 2 * Math.PI / 60 / 60 * scope.autoRotateSpeed;
 
 		}
 
-		scope.update();
-		scope.dispatchEvent( startEvent );
-		scope.dispatchEvent( endEvent );
+		function getZoomScale() {
 
-	}
-
-	function onKeyDown( event ) {
-
-		if ( scope.enabled === false || scope.noKeys === true || scope.noPan === true ) return;
-		
-		switch ( event.keyCode ) {
-
-			case scope.keys.UP:
-				scope.pan( 0, scope.keyPanSpeed );
-				scope.update();
-				break;
-
-			case scope.keys.BOTTOM:
-				scope.pan( 0, - scope.keyPanSpeed );
-				scope.update();
-				break;
-
-			case scope.keys.LEFT:
-				scope.pan( scope.keyPanSpeed, 0 );
-				scope.update();
-				break;
-
-			case scope.keys.RIGHT:
-				scope.pan( - scope.keyPanSpeed, 0 );
-				scope.update();
-				break;
+			return Math.pow( 0.95, scope.zoomSpeed );
 
 		}
 
-	}
+		function onMouseDown( event ) {
 
-	function touchstart( event ) {
+			if ( scope.enabled === false ) return;
 
-		if ( scope.enabled === false ) return;
+			event.preventDefault();
 
-		switch ( event.touches.length ) {
+			if ( event.button === scope.mouseButtons.ORBIT ) {
 
-			case 1:	// one-fingered touch: rotate
+				if ( scope.enableRotate === false ) return;
 
-				if ( scope.noRotate === true ) return;
+				state = STATE.ROTATE;
 
-				state = STATE.TOUCH_ROTATE;
+				rotateStart.set( event.clientX, event.clientY );
 
-				rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-				break;
+			} else if ( event.button === scope.mouseButtons.ZOOM ) {
 
-			case 2:	// two-fingered touch: dolly
+				if ( scope.enableZoom === false ) return;
 
-				if ( scope.noZoom === true ) return;
+				state = STATE.DOLLY;
 
-				state = STATE.TOUCH_DOLLY;
+				dollyStart.set( event.clientX, event.clientY );
 
-				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-				var distance = Math.sqrt( dx * dx + dy * dy );
-				dollyStart.set( 0, distance );
-				break;
+			} else if ( event.button === scope.mouseButtons.PAN ) {
 
-			case 3: // three-fingered touch: pan
+				if ( scope.enablePan === false ) return;
 
-				if ( scope.noPan === true ) return;
+				state = STATE.PAN;
 
-				state = STATE.TOUCH_PAN;
+				panStart.set( event.clientX, event.clientY );
 
-				panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
-				break;
+			}
 
-			default:
+			if ( state !== STATE.NONE ) {
 
-				state = STATE.NONE;
+				document.addEventListener( 'mousemove', onMouseMove, false );
+				document.addEventListener( 'mouseup', onMouseUp, false );
+				scope.dispatchEvent( startEvent );
+
+			}
 
 		}
 
-		scope.dispatchEvent( startEvent );
+		function onMouseMove( event ) {
 
-	}
+			if ( scope.enabled === false ) return;
 
-	function touchmove( event ) {
+			event.preventDefault();
 
-		if ( scope.enabled === false ) return;
+			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
-		event.preventDefault();
-		event.stopPropagation();
+			if ( state === STATE.ROTATE ) {
 
-		var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+				if ( scope.enableRotate === false ) return;
 
-		switch ( event.touches.length ) {
-
-			case 1: // one-fingered touch: rotate
-
-				if ( scope.noRotate === true ) return;
-				if ( state !== STATE.TOUCH_ROTATE ) return;
-
-				rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+				rotateEnd.set( event.clientX, event.clientY );
 				rotateDelta.subVectors( rotateEnd, rotateStart );
 
 				// rotating across whole screen goes 360 degrees around
-				scope.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
+				constraint.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
+
 				// rotating up and down along whole screen attempts to go 360, but limited to 180
-				scope.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+				constraint.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
 
 				rotateStart.copy( rotateEnd );
 
-				scope.update();
-				break;
+			} else if ( state === STATE.DOLLY ) {
 
-			case 2: // two-fingered touch: dolly
+				if ( scope.enableZoom === false ) return;
 
-				if ( scope.noZoom === true ) return;
-				if ( state !== STATE.TOUCH_DOLLY ) return;
-
-				var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
-				var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
-				var distance = Math.sqrt( dx * dx + dy * dy );
-
-				dollyEnd.set( 0, distance );
+				dollyEnd.set( event.clientX, event.clientY );
 				dollyDelta.subVectors( dollyEnd, dollyStart );
 
 				if ( dollyDelta.y > 0 ) {
 
-					scope.dollyOut();
+					constraint.dollyIn( getZoomScale() );
 
-				} else {
+				} else if ( dollyDelta.y < 0 ) {
 
-					scope.dollyIn();
+					constraint.dollyOut( getZoomScale() );
 
 				}
 
 				dollyStart.copy( dollyEnd );
 
-				scope.update();
-				break;
+			} else if ( state === STATE.PAN ) {
 
-			case 3: // three-fingered touch: pan
+				if ( scope.enablePan === false ) return;
 
-				if ( scope.noPan === true ) return;
-				if ( state !== STATE.TOUCH_PAN ) return;
-
-				panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+				panEnd.set( event.clientX, event.clientY );
 				panDelta.subVectors( panEnd, panStart );
-				
-				scope.pan( panDelta.x, panDelta.y );
+
+				pan( panDelta.x, panDelta.y );
 
 				panStart.copy( panEnd );
 
-				scope.update();
-				break;
+			}
 
-			default:
-
-				state = STATE.NONE;
+			if ( state !== STATE.NONE ) scope.update();
 
 		}
 
-	}
+		function onMouseUp( /* event */ ) {
 
-	function touchend( /* event */ ) {
+			if ( scope.enabled === false ) return;
 
-		if ( scope.enabled === false ) return;
+			document.removeEventListener( 'mousemove', onMouseMove, false );
+			document.removeEventListener( 'mouseup', onMouseUp, false );
+			scope.dispatchEvent( endEvent );
+			state = STATE.NONE;
 
-		scope.dispatchEvent( endEvent );
-		state = STATE.NONE;
+		}
 
-	}
+		function onMouseWheel( event ) {
 
-	this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
-	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-	this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
+			if ( scope.enabled === false || scope.enableZoom === false || state !== STATE.NONE ) return;
 
-	this.domElement.addEventListener( 'touchstart', touchstart, false );
-	this.domElement.addEventListener( 'touchend', touchend, false );
-	this.domElement.addEventListener( 'touchmove', touchmove, false );
+			event.preventDefault();
+			event.stopPropagation();
 
-	window.addEventListener( 'keydown', onKeyDown, false );
+			var delta = 0;
 
-	// force an update at start
-	this.update();
+			if ( event.wheelDelta !== undefined ) {
 
-};
+				// WebKit / Opera / Explorer 9
 
-THREE.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+				delta = event.wheelDelta;
+
+			} else if ( event.detail !== undefined ) {
+
+				// Firefox
+
+				delta = - event.detail;
+
+			}
+
+			if ( delta > 0 ) {
+
+				constraint.dollyOut( getZoomScale() );
+
+			} else if ( delta < 0 ) {
+
+				constraint.dollyIn( getZoomScale() );
+
+			}
+
+			scope.update();
+			scope.dispatchEvent( startEvent );
+			scope.dispatchEvent( endEvent );
+
+		}
+
+		function onKeyDown( event ) {
+
+			if ( scope.enabled === false || scope.enableKeys === false || scope.enablePan === false ) return;
+
+			switch ( event.keyCode ) {
+
+				case scope.keys.UP:
+					pan( 0, scope.keyPanSpeed );
+					scope.update();
+					break;
+
+				case scope.keys.BOTTOM:
+					pan( 0, - scope.keyPanSpeed );
+					scope.update();
+					break;
+
+				case scope.keys.LEFT:
+					pan( scope.keyPanSpeed, 0 );
+					scope.update();
+					break;
+
+				case scope.keys.RIGHT:
+					pan( - scope.keyPanSpeed, 0 );
+					scope.update();
+					break;
+
+			}
+
+		}
+
+		function touchstart( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			switch ( event.touches.length ) {
+
+				case 1:	// one-fingered touch: rotate
+
+					if ( scope.enableRotate === false ) return;
+
+					state = STATE.TOUCH_ROTATE;
+
+					rotateStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+					break;
+
+				case 2:	// two-fingered touch: dolly
+
+					if ( scope.enableZoom === false ) return;
+
+					state = STATE.TOUCH_DOLLY;
+
+					var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+					var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+					var distance = Math.sqrt( dx * dx + dy * dy );
+					dollyStart.set( 0, distance );
+					break;
+
+				case 3: // three-fingered touch: pan
+
+					if ( scope.enablePan === false ) return;
+
+					state = STATE.TOUCH_PAN;
+
+					panStart.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+			if ( state !== STATE.NONE ) scope.dispatchEvent( startEvent );
+
+		}
+
+		function touchmove( event ) {
+
+			if ( scope.enabled === false ) return;
+
+			event.preventDefault();
+			event.stopPropagation();
+
+			var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
+
+			switch ( event.touches.length ) {
+
+				case 1: // one-fingered touch: rotate
+
+					if ( scope.enableRotate === false ) return;
+					if ( state !== STATE.TOUCH_ROTATE ) return;
+
+					rotateEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+					rotateDelta.subVectors( rotateEnd, rotateStart );
+
+					// rotating across whole screen goes 360 degrees around
+					constraint.rotateLeft( 2 * Math.PI * rotateDelta.x / element.clientWidth * scope.rotateSpeed );
+					// rotating up and down along whole screen attempts to go 360, but limited to 180
+					constraint.rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
+
+					rotateStart.copy( rotateEnd );
+
+					scope.update();
+					break;
+
+				case 2: // two-fingered touch: dolly
+
+					if ( scope.enableZoom === false ) return;
+					if ( state !== STATE.TOUCH_DOLLY ) return;
+
+					var dx = event.touches[ 0 ].pageX - event.touches[ 1 ].pageX;
+					var dy = event.touches[ 0 ].pageY - event.touches[ 1 ].pageY;
+					var distance = Math.sqrt( dx * dx + dy * dy );
+
+					dollyEnd.set( 0, distance );
+					dollyDelta.subVectors( dollyEnd, dollyStart );
+
+					if ( dollyDelta.y > 0 ) {
+
+						constraint.dollyOut( getZoomScale() );
+
+					} else if ( dollyDelta.y < 0 ) {
+
+						constraint.dollyIn( getZoomScale() );
+
+					}
+
+					dollyStart.copy( dollyEnd );
+
+					scope.update();
+					break;
+
+				case 3: // three-fingered touch: pan
+
+					if ( scope.enablePan === false ) return;
+					if ( state !== STATE.TOUCH_PAN ) return;
+
+					panEnd.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+					panDelta.subVectors( panEnd, panStart );
+
+					pan( panDelta.x, panDelta.y );
+
+					panStart.copy( panEnd );
+
+					scope.update();
+					break;
+
+				default:
+
+					state = STATE.NONE;
+
+			}
+
+		}
+
+		function touchend( /* event */ ) {
+
+			if ( scope.enabled === false ) return;
+
+			scope.dispatchEvent( endEvent );
+			state = STATE.NONE;
+
+		}
+
+		function contextmenu( event ) {
+
+			event.preventDefault();
+
+		}
+
+		this.dispose = function() {
+
+			this.domElement.removeEventListener( 'contextmenu', contextmenu, false );
+			this.domElement.removeEventListener( 'mousedown', onMouseDown, false );
+			this.domElement.removeEventListener( 'mousewheel', onMouseWheel, false );
+			this.domElement.removeEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
+
+			this.domElement.removeEventListener( 'touchstart', touchstart, false );
+			this.domElement.removeEventListener( 'touchend', touchend, false );
+			this.domElement.removeEventListener( 'touchmove', touchmove, false );
+
+			document.removeEventListener( 'mousemove', onMouseMove, false );
+			document.removeEventListener( 'mouseup', onMouseUp, false );
+
+			window.removeEventListener( 'keydown', onKeyDown, false );
+
+		}
+
+		this.domElement.addEventListener( 'contextmenu', contextmenu, false );
+
+		this.domElement.addEventListener( 'mousedown', onMouseDown, false );
+		this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
+		this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
+
+		this.domElement.addEventListener( 'touchstart', touchstart, false );
+		this.domElement.addEventListener( 'touchend', touchend, false );
+		this.domElement.addEventListener( 'touchmove', touchmove, false );
+
+		window.addEventListener( 'keydown', onKeyDown, false );
+
+		// force an update at start
+		this.update();
+
+	};
+
+	THREE.OrbitControls.prototype = Object.create( THREE.EventDispatcher.prototype );
+	THREE.OrbitControls.prototype.constructor = THREE.OrbitControls;
+
+	Object.defineProperties( THREE.OrbitControls.prototype, {
+
+		object: {
+
+			get: function () {
+
+				return this.constraint.object;
+
+			}
+
+		},
+
+		target: {
+
+			get: function () {
+
+				return this.constraint.target;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: target is now immutable. Use target.set() instead.' );
+				this.constraint.target.copy( value );
+
+			}
+
+		},
+
+		minDistance : {
+
+			get: function () {
+
+				return this.constraint.minDistance;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.minDistance = value;
+
+			}
+
+		},
+
+		maxDistance : {
+
+			get: function () {
+
+				return this.constraint.maxDistance;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.maxDistance = value;
+
+			}
+
+		},
+
+		minZoom : {
+
+			get: function () {
+
+				return this.constraint.minZoom;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.minZoom = value;
+
+			}
+
+		},
+
+		maxZoom : {
+
+			get: function () {
+
+				return this.constraint.maxZoom;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.maxZoom = value;
+
+			}
+
+		},
+
+		minPolarAngle : {
+
+			get: function () {
+
+				return this.constraint.minPolarAngle;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.minPolarAngle = value;
+
+			}
+
+		},
+
+		maxPolarAngle : {
+
+			get: function () {
+
+				return this.constraint.maxPolarAngle;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.maxPolarAngle = value;
+
+			}
+
+		},
+
+		minAzimuthAngle : {
+
+			get: function () {
+
+				return this.constraint.minAzimuthAngle;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.minAzimuthAngle = value;
+
+			}
+
+		},
+
+		maxAzimuthAngle : {
+
+			get: function () {
+
+				return this.constraint.maxAzimuthAngle;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.maxAzimuthAngle = value;
+
+			}
+
+		},
+
+		enableDamping : {
+
+			get: function () {
+
+				return this.constraint.enableDamping;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.enableDamping = value;
+
+			}
+
+		},
+
+		dampingFactor : {
+
+			get: function () {
+
+				return this.constraint.dampingFactor;
+
+			},
+
+			set: function ( value ) {
+
+				this.constraint.dampingFactor = value;
+
+			}
+
+		},
+
+		// backward compatibility
+
+		noZoom: {
+
+			get: function () {
+
+				console.warn( 'THREE.OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
+				return ! this.enableZoom;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: .noZoom has been deprecated. Use .enableZoom instead.' );
+				this.enableZoom = ! value;
+
+			}
+
+		},
+
+		noRotate: {
+
+			get: function () {
+
+				console.warn( 'THREE.OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
+				return ! this.enableRotate;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: .noRotate has been deprecated. Use .enableRotate instead.' );
+				this.enableRotate = ! value;
+
+			}
+
+		},
+
+		noPan: {
+
+			get: function () {
+
+				console.warn( 'THREE.OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
+				return ! this.enablePan;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: .noPan has been deprecated. Use .enablePan instead.' );
+				this.enablePan = ! value;
+
+			}
+
+		},
+
+		noKeys: {
+
+			get: function () {
+
+				console.warn( 'THREE.OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
+				return ! this.enableKeys;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: .noKeys has been deprecated. Use .enableKeys instead.' );
+				this.enableKeys = ! value;
+
+			}
+
+		},
+
+		staticMoving : {
+
+			get: function () {
+
+				console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
+				return ! this.constraint.enableDamping;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: .staticMoving has been deprecated. Use .enableDamping instead.' );
+				this.constraint.enableDamping = ! value;
+
+			}
+
+		},
+
+		dynamicDampingFactor : {
+
+			get: function () {
+
+				console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
+				return this.constraint.dampingFactor;
+
+			},
+
+			set: function ( value ) {
+
+				console.warn( 'THREE.OrbitControls: .dynamicDampingFactor has been renamed. Use .dampingFactor instead.' );
+				this.constraint.dampingFactor = value;
+
+			}
+
+		}
+
+	} );
+
+}() );
 
 define("OrbitControls", function(){});
 
@@ -53656,18 +54383,6 @@ THREE.PointerLockControls = function ( camera ) {
 	yawObject.position.y = 10;
 	yawObject.add( pitchObject );
 
-	var moveForward = false;
-	var moveBackward = false;
-	var moveLeft = false;
-	var moveRight = false;
-
-	var isOnObject = false;
-	var canJump = false;
-
-	var prevTime = performance.now();
-
-	var velocity = new THREE.Vector3();
-
 	var PI_2 = Math.PI / 2;
 
 	var onMouseMove = function ( event ) {
@@ -53684,69 +54399,13 @@ THREE.PointerLockControls = function ( camera ) {
 
 	};
 
-	var onKeyDown = function ( event ) {
+	this.dispose = function() {
 
-		switch ( event.keyCode ) {
+		document.removeEventListener( 'mousemove', onMouseMove, false );
 
-			case 38: // up
-			case 87: // w
-				moveForward = true;
-				break;
-
-			case 37: // left
-			case 65: // a
-				moveLeft = true; break;
-
-			case 40: // down
-			case 83: // s
-				moveBackward = true;
-				break;
-
-			case 39: // right
-			case 68: // d
-				moveRight = true;
-				break;
-
-			case 32: // space
-				if ( canJump === true ) velocity.y += 350;
-				canJump = false;
-				break;
-
-		}
-
-	};
-
-	var onKeyUp = function ( event ) {
-
-		switch( event.keyCode ) {
-
-			case 38: // up
-			case 87: // w
-				moveForward = false;
-				break;
-
-			case 37: // left
-			case 65: // a
-				moveLeft = false;
-				break;
-
-			case 40: // down
-			case 83: // s
-				moveBackward = false;
-				break;
-
-			case 39: // right
-			case 68: // d
-				moveRight = false;
-				break;
-
-		}
-
-	};
+	}
 
 	document.addEventListener( 'mousemove', onMouseMove, false );
-	document.addEventListener( 'keydown', onKeyDown, false );
-	document.addEventListener( 'keyup', onKeyUp, false );
 
 	this.enabled = false;
 
@@ -53756,18 +54415,11 @@ THREE.PointerLockControls = function ( camera ) {
 
 	};
 
-	this.isOnObject = function ( boolean ) {
-
-		isOnObject = boolean;
-		canJump = boolean;
-
-	};
-
 	this.getDirection = function() {
 
 		// assumes the camera itself is not rotated
 
-		var direction = new THREE.Vector3( 0, 0, -1 );
+		var direction = new THREE.Vector3( 0, 0, - 1 );
 		var rotation = new THREE.Euler( 0, 0, 0, "YXZ" );
 
 		return function( v ) {
@@ -53782,47 +54434,6 @@ THREE.PointerLockControls = function ( camera ) {
 
 	}();
 
-	this.update = function () {
-
-		if ( scope.enabled === false ) return;
-
-		var time = performance.now();
-		var delta = ( time - prevTime ) / 1000;
-
-		velocity.x -= velocity.x * 10.0 * delta;
-		velocity.z -= velocity.z * 10.0 * delta;
-
-		velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
-
-		if ( moveForward ) velocity.z -= 400.0 * delta;
-		if ( moveBackward ) velocity.z += 400.0 * delta;
-
-		if ( moveLeft ) velocity.x -= 400.0 * delta;
-		if ( moveRight ) velocity.x += 400.0 * delta;
-
-		if ( isOnObject === true ) {
-
-			velocity.y = Math.max( 0, velocity.y );
-
-		}
-
-		yawObject.translateX( velocity.x * delta );
-		yawObject.translateY( velocity.y * delta ); 
-		yawObject.translateZ( velocity.z * delta );
-
-		if ( yawObject.position.y < 10 ) {
-
-			velocity.y = 0;
-			yawObject.position.y = 10;
-
-			canJump = true;
-
-		}
-
-		prevTime = time;
-
-	};
-
 };
 
 define("PointerLockControls", function(){});
@@ -53836,7 +54447,7 @@ require.config({
         jquery: "utils/jquery",
         astar: "utils/astar",
         underscore: "utils/underscore",
-        three: "three-72",
+        three: "three",
         jstat: "utils/jstat.min",
         smoothie: "ux/smoothie",
         stats: "ux/stats.min",
@@ -53901,6 +54512,7 @@ define(
         "ux/dat.gui",
         "smoothie",
         "stats",
+        "mirror",
         "water",
         "TerrainLoader",
         "KeyboardState",

@@ -72,6 +72,7 @@ define(
         "ux/dat.gui",
         "smoothie",
         "stats",
+        "mirror",
         "water",
         "TerrainLoader",
         "KeyboardState",

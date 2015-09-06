@@ -107,14 +107,15 @@ gulp.task('require', function () {
                 jquery: "utils/jquery",
                 astar: "utils/astar",
                 underscore: "utils/underscore",
-                three: "three-72",
+                three: "three",
                 jstat: "utils/jstat.min",
                 smoothie: "ux/smoothie",
                 stats: "ux/stats.min",
                 javascriptUtil: "utils/javascript.util",
                 jsts: "utils/jsts",
                 datGui: "ux/dat.gui",
-                water: "objects/water-material",
+                mirror: "objects/Mirror",
+                water: "objects/WaterShader",
                 KeyboardState: "controls/THREEx.KeyboardState",
                 TerrainLoader: "loaders/TerrainLoader",
                 TrackballControls: "controls/TrackballControls",
@@ -125,7 +126,7 @@ gulp.task('require', function () {
                 fpInstance: "fp/instance"
             },
             optimize: 'none',
-            name: "fp"
+            name: 'fp'
         }))
         .pipe(gulp.dest( fpDist ));
 });
