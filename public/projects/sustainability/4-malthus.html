@@ -1,0 +1,226 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
+        <script>
+
+
+        require.config({
+
+          baseUrl: '/js',
+          paths: {
+            'fp': 'fp',
+            // 'fp': 'js/dist/fp',
+            'sustainable-agent': '../projects/sustainability/js/sustainable-agent'
+
+            }
+
+        });
+
+        require( [
+            'fp',
+            'sustainable-agent'
+            ],
+
+            function( fp ) {
+
+                window.fp = fp;
+
+                var config = {
+
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        "1": {
+                            "noWater": true,
+                            "initialY": 30,
+                            "initialPopulation": 250,
+                            "initialExtent": 25,
+                            "initialSpeed": 100,
+                            "maxExtent": 100,
+                            "size": 200
+                        },
+                        "2": { "create": false },
+                        "3": { "create": false },
+                        "4": {
+
+                            "waterShow": true,
+                            "terrainShow": true,
+                            "buildingsShow": false,
+                            "roadsShow": false,
+                            "dayShow": false,
+                            // Show patches
+                            "patchesShow": true,
+                            "lightHemisphereShow": false,
+                            "lightDirectionalShow": true,
+                            "hudShow": true,
+                            "statsShow": true,
+
+                            "coloriseAgentsByHealth": true,
+
+                            "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 0,
+                            // "guiShowColorFolder": false
+                            //
+                        },
+                        "5": {
+                            "colorNightAgent": 0x00ff00,
+                            "colorNightTerrainGroundLevel": 0x000000,
+                            "colorNightTerrainLowland1": 0x272727,
+                            "colorNightTerrainLowland2": 0x3F3F3F,
+                            "colorNightTerrainMidland1": 0x696969,
+                            "colorNightTerrainMidland2": 0xA2A2A2,
+                            "colorNightTerrainHighland": 0xFDFDFD,
+
+                            "colorLightHemisphereSky": 0x000000,
+                            "colorLightHemisphereGround": 0xffffff,
+                            "colorLightHemisphereIntensity": 1.0,
+                            "colorLightDirectional": 0xffffff,
+                            "colorLightDirectionalIntensity": 1.0,
+                        },
+                        "6": {
+                            "mapIndex": 1,
+                            "multiplier": 1,
+                            "loadHeights": true,
+                            "gridExtent": 8000,
+                            "gridPoints": 400,
+                            "maxTerrainHeight": 400,
+                            "patchSize": 21
+                        },
+                    }
+                  }
+                };
+
+                var sim =  {
+                    counter: 0,
+
+                    setup: function() {
+                        counter = 0;
+
+                        fp.timescale.framesToTick = 4;
+
+                        // Override PatchNetwork methods
+                        fp.PatchNetwork.prototype.reviseValues = function() {
+
+                            fp.patchNetwork.patchMeanValue = 0;
+
+                            for (var i = 0; i < fp.patchNetwork.patches.length; i++) {
+
+                                var patch = fp.patchNetwork.patches[i];
+                                var change = 0;
+
+                                // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
+                                if ( patch.value < patch.initialValue ) { // Recover
+
+                                    change = fp.appConfig.malthusOptions.rateOfRecovery;
+
+                                }
+
+                                patch.updatePatchValue( change );
+
+                                fp.patchNetwork.patchMeanValue += patch.value;
+
+                            }
+
+                            fp.patchNetwork.patchMeanValue /= fp.patchNetwork.patches.length;
+
+                        };
+
+
+                        // Update age and health for agents
+                        fp.agentNetwork.agents.forEach( function( agent ) {
+
+                            // Set up a random age
+                            if ( fp.appConfig.agentOptions.randomAge ) {
+
+                                // Sample a beta distribution with alpha = 2 and beta = 5
+                                // This produces a large population at roughly a reproductive age.
+                                agent.age = Math.floor( jStat.beta.sample( 2, 5 ) * 100 );
+                                agent.health = 100 - agent.age;
+
+                            }
+
+                        });
+
+                    },
+
+                    // Runs additional features of the simulation
+                    tick: function() {
+
+                        var agents = fp.agentNetwork.agents;
+
+                        if ( fp.appConfig.agentOptions.shuffle ) {
+
+                            agents = _.shuffle( fp.agentNetwork.agents );
+
+                        }
+
+                        agents.forEach( function( agent ) {
+
+                            agent.exercise();
+                            agent.consume();
+                            agent.reproduce();
+
+                            if (agent.health <= 0) {
+
+                                agent.die();
+
+                            }
+
+                        } );
+
+                    }
+                }
+
+                SustainableAgent.prototype = Object.create( fp.Agent.prototype );
+
+                fp.init( config, sim, function() {
+
+                    fp.appConfig.malthusOptions = {};
+                    fp.appConfig.malthusOptions.reproductionChance = 0.05;
+                    fp.appConfig.malthusOptions.maxChildren = 10;
+                    fp.appConfig.malthusOptions.energyLoss = 0.15;
+                    fp.appConfig.malthusOptions.energyGain = 0.5;
+                    fp.appConfig.malthusOptions.rateOfConsumption = 0.2;
+                    fp.appConfig.malthusOptions.rateOfRecovery = 0.005;
+                    var malthusFolder = fp.gui.addFolder( "Malthusian Options" );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "reproductionChance", 0, 1).step( 0.01 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "maxChildren", 1, 10).step( 1 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyLoss", 0, 1).step( 0.05 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "energyGain", 0, 10).step( 0.1 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "rateOfConsumption", 0, 1).step( 0.005 );
+                    malthusFolder.add( fp.appConfig.malthusOptions, "rateOfRecovery", 0, 0.1).step( 0.005 );
+
+                    // Add custom class
+                    fp.agentNetwork.AgentClass = SustainableAgent;
+
+                    fp.appController.Setup();
+
+                } );
+
+            }
+
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="hudDiv" style="display: none">
+            <div id="output">
+                <div id="year">
+                    <b>Year:</b> <span id="yearValue"></span>
+                </div>
+                <div id="speed">
+                    <b>Speed:</b> <span id="speedValue"></span>
+                </div>
+                <div id="population">
+                     <b>Pop.:</b> <span id="populationValue"></span>
+                </div>
+            </div>
+        </div>
+        <div id="container"></div>
+    </body>
+</html>
