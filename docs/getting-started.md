@@ -33,6 +33,9 @@ To include the default configuration of *Fierce Planet*, a page needs to add:
 [Open in a new window](examples/usage/basic.html)
 
 
+<!--
 Here's some math:
 
 $f(x)=\sum_{n=0}^\infty\frac{f^{(n)}(a)}{n!}(x-a)^n$   
+
+-->
