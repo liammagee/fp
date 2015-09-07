@@ -13,7 +13,10 @@ forthcoming book on \*Interwoven Cities\*.
 Basic Agent Movement
 --------------------
 
-[Open in a new window](projects/fabric/1.html)
+In this default model, agents spread across the landscape.
+They create modest size dwellings as they go, in a single sprawling settlement.
+
+[Open in a new window](projects/interwoven-cities/1.html)
 
 
 
@@ -21,10 +24,15 @@ Basic Agent Movement
 
 
 
-Synchronised 'threads'
+Separate Settlements
 ----------------------
 
-[Open in a new window](projects/fabric/2.html)
+In this model, agent develop separate settlements, at a minimum 
+distance from each other.
+Each settlement is able to develop vertically as well as horizontally,
+building a series of cities. 
+
+[Open in a new window](projects/interwoven-cities/2.html)
 
 
 
@@ -32,21 +40,33 @@ Synchronised 'threads'
 
 
 
-Interwoven model
-----------------
-
-[Open in a new window](projects/fabric/3.html)
-
-
-
-
-
-
-
-Interwoven model 2
+An Interwoven City
 ------------------
 
-[Open in a new window](projects/fabric/4.html)
+The first "interwoven" model demonstrates the kinds of networks
+that develop from a single sprawling metropolis, similar to
+*Basic Agent Movement*, but with a resulting form of an urban fabric.
+
+[Open in a new window](projects/interwoven-cities/3.html)
+
+
+
+
+
+
+
+Interwoven Cities
+-----------------
+
+The second "interwoven" model demonstrates the connections that 
+form between multiple settlements, similar to those established in the 
+*Separate Settlements* model. Wandering agents occasionally
+develop path lines back to their own buildings, or those of other 
+agents in their network. Over a period of time, a more loose but still 
+distinctive fabric becomes woven between the various settlement areas.
+
+
+[Open in a new window](projects/interwoven-cities/4.html)
 
 
 
