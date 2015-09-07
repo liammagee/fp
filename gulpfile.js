@@ -158,8 +158,10 @@ gulp.task('pandoc-site', function() {
         '--standalone',
         '--toc',
         '--toc-depth=2 ',
-        // '--mathjax=js/docs/MathJax.js',
-        '--mathjax',
+        // Local
+        '--mathjax=/js/docs/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+        // Get CloudFlare version
+        // '--mathjax',
         '--bibliography=docs/fp.bib',
         '--template=docs/templates/fp.html',
         // '--css=css/docs.css'
