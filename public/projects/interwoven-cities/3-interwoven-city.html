@@ -8,14 +8,16 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
           paths: {  'fp': 'dist/fp' }
 
         });
 
         require( [ 'fp' ],
+
             function( fp ) {
+
                 var config = {
+
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -44,22 +46,31 @@
                             "multiplier": 2,
                             "loadHeights": true
                          },
+
                     }
+
                   }
-                }
+
+                };
+
                 var sim =  {
+
                     counter: 0,
 
-                    setup: function() {
-                    },
-                    tick: function() {
-                    }
+                    setup: function() {},
+
+                    tick: function() {}
+
                 }
 
                 fp.init( config, sim, function() {
+
                     fp.appController.Setup();
+
                 } );
+
             }
+
         );
 
         </script>

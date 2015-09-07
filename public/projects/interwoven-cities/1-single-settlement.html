@@ -8,14 +8,16 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
           paths: {  'fp': 'dist/fp' }
 
         });
 
         require( [ 'fp' ],
+
             function( fp ) {
+
                 var config = {
+
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -94,23 +96,34 @@
                         },
                         "6": { "multiplier": 2 },
                     }
+
                   }
-                }
+
+                };
+
                 var sim =  {
+
                     counter: 0,
 
                     setup: function() {
+
                         fp.timescale.framesToYear = 16;
+
                     },
-                    tick: function() {
-                    }
-                }
+
+                    tick: function() {}
+
+                };
 
                 fp.init( config, sim, function() {
+
                     fp.appController.Setup();
                     fp.appController.Run();
+
                 } );
+
             }
+
         );
 
         </script>

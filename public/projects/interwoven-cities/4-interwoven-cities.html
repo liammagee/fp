@@ -8,8 +8,7 @@
         require.config({
 
           baseUrl: '/js',
-          paths: {  'fp': 'fp' }
-          // paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'dist/fp' }
 
         });
 
@@ -21,6 +20,7 @@
                 window.fp = fp;
 
                 var config = {
+
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -249,60 +249,37 @@
                             // "mapIndex": 0,
                             // "patchSize": 4
 
-                         },
+                         }
+
                     }
+
                   }
-                }
+
+                };
+
                 var sim =  {
+
                     counter: 0,
                     positions: [],
+
                     setup: function() {
+
                         fp.timescale.framesToYear = 1;
-                        /*
-                        for ( var i = 0; i < 5; i++ ) {
-                            var x = Math.floor( Math.random() * 2000 );
-                            var y = Math.floor( Math.random() * 2000 );
-                            var z = Math.floor( Math.random() * 2000 );
-                            this.positions.push( [ x, y, z ] );
-                        }
-                        */
 
-                        // Default
-                        //this.positions.push( [ fp.camera.position.x, fp.camera.position.y, fp.camera.position.z ] );
                     },
-                    tick: function() {
-                        /*
-                        if ( fp.timescale.frameCounter % 500 == 0  ) {
-                            for ( var i = 0; i < this.positions.length; i++ ) {
-                                var pos = this.positions[ i ];
-                                var x = pos[ 0 ];
-                                var y = pos[ 1 ];
-                                var z = pos[ 2 ];
-                                fp.camera.position.x = x;
-                                fp.camera.position.y = y;
-                                fp.camera.position.z = z;
 
-                                var mimetype = mimetype  || "image/png";
-                                var url = fp.renderer.domElement.toDataURL( mimetype );
-                                var anchor = $( "<img>" ).attr( "src", url );
-                                anchor.attr( "src", url )
-                                anchor.attr( "id",  "img-" + fp.timescale.frameCounter + "-" + i )
-                                $( "#links" ).append( anchor );
-                                console.log( fp.timescale.frameCounter );
-                            }
-                        }
-                        if ( fp.timescale.frameCounter > 10000 ) {
-                            fp.appController.Setup();
-                        }
-                        */
-                    }
-                }
+                    tick: function() {}
+
+                };
 
                 fp.init( config, sim, function() {
+
                     fp.appController.Setup();
-                    // fp.appController.Run();
+
                 } );
+
             }
+
         );
 
         </script>

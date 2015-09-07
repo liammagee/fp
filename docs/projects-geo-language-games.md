@@ -8,3 +8,22 @@ This model has been developed by [Rachel Hendery](http://www.uws.edu.au/staff_pr
 
 
 [Open in a new window](projects/geolanguagegames/basic.html)
+
+
+# Geo Language Game with Advanced Linguistic Model
+
+In this model, agents have a richer linguistic model, incorporating:
+
+ - lexicon
+ - word order
+ - number of phonemes
+ - word complexity
+
+etc.
+
+These model elements have different weights that signify whether
+they are more or less susceptible to modification.
+
+
+[Open in a new window](projects/geolanguagegames/language-model.html)
+
