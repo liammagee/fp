@@ -110,15 +110,17 @@ define( [
 
                 }
 
+                fp.trailNetwork.buildTrailNetwork( false );
+
+                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+
+                // Call this after the sim setup has been called, in
+                // case the attributes need updating
                 if ( fp.appConfig.displayOptions.patchesShow ) {
 
                     fp.patchNetwork.updateTerrainPatchAttributes();
 
                 }
-
-                fp.trailNetwork.buildTrailNetwork( false );
-
-                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
 
             };
 
