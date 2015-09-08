@@ -19,7 +19,7 @@ var SustainableAgentGlobal = function( fp ) {
 
             var patchValue = fp.patchNetwork.patches[ index ];
 
-            var consumed = fp.appConfig.limitsToGrowthOptions.rateOfConsumption / fp.timescale.ticksToYear;
+            var consumed = fp.appConfig.globalSustainabilityOptions.rateOfConsumption / fp.timescale.ticksToYear;
 
             if ( patchValue.value === patchValue.minValue ) {
 
@@ -50,7 +50,7 @@ var SustainableAgentGlobal = function( fp ) {
 
         if (this.health > 0) {
 
-            var factor = fp.appConfig.limitsToGrowthOptions.energyLoss * ( 16 / fp.timescale.ticksToYear );
+            var factor = fp.appConfig.globalSustainabilityOptions.energyLoss * ( 16 / fp.timescale.ticksToYear );
             this.health -= factor;
 
         }
@@ -63,7 +63,7 @@ var SustainableAgentGlobal = function( fp ) {
         var foodAvailable = fp.sim.getFoodYield();
         var totalAgents = fp.agentNetwork.agents.length;
         var availableYield = foodAvailable / totalAgents;
-        this.health += fp.appConfig.limitsToGrowthOptions.energyGain * availableYield;
+        this.health += fp.appConfig.globalSustainabilityOptions.energyGain * availableYield;
         this.health = (this.health > 100) ? 100 : this.health;
 
     };
@@ -91,8 +91,8 @@ var SustainableAgentGlobal = function( fp ) {
         var index = fp.getPatchIndex( this.position.x, this.position.z );
         var patchValue = fp.patchNetwork.patches[ index ];
 
-        if ( Math.random() * popCorrection <  fp.appConfig.limitsToGrowthOptions.reproductionChance &&
-             this.children.length < fp.appConfig.limitsToGrowthOptions.maxChildren &&
+        if ( Math.random() * popCorrection <  fp.appConfig.globalSustainabilityOptions.reproductionChance &&
+             this.children.length < fp.appConfig.globalSustainabilityOptions.maxChildren &&
              this.gender == "f" &&
              Math.random() * this.health > 50 &&
              this.age > 15 && this.age < 50 &&

@@ -10,8 +10,9 @@
 
           baseUrl: '/js',
           paths: {
-            'fp': 'fp',
             // 'fp': 'js/dist/fp',
+            'fp': 'fp',
+            'sustainable-config': '../projects/sustainability/js/sustainable-config',
             'sustainable-agent-global': '../projects/sustainability/js/sustainable-agent-global'
 
             }
@@ -21,77 +22,13 @@
 
         require( [
             'fp',
+            'sustainable-config',
             'sustainable-agent-global'
             ],
 
-            function( fp ) {
+            function( fp, config ) {
 
                 window.fp = fp;
-
-                var config = {
-                  "preset": "Default",
-                  "remembered": {
-                    "Default": {
-                        "1": {
-                            "noWater": true,
-                            "initialY": 30,
-                            "initialPopulat,ion": 250,
-                            "initialExtent": 25,
-                            "maxExtent": 100,
-                            "size": 200
-                        },
-                        "2": { "create": false },
-                        "3": { "create": false },
-                        "4": {
-                            "waterShow": true,
-                            "terrainShow": true,
-                            "buildingsShow": false,
-                            "roadsShow": false,
-                            "dayShow": false,
-                            // Show patches
-                            "patchesShow": true,
-                            "lightHemisphereShow": false,
-                            "lightDirectionalShow": false,
-                            "hudShow": true,
-
-                            "cameraOverride": true,
-                            "cameraX": 0,
-                            "cameraY": 2500,
-                            "cameraZ": 0,
-                            // "guiShowColorFolder": false
-                        },
-                        "5": {
-                            "colorNightAgent": 0x00ff00,
-                            "colorNightTerrainGroundLevel": 0x000000,
-                            "colorNightTerrainLowland1": 0x272727,
-                            "colorNightTerrainLowland2": 0x3F3F3F,
-                            "colorNightTerrainMidland1": 0x696969,
-                            "colorNightTerrainMidland2": 0xA2A2A2,
-                            "colorNightTerrainHighland": 0xFDFDFD,
-
-                            "colorLightHemisphereSky": 0x000000,
-                            "colorLightHemisphereGround": 0xffffff,
-                            "colorLightHemisphereIntensity": 1.0,
-                            "colorLightDirectional": 0xffffff,
-                            "colorLightDirectionalIntensity": 1.0,
-
-                            "coloriseAgentsByHealth": false,
-                        },
-                        "6": {
-                            "mapIndex": 1,
-                            "multiplier": 1,
-                            "loadHeights": true,
-                            "gridExtent": 8000,
-                            "gridPoints": 400,
-                            "maxTerrainHeight": 400,
-                            "patchSize": 21
-                        },
-
-                    }
-
-                  }
-
-                };
 
                 var sim =  {
 
@@ -117,7 +54,7 @@
                     getFoodYield: function() {
 
                         return sim.annualConsumed
-                                 * fp.appConfig.limitsToGrowthOptions.foodEfficiency
+                                 * fp.appConfig.globalSustainabilityOptions.foodEfficiency
                                  * ( 1 / fp.timescale.framesToTick );
 
                     },
@@ -126,7 +63,7 @@
 
                         counter = 0;
 
-                        currentNonrenewableResources = fp.appConfig.limitsToGrowthOptions.nonrenewableResources;
+                        currentNonrenewableResources = fp.appConfig.globalSustainabilityOptions.nonrenewableResources;
 
                         // Setup another chart
                         setupAltChart = function() {
@@ -193,7 +130,7 @@
                                 // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
                                 if ( patch.value < patch.initialValue ) { // Recover
 
-                                    change = fp.appConfig.limitsToGrowthOptions.rateOfRecovery;
+                                    change = fp.appConfig.globalSustainabilityOptions.rateOfRecovery;
 
                                 }
 
@@ -271,47 +208,46 @@
 
                 SustainableAgentGlobal.prototype = Object.create( fp.Agent.prototype );
 
-
                 fp.init( config, sim, function() {
 
                     // Set up starting condition
                     fp.timescale.initialYear = 1900;
 
-                    fp.appConfig.limitsToGrowthOptions = {};
-                    fp.appConfig.limitsToGrowthOptions.reproductionChance = 0.25;
-                    fp.appConfig.limitsToGrowthOptions.maxChildren = 10;
-                    fp.appConfig.limitsToGrowthOptions.energyLoss = 0.1;
-                    fp.appConfig.limitsToGrowthOptions.energyGain = 2;
-                    fp.appConfig.limitsToGrowthOptions.rateOfConsumption = 0.01;
-                    fp.appConfig.limitsToGrowthOptions.rateOfRecovery = 0.0;
+                    fp.appConfig.globalSustainabilityOptions = {};
+                    fp.appConfig.globalSustainabilityOptions.reproductionChance = 0.25;
+                    fp.appConfig.globalSustainabilityOptions.maxChildren = 10;
+                    fp.appConfig.globalSustainabilityOptions.energyLoss = 0.1;
+                    fp.appConfig.globalSustainabilityOptions.energyGain = 2;
+                    fp.appConfig.globalSustainabilityOptions.rateOfConsumption = 0.01;
+                    fp.appConfig.globalSustainabilityOptions.rateOfRecovery = 0.0;
 
                     // Specific to limits to growth
-                    fp.appConfig.limitsToGrowthOptions.foodEfficiency = 0.3;
+                    fp.appConfig.globalSustainabilityOptions.foodEfficiency = 0.3;
 
-                    fp.appConfig.limitsToGrowthOptions.nonrenewableResources = 100;
-                    fp.appConfig.limitsToGrowthOptions.food = 0.5;
-                    fp.appConfig.limitsToGrowthOptions.industrialOutput = 0.5;
-                    fp.appConfig.limitsToGrowthOptions.services = 0.5;
-                    fp.appConfig.limitsToGrowthOptions.pollution = 0.5;
+                    fp.appConfig.globalSustainabilityOptions.nonrenewableResources = 100;
+                    fp.appConfig.globalSustainabilityOptions.food = 0.5;
+                    fp.appConfig.globalSustainabilityOptions.industrialOutput = 0.5;
+                    fp.appConfig.globalSustainabilityOptions.services = 0.5;
+                    fp.appConfig.globalSustainabilityOptions.pollution = 0.5;
 
 
                     var limitsToGrowthFolder = fp.gui.addFolder( "Limits to Growth Options" );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "reproductionChance", 0, 1 ).step( 0.01 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "maxChildren", 1, 10 ).step( 1 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "reproductionChance", 0, 1 ).step( 0.01 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "maxChildren", 1, 10 ).step( 1 );
 
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "energyLoss", 0, 1 ).step( 0.05 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "energyGain", 0, 10 ).step( 0.1 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "energyLoss", 0, 1 ).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "energyGain", 0, 10 ).step( 0.1 );
 
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "rateOfConsumption", 0, 1 ).step( 0.00001 );
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "rateOfRecovery", 0, 0.1 ).step( 0.005 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "rateOfConsumption", 0, 1 ).step( 0.00001 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "rateOfRecovery", 0, 0.1 ).step( 0.005 );
 
                     // Specific to limits to growth
-                    limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "foodEfficiency", 0, 1 ).step( 0.05 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "nonrenewableResources", 0, 1000 ).step( 10 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "food", 0.0, 1.0 ).step( 0.05 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "industrialOutput", 0.0, 1.0 ).step( 0.05 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "services", 0.0, 1.0 ).step( 0.05 );
-                    // limitsToGrowthFolder.add( fp.appConfig.limitsToGrowthOptions, "pollution", 0.0, 1.0 ).step( 0.05 );
+                    limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "foodEfficiency", 0, 1 ).step( 0.05 );
+                    // limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "nonrenewableResources", 0, 1000 ).step( 10 );
+                    // limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "food", 0.0, 1.0 ).step( 0.05 );
+                    // limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "industrialOutput", 0.0, 1.0 ).step( 0.05 );
+                    // limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "services", 0.0, 1.0 ).step( 0.05 );
+                    // limitsToGrowthFolder.add( fp.appConfig.globalSustainabilityOptions, "pollution", 0.0, 1.0 ).step( 0.05 );
 
                     // Add custom class
                     fp.agentNetwork.AgentClass = SustainableAgentGlobal;
