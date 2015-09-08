@@ -168,6 +168,26 @@ gulp.task('pandoc-site', function() {
         ]
     }))
     .pipe(gulp.dest('public/'));
+  gulp.src('README.md')
+    .pipe(pandoc({
+      from: 'markdown',
+      to: 'html5',
+      ext: '.html',
+      args: [
+        '--smart',
+        '--standalone',
+        '--toc',
+        '--toc-depth=2 ',
+        // Local
+        '--mathjax=/js/docs/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+        // Get CloudFlare version
+        // '--mathjax',
+        '--bibliography=docs/fp.bib',
+        '--template=docs/templates/fp.html',
+        // '--css=css/docs.css'
+        ]
+    }))
+    .pipe(gulp.dest('public/'));
 });
 
 
