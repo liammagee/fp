@@ -12,6 +12,7 @@ var pandoc = require('gulp-pandoc');
 var requirejsOptimize = require('gulp-requirejs-optimize');
 
 // Key files
+var readme = 'README.md';
 var jsSrc = 'public/js/';
 var fpSrc = jsSrc + 'fp/';
 var fpDist = jsSrc + 'dist/';
@@ -28,6 +29,7 @@ var docTemplate = 'docs/templates/fp.html';
 
 
 var pathsToWatch = [
+    readme,
     fpSrc,
     docFiles,
     docTemplate
@@ -48,7 +50,9 @@ gulp.task( 'dist', [ 'babel-shader', 'require' ] );
  * Watch for babel
  */
 gulp.task( 'watch', [ 'clean' ], function() {
+
     return gulp.watch( pathsToWatch, [ 'pandoc-site', 'babel-shader' ] );
+
 } );
 
 
@@ -66,7 +70,6 @@ gulp.task( 'clean', function() {
 
 
 // BABEL FOR ES6
-
 
 /**
  * Converts ES6 to ES5
@@ -136,10 +139,12 @@ gulp.task('require', function () {
  * NOTE: source maps not working with both babel and uglify
  */
 gulp.task('uglify', [ ], function() {
+
   gulp.src( fpDistSrc )
     // .pipe( uglify( { outSourceMap: true }) )
     .pipe( uglify() )
-    .pipe( gulp.dest( fpDistCompiled ) )
+    .pipe( gulp.dest( fpDistCompiled ) );
+
 });
 
 
@@ -148,7 +153,9 @@ gulp.task('uglify', [ ], function() {
  * Generates a complete HTML file with citations, MathJax and a bootstrap template.
  */
 gulp.task('pandoc-site', function() {
-  gulp.src('docs/*.md')
+
+    // For the docs folder
+  gulp.src( [ 'docs/*.md', 'README.md' ] )
     .pipe(pandoc({
       from: 'markdown',
       to: 'html5',
@@ -168,26 +175,7 @@ gulp.task('pandoc-site', function() {
         ]
     }))
     .pipe(gulp.dest('public/'));
-  gulp.src('README.md')
-    .pipe(pandoc({
-      from: 'markdown',
-      to: 'html5',
-      ext: '.html',
-      args: [
-        '--smart',
-        '--standalone',
-        '--toc',
-        '--toc-depth=2 ',
-        // Local
-        '--mathjax=/js/docs/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
-        // Get CloudFlare version
-        // '--mathjax',
-        '--bibliography=docs/fp.bib',
-        '--template=docs/templates/fp.html',
-        // '--css=css/docs.css'
-        ]
-    }))
-    .pipe(gulp.dest('public/'));
+
 });
 
 
@@ -195,7 +183,9 @@ gulp.task('pandoc-site', function() {
  * Cleans compiled files.
  */
 gulp.task( 'jsdoc', shell.task( [
+
   'jsdoc  -d public/api --package package.json --readme README.md --configure jsdoc-conf.json public/js/fp/'
+
 ] ) );
 
 

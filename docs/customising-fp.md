@@ -1,6 +1,6 @@
 % Fierce Planet
 
-# Getting Started
+# Customising *Fierce Planet*
 
 *Fierce Planet* is designed to be highly configurable. The examples show some of the "out-of-the-box" options. It is also possible to add functional hooks to "setup" and "run" actions, to customise agent, terrain, building and road behaviour.
 
@@ -39,3 +39,4 @@ Here's some math:
 $f(x)=\sum_{n=0}^\infty\frac{f^{(n)}(a)}{n!}(x-a)^n$   
 
 -->
+

@@ -1,3 +1,4 @@
+% Fierce Planet
 
 
 # Fierce Planet
@@ -99,3 +100,4 @@ The following are a partial list of these options:
 
 Some simulations also include additional options that adjust the behaviour of their particular model.
 
+Test

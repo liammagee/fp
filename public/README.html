@@ -60,14 +60,87 @@
   <div class="container">
     <div class="row">
        <div class="col-md-8" role="main">
-        <h1 id="contact">Contact</h1>
-        <p><strong>Fierce Planet</strong> is a collaborative project jointly developed by <a href="http://www.rmit.edu.au">RMIT University</a> and <a href="http://www.uws.edu.au">University of Western Sydney</a>.</p>
-        <p><a href="http://www.uws.edu.au/ics/people/researchers/liam_magee">Liam Magee</a> is the lead developer of the project. Other collaborators include:</p>
+        <h1 id="fierce-planet">Fierce Planet</h1>
+        <p><a href="http://www.fierce-planet.com">Fierce Planet</a> is an open source toolkit for developing agent-based models, with a particular focus on urban and social simulations.</p>
+        <p>It runs on <a href="http://nodejs.org">Node.js</a> on the server, and uses <a href="http://threejs.org">Three.js</a> extensively to generate 3D simulations in the browser. <a href="https://get.webgl.org/">Click here</a> to check your browser is compatible.</p>
+        <p>For more information, please visit:</p>
         <ul>
-        <li><a href="http://www1.rmit.edu.au/browse/About%20RMIT%2FContact%2FAll%20contacts%2FStaff%2Fby%20name%2FR%2F;ID=yuvu89pijqtp;STATUS=A">Anthony Richardson</a> (RMIT University).</li>
-        <li><a href="http://www1.rmit.edu.au/browse/About%20RMIT%2FContact%2FAll%20contacts%2FStaff%2Fby%20name%2FP%2F;ID=8byriqez887k1;STATUS=A">Nicole Pepperell</a></li>
-        <li><a href="http://www.uws.edu.au/staff_profiles/uws_profiles/doctor_rachel_hendery">Rachel Hendery</a></li>
+        <li><a href="http://www.fierce-planet.com">Fierce Planet</a></li>
+        <li><a href="https://github.com/liammagee/fp.git">GitHub</a></li>
         </ul>
+        <h2 id="running-fierce-planet">Running <em>Fierce Planet</em></h2>
+        <p>To run Fierce Planet locally:</p>
+        <ul>
+        <li>Clone the <a href="https://github.com/liammagee/fp.git">repository</a></li>
+        <li>Ensure the following dependencies are installed:
+        <ul>
+        <li><a href="http://nodejs.org">Node</a></li>
+        <li><a href="http://gulpjs.com/">Gulp</a></li>
+        </ul></li>
+        <li>Then run:</li>
+        </ul>
+        <p>cd fp npm install gulp dist node app.js</p>
+        <ul>
+        <li>You should then be able to visit <a href="http://localhost:3000" class="uri">http://localhost:3000</a> to view the example and built-in project simulations.</li>
+        </ul>
+        <p>In addition, a number of other commands can be run using <a href="http://gulpjs.com/">gulp</a>:</p>
+        <h3 id="building-the-source">Building the source</h3>
+        <p>To generate code documentation, run:</p>
+        <pre><code>gulp require</code></pre>
+        <h3 id="generating-code-docs">Generating code docs</h3>
+        <p>To generate code documentation, run:</p>
+        <pre><code>gulp jsdoc</code></pre>
+        <h3 id="generating-the-website">Generating the website</h3>
+        <p>To convert the HTML website content from the <a href="http://daringfireball.net/projects/markdown/">Markdown</a> docs:</p>
+        <pre><code>gulp pandoc-site</code></pre>
+        <h3 id="running-babel-to-convert-es6-code-to-es5">Running Babel to convert ES6 code to ES5</h3>
+        <p>A small amount of code currently uses <a href="https://github.com/lukehoban/es6features">ES6</a> for convenience. To convert this code to <em>ES5</em>, run:</p>
+        <pre><code>gulp babel-shader</code></pre>
+        <h2 id="code-layout">Code Layout</h2>
+        <p>The code includes the following</p>
+        <ul>
+        <li><em>docs</em>: The text content of the website, in <a href="http://daringfireball.net/projects/markdown/">Markdown</a> format.</li>
+        <li><em>public</em>: All assets (HTML, JavaScript, stylesheets, images, etc.) needed to run <em>Fierce Planet</em>.</li>
+        <li><em>public/js/fp</em>: The source code for running <em>Fierce Planet</em> simulations.</li>
+        <li><em>public/examples</em>: Examples of how <em>Fierce Planet</em> can be configured.</li>
+        <li><em>public/projects</em>: Project that use and extend <em>Fierce Planet</em>.</li>
+        </ul>
+        <h2 id="configuration">Configuration</h2>
+        <p><em>Fierce Planet</em> can be configured to support a range of different scenarios.</p>
+        <p>Configuration options can be set in two ways:</p>
+        <ul>
+        <li>Via the control panel, visible when running <em>Fierce Planet</em>.</li>
+        <li>In code, through <em>config</em> object passed to the <em>init</em> function of the <em>Simulation</em> object.</li>
+        </ul>
+        <p>The following are a partial list of these options:</p>
+        <ul>
+        <li><em>Agent Options</em>
+        <ul>
+        <li>TBD</li>
+        </ul></li>
+        <li><em>Building Options</em>
+        <ul>
+        <li>TBD</li>
+        </ul></li>
+        <li><em>Road Options</em>
+        <ul>
+        <li>TBD</li>
+        </ul></li>
+        <li><em>Display Options</em>
+        <ul>
+        <li>TBD</li>
+        </ul></li>
+        <li><em>Colour Options</em>
+        <ul>
+        <li>TBD</li>
+        </ul></li>
+        <li><em>Terrain Options</em>
+        <ul>
+        <li>TBD</li>
+        </ul></li>
+        </ul>
+        <p>Some simulations also include additional options that adjust the behaviour of their particular model.</p>
+        <p>Test</p>
         <div class="references">
         
         </div>
