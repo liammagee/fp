@@ -84,17 +84,17 @@ Configuration options can be set in two ways:
 
 The following are a partial list of these options:
 
- - **Agent Options**
+ - *Agent Options*
      + TBD
- - **Building Options**
+ - *Building Options*
      + TBD
- - **Road Options**
+ - *Road Options*
      + TBD
- - **Display Options**
+ - *Display Options*
      + TBD
- - **Colour Options**
+ - *Colour Options*
      + TBD
- - **Terrain Options**
+ - *Terrain Options*
      + TBD
 
 Some simulations also include additional options that adjust the behaviour of their particular model.
