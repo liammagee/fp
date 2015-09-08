@@ -40,7 +40,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
             return shader;
         },
         buildingVertexShaderMain: function buildingVertexShaderMain() {
-            var shader = "\n                        pos = position;\n                        vMixin = mixin;\n                        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n                    ";
+            var shader = "\n                        pos = position;\n                        vMixin = mixin;\n                    ";
             return shader;
         },
 
@@ -58,7 +58,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
             return shader;
         },
         terrainVertexShaderMain: function terrainVertexShaderMain() {
-            var shader = "\n                            vHeight = height;\n                            vTrail = trail;\n                            vPatch = patch;\n                            gl_Position = projectionMatrix * modelViewMatrix * vec4( position,1.0 );\n                        ";
+            var shader = "\n                            vHeight = height;\n                            vTrail = trail;\n                            vPatch = patch;\n                        ";
             return shader;
         },
 
@@ -73,11 +73,11 @@ define(["fp/fp-base"], function (FiercePlanet) {
         },
 
         agentVertexShader: function agentVertexShader() {
-            var shader = "\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n                        void main() {\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n                            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n                        }\n                        ";
+            var shader = "\n\n                        uniform float size;\n                        attribute float alpha;\n                        attribute vec3 color;\n                        varying float vAlpha;\n                        varying vec3 vColor;\n\n\n                        void main() {\n\n                            vAlpha = alpha;\n                            vColor = color; // set RGB color associated to vertex; use later in fragment shader.\n\n                            // Add half the size, so the agent is drawn from the feet up.\n                            vec3 modifiedPosition = position;\n                            modifiedPosition.y += size / 2.0;\n                            vec4 mvPosition = modelViewMatrix * vec4( modifiedPosition, 1.0 );\n\n                            // option ( 1 ): draw particles at constant size on screen\n                            // gl_PointSize = size;\n                            // option ( 2 ): scale particles as objects in 3D space\n                            gl_PointSize = 1.0 * size * ( 300.0 / length( mvPosition.xyz ) );\n                            gl_Position = projectionMatrix * mvPosition;\n\n                        }\n\n                        ";
             return shader;
         },
         agentFragmentShader: function agentFragmentShader() {
-            var shader = "\n                        varying vec3 vColor;\n                        uniform sampler2D texture;\n                        varying float vAlpha;\n\n                        void main() {\n                            gl_FragColor = vec4( vColor, vAlpha );\n                            // sets a white particle texture to desired color\n                            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\n                        }\n                        ";
+            var shader = "\n                        uniform float size;\n                        uniform sampler2D texture;\n                        varying vec3 vColor;\n                        varying float vAlpha;\n\n                        void main() {\n                            gl_FragColor = vec4( vColor, vAlpha );\n                            // sets a white particle texture to desired color\n                            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );\n                        }\n                        ";
             return shader;
         },
 
@@ -91,8 +91,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
         lambertUniforms: function lambertUniforms(otherUniforms) {
 
             var uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib["common"], THREE.UniformsLib["fog"], THREE.UniformsLib["lights"], THREE.UniformsLib["shadowmap"], {
-                "emissive": { type: "c", value: new THREE.Color(0x000000) },
-                "wrapRGB": { type: "v3", value: new THREE.Vector3(1, 1, 1) }
+                "emissive": { type: "c", value: new THREE.Color(0x000000) }
             }]);
             return _.extend(uniforms, otherUniforms);
         },
@@ -104,15 +103,15 @@ define(["fp/fp-base"], function (FiercePlanet) {
             var vertexShader = [customParams, "\n                            #define LAMBERT\n\n                            varying vec3 vLightFront;\n\n                            #ifdef DOUBLE_SIDED\n\n                               varying vec3 vLightBack;\n\n                            #endif\n                        ",
 
             // Needed for three.js r71
-            THREE.ShaderChunk["common"], THREE.ShaderChunk["map_pars_vertex"], THREE.ShaderChunk["lightmap_pars_vertex"], THREE.ShaderChunk["envmap_pars_vertex"], THREE.ShaderChunk["lights_lambert_pars_vertex"], THREE.ShaderChunk["color_pars_vertex"], THREE.ShaderChunk["morphtarget_pars_vertex"], THREE.ShaderChunk["skinning_pars_vertex"], THREE.ShaderChunk["shadowmap_pars_vertex"], THREE.ShaderChunk["logdepthbuf_pars_vertex"], "void main() {", customCode, THREE.ShaderChunk["map_vertex"], THREE.ShaderChunk["lightmap_vertex"], THREE.ShaderChunk["color_vertex"], THREE.ShaderChunk["morphnormal_vertex"], THREE.ShaderChunk["skinbase_vertex"], THREE.ShaderChunk["skinnormal_vertex"], THREE.ShaderChunk["defaultnormal_vertex"], THREE.ShaderChunk["morphtarget_vertex"], THREE.ShaderChunk["skinning_vertex"], THREE.ShaderChunk["default_vertex"], THREE.ShaderChunk["logdepthbuf_vertex"], THREE.ShaderChunk["worldpos_vertex"], THREE.ShaderChunk["envmap_vertex"], THREE.ShaderChunk["lights_lambert_vertex"], THREE.ShaderChunk["shadowmap_vertex"], "}"].join("\n");
+            THREE.ShaderChunk["common"], THREE.ShaderChunk["uv_pars_vertex"], THREE.ShaderChunk["uv2_pars_vertex"], THREE.ShaderChunk["envmap_pars_vertex"], THREE.ShaderChunk["lights_lambert_pars_vertex"], THREE.ShaderChunk["color_pars_vertex"], THREE.ShaderChunk["morphtarget_pars_vertex"], THREE.ShaderChunk["skinning_pars_vertex"], THREE.ShaderChunk["shadowmap_pars_vertex"], THREE.ShaderChunk["logdepthbuf_pars_vertex"], "void main() {", customCode, THREE.ShaderChunk["uv_vertex"], THREE.ShaderChunk["uv2_vertex"], THREE.ShaderChunk["color_vertex"], THREE.ShaderChunk["beginnormal_vertex"], THREE.ShaderChunk["morphnormal_vertex"], THREE.ShaderChunk["skinbase_vertex"], THREE.ShaderChunk["skinnormal_vertex"], THREE.ShaderChunk["defaultnormal_vertex"], THREE.ShaderChunk["begin_vertex"], THREE.ShaderChunk["morphtarget_vertex"], THREE.ShaderChunk["skinning_vertex"], THREE.ShaderChunk["project_vertex"], THREE.ShaderChunk["logdepthbuf_vertex"], THREE.ShaderChunk["worldpos_vertex"], THREE.ShaderChunk["envmap_vertex"], THREE.ShaderChunk["lights_lambert_vertex"], THREE.ShaderChunk["shadowmap_vertex"], "}"].join("\n");
 
             return vertexShader;
         },
         lambertShaderFragment: function lambertShaderFragment(customParams, customCode) {
 
-            var fragmentShader = [customParams, "\n                        uniform vec3 diffuse;\n                        uniform vec3 emissive;\n                        uniform float opacity;\n\n                        varying vec3 vLightFront;\n\n                        #ifdef DOUBLE_SIDED\n\n                           varying vec3 vLightBack;\n\n                        #endif\n                        ", THREE.ShaderChunk["common"], THREE.ShaderChunk["color_pars_fragment"], THREE.ShaderChunk["map_pars_fragment"], THREE.ShaderChunk["alphamap_pars_fragment"], THREE.ShaderChunk["lightmap_pars_fragment"], THREE.ShaderChunk["envmap_pars_fragment"], THREE.ShaderChunk["fog_pars_fragment"], THREE.ShaderChunk["shadowmap_pars_fragment"], THREE.ShaderChunk["specularmap_pars_fragment"], THREE.ShaderChunk["logdepthbuf_pars_fragment"], "\n                        void main() {\n\n                           vec3 outgoingLight = vec3( 0.0 ); // outgoing light does not have an alpha, the surface does\n                           vec4 diffuseColor = vec4( diffuse, opacity );\n                        ", customCode, // must set gl_FragColor!
+            var fragmentShader = [customParams, "\n                        uniform vec3 diffuse;\n                        uniform vec3 emissive;\n                        uniform float opacity;\n\n                        varying vec3 vLightFront;\n\n                        #ifdef DOUBLE_SIDED\n\n                           varying vec3 vLightBack;\n\n                        #endif\n                        ", THREE.ShaderChunk["common"], THREE.ShaderChunk["color_pars_fragment"], THREE.ShaderChunk["uv_pars_fragment"], THREE.ShaderChunk["uv2_pars_fragment"], THREE.ShaderChunk["map_pars_fragment"], THREE.ShaderChunk["alphamap_pars_fragment"], THREE.ShaderChunk["envmap_pars_fragment"], THREE.ShaderChunk["fog_pars_fragment"], THREE.ShaderChunk["shadowmap_pars_fragment"], THREE.ShaderChunk["specularmap_pars_fragment"], THREE.ShaderChunk["logdepthbuf_pars_fragment"], "\n                        void main() {\n\n                           vec3 outgoingLight = vec3( 0.0 ); // outgoing light does not have an alpha, the surface does\n                           vec4 diffuseColor = vec4( diffuse, opacity );\n                        ", customCode, // must set gl_FragColor!
 
-            THREE.ShaderChunk["logdepthbuf_fragment"], THREE.ShaderChunk["map_fragment"], THREE.ShaderChunk["color_fragment"], THREE.ShaderChunk["alphamap_fragment"], THREE.ShaderChunk["alphatest_fragment"], THREE.ShaderChunk["specularmap_fragment"], "\n                        #ifdef DOUBLE_SIDED\n\n                           if ( gl_FrontFacing )\n                               outgoingLight += diffuseColor.rgb * vLightFront + emissive;\n                           else\n                               outgoingLight += diffuseColor.rgb * vLightBack + emissive;\n\n                        #else\n\n                           outgoingLight += diffuseColor.rgb * vLightFront + emissive;\n\n                        #endif\n                        ", THREE.ShaderChunk["lightmap_fragment"], THREE.ShaderChunk["envmap_fragment"], THREE.ShaderChunk["shadowmap_fragment"], THREE.ShaderChunk["linear_to_gamma_fragment"], THREE.ShaderChunk["fog_fragment"], "\n                            gl_FragColor = vec4( outgoingLight, diffuseColor.a ); // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects\n                        }\n                        "].join("\n");
+            THREE.ShaderChunk["logdepthbuf_fragment"], THREE.ShaderChunk["map_fragment"], THREE.ShaderChunk["color_fragment"], THREE.ShaderChunk["alphamap_fragment"], THREE.ShaderChunk["alphatest_fragment"], THREE.ShaderChunk["specularmap_fragment"], "\n                        #ifdef DOUBLE_SIDED\n\n                           if ( gl_FrontFacing )\n                               outgoingLight += diffuseColor.rgb * vLightFront + emissive;\n                           else\n                               outgoingLight += diffuseColor.rgb * vLightBack + emissive;\n\n                        #else\n\n                           outgoingLight += diffuseColor.rgb * vLightFront + emissive;\n\n                        #endif\n                        ", THREE.ShaderChunk["envmap_fragment"], THREE.ShaderChunk["shadowmap_fragment"], THREE.ShaderChunk["linear_to_gamma_fragment"], THREE.ShaderChunk["fog_fragment"], "\n                            gl_FragColor = vec4( outgoingLight, diffuseColor.a ); // TODO, this should be pre-multiplied to allow for bright highlights on very transparent objects\n                        }\n                        "].join("\n");
 
             return fragmentShader;
         },
@@ -126,7 +125,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
          */
         phongUniforms: function phongUniforms(otherUniforms) {
 
-            var uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib["common"], THREE.UniformsLib["aomap"], THREE.UniformsLib["lightmap"], THREE.UniformsLib["emissivemap"], THREE.UniformsLib["bump"], THREE.UniformsLib["normalmap"], THREE.UniformsLib["fog"], THREE.UniformsLib["lights"], THREE.UniformsLib["shadowmap"], {
+            var uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib["common"], THREE.UniformsLib["aomap"], THREE.UniformsLib["lightmap"], THREE.UniformsLib["emissivemap"], THREE.UniformsLib["bumpmap"], THREE.UniformsLib["normalmap"], THREE.UniformsLib["displacementmap"], THREE.UniformsLib["fog"], THREE.UniformsLib["lights"], THREE.UniformsLib["shadowmap"], {
                 "emissive": { type: "c", value: new THREE.Color(0x000000) },
                 "specular": { type: "c", value: new THREE.Color(0x000000) },
                 "shininess": { type: "f", value: 0 }
@@ -138,15 +137,19 @@ define(["fp/fp-base"], function (FiercePlanet) {
          * Generates a vertex shader for a Lambert shader.
          */
         phongShaderVertex: function phongShaderVertex(customParams, customCode) {
-            var vertexShader = [customParams, "#define PHONG", "varying vec3 vViewPosition;", "#ifndef FLAT_SHADED", "   varying vec3 vNormal;", "#endif", THREE.ShaderChunk["common"], THREE.ShaderChunk["uv_pars_vertex"], THREE.ShaderChunk["uv2_pars_vertex"], THREE.ShaderChunk["envmap_pars_vertex"], THREE.ShaderChunk["lights_phong_pars_vertex"], THREE.ShaderChunk["color_pars_vertex"], THREE.ShaderChunk["morphtarget_pars_vertex"], THREE.ShaderChunk["skinning_pars_vertex"], THREE.ShaderChunk["shadowmap_pars_vertex"], THREE.ShaderChunk["logdepthbuf_pars_vertex"], "void main() {", customCode, THREE.ShaderChunk["uv_vertex"], THREE.ShaderChunk["uv2_vertex"], THREE.ShaderChunk["color_vertex"], THREE.ShaderChunk["morphnormal_vertex"], THREE.ShaderChunk["skinbase_vertex"], THREE.ShaderChunk["skinnormal_vertex"], THREE.ShaderChunk["defaultnormal_vertex"], "#ifndef FLAT_SHADED", // Normal computed with derivatives when FLAT_SHADED
+            var vertexShader = [customParams, "#define PHONG", "varying vec3 vViewPosition;", "#ifndef FLAT_SHADED", "   varying vec3 vNormal;", "#endif", THREE.ShaderChunk["common"], THREE.ShaderChunk["uv_pars_vertex"], THREE.ShaderChunk["uv2_pars_vertex"], THREE.ShaderChunk["displacementmap_pars_vertex"], THREE.ShaderChunk["envmap_pars_vertex"], THREE.ShaderChunk["lights_phong_pars_vertex"], THREE.ShaderChunk["color_pars_vertex"], THREE.ShaderChunk["morphtarget_pars_vertex"], THREE.ShaderChunk["skinning_pars_vertex"], THREE.ShaderChunk["shadowmap_pars_vertex"], THREE.ShaderChunk["logdepthbuf_pars_vertex"], "void main() {", customCode, THREE.ShaderChunk["uv_vertex"], THREE.ShaderChunk["uv2_vertex"], THREE.ShaderChunk["color_vertex"], THREE.ShaderChunk["beginnormal_vertex"], THREE.ShaderChunk["morphnormal_vertex"], THREE.ShaderChunk["skinbase_vertex"], THREE.ShaderChunk["skinnormal_vertex"], THREE.ShaderChunk["defaultnormal_vertex"], "#ifndef FLAT_SHADED", // Normal computed with derivatives when FLAT_SHADED
 
-            "   vNormal = normalize( transformedNormal );", "#endif", THREE.ShaderChunk["morphtarget_vertex"], THREE.ShaderChunk["skinning_vertex"], THREE.ShaderChunk["default_vertex"], THREE.ShaderChunk["logdepthbuf_vertex"], "   vViewPosition = - mvPosition.xyz;", THREE.ShaderChunk["worldpos_vertex"], THREE.ShaderChunk["envmap_vertex"], THREE.ShaderChunk["lights_phong_vertex"], THREE.ShaderChunk["shadowmap_vertex"], "}"].join("\n");
+            "   vNormal = normalize( transformedNormal );", "#endif", THREE.ShaderChunk["begin_vertex"], THREE.ShaderChunk["displacementmap_vertex"], THREE.ShaderChunk["morphtarget_vertex"], THREE.ShaderChunk["skinning_vertex"], THREE.ShaderChunk["project_vertex"], THREE.ShaderChunk["logdepthbuf_vertex"], "   vViewPosition = - mvPosition.xyz;", THREE.ShaderChunk["worldpos_vertex"], THREE.ShaderChunk["envmap_vertex"], THREE.ShaderChunk["lights_phong_vertex"], THREE.ShaderChunk["shadowmap_vertex"], "}"].join("\n");
 
             return vertexShader;
         },
         phongShaderFragment: function phongShaderFragment(customParams, customCode) {
 
-            var fragmentShader = [customParams, "#define PHONG", "uniform vec3 diffuse;", "uniform vec3 emissive;", "uniform vec3 specular;", "uniform float shininess;", "uniform float opacity;", THREE.ShaderChunk["common"], THREE.ShaderChunk["color_pars_fragment"], THREE.ShaderChunk["uv_pars_fragment"], THREE.ShaderChunk["uv2_pars_fragment"], THREE.ShaderChunk["map_pars_fragment"], THREE.ShaderChunk["alphamap_pars_fragment"], THREE.ShaderChunk["aomap_pars_fragment"], THREE.ShaderChunk["lightmap_pars_fragment"], THREE.ShaderChunk["emissivemap_pars_fragment"], THREE.ShaderChunk["envmap_pars_fragment"], THREE.ShaderChunk["fog_pars_fragment"], THREE.ShaderChunk["lights_phong_pars_fragment"], THREE.ShaderChunk["shadowmap_pars_fragment"], THREE.ShaderChunk["bumpmap_pars_fragment"], THREE.ShaderChunk["normalmap_pars_fragment"], THREE.ShaderChunk["specularmap_pars_fragment"], THREE.ShaderChunk["logdepthbuf_pars_fragment"], "\n                        void main() {\n\n                        ", "   vec3 outgoingLight = vec3( 0.0 );", "   vec4 diffuseColor = vec4( diffuse, opacity );", "   vec3 totalAmbientLight = ambientLightColor;", "   vec3 totalEmissiveLight = emissive;", THREE.ShaderChunk["logdepthbuf_fragment"], THREE.ShaderChunk["map_fragment"], THREE.ShaderChunk["color_fragment"], THREE.ShaderChunk["specularmap_fragment"], THREE.ShaderChunk["lightmap_fragment"], THREE.ShaderChunk["aomap_fragment"], THREE.ShaderChunk["emissivemap_fragment"], THREE.ShaderChunk["lights_phong_fragment"], THREE.ShaderChunk["envmap_fragment"], THREE.ShaderChunk["shadowmap_fragment"], THREE.ShaderChunk["linear_to_gamma_fragment"], THREE.ShaderChunk["fog_fragment"], customCode, // must set gl_FragColor!
+            var fragmentShader = [customParams, "#define PHONG", "uniform vec3 diffuse;", "uniform vec3 emissive;", "uniform vec3 specular;", "uniform float shininess;", "uniform float opacity;", THREE.ShaderChunk["common"], THREE.ShaderChunk["color_pars_fragment"], THREE.ShaderChunk["uv_pars_fragment"], THREE.ShaderChunk["uv2_pars_fragment"], THREE.ShaderChunk["map_pars_fragment"], THREE.ShaderChunk["alphamap_pars_fragment"], THREE.ShaderChunk["aomap_pars_fragment"], THREE.ShaderChunk["lightmap_pars_fragment"], THREE.ShaderChunk["emissivemap_pars_fragment"], THREE.ShaderChunk["envmap_pars_fragment"], THREE.ShaderChunk["fog_pars_fragment"], THREE.ShaderChunk["lights_phong_pars_fragment"], THREE.ShaderChunk["shadowmap_pars_fragment"], THREE.ShaderChunk["bumpmap_pars_fragment"], THREE.ShaderChunk["normalmap_pars_fragment"], THREE.ShaderChunk["specularmap_pars_fragment"], THREE.ShaderChunk["logdepthbuf_pars_fragment"], "\n                        void main() {\n\n                        ", "   vec3 outgoingLight = vec3( 0.0 );", "   vec4 diffuseColor = vec4( diffuse, opacity );", "   vec3 totalAmbientLight = ambientLightColor;", "   vec3 totalEmissiveLight = emissive;", THREE.ShaderChunk["logdepthbuf_fragment"], THREE.ShaderChunk["map_fragment"], THREE.ShaderChunk["color_fragment"],
+            // Original Location in three.js ShaderLib.js
+            // THREE.ShaderChunk[ "alphamap_fragment" ],
+            // THREE.ShaderChunk[ "alphatest_fragment" ],
+            THREE.ShaderChunk["specularmap_fragment"], THREE.ShaderChunk["lightmap_fragment"], THREE.ShaderChunk["aomap_fragment"], THREE.ShaderChunk["emissivemap_fragment"], THREE.ShaderChunk["lights_phong_fragment"], THREE.ShaderChunk["envmap_fragment"], THREE.ShaderChunk["shadowmap_fragment"], THREE.ShaderChunk["linear_to_gamma_fragment"], THREE.ShaderChunk["fog_fragment"], customCode, // must set gl_FragColor!
 
             // Really want this as the last step
             THREE.ShaderChunk["alphamap_fragment"], THREE.ShaderChunk["alphatest_fragment"], "   gl_FragColor = vec4( outgoingLight, diffuseColor.a );", "}"].join("\n");
@@ -165,8 +168,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
     };
 
     return FiercePlanet;
-});
-//# sourceMappingURL=shader-utils-compiled.js.map</code></pre>
+});</code></pre>
         </article>
     </section>
 
@@ -182,7 +184,7 @@ define(["fp/fp-base"], function (FiercePlanet) {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Sat Sep 05 2015 01:26:01 GMT+1000 (AEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Wed Sep 09 2015 01:52:58 GMT+1000 (AEST)
 </footer>
 
 <script> prettyPrint(); </script>

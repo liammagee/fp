@@ -33,7 +33,7 @@ define(
          'fp/fp-base',
          'fp/app-state',
          'fp/app-controller',
-         'fp/config',
+         'fp/app-config',
          'fp/terrain',
          'fp/agent-network',
          'fp/building-network',
@@ -59,36 +59,41 @@ define(
         FiercePlanet.Simulation = function() {
             var fp = this;
 
+            // Export the entire namespace, so classes can be instantiated
+            // just with reference to this instance
+            fp.FiercePlanet = FiercePlanet;
+
             // Copy class definitions into this instance, to simplify imports
             fp.Agent = FiercePlanet.Agent;
             fp.PatchNetwork = FiercePlanet.PatchNetwork;
 
-            this.container = null;
-            this.scene = null;
-            this.appConfig = null;
-            this.camera = null;
-            this.renderer = null;
-            this.clock = new THREE.Clock();
-            this.mouse = { x: 0, y: 0, z: 1 };
-            this.mouseVector = new THREE.Vector3();
-            this.keyboard = new THREEx.KeyboardState();
-            this.stats = null;
-            this.terrain = null;
-            this.controls = null;
-            this.gui = null;
-            this.chart = null;
-            this.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
-            this.skyBox = null;
-            this.waterMesh = null;
-            this.water = null;
-            this.agentNetwork = null;
-            this.pathNetwork = null;
-            this.trailNetwork = null;
-            this.cursor = null;
-            this.sim = null;
-            this.lightHemisphere = null;
-            this.lightDirectional = null;
-            this.chart = null;
+            fp.container = null;
+            fp.scene = null;
+            fp.appConfig = null;
+            fp.camera = null;
+            fp.renderer = null;
+            fp.clock = new THREE.Clock();
+            fp.mouse = { x: 0, y: 0, z: 1 };
+            fp.mouseVector = new THREE.Vector3();
+            fp.keyboard = new THREEx.KeyboardState();
+            fp.stats = null;
+            fp.terrain = null;
+            fp.controls = null;
+            fp.gui = null;
+            fp.chart = null;
+            fp.ray = new THREE.Raycaster( new THREE.Vector3( 0, 0, 0 ), new THREE.Vector3( 0, 0, 0 ) );
+            fp.skyBox = null;
+            fp.waterMesh = null;
+            fp.water = null;
+            fp.agentNetwork = null;
+            fp.pathNetwork = null;
+            fp.trailNetwork = null;
+            fp.cursor = null;
+            fp.sim = null;
+            fp.lightHemisphere = null;
+            fp.lightDirectional = null;
+            fp.chart = null;
+            fp.appState = new FiercePlanet.AppState();
 
 
             /**
@@ -276,9 +281,9 @@ define(
                     fp.controls.zoomSpeed = 0.6;
                     fp.controls.panSpeed = 0.3;
 
-                    fp.controls.noRotate = false;
-                    fp.controls.noZoom = false;
-                    fp.controls.noPan = false;
+                    fp.controls.enableRotate = true;
+                    fp.controls.enableZoom = true;
+                    fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
                     fp.controls.minDistance = 250.0;
                     fp.controls.maxDistance = 10000.0;
@@ -451,8 +456,11 @@ define(
                         distortionScale: 50.0,
                     } );
 
-                    if ( !_.isUndefined( fp.waterMesh ) )
+                    if ( !_.isUndefined( fp.waterMesh ) ) {
+
                         fp.scene.remove( fp.waterMesh );
+
+                    }
 
                     fp.waterMesh = new THREE.Mesh(
                         new THREE.PlaneBufferGeometry( parameters.width * 500, parameters.height * 500, 50, 50 ),
@@ -660,10 +668,15 @@ define(
                 fp.setupSky();
                 fp.setOutputHUD();
                 fp.setupChart();
+                fp.toggleGuiControlsState(); // Add GUI Controls
                 fp.toggleHUDState(); // Add HUD
                 fp.toggleStatsState(); // Add stats
+
                 window.addEventListener( "resize", fp.onWindowResize, false );
-                fp.loadTerrain( callback ); // Load the terrain asynchronously
+
+                // Load the terrain asynchronously
+                // Only execute the callback once terrain is loaded
+                fp.loadTerrain( callback );
 
             };
 
@@ -673,7 +686,7 @@ define(
              */
             fp.animate = function() {
 
-                if ( FiercePlanet.AppState.halt ) {
+                if ( !fp.appState.animate ) {
 
                     return;
 
@@ -710,7 +723,7 @@ define(
              */
             fp.doTick = function() {
 
-                if ( FiercePlanet.AppState.runSimulation ) {
+                if ( fp.appState.runSimulation ) {
 
                     if ( fp.timescale.frameCounter % fp.timescale.framesToTick === 0 ) {
 
@@ -756,28 +769,39 @@ define(
              */
             fp.updateSimState = function() {
 
-                if ( FiercePlanet.AppState.stepSimulation )
-                    FiercePlanet.AppState.runSimulation = false;
+                if ( fp.appState.stepSimulation ) {
+
+                    fp.appState.runSimulation = false;
+
+                }
 
             };
+
 
             /**
              * Updates the water object, if it exists.
              * @memberof fp
              */
             fp.updateWater = function() {
+
                 if ( !_.isNull( fp.water ) &amp;&amp; !_.isUndefined( fp.water.material.uniforms.time ) ) {
+
                     fp.water.material.uniforms.time.value += 1.0 / 60.0;
                     fp.water.render();
+
                 }
+
             };
+
 
             /**
              * Updates the controls.
              * @memberof fp
              */
             fp.updateControls = function() {
+
                 if ( !fp.appConfig.displayOptions.cursorShow ) {
+
                     fp.controls.update( fp.clock.getDelta() );
 
                     if ( !_.isUndefined( fp.controls.getObject ) ) {
@@ -794,7 +818,9 @@ define(
                         }
                         //obj.translateY( fp.getHeight( obj.position.x, obj.position.z ) );
                     }
+
                 }
+
             };
 
 
@@ -841,7 +867,7 @@ define(
              */
             fp.endSim = function() {
 
-                FiercePlanet.AppState.runSimulation = false;
+                fp.appState.runSimulation = false;
                 fp.appConfig.displayOptions.buildingsShow = false;
                 fp.appConfig.displayOptions.patchesUpdate = false;
 
@@ -853,7 +879,7 @@ define(
              */
             fp.updateTime = function() {
 
-                if ( FiercePlanet.AppState.runSimulation ) {
+                if ( fp.appState.runSimulation ) {
 
                     fp.timescale.frameCounter++;
 
@@ -874,9 +900,6 @@ define(
                     }
 
                 }
-
-                // Update the output with the current year
-                fp.setOutputHUD();
 
             };
 
@@ -903,50 +926,79 @@ define(
 
             };
 
+
             /**
              * Gets the terrain index point for a given ( x, y ) co-ordinate.
-             * @memberof fp
+             *
+             * @param {Number} x
+             * @param {Number} y
              */
             fp.getIndex = function( x, y ) {
+
+                // Get config variables
                 var multiplier = fp.appConfig.terrainOptions.multiplier;
-                x = Math.floor( x / multiplier );
-                y = Math.floor( y / multiplier );
-                var maxExtent = ( fp.appConfig.agentOptions.maxExtent / 100 ) * fp.terrain.halfExtent;
-                var xRel = Math.floor( x ) + fp.terrain.halfExtent;
-                var yRel = Math.floor( y ) + fp.terrain.halfExtent;
-                if ( xRel &lt; fp.terrain.halfExtent - maxExtent || yRel &lt; fp.terrain.halfExtent - maxExtent ||
-                     xRel > fp.terrain.halfExtent + maxExtent || yRel > fp.terrain.halfExtent + maxExtent )
+                var halfExtent = fp.terrain.halfExtent;
+                var maxExtent = fp.appConfig.agentOptions.maxExtent;
+                var gridExtent = fp.terrain.gridExtent;
+                var gridPoints = fp.terrain.gridPoints;
+
+                // Normalise: Divide by terrain multiplier
+                x /= multiplier;
+                y /= multiplier;
+
+                // Obtain the maximum extent agents can move
+                var bounds = ( maxExtent / 100 ) * halfExtent;
+
+                // Return a value if either x or y value is outside the maximum allowable
+                if ( x &lt; -bounds || y &lt; -bounds || x > bounds || y > bounds ) {
+
                     return -1;
-                var halfGrid = fp.terrain.gridExtent / 2;
-                var gridRatio = fp.terrain.gridExtent / fp.terrain.gridPoints;
-                // NOT SURE WHY THIS IS HERE?
+
+                }
+
+                // Grid ratio
+                var gridRatio = gridExtent / gridPoints;
+
+                // Shift by half the patch width
+                x += gridRatio / 2;
                 y += gridRatio / 2;
-                //y = ( fp.terrain.gridPoints * fp.terrain.gridPoints ) - y - 1;
-                var xLoc = Math.floor( ( Math.round( x ) + halfGrid ) / gridRatio );
-                var yLoc = Math.floor( ( Math.round( y ) + halfGrid ) / gridRatio );
-                return Math.floor( fp.terrain.gridPoints * yLoc + xLoc );
+
+                // Get indexed values
+                var indexedX = Math.floor( ( x + halfExtent ) / gridRatio );
+                var indexedY = Math.floor( ( y + halfExtent ) / gridRatio );
+                var index = gridPoints * indexedY + indexedX;
+
+                return index;
+
             };
+
 
             /**
              * Gets the terrain height for a given ( x, y ) co-ordinate.
              * @memberof fp
              */
             fp.getHeight = function( x, y ) {
+
                 return fp.terrain.getHeightForIndex( fp.getIndex( x, y ) );
+
             };
 
             /**
              * @memberof fp
              */
             fp.speedOfSim = function() {
-                return true;
+
+                return 1.0;
+
             };
 
             /**
              * @memberof fp
              */
             fp.likelihoodOfGrowth = function() {
+
                 return ( 1 - ( fp.buildingNetwork.speedOfConstruction * fp.speedOfSim() ) );
+
             };
 
             /**
@@ -1538,13 +1590,28 @@ define(
 
             };
 
+
             /**
              * Toggles the visibility of the heads-up display.
              * @memberof fp
              */
             fp.toggleHUDState = function() {
+
                 $( "#hudDiv" ).toggle( fp.appConfig.displayOptions.hudShow );
+
             };
+
+
+            /**
+             * Toggles the visibility of the gui controls.
+             * @memberof fp
+             */
+            fp.toggleGuiControlsState = function() {
+
+                $( ".dg.ac" ).toggle( fp.appConfig.displayOptions.guiControlsShow );
+
+            };
+
 
             /**
              * Toggles the visibility of the wireframe.
@@ -1707,6 +1774,7 @@ define(
              * @param  {Object} config  An object representation of properties to override defaults for the fp.AppConfig object.
              */
             fp.doGUI = function( config ) {
+
                 fp.appConfig = new FiercePlanet.AppConfig();
                 fp.appController = new FiercePlanet.AppController( fp );
 
@@ -1884,6 +1952,7 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "cursorShow" ).onFinishChange( fp.removeCursor );
                     displayFolder.add( fp.appConfig.displayOptions, "statsShow" ).onFinishChange( fp.toggleStatsState );
                     displayFolder.add( fp.appConfig.displayOptions, "hudShow" ).onFinishChange( fp.toggleHUDState );
+                    displayFolder.add( fp.appConfig.displayOptions, "guiControlsShow" ).onFinishChange( fp.toggleGuiControlsState );
                     displayFolder.add( fp.appConfig.displayOptions, "wireframeShow" ).onFinishChange( fp.toggleWireframeState );
                     displayFolder.add( fp.appConfig.displayOptions, "dayShow" ).onFinishChange( fp.toggleDayNight );
                     displayFolder.add( fp.appConfig.displayOptions, "skyboxShow" ).onFinishChange( fp.toggleDayNight );
@@ -1997,7 +2066,7 @@ define(
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Sat Sep 05 2015 01:26:01 GMT+1000 (AEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Wed Sep 09 2015 01:52:58 GMT+1000 (AEST)
 </footer>
 
 <script> prettyPrint(); </script>
