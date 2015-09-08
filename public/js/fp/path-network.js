@@ -26,8 +26,8 @@ define( [
          */
         FiercePlanet.PathNetwork = function( fp ) {
 
-            var gridExtent = FiercePlanet.appConfig.terrainOptions.gridExtent;
-            var gridPoints = FiercePlanet.appConfig.terrainOptions.gridPoints;
+            var gridExtent = fp.appConfig.terrainOptions.gridExtent;
+            var gridPoints = fp.appConfig.terrainOptions.gridPoints;
             this.stepsPerNode = gridExtent / gridPoints;
 
             this.networkMesh = null;
@@ -95,13 +95,20 @@ define( [
             this.findPathHome = function( agent ) {
 
                 if ( !agent.home )
-                    return [ ];
+                    return [];
+
                 var start = this.nodeAt( agent.position );
                 var end = this.nodeAt( agent.home.lod.position );
-                if ( _.isUndefined( start ) || _.isUndefined( end ) )
+
+                if ( _.isUndefined( start ) || _.isUndefined( end ) ) {
+
                     return [ ];
+
+                }
+
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
+
             };
 
 
@@ -132,14 +139,20 @@ define( [
 
                 }
 
-                if ( !otherAgentHome )
-                    return [ ];
+                if ( !otherAgentHome ) {
+
+                    return [];
+
+                }
 
                 var start = this.nodeAt( agent.position );
                 var end = this.nodeAt( otherAgentHome.lod.position );
 
-                if ( _.isUndefined( start ) || _.isUndefined( end ) )
-                    return [ ];
+                if ( _.isUndefined( start ) || _.isUndefined( end ) ) {
+
+                    return [];
+
+                }
 
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
@@ -153,9 +166,16 @@ define( [
              * @return {Array}       of nodes describing the path
              */
             this.drawPathHome = function( agent ) {
+
                 var path = agent.pathComputed;
-                if ( _.isUndefined( path ) || path.length < 2 ) // Need 2 points for a line
+
+                // Need 2 points for a line
+                if ( _.isUndefined( path ) || path.length < 2 )  {
+
                     return undefined;
+
+                }
+
                 var pathGeom = new THREE.Geometry();
                 var multiplier = fp.terrain.ratioExtentToPoint;
                 var wrapPercent = fp.terrain.wrappedPercent;
@@ -185,6 +205,7 @@ define( [
                 var pathMaterial = new THREE.LineBasicMaterial( { color: pathColor, linewidth: 1.0 } );
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
                 this.networkMesh.add( pathLine );
+
                 return pathLine;
 
             };
@@ -195,8 +216,11 @@ define( [
              */
             this.updatePath = function() {
 
-                if ( !FiercePlanet.appState.runSimulation )
+                if ( !fp.appState.runSimulation ) {
+
                     return;
+
+                }
 
                 var children = fp.pathNetwork.networkMesh.children;
 
@@ -205,6 +229,7 @@ define( [
                     fp.pathNetwork.networkMesh.remove( children[ i ] );
 
                 }
+
                 var agentsWithPaths = _.chain( fp.agentNetwork.agents ).
                     map( function( agent ) { if ( !_.isUndefined( agent.pathComputed ) && agent.pathComputed.length > 1 ) return agent; } ).
                         compact().

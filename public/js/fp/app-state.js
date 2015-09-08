@@ -8,15 +8,22 @@ define( [
 
 
         /**
-         * Represents relevant state about the application.
+         * Represents relevant state about a given simulation.
+         *
          * @constructor
          * @memberof fp
          * @inner
          */
-        FiercePlanet.appState = {
-            animate: true,
-            runSimulation: false,
-            stepSimulation: false
+        FiercePlanet.AppState = function( fp ) {
+
+            return {
+
+                animate: true,
+                runSimulation: false,
+                stepSimulation: false
+
+            };
+
         };
 
         return FiercePlanet;

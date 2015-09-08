@@ -14,14 +14,17 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
 
         });
 
         require( [ 'fp' ],
 
             function( fp ) {
+
+                window.fp = fp;
+
                 var config1 = {
                   "preset": "Default",
                   "remembered": {
@@ -53,32 +56,48 @@
                         }
                     }
                   }
-                }
+                };
+
                 var sim =  {
+
                     counter: 0,
+
                     setup: function() {
                         counter = 0;
                         // console.log("Custom set up")
                     },
+
                     tick: function() {
                         // console.log("Custom tick: " + (++ counter))
                     }
-                }
-                fp1 = new FiercePlanet( );
-                fp2 = new FiercePlanet( );
+
+                };
+
+                fp1 = new fp.FiercePlanet.Simulation();
+                fp2 = new fp.FiercePlanet.Simulation();
                 config1.container = $( "#container1" )[0];
                 config2.container = $( "#container2" )[0];
+
                 fp1.init( config1, sim, function() {
-                        fp1.appConfig.Setup();
-                        fp1.appConfig.Run();
+
+                        fp1.appController.Setup();
+                        fp1.appController.Run();
+
                     }
+
                 );
+
                 fp2.init( config2, sim, function() {
-                        fp2.appConfig.Setup();
-                        fp2.appConfig.Run();
+
+                        fp2.appController.Setup();
+                        fp2.appController.Run();
+
                     }
+
                 );
+
             }
+
         );
 
         </script>

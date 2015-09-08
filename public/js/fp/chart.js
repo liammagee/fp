@@ -44,7 +44,7 @@ define( [
                 } );
 
 
-                var chartCanvas = $( '#chartDiv' )[0];
+                var chartCanvas = $( '#chartCanvas-' + fp.container.id )[0];
                 if ( chartCanvas === undefined ) {
 
                     chartCanvas = document.createElement( "canvas" );
@@ -52,7 +52,7 @@ define( [
 
                 }
 
-                chartCanvas.setAttribute( "id", 'chartDiv' );
+                chartCanvas.setAttribute( "id", "chartCanvas-" + fp.container.id );
                 chartCanvas.setAttribute( "width", "400px" );
                 chartCanvas.setAttribute( "height", "100px" );
                 chartCanvas.setAttribute( "style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  " );
@@ -71,7 +71,7 @@ define( [
 
                 this.intervalID = setInterval( function() {
 
-                    if ( FiercePlanet.appState.runSimulation ) {
+                    if ( fp.appState.runSimulation ) {
 
                         for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
 

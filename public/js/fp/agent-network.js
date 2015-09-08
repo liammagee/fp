@@ -141,7 +141,7 @@ define( [
                  */
                 this.renderFriendNetwork = function() {
 
-                    if ( !FiercePlanet.appState.runSimulation || !
+                    if ( !fp.appState.runSimulation || !
                         fp.appConfig.displayOptions.networkShow ) {
 
                         return;
@@ -284,7 +284,7 @@ define( [
                  */
                 this.updateAgentNetworkRendering = function() {
 
-                    if ( !FiercePlanet.appState.runSimulation ) {
+                    if ( !fp.appState.runSimulation ) {
 
                         return;
 
@@ -411,7 +411,7 @@ define( [
             this.updateAgents = function() {
 
                 // Return if not running
-                if ( !FiercePlanet.appState.runSimulation || _.isUndefined( this.particles ) ) {
+                if ( !fp.appState.runSimulation || _.isUndefined( this.particles ) ) {
 
                     return;
 

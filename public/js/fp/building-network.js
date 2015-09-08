@@ -178,7 +178,7 @@ define( [
              * Updates each building.
              */
             this.updateBuildings = function() {
-                if ( ! FiercePlanet.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
+                if ( ! fp.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
                     return;
                 for ( var i = 0; i < fp.buildingNetwork.buildings.length; i++ ) {
                     var building = fp.buildingNetwork.buildings[ i ];

@@ -65,7 +65,7 @@ define(
             fp.lightHemisphere = null;
             fp.lightDirectional = null;
             fp.chart = null;
-            fp.appState = FiercePlanet.appState;
+            fp.appState = new FiercePlanet.AppState();
 
 
             /**
@@ -695,7 +695,7 @@ define(
              */
             fp.doTick = function() {
 
-                if ( FiercePlanet.appState.runSimulation ) {
+                if ( fp.appState.runSimulation ) {
 
                     if ( fp.timescale.frameCounter % fp.timescale.framesToTick === 0 ) {
 
@@ -741,9 +741,9 @@ define(
              */
             fp.updateSimState = function() {
 
-                if ( FiercePlanet.appState.stepSimulation ) {
+                if ( fp.appState.stepSimulation ) {
 
-                    FiercePlanet.appState.runSimulation = false;
+                    fp.appState.runSimulation = false;
 
                 }
 
@@ -839,7 +839,7 @@ define(
              */
             fp.endSim = function() {
 
-                FiercePlanet.appState.runSimulation = false;
+                fp.appState.runSimulation = false;
                 fp.appConfig.displayOptions.buildingsShow = false;
                 fp.appConfig.displayOptions.patchesUpdate = false;
 
@@ -851,7 +851,7 @@ define(
              */
             fp.updateTime = function() {
 
-                if ( FiercePlanet.appState.runSimulation ) {
+                if ( fp.appState.runSimulation ) {
 
                     fp.timescale.frameCounter++;
 
@@ -1746,6 +1746,7 @@ define(
              * @param  {Object} config  An object representation of properties to override defaults for the fp.AppConfig object.
              */
             fp.doGUI = function( config ) {
+
                 fp.appConfig = new FiercePlanet.AppConfig();
                 fp.appController = new FiercePlanet.AppController( fp );
 

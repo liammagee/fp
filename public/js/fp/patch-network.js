@@ -381,7 +381,7 @@ define( [
              */
             this.updatePatchValues = function() {
 
-                if ( fp.appConfig.displayOptions.patchesUpdate && FiercePlanet.appState.runSimulation ) {
+                if ( fp.appConfig.displayOptions.patchesUpdate && fp.appState.runSimulation ) {
 
                     // Allow for overriding of the patch values
                     if ( !_.isUndefined( fp.patchNetwork.reviseValues ) ) {
