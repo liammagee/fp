@@ -1,13 +1,13 @@
 % Fierce Planet
 
 
-# Sustainability and Sustainable Development
+# Navigating a Fierce Planet
 
 The models below illustrate different interpretations of sustainability and sustainable development. 
 
 They are designed to support an undergraduate sustainability course, and move from very basic models (such as the [Petri Dish](#petri-dish)) through to more complex models of conceptual arguments about sustainability. These include [Malthusian Population Growth](#malthus), [Limits to Growth](#limits-to-growth), the [Green Revolution](#green-revolution) and the [Triple Bottom Line](#triple-bottom-line).
 
-
+A *work in progress* version of an accompanying text on sustainability can be found [here](https://docs.google.com/document/u/1/d/1irry-14-HSvWnc_2WEZT8LOEiFfqOli_1bzcJLtrTho/pub#h.8c4ooz8q2g4s). 
 
 
 
