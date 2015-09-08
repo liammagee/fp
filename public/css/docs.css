@@ -17,5 +17,6 @@ h1>a:hover {
 
 .nav>li>ul>li>a {
     padding: 3px 25px;
+    font-size: 0.85em;
 }
 
