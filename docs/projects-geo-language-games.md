@@ -10,7 +10,7 @@ This model has been developed by [Rachel Hendery](http://www.uws.edu.au/staff_pr
 [Open in a new window](projects/geolanguagegames/basic.html)
 
 
-# Geo Language Game with Advanced Linguistic Model
+# Advanced Linguistic Model
 
 In this model, agents have a richer linguistic model, incorporating:
 
