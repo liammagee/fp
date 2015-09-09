@@ -9,7 +9,7 @@
 
 Other collaborators include:
 
- - [Anthony Richardson](http://www1.rmit.edu.au/browse/About%20RMIT%2FContact%2FAll%20contacts%2FStaff%2Fby%20name%2FR%2F;ID=yuvu89pijqtp;STATUS=A).
+ - [Anthony Richardson](http://www1.rmit.edu.au/browse/About%20RMIT%2FContact%2FAll%20contacts%2FStaff%2Fby%20name%2FR%2F;ID=yuvu89pijqtp;STATUS=A)
  - [Rachel Hendery](http://www.uws.edu.au/staff_profiles/uws_profiles/doctor_rachel_hendery)
 
 <!--
