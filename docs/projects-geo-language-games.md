@@ -20,9 +20,8 @@ In this model, agents have a richer linguistic model, incorporating:
  - number of phonemes
  - word complexity
 
-etc.
 
-These model elements have different weights that signify whether
+These model elements are assigned different weights that signify whether
 they are more or less susceptible to modification.
 
 
