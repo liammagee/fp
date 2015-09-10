@@ -85,17 +85,22 @@ Configuration options can be set in two ways:
 
 The following are a partial list of these options:
 
- - *Agent Options*
+ - **Agent Options**
+     + *initialPopulation*: The initial number of agents populating the simulation.
+     + *initialX*: The *x* co-ordinate of the point of origin around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.
+     + *initialY*: The *y* co-ordinate of the point of origin  around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.
+     + *initialExtent*: The *initial* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
+     + *maxExtent*: The *maximum* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
      + TBD
- - *Building Options*
+ - **Building Options**
      + TBD
- - *Road Options*
+ - **Road Options**
      + TBD
- - *Display Options*
+ - **Display Options**
      + TBD
- - *Colour Options*
+ - **Colour Options**
      + TBD
- - *Terrain Options*
+ - **Terrain Options**
      + TBD
 
 Some simulations also include additional options that adjust the behaviour of their particular model.

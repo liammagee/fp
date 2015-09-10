@@ -43,16 +43,39 @@ define( [
         this.agentOptions = {
 
             /**
-             * Initial population of agents.
+             * The initial number of agents populating the simulation.
+             *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
              * @inner
              */
             initialPopulation: 100,
 
+            // NOTE: Settings for Melbourne: initialX: -500, initialY: -1500,
+
+            /**
+             * The <em>x</em> co-ordinate of the point of origin around which agents are initially generated,
+             * expressed as a percentage (0 - 100) of distance from the actual grid center.
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            initialX: 50,
+
+            /**
+             * The <em>y</em> co-ordinate of the point of origin around which agents are initially generated,
+             * expressed as a percentage (0 - 100) of distance from the actual grid center.
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            initialY: 50,
+
             /**
              * The <em>initial</em> extent, or diameter, around the point of
-             * origin, where agents can be spawned, expressed as a percentage ( 0-100 ).
+             * origin, where agents can be generated, expressed as a percentage (0 - 100).
              *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
@@ -62,7 +85,7 @@ define( [
 
             /**
              * The <em>maximum</em> extent, or diameter, around the point of
-             *  origin, where agents can be spawed, expressed as a percentage ( 0-100 ).
+             *  origin, where agents can be generated, expressed as a percentage (0 - 100).
              *
              * @type {Number}
              * @memberOf fp~AppConfig~agentOptions
@@ -70,30 +93,9 @@ define( [
              */
             maxExtent: 100,
 
-            // NOTE: Settings for Melbourne: initialX: -500, initialY: -1500,
-
             /**
-             * The <em>x</em> co-ordinate of the point of origin,
-             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
+             * Whether the agent's age is randomly set, initially.
              *
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            initialX: 50,
-
-            /**
-             * The <em>y</em> co-ordinate of the point of origin,
-             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
-             *
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            initialY: 50,
-
-            /**
-             * Whether the agent's age is randomly set, initially
              * @type {Boolean}
              */
             randomAge: true,

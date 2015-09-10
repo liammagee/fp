@@ -13,7 +13,9 @@ This model has been developed by [Rachel Hendery](http://www.uws.edu.au/staff_pr
 
 # Advanced Linguistic Model
 
-In this model, agents have a richer linguistic model, incorporating:
+**Currently under development...**
+
+In this model, agents will have a richer linguistic model, incorporating:
 
  - lexicon
  - word order
