@@ -121,8 +121,8 @@ The following are a partial list of these options:
  - **Building Options**
      + *create*: Whether agents can create buildings.
      + *maxNumber*: The maximum number of buildings the simulation can hold.
-     + *detectBuildingCollisions*:
-     + *detectRoadCollisions*:
+     + *detectBuildingCollisions*: Whether new buildings should avoid existing buildings.
+     + *detectRoadCollisions*: Whether new buildings should avoid existing roads.
      + Form
         + *buildingForm*: The form building should take. Can be one of the following values: "rectangle", "octagon", "fivesided", "triangle", "concave".
         + *randomForm*: Whether the building's form should be randomly assigned from one of the five values above.
