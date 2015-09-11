@@ -276,6 +276,7 @@ define( [
             otherBuildings: 0.9,
 
 
+
             distanceFromOtherBuildingsMin: 800,
 
 
@@ -290,10 +291,10 @@ define( [
             buildingForm: "rectangle",
 
 
-            spread: 10,
-
-
             randomForm: false,
+
+
+            spread: 10,
 
 
             rotateRandomly: false,

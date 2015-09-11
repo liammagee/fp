@@ -116,32 +116,228 @@
         <ul>
         <li><strong>Agent Options</strong>
         <ul>
+        <li>Initial Distribution
+        <ul>
         <li><em>initialPopulation</em>: The initial number of agents populating the simulation.</li>
         <li><em>initialX</em>: The <em>x</em> co-ordinate of the point of origin around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.</li>
         <li><em>initialY</em>: The <em>y</em> co-ordinate of the point of origin around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.</li>
         <li><em>initialExtent</em>: The <em>initial</em> extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).</li>
         <li><em>maxExtent</em>: The <em>maximum</em> extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).</li>
-        <li>TBD</li>
+        <li><em>initialCircle</em>: Whether the initial distribution of agents is in a circle. If false, the distribution is a square.</li>
+        <li><em>initialSpeed</em>: The initial speed of the agent.</li>
+        <li><em>initialPerturbBy</em>: The amount to perturb, or modify, the agent’s direction each tick.</li>
+        <li><em>randomAge</em>: Whether the agent’s age is randomly set, initially.</li>
+        <li><em>shuffle</em>: Whether to shuffle agents before each tick. Shuffling can be expensive for large number of agents, but can ensure properly randomised simulations.</li>
+        </ul></li>
+        <li>Network options:
+        <ul>
+        <li><em>establishLinks</em>: Whether agents can establish links with each other.</li>
+        <li><em>chanceToJoinNetwork</em>: The likelihood of establishing a link when meeting another agent (values are between 0.0 and 1.0).</li>
+        <li><em>chanceToJoinNetworkWithHome</em>: The likelihood of establishing a link when meeting another agent, when the other agent has a home.</li>
+        <li><em>chanceToJoinNetworkWithBothHomes</em>: The likelihood of establishing a link when meeting another agent, when the other agent has a home.</li>
+        <li><em>chanceToFindPathToHome</em>: The likelihood of disrupting a random walk to find a path home.</li>
+        <li><em>chanceToFindPathToOtherAgentHome</em>: The likelihood of disrupting a random walk to find a path to another, linked agent’s home.</li>
+        </ul></li>
+        <li>Movement options:
+        <ul>
+        <li><em>noWater</em>: Agents cannot move across water.</li>
+        <li><em>noUphill</em>: Agents cannot go up hill.</li>
+        <li><em>visitHomeBuilding</em>: The likelihood of an agent travelling up, when visting their own home.</li>
+        <li><em>visitOtherBuilding</em>: The likelihood of an agent travelling up, when visting another agent’s home.</li>
+        <li><em>movementRelativeToPatch</em>: Whether the agent’s movement should be calculated, relative to the current patch the agent is on.</li>
+        <li><em>movementInPatch</em>: The amount to multiply the agent’s speed, relative to the size of the patch.</li>
+        <li><em>movementStrictlyIntercardinal</em>: Whether the agent’s movement should be strictly cardinal (N/NE/E/SE/S/SW/W/NW).</li>
+        <li><em>changeDirectionEveryTick</em>: Whether to recaculate the agent’s movement, every tick.</li>
+        <li><em>perturbDirectionEveryTick</em>: Whether to perturb, or slightly adjust, the agent’s movement, every tick.</li>
+        </ul></li>
+        <li>Visualisation options:
+        <ul>
+        <li><em>useStickman</em>: Whether to use a ‘stickman’ image. Otherwise, use a circle.</li>
+        <li><em>size</em>: The size to draw the agent.</li>
+        <li><em>terrainOffset</em>: The amount to offset the agent from the underlying terrain.</li>
+        </ul></li>
         </ul></li>
         <li><strong>Building Options</strong>
         <ul>
-        <li>TBD</li>
+        <li><em>create</em>:</li>
+        <li><em>maxNumber</em>:</li>
+        <li><em>heightA</em>:</li>
+        <li><em>heightB</em>:</li>
+        <li><em>roads</em>:</li>
+        <li><em>water</em>:</li>
+        <li><em>otherBuildings</em>:</li>
+        <li><em>distanceFromOtherBuildingsMin</em>:</li>
+        <li><em>distanceFromOtherBuildingsMax</em>:</li>
+        <li><em>buildingHeight</em>:</li>
+        <li><em>buildingForm</em>:</li>
+        <li><em>spread</em>:</li>
+        <li><em>randomForm</em>:</li>
+        <li><em>rotateRandomly</em>:</li>
+        <li><em>rotateSetAngle</em>:</li>
+        <li><em>destroyOnComplete</em>:</li>
+        <li><em>loopCreateDestroy</em>:</li>
+        <li><em>turning</em>:</li>
+        <li><em>falling</em>:</li>
+        <li><em>riseRate</em>:</li>
+        <li><em>minHeight</em>:</li>
+        <li><em>maxHeight</em>:</li>
+        <li><em>minWidth</em>:</li>
+        <li><em>maxWidth</em>:</li>
+        <li><em>minLength</em>:</li>
+        <li><em>maxLength</em>:</li>
+        <li><em>maxLevels</em>:</li>
+        <li><em>width</em>:</li>
+        <li><em>length</em>:</li>
+        <li><em>levelHeight</em>:</li>
+        <li><em>useShader</em>:</li>
+        <li><em>useLevelOfDetail</em>:</li>
+        <li><em>highResDistance</em>:</li>
+        <li><em>lowResDistance</em>:</li>
+        <li><em>opacity</em>:</li>
+        <li><em>showFill</em>:</li>
+        <li><em>fillRooves</em>:</li>
+        <li><em>showLines</em>:</li>
+        <li><em>linewidth</em>:</li>
+        <li><em>showWindows</em>:</li>
+        <li><em>windowsRandomise</em>:</li>
+        <li><em>windowsFlickerRate</em>:</li>
+        <li><em>windowWidth</em>:</li>
+        <li><em>windowPercent</em>:</li>
+        <li><em>windowsStartY</em>:</li>
+        <li><em>windowsEndY</em>:</li>
+        <li><em>windowsLine</em>:</li>
+        <li><em>windowsFill</em>:</li>
+        <li><em>stagger</em>:</li>
+        <li><em>staggerAmount</em>:</li>
+        <li><em>taper</em>:</li>
+        <li><em>taperExponent</em>:</li>
+        <li><em>taperDistribution</em>:</li>
+        <li><em>detectBuildingCollisions</em>:</li>
+        <li><em>detectRoadCollisions</em>:</li>
         </ul></li>
         <li><strong>Road Options</strong>
         <ul>
-        <li>TBD</li>
-        </ul></li>
-        <li><strong>Display Options</strong>
-        <ul>
-        <li>TBD</li>
-        </ul></li>
-        <li><strong>Colour Options</strong>
-        <ul>
-        <li>TBD</li>
+        <li><em>create</em>:</li>
+        <li><em>maxNumber</em>:</li>
+        <li><em>roadWidth</em>:</li>
+        <li><em>roadDeviation</em>:</li>
+        <li><em>roadRadiusSegments</em>:</li>
+        <li><em>roadSegments</em>:</li>
+        <li><em>initialRadius</em>:</li>
+        <li><em>probability</em>:</li>
+        <li><em>lenMinimum</em>:</li>
+        <li><em>lenMaximum</em>:</li>
+        <li><em>lenDistributionFactor</em>:</li>
+        <li><em>overlapThreshold</em>:</li>
+        <li><em>flattenAdjustment</em>:</li>
+        <li><em>flattenLift</em>:</li>
         </ul></li>
         <li><strong>Terrain Options</strong>
         <ul>
-        <li>TBD</li>
+        <li><em>renderAsSphere</em>:</li>
+        <li><em>loadHeights</em>:</li>
+        <li><em>gridExtent</em>:</li>
+        <li><em>gridPoints</em>:</li>
+        <li><em>maxTerrainHeight</em>:</li>
+        <li><em>shaderUse</em>:</li>
+        <li><em>shaderShadowMix</em>:</li>
+        <li><em>multiplier</em>:</li>
+        <li><em>mapIndex</em>:</li>
+        <li><em>mapFile</em>:</li>
+        <li><em>patchSize</em>:</li>
+        <li><em>defaultHeight</em>:</li>
+        </ul></li>
+        <li><strong>Display Options</strong>
+        <ul>
+        <li><em>agentsShow</em>:</li>
+        <li><em>buildingsShow</em>:</li>
+        <li><em>roadsShow</em>:</li>
+        <li><em>waterShow</em>:</li>
+        <li><em>networkShow</em>:</li>
+        <li><em>networkCurve</em>:</li>
+        <li><em>networkCurvePoints</em>:</li>
+        <li><em>patchesShow</em>:</li>
+        <li><em>patchesUpdate</em>:</li>
+        <li><em>trailsShow</em>:</li>
+        <li><em>trailsShowAsLines</em>:</li>
+        <li><em>trailsUpdate</em>:</li>
+        <li><em>trailLength</em>:</li>
+        <li><em>cursorShow</em>:</li>
+        <li><em>cursorShowCell</em>:</li>
+        <li><em>statsShow</em>:</li>
+        <li><em>hudShow</em>:</li>
+        <li><em>guiControlsShow</em>:</li>
+        <li><em>wireframeShow</em>:</li>
+        <li><em>dayShow</em>:</li>
+        <li><em>skyboxShow</em>:</li>
+        <li><em>chartShow</em>:</li>
+        <li><em>guiShow</em>:</li>
+        <li><em>guiShowControls</em>:</li>
+        <li><em>guiShowAgentFolder</em>:</li>
+        <li><em>guiShowBuildingsFolder</em>:</li>
+        <li><em>guiShowRoadsFolder</em>:</li>
+        <li><em>guiShowTerrainFolder</em>:</li>
+        <li><em>guiShowDisplayFolder</em>:</li>
+        <li><em>guiShowColorFolder</em>:</li>
+        <li><em>pathsShow</em>:</li>
+        <li><em>terrainShow</em>:</li>
+        <li><em>lightHemisphereShow</em>:</li>
+        <li><em>lightDirectionalShow</em>:</li>
+        <li><em>coloriseAgentsByHealth</em>:</li>
+        <li><em>firstPersonView</em>:</li>
+        <li><em>cameraOverride</em>:</li>
+        <li><em>cameraX</em>:</li>
+        <li><em>cameraY</em>:</li>
+        <li><em>cameraZ</em>:</li>
+        <li><em>maximiseView</em>:</li>
+        </ul></li>
+        <li><strong>Colour Options</strong>
+        <ul>
+        <li><em>colorDayBackground</em>:</li>
+        <li><em>colorDayRoad</em>:</li>
+        <li><em>colorDayAgent</em>:</li>
+        <li><em>colorDayNetwork</em>:</li>
+        <li><em>colorDayTrail</em>:</li>
+        <li><em>colorDayPath</em>:</li>
+        <li><em>colorDayBuildingFill</em>:</li>
+        <li><em>colorDayBuildingLine</em>:</li>
+        <li><em>colorDayBuildingWindow</em>:</li>
+        <li><em>colorNightBackground</em>:</li>
+        <li><em>colorNightRoad</em>:</li>
+        <li><em>colorNightAgent</em>:</li>
+        <li><em>colorNightNetwork</em>:</li>
+        <li><em>colorNightTrail</em>:</li>
+        <li><em>colorNightNetworPath</em>:</li>
+        <li><em>colorNightPath</em>:</li>
+        <li><em>colorNightBuildingFill</em>:</li>
+        <li><em>colorNightBuildingLine</em>:</li>
+        <li><em>colorNightBuildingWindow</em>:</li>
+        <li><em>colorGraphPopulation</em>:</li>
+        <li><em>colorGraphHealth</em>:</li>
+        <li><em>colorGraphPatchValues</em>:</li>
+        <li><em>colorLightHemisphereSky</em>:</li>
+        <li><em>colorLightHemisphereGround</em>:</li>
+        <li><em>colorLightHemisphereIntensity</em>:</li>
+        <li><em>colorLightDirectional</em>:</li>
+        <li><em>colorLightDirectionalIntensity</em>:</li>
+        <li><em>colorDayTerrainGroundLevel</em>:</li>
+        <li><em>colorDayTerrainHighland</em>:</li>
+        <li><em>colorDayTerrainLowland1</em>:</li>
+        <li><em>colorDayTerrainLowland2</em>:</li>
+        <li><em>colorDayTerrainMidland1</em>:</li>
+        <li><em>colorDayTerrainHighland</em>:</li>
+        <li><em>colorNightTerrainGroundLevel</em>:</li>
+        <li><em>colorNightTerrainLowland1</em>:</li>
+        <li><em>colorNightTerrainLowland2</em>:</li>
+        <li><em>colorNightTerrainMidland1</em>:</li>
+        <li><em>colorNightTerrainMidland2</em>:</li>
+        <li><em>colorNightTerrainHighland</em>:</li>
+        <li><em>colorTerrainStop1</em>:</li>
+        <li><em>colorTerrainStop2</em>:</li>
+        <li><em>colorTerrainStop3</em>:</li>
+        <li><em>colorTerrainStop4</em>:</li>
+        <li><em>colorTerrainStop5</em>:</li>
+        <li><em>colorTerrainOpacity</em>:</li>
         </ul></li>
         </ul>
         <p>Some simulations also include additional options that adjust the behaviour of their particular model.</p>
@@ -170,9 +366,9 @@
             <li role="presentation">
               <a href="#">Technical Docs</a>
               <ul class="nav">
-                <li><a href="README.html">README</a></li>
+                <li><a href="README.html">Overview</a></li>
                 <li><a href="customising-fp.html">Customising</a></li>
-                <li><a href="api/fierce-planet/0.1.2/index.html" target="_blank">API Docs</a></li>
+                <li><a href="api/fierce-planet/0.1.2/index.html" target="_blank">API docs</a></li>
                 <li><a href="https://github.com/liammagee/fp.git" target="_blank">GitHub</a></li>
               </ul>
             </li>

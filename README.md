@@ -110,72 +110,82 @@ The following are a partial list of these options:
          * *visitHomeBuilding*: The likelihood of an agent travelling up, when visting their own home.
          * *visitOtherBuilding*: The likelihood of an agent travelling up, when visting another agent's home. 
          * *movementRelativeToPatch*: Whether the agent's movement should be calculated, relative to the current patch the agent is on.
-         * *movementInPatch*: 
-         * *movementStrictlyIntercardinal*: 
-         * *changeDirectionEveryTick*: 
-         * *perturbDirectionEveryTick*: 
+         * *movementInPatch*: The amount to multiply the agent's speed, relative to the size of the patch.
+         * *movementStrictlyIntercardinal*: Whether the agent's movement should be strictly cardinal (N/NE/E/SE/S/SW/W/NW). 
+         * *changeDirectionEveryTick*: Whether to recaculate the agent's movement, every tick.
+         * *perturbDirectionEveryTick*: Whether to perturb, or slightly adjust, the agent's movement, every tick.
      + Visualisation options:
          * *useStickman*: Whether to use a 'stickman' image. Otherwise, use a circle.
          + *size*: The size to draw the agent.
          + *terrainOffset*: The amount to offset the agent from the underlying terrain.
  - **Building Options**
-     + *create*:
-     + *maxNumber*:
-     + *heightA*:
-     + *heightB*:
-     + *roads*:
-     + *water*:
-     + *otherBuildings*:
-     + *distanceFromOtherBuildingsMin*:
-     + *distanceFromOtherBuildingsMax*:
-     + *buildingHeight*:
-     + *buildingForm*:
-     + *spread*:
-     + *randomForm*:
-     + *rotateRandomly*:
-     + *rotateSetAngle*:
-     + *destroyOnComplete*:
-     + *loopCreateDestroy*:
-     + *turning*:
-     + *falling*:
-     + *riseRate*:
-     + *minHeight*:
-     + *maxHeight*:
-     + *minWidth*:
-     + *maxWidth*:
-     + *minLength*:
-     + *maxLength*:
-     + *maxLevels*:
-     + *width*:
-     + *length*:
-     + *levelHeight*:
-     + *useShader*:
-     + *useLevelOfDetail*:
-     + *highResDistance*:
-     + *lowResDistance*:
-     + *opacity*:
-     + *showFill*:
-     + *fillRooves*:
-     + *showLines*:
-     + *linewidth*:
-     + *showWindows*:
-     + *windowsRandomise*:
-     + *windowsFlickerRate*:
-     + *windowWidth*:
-     + *windowPercent*:
-     + *windowsStartY*:
-     + *windowsEndY*:
-     + *windowsLine*:
-     + *windowsFill*:
-     + *stagger*:
-     + *staggerAmount*:
-     + *taper*:
-     + *taperExponent*:
-     + *taperDistribution*:
+     + *create*: Whether agents can create buildings.
+     + *maxNumber*: The maximum number of buildings the simulation can hold.
      + *detectBuildingCollisions*:
      + *detectRoadCollisions*:
+     + Form
+        + *buildingForm*: The form building should take. Can be one of the following values: "rectangle", "octagon", "fivesided", "triangle", "concave".
+        + *randomForm*: Whether the building's form should be randomly assigned from one of the five values above.
+        + *spread*: How far apart buildings must be from eachother.
+        + *rotateRandomly*: Whether buildings should be rotated randomly.
+        + *rotateSetAngle*: Whether buildings should be positioned at a set angle.
+        + *destroyOnComplete*: Whether buildings should be destroyed, once created.
+        + *loopCreateDestroy*: Whether buildings should go in a loop of being created and destroyed.
+     + Influences. Buildings will be created based on a calculation of likelihoods. The following parameters indicate the specific likelihood parameters.
+        * *roads*: The influence of a road on the construction of a new building.
+        * *water*: The influence of water on the construction of a new building.
+        * *otherBuildings*: The influence of other buildings on the construction of a new building.
+        * *distanceFromOtherBuildingsMin*: The minimum distance of other buildings must be to a new building.
+        * *distanceFromOtherBuildingsMax*: The maximum distance of other buildings must be to a new building.
+        * *buildingHeight*: The influence of other buildings of a certain height on the construction of a new building.
+    + Dimensions
+        * *minHeight*: The minimum height of a building.
+        * *maxHeight*: The maximum height of a building.
+        * *heightA*: A building will have a maximum height it can aspire to, based on a given probability. *heightA* refers to the exponential factor in this calculation.
+        * *heightB*: A building will have a maximum height it can aspire to, based on a given probability. *heightB* refers to the additive factor in this calculation, which also constitutes the *minimum height*.
+        * *minWidth*: The minimum width of a building.
+        * *maxWidth*: The maximum width of a building.
+        * *minLength*: The minimum length of a building.
+        * *maxLength*: The maximum length of a building.
+        * *maxLevels*: The maximum number of levels of a building.
+        * *width*: A set width for buildings.
+        * *length*: A set length for buildings.
+        * *levelHeight*: The height of a level.
+    + Viewing Parameters
+        * *useShader*: Whether to use shaders to render buildings.
+        * *useLevelOfDetail*: Whether to use level of detail for buildings, simplifying their representation at a distance.
+        * *highResDistance*: The distance at which to show the building in high resolution.
+        * *lowResDistance*: The distance at which to show the building in low resolution.
+        * *opacity*: The amount of opacity to show the building.
+        * Fill Parameters
+            - *showFill*: Whether to show the walls of the building.
+            - *fillRooves*: Whether to show the rooves of the building.
+        * Line Parameters
+            - *showLines*: Whether to show the lines of the building.
+            - *linewidth*: The width of the building line.
+        * Fill Parameters
+            - *showWindows*: Whether to show the windows of the building.
+            - *windowsRandomise*: Whether to randomise the appearance of windows.
+            - *windowsFlickerRate*: The rate at which to change the appearance of windows.
+            - *windowWidth*: The width of windows.
+            - *windowPercent*: The percentage of the overall window segment to fill with the window.
+            - *windowsStartY*: The bottom of the window, relative to the wall.
+            - *windowsEndY*: The top of the window, relative to the wall.
+            - *windowsLine*: Whether to draw the line of the window.
+            - *windowsFill*: Whether to fill in the window.
+    + Stagger Parameters
+        * *stagger*: Whether to stagger the height of the building.
+        * *staggerAmount*: The amount to 'step' the stagger.
+    + Taper Parameters
+        * *taper*: Whether to taper the stagger of the building. This results in a curved rather than regular stagger, according to random distribution drawn from an exponential sample.
+        * *taperExponent*: The exponential amount of the taper.
+        * *taperDistribution*: The distribution of the taper.
+    + Animation
+        * *turning*: Whether buildings should be shown in a turning motion.
+        * *falling*: Whether buildings should be shown falling.
+        * *riseRate*: The rate at which buildings should fall.
  - **Road Options**
-     + *create*:
+     + *create*: Whether agents can build roads.
      + *maxNumber*:
      + *roadWidth*:
      + *roadDeviation*:
