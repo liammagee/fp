@@ -277,7 +277,7 @@ define( [
              *
              * @type {Boolean}
              */
-            detectRoadCollisions: true
+            detectRoadCollisions: true,
 
 
             // Building form
