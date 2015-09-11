@@ -86,24 +86,26 @@ Configuration options can be set in two ways:
 The following are a partial list of these options:
 
  - **Agent Options**
-     + *initialPopulation*: The initial number of agents populating the simulation.
-     + *initialX*: The *x* co-ordinate of the point of origin around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.
-     + *initialY*: The *y* co-ordinate of the point of origin  around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.
-     + *initialExtent*: The *initial* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
-     + *maxExtent*: The *maximum* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
-     + *randomAge*: Whether the agent's age is randomly set, initially.
-     + *chanceToJoinNetwork*:
-     + *chanceToJoinNetworkWithHome*: 
-     + *chanceToJoinNetworkWithBothHomes*: 
-     + *chanceToFindPathToHome*: 
-     + *chanceToFindPathToOtherAgentHome*: 
-     + *initialCircle*: 
+     + Initial Distribution
+         * *initialPopulation*: The initial number of agents populating the simulation.
+         * *initialX*: The *x* co-ordinate of the point of origin around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.
+         * *initialY*: The *y* co-ordinate of the point of origin  around which agents are initially generated, expressed as a percentage (0 - 100) of distance from the actual grid center.
+         * *initialExtent*: The *initial* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
+         * *maxExtent*: The *maximum* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
+         * *initialCircle*: Whether the initial distribution of agents is in a circle. If false, the distribution is a square.
+         * *randomAge*: Whether the agent's age is randomly set, initially.
+     + Network options:
+         * *establishLinks*: Whether agents can establish links with each other.
+         * *chanceToJoinNetwork*: The likelihood of establishing a link when meeting another agent (values are between 0.0 and 1.0).
+         * *chanceToJoinNetworkWithHome*: The likelihood of establishing a link when meeting another agent, when the other agent has a home.
+         * *chanceToJoinNetworkWithBothHomes*: The likelihood of establishing a link when meeting another agent, when the other agent has a home.
+         * *chanceToFindPathToHome*: The likelihood of disrupting a random walk to find a path home.
+         * *chanceToFindPathToOtherAgentHome*: The likelihood of disrupting a random walk to find a path to another, linked agent's home.
      + *noWater*: 
      + *noUphill*: 
      + *useStickman*: 
      + *visitHomeBuilding*: 
      + *visitOtherBuilding*: 
-     + *establishLinks*: 
      + *size*: 
      + *terrainOffset*: 
      + *shuffle*: 

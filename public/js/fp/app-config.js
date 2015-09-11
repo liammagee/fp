@@ -94,6 +94,14 @@ define( [
             maxExtent: 100,
 
             /**
+             * Whether the initial distribution of agents is in a circle.
+             * If false, the distribution is a square.
+             *
+             * @type {Boolean}
+             */
+            initialCircle: true,
+
+            /**
              * Whether the agent's age is randomly set, initially.
              *
              * @type {Boolean}
@@ -101,40 +109,46 @@ define( [
             randomAge: true,
 
             /**
-             * [chanceToJoinNetwork description]
+             * Whether agents can establish links with each other
+             *
+             * @type {Boolean}
+             */
+            establishLinks: false,
+
+            /**
+             * The likelihood of joining networks when meeting another agent (values are between 0.0 and 1.0).
+             *
              * @type {Number}
              */
             chanceToJoinNetwork: 0.05,
 
             /**
-             * [chanceToJoinNetworkWithHome description]
+             * The likelihood of joining networks when meeting another agent, when the other agent has a home  (values are between 0.0 and 1.0).
+             *
              * @type {Number}
              */
             chanceToJoinNetworkWithHome: 0.05,
 
             /**
-             * [chanceToJoinNetworkWithBothHomes description]
+             * The likelihood of establishing a link when meeting another agent, when the other agent has a home.
+             *
              * @type {Number}
              */
             chanceToJoinNetworkWithBothHomes: 0.05,
 
             /**
-             * [chanceToFindPathToHome description]
+             * The likelihood of disrupting a random walk to find a path home.
+             *
              * @type {Number}
              */
             chanceToFindPathToHome: 0.00,
 
             /**
-             * [chanceToFindPathToOtherAgentHome description]
+             * The likelihood of disrupting a random walk to find a path to another, linked agent's home.
+             *
              * @type {Number}
              */
             chanceToFindPathToOtherAgentHome: 0.00,
-
-            /**
-             * [initialCircle description]
-             * @type {Boolean}
-             */
-            initialCircle: true,
 
 
             noWater: false,
@@ -150,9 +164,6 @@ define( [
 
 
             visitOtherBuilding: 0.002,
-
-
-            establishLinks: false,
 
 
             size: 40,
@@ -381,21 +392,51 @@ define( [
 
             detectRoadCollisions: true
         };
+
+
         this.roadOptions = {
 
+
+
             create: false,
+
+
             maxNumber: 200,  // Maximum number of roads - for performance reasons
+
+
             roadWidth: 20,
+
+
             roadDeviation: 20,
+
+
             roadRadiusSegments: 10,
+
+
             roadSegments: 10,
+
+
             initialRadius: 100,
+
+
             probability: 1,
+
+
             lenMinimum: 100,
+
+
             lenMaximum: 2000,
+
+
             lenDistributionFactor: 3,
+
+
             overlapThreshold: 3,
+
+
             flattenAdjustment: 0.025,
+
+
             flattenLift: 20
 
         };
@@ -403,17 +444,39 @@ define( [
 
         this.terrainOptions = {
 
+
+
             renderAsSphere: true,
+
+
             loadHeights: true,
+
+
             gridExtent: 8000,
+
+
             gridPoints: 400,
+
+
             maxTerrainHeight: 400,
+
+
             shaderUse: true,
+
+
             shaderShadowMix: 0.5,
+
+
             multiplier: 1,
+
+
             mapIndex: 0,
             mapFile: "",
+
+
             patchSize: 4,
+
+
             defaultHeight: 0
 
         };
@@ -421,46 +484,128 @@ define( [
 
         this.displayOptions = {
 
+
+
             agentsShow: true,
+
+
             buildingsShow: true,
+
+
             roadsShow: true,
+
+
             waterShow: true,
+
+
             networkShow: false,
+
+
             networkCurve: true,
+
+
             networkCurvePoints: 20,
+
+
             patchesShow: false,
+
+
             patchesUpdate: true,
+
+
             trailsShow: false,
+
+
             trailsShowAsLines: false,
+
+
             trailsUpdate: false,
+
+
             trailLength: 10000,
+
+
             cursorShow: false,
+
+
             cursorShowCell: true,
+
+
             statsShow: true,
+
+
             hudShow: true,
+
+
             guiControlsShow: true,
+
+
             wireframeShow: false,
+
+
             dayShow: false,
+
+
             skyboxShow: true,
+
+
             chartShow: true,
+
+
             guiShow: true,
+
+
             guiShowControls: true,
+
+
             guiShowAgentFolder: true,
+
+
             guiShowBuildingsFolder: true,
+
+
             guiShowRoadsFolder: true,
+
+
             guiShowTerrainFolder: true,
+
+
             guiShowDisplayFolder: true,
+
+
             guiShowColorFolder: true,
+
+
             pathsShow: true,
+
+
             terrainShow: true,
+
+
             lightHemisphereShow: false,
+
+
             lightDirectionalShow: true,
+
+
             coloriseAgentsByHealth: false,
+
+
             firstPersonView: false,
+
+
             cameraOverride: false,
+
+
             cameraX: 0,
+
+
             cameraY: 200,
+
+
             cameraZ: 800,
+
+
             maximiseView: true
 
         };
@@ -468,55 +613,145 @@ define( [
 
         this.colorOptions = {
 
+
+
             colorDayBackground: 0x000000,
+
+
             colorDayRoad: 0x474747,
+
+
             colorDayAgent: 0x4747b3,
+
+
             colorDayNetwork: 0x474747,
+
+
             colorDayTrail: 0x474747,
+
+
             colorDayPath: 0x474747,
+
+
             colorDayBuildingFill: 0xb1abab,
+
+
             colorDayBuildingLine: 0x222222,
+
+
             colorDayBuildingWindow: 0x222222,
 
+
+
             colorNightBackground: 0x636363,
+
+
             colorNightRoad: 0x474747,
+
+
             colorNightAgent: 0x47b347,
+
+
             colorNightNetwork: 0x47b347,
+
+
             colorNightTrail: 0x47b347,
+
+
             colorNightNetworPath: 0x47b347,
+
+
             colorNightPath: 0x47b347,
+
+
             colorNightBuildingFill: 0x838383,
+
+
             colorNightBuildingLine: 0x838383,
+
+
             colorNightBuildingWindow: 0xffff8f,
 
+
+
             colorGraphPopulation: 0x4747b3,
+
+
             colorGraphHealth: 0xb34747,
+
+
             colorGraphPatchValues: 0x47b347,
 
+
+
             colorLightHemisphereSky: 0xbfbfbf,
+
+
             colorLightHemisphereGround: 0xbfbfbf,
+
+
             colorLightHemisphereIntensity: 1.0,
+
+
             colorLightDirectional: 0xffffff,
+
+
             colorLightDirectionalIntensity: 0.5,
 
+
+
             colorDayTerrainGroundLevel: 0x969696,
+
+
             colorDayTerrainLowland1: 0x2d5828,
+
+
             colorDayTerrainLowland2: 0x6d915b,
+
+
             colorDayTerrainMidland1: 0x89450e,
+
+
             colorDayTerrainMidland2: 0x89450e,
+
+
             colorDayTerrainHighland: 0x8c8c8c,
+
+
             colorNightTerrainGroundLevel: 0x000000,
+
+
             colorNightTerrainLowland1: 0x000000,
+
+
             colorNightTerrainLowland2: 0x181818,
+
+
             colorNightTerrainMidland1: 0x282828,
+
+
             colorNightTerrainMidland2: 0x3a3a3a,
+
+
             colorNightTerrainHighland: 0x4c4c4c,
 
+
+
             colorTerrainStop1: 0.2,
+
+
             colorTerrainStop2: 0.4,
+
+
             colorTerrainStop3: 0.6,
+
+
             colorTerrainStop4: 0.8,
+
+
             colorTerrainStop5: 1.0,
+
+
 
             colorTerrainOpacity: 1.0
 
