@@ -100,114 +100,285 @@ define( [
              */
             randomAge: true,
 
+            /**
+             * [chanceToJoinNetwork description]
+             * @type {Number}
+             */
             chanceToJoinNetwork: 0.05,
+
+            /**
+             * [chanceToJoinNetworkWithHome description]
+             * @type {Number}
+             */
             chanceToJoinNetworkWithHome: 0.05,
+
+            /**
+             * [chanceToJoinNetworkWithBothHomes description]
+             * @type {Number}
+             */
             chanceToJoinNetworkWithBothHomes: 0.05,
+
+            /**
+             * [chanceToFindPathToHome description]
+             * @type {Number}
+             */
             chanceToFindPathToHome: 0.00,
+
+            /**
+             * [chanceToFindPathToOtherAgentHome description]
+             * @type {Number}
+             */
             chanceToFindPathToOtherAgentHome: 0.00,
+
+            /**
+             * [initialCircle description]
+             * @type {Boolean}
+             */
             initialCircle: true,
+
+
             noWater: false,
+
+
             noUphill: false, // Eventually remove for more fine-grained weight control
+
+
             useStickman: true,
+
+
             visitHomeBuilding: 0.02,
+
+
             visitOtherBuilding: 0.002,
+
+
             establishLinks: false,
+
+
             size: 40,
+
+
             terrainOffset: 0,
+
+
             shuffle: false,
+
+
             initialSpeed: 20,
+
+
             initialPerturbBy: 0.05,
+
+
             movementRelativeToPatch: false,
+
+
             movementInPatch: 1,
+
+
             movementStrictlyIntercardinal: false,
 
+
+
             changeDirectionEveryTick: 100,
+
+
             perturbDirectionEveryTick: 10,
 
         };
 
+
         this.buildingOptions = {
 
+
+
             create: true,
+
 
             maxNumber: 250, // Maximum number of buildings - for performance reasons
 
             // Carry over from generation
+
+
             heightA: 2,
+
+
             heightB: 10,
 
             // Influences
+
+
             roads: 0.0,
+
+
             water: 0.4,
+
+
             otherBuildings: 0.9,
+
+
             distanceFromOtherBuildingsMin: 800,
+
+
             distanceFromOtherBuildingsMax: 1000,
+
+
             buildingHeight: 0.1,
 
             // Building form
+
+
             buildingForm: "rectangle",
+
+
             spread: 10,
+
+
             randomForm: false,
+
+
             rotateRandomly: false,
+
+
             rotateSetAngle: 0,
 
+
+
             destroyOnComplete: false,
+
+
             loopCreateDestroy: false,
 
             // Visualisation
+
+
             turning: false,
+
+
             falling: false,
+
+
             riseRate: 10,
 
             // Dimensions
+
+
             minHeight: 10,
+
+
             maxHeight: 70,
+
+
             minWidth: 40,
+
+
             maxWidth: 200,
+
+
             minLength: 40,
+
+
             maxLength: 200,
+
+
             maxLevels: 0,
+
+
             width: 0,
+
+
             length: 0,
+
+
             levelHeight: 40,
 
             // View parameters
+
+
             useShader: true,
+
+
             useLevelOfDetail: true,
+
+
             highResDistance: 1000,
+
+
             lowResDistance: 7500,
+
+
             opacity: 1.0,
 
             // Fill parameters
+
+
             showFill: true,
+
+
             fillRooves: false,
 
             // Stroke parameters
+
+
             showLines: true,
+
+
             linewidth: 1.0,
 
             // Window parameters
+
+
             showWindows: true,
+
+
             windowsRandomise: false,
+
+
             windowsFlickerRate: 0.05,
+
+
             windowWidth: 15,
+
+
             windowPercent: 60,
+
+
             windowsStartY: 40,
+
+
             windowsEndY: 80,
+
+
             windowsLine: true,
+
+
             windowsFill: false,
 
             // Stagger
+
+
             stagger: true,
+
+
             staggerAmount: 40,
 
             // Taper
+
+
             taper: true,
+
+
             taperExponent: 2,
+
+
             taperDistribution: 1,
 
             // Collision detection
+
+
             detectBuildingCollisions: true,
+
+
             detectRoadCollisions: true
         };
         this.roadOptions = {

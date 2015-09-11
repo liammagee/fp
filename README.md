@@ -92,7 +92,7 @@ The following are a partial list of these options:
      + *initialExtent*: The *initial* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
      + *maxExtent*: The *maximum* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
      + *randomAge*: Whether the agent's age is randomly set, initially.
-     + chanceToJoinNetwork:
+     + *chanceToJoinNetwork*:
      + *chanceToJoinNetworkWithHome*: 
      + *chanceToJoinNetworkWithBothHomes*: 
      + *chanceToFindPathToHome*: 
