@@ -213,47 +213,47 @@ The following are a partial list of these options:
      + *patchSize*: The size of the patch - in number of *gridPoints*.
      + *defaultHeight*: The default height of the terrain (can be offset from water, if shown).
  - **Display Options**
-     + *agentsShow*:
-     + *buildingsShow*:
-     + *roadsShow*:
-     + *waterShow*:
-     + *networkShow*:
-     + *networkCurve*:
-     + *networkCurvePoints*:
-     + *patchesShow*:
-     + *patchesUpdate*:
-     + *trailsShow*:
-     + *trailsShowAsLines*:
-     + *trailsUpdate*:
-     + *trailLength*:
-     + *cursorShow*:
-     + *cursorShowCell*:
-     + *statsShow*:
-     + *hudShow*:
-     + *guiControlsShow*:
-     + *wireframeShow*:
-     + *dayShow*:
-     + *skyboxShow*:
-     + *chartShow*:
-     + *guiShow*:
-     + *guiShowControls*:
-     + *guiShowAgentFolder*:
-     + *guiShowBuildingsFolder*:
-     + *guiShowRoadsFolder*:
-     + *guiShowTerrainFolder*:
-     + *guiShowDisplayFolder*:
-     + *guiShowColorFolder*:
-     + *pathsShow*:
-     + *terrainShow*:
-     + *lightHemisphereShow*:
-     + *lightDirectionalShow*:
-     + *coloriseAgentsByHealth*:
-     + *firstPersonView*:
-     + *cameraOverride*:
-     + *cameraX*:
-     + *cameraY*:
-     + *cameraZ*:
-     + *maximiseView*:
+     + *agentsShow*: Whether to render agents.
+     + *buildingsShow*: Whether to render buildings.
+     + *roadsShow*: Whether to render roads.
+     + *waterShow*: Whether to render water, around the terrain.
+     + *networkShow*:  Whether to render agent networks, if they are created - the *establishLink* option must be set for this option to have an effect.
+     + *networkCurve*: Whether to use bezier curves for network connections between agents.
+     + *networkCurvePoints*: The number of points to plot curves for connections between agents.
+     + *patchesShow*: Whether to render patches.
+     + *patchesUpdate*: Whether to update patches.
+     + *trailsShow*: Whether to render trails, created by agents.
+     + *trailsShowAsLines*: Whether to render trails as lines.
+     + *trailsUpdate*: Whether to update trails.
+     + *trailLength*: The length of trails - conditions the number of previous positions remembered by agents.
+     + *cursorShow*: Whether to render a mouse cursor on the terrain.
+     + *cursorShowCell*: Whether to render the mouse cursor as a 'cell' on the terrain.
+     + *statsShow*: Whether to render the stats monitor.
+     + *hudShow*: Whether to render the 'heads-up display'.
+     + *guiControlsShow*: Whether to render the GUI control panel.
+     + *wireframeShow*: Whether to render the building, roads and terrain using a wireframe connecting mesh points.
+     + *dayShow*: Whether to render the simulation as a day rather than night.
+     + *skyboxShow*: Whether to render the skybox for the day view.
+     + *chartShow*: Whether to render the chart, displaying the simulation outputs.
+     + *guiShow*: Whether to render the GUI control panel [duplicates the *guiControlsShow*?].
+     + *guiShowControls*: Whether to render the GUI controls (*Setup*, *Run*, etc.).
+     + *guiShowAgentFolder*: Whether to render the GUI agent folder and options.
+     + *guiShowBuildingsFolder*: Whether to render the GUI building folder and options.
+     + *guiShowRoadsFolder*: Whether to render the GUI roads folder and options.
+     + *guiShowTerrainFolder*: Whether to render the GUI terrain folder and options.
+     + *guiShowDisplayFolder*: Whether to render the GUI display folder and options.
+     + *guiShowColorFolder*: Whether to render the GUI colour folder and options.
+     + *pathsShow*: Whether to render paths traversed by agents.
+     + *terrainShow*: Whether to render the terrain.
+     + *lightHemisphereShow*: Whether to render the hemisphere light.
+     + *lightDirectionalShow*: Whether to render the directonal light.
+     + *coloriseAgentsByHealth*: Whether to render agent's health by colour (where red indicates low health. The alternative is to use opacity.
+     + *firstPersonView*: Whether to use the first person view [**NOT WORKING CURRENTLY**].
+     + *cameraOverride*: Whether to use custom camera settings.
+     + *cameraX*: If *cameraOverride* is true, the X position of the camera. 
+     + *cameraY*: If *cameraOverride* is true, the Y position of the camera.
+     + *cameraZ*: If *cameraOverride* is true, the Z position of the camera.
+     + *maximiseView*: Whether to maximise the screen.
  - **Colour Options**
      + *colorDayBackground*:
      + *colorDayRoad*:

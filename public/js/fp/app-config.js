@@ -847,247 +847,288 @@ define( [
         this.displayOptions = {
 
             /**
-             * [agentsShow description]
+             * Whether to render agents.
+             *
              * @type {Boolean}
              */
             agentsShow: true,
 
             /**
-             * [buildingsShow description]
+             * Whether to render buildings.
+             *
              * @type {Boolean}
              */
             buildingsShow: true,
 
             /**
-             * [roadsShow description]
+             * Whether to render roads.
+             *
              * @type {Boolean}
              */
             roadsShow: true,
 
             /**
-             * [waterShow description]
+             * Whether to render water, around the terrain.
+             *
              * @type {Boolean}
              */
             waterShow: true,
 
             /**
-             * [networkShow description]
+             * Whether to render agent networks, if they are created - the *establishLink* option must be set for this option to have an effect.
+             *
              * @type {Boolean}
              */
             networkShow: false,
 
             /**
-             * [networkCurve description]
+             * Whether to use bezier curves for network connections between agents.
+             *
              * @type {Boolean}
              */
             networkCurve: true,
 
             /**
-             * [networkCurvePoints description]
+             * The number of points to plot curves for connections between agents.
+             *
              * @type {Number}
              */
             networkCurvePoints: 20,
 
             /**
-             * [patchesShow description]
+             * Whether to render patches.
+             *
              * @type {Boolean}
              */
             patchesShow: false,
 
             /**
-             * [patchesUpdate description]
+             * Whether to update patches.
+             *
              * @type {Boolean}
              */
             patchesUpdate: true,
 
             /**
-             * [trailsShow description]
+             * Whether to render trails, created by agents.
+             *
              * @type {Boolean}
              */
             trailsShow: false,
 
             /**
-             * [trailsShowAsLines description]
+             * Whether to render trails as lines.
+             *
              * @type {Boolean}
              */
             trailsShowAsLines: false,
 
             /**
-             * [trailsUpdate description]
+             * Whether to update trails.
+             *
              * @type {Boolean}
              */
             trailsUpdate: false,
 
             /**
-             * [trailLength description]
+             * The length of trails - conditions the number of previous positions remembered by agents.
+             *
              * @type {Number}
              */
             trailLength: 10000,
 
             /**
-             * [cursorShow description]
+             * Whether to render a mouse cursor on the terrain.
+             *
              * @type {Boolean}
              */
             cursorShow: false,
 
             /**
-             * [cursorShowCell description]
+             * Whether to render the mouse cursor as a 'cell' on the terrain.
+             *
              * @type {Boolean}
              */
             cursorShowCell: true,
 
             /**
-             * [statsShow description]
+             * Whether to render the stats monitor.
+             *
              * @type {Boolean}
              */
             statsShow: true,
 
             /**
-             * [hudShow description]
+             * Whether to render the 'heads-up display'.
+             *
              * @type {Boolean}
              */
             hudShow: true,
 
             /**
-             * [guiControlsShow description]
+             * Whether to render the GUI control panel.
+             *
              * @type {Boolean}
              */
             guiControlsShow: true,
 
             /**
-             * [wireframeShow description]
+             * Whether to render the building, roads and terrain using a wireframe connecting mesh points.
+             *
              * @type {Boolean}
              */
             wireframeShow: false,
 
             /**
-             * [dayShow description]
+             * Whether to render the simulation as a day rather than night.
+             *
              * @type {Boolean}
              */
             dayShow: false,
 
             /**
-             * [skyboxShow description]
+             * Whether to render the skybox for the day view.
+             *
              * @type {Boolean}
              */
             skyboxShow: true,
 
             /**
-             * [chartShow description]
+             * Whether to render the chart, displaying the simulation outputs.
+             *
              * @type {Boolean}
              */
             chartShow: true,
 
             /**
-             * [guiShow description]
+             * Whether to render the GUI control panel [duplicates the *guiControlsShow*?].
+             *
              * @type {Boolean}
              */
             guiShow: true,
 
             /**
-             * [guiShowControls description]
+             * Whether to render the GUI controls (*Setup*, *Run*, etc.).
+             *
              * @type {Boolean}
              */
             guiShowControls: true,
 
             /**
-             * [guiShowAgentFolder description]
+             * Whether to render the GUI agent folder and options.
+             *
              * @type {Boolean}
              */
             guiShowAgentFolder: true,
 
             /**
-             * [guiShowBuildingsFolder description]
+             * Whether to render the GUI building folder and options.
+             *
              * @type {Boolean}
              */
             guiShowBuildingsFolder: true,
 
             /**
-             * [guiShowRoadsFolder description]
+             * Whether to render the GUI roads folder and options.
+             *
              * @type {Boolean}
              */
             guiShowRoadsFolder: true,
 
             /**
-             * [guiShowTerrainFolder description]
+             * Whether to render the GUI terrain folder and options.
+             *
              * @type {Boolean}
              */
             guiShowTerrainFolder: true,
 
             /**
-             * [guiShowDisplayFolder description]
+             * Whether to render the GUI display folder and options.
+             *
              * @type {Boolean}
              */
             guiShowDisplayFolder: true,
 
             /**
-             * [guiShowColorFolder description]
+             * Whether to render the GUI colour folder and options.
+             *
              * @type {Boolean}
              */
             guiShowColorFolder: true,
 
             /**
-             * [pathsShow description]
+             * Whether to render paths traversed by agents.
+             *
              * @type {Boolean}
              */
             pathsShow: true,
 
             /**
-             * [terrainShow description]
+             * Whether to render the terrain.
+             *
              * @type {Boolean}
              */
             terrainShow: true,
 
             /**
-             * [lightHemisphereShow description]
+             * Whether to render the hemisphere light.
+             *
              * @type {Boolean}
              */
             lightHemisphereShow: false,
 
             /**
-             * [lightDirectionalShow description]
+             * Whether to render the directonal light.
+             *
              * @type {Boolean}
              */
             lightDirectionalShow: true,
 
             /**
-             * [coloriseAgentsByHealth description]
+             * Whether to render agent's health by colour (where red indicates low health. The alternative is to use opacity.
+             *
              * @type {Boolean}
              */
             coloriseAgentsByHealth: false,
 
             /**
-             * [firstPersonView description]
+             * Whether to use the first person view [**NOT WORKING CURRENTLY**].
+             *
              * @type {Boolean}
              */
             firstPersonView: false,
 
             /**
-             * [cameraOverride description]
+             * Whether to use custom camera settings.
+             *
              * @type {Boolean}
              */
             cameraOverride: false,
 
             /**
-             * [cameraX description]
+             * If *cameraOverride* is true, the X position of the camera.
+             *
              * @type {Number}
              */
             cameraX: 0,
 
             /**
-             * [cameraY description]
+             * If *cameraOverride* is true, the Y position of the camera.
+             *
              * @type {Number}
              */
             cameraY: 200,
 
             /**
-             * [cameraZ description]
+             * If *cameraOverride* is true, the Z position of the camera.
+             *
              * @type {Number}
              */
             cameraZ: 800,
 
             /**
-             * [maximiseView description]
+             * Whether to maximise the screen.
+             *
              * @type {Boolean}
              */
             maximiseView: true
