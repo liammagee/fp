@@ -758,73 +758,85 @@ define( [
         this.terrainOptions = {
 
             /**
-             * [renderAsSphere description]
+             * Whether to render the terrain as a sphere, instead of as a plane.
+             *
              * @type {Boolean}
              */
             renderAsSphere: true,
 
             /**
-             * [loadHeights description]
+             * Whether to load heights; otherwise the terrain will be purely flat.
+             *
              * @type {Boolean}
              */
             loadHeights: true,
 
             /**
-             * [gridExtent description]
+             * The extent, in width and length, of the grid.
+             *
              * @type {Number}
              */
             gridExtent: 8000,
 
             /**
-             * [gridPoints description]
+             * The number of points to plot on the grid. Each point represents a specific height that could vary,
+             *
              * @type {Number}
              */
             gridPoints: 400,
 
             /**
-             * [maxTerrainHeight description]
+             * The maximum terrain height, against which all heights are normalised.
+             *
              * @type {Number}
              */
             maxTerrainHeight: 400,
 
             /**
-             * [shaderUse description]
+             * Whether to use the in-built terrain shader, which allows for different heights to use a blend of colour options.
+             *
              * @type {Boolean}
              */
             shaderUse: true,
 
             /**
-             * [shaderShadowMix description]
+             * The amount to mix in shadows to the shader view.
+             *
              * @type {Number}
              */
             shaderShadowMix: 0.5,
 
             /**
-             * [multiplier description]
+             * Multiplies the *gridExtent*, to stretch the terrain.
+             *
              * @type {Number}
              */
             multiplier: 1,
 
             /**
-             * [mapIndex description]
+             * An index to the in-built list of maps (currently either 0 or 1).
+             *
              * @type {Number}
              */
             mapIndex: 0,
 
             /**
-             * [mapFile description]
+             * A URL to a specific map file, to use in place of the built-in maps.
+             *
              * @type {String}
              */
             mapFile: "",
 
             /**
-             * [patchSize description]
+             * The size of the patch - in number of *gridPoints*.
+             *
              * @type {Number}
              */
             patchSize: 4,
 
             /**
-             * [defaultHeight description]
+             * The default height of the terrain (can be offset from water, if shown).
+             *
              * @type {Number}
              */
             defaultHeight: 0

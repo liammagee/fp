@@ -200,18 +200,18 @@ The following are a partial list of these options:
      + *flattenAdjustment*: The amount to flatten the road 'tube'.
      + *flattenLift*: The amount to lift the road from the terrain.
  - **Terrain Options**
-     + *renderAsSphere*:
-     + *loadHeights*:
-     + *gridExtent*:
-     + *gridPoints*:
-     + *maxTerrainHeight*:
-     + *shaderUse*:
-     + *shaderShadowMix*:
-     + *multiplier*:
-     + *mapIndex*:
-     + *mapFile*:
-     + *patchSize*:
-     + *defaultHeight*:
+     + *renderAsSphere*: Whether to render the terrain as a sphere, instead of as a plane.
+     + *loadHeights*: Whether to load heights; otherwise the terrain will be purely flat.
+     + *gridExtent*: The extent, in width and length, of the grid.
+     + *gridPoints*: The number of points to plot on the grid. Each point represents a specific height that could vary,
+     + *maxTerrainHeight*: The maximum terrain height, against which all heights are normalised.
+     + *shaderUse*: Whether to use the in-built terrain shader, which allows for different heights to use a blend of colour options.
+     + *shaderShadowMix*: The amount to mix in shadows to the shader view.
+     + *multiplier*: Multiplies the *gridExtent*, to stretch the terrain.
+     + *mapIndex*: An index to the in-built list of maps (currently either 0 or 1).
+     + *mapFile*: A URL to a specific map file, to use in place of the built-in maps.
+     + *patchSize*: The size of the patch - in number of *gridPoints*.
+     + *defaultHeight*: The default height of the terrain (can be offset from water, if shown).
  - **Display Options**
      + *agentsShow*:
      + *buildingsShow*:
