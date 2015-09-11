@@ -229,6 +229,25 @@ define( [
 
         };
 
+
+        this.terrainOptions = {
+
+            renderAsSphere: true,
+            loadHeights: true,
+            gridExtent: 8000,
+            gridPoints: 400,
+            maxTerrainHeight: 400,
+            shaderUse: true,
+            shaderShadowMix: 0.5,
+            multiplier: 1,
+            mapIndex: 0,
+            mapFile: "",
+            patchSize: 4,
+            defaultHeight: 0
+
+        };
+
+
         this.displayOptions = {
 
             agentsShow: true,
@@ -276,24 +295,6 @@ define( [
         };
 
 
-        this.terrainOptions = {
-
-            renderAsSphere: true,
-            loadHeights: true,
-            gridExtent: 8000,
-            gridPoints: 400,
-            maxTerrainHeight: 400,
-            shaderUse: true,
-            shaderShadowMix: 0.5,
-            multiplier: 1,
-            mapIndex: 0,
-            mapFile: "",
-            patchSize: 4,
-            defaultHeight: 0
-
-        };
-
-
         this.colorOptions = {
 
             colorDayBackground: 0x000000,
@@ -333,10 +334,6 @@ define( [
             colorDayTerrainMidland1: 0x89450e,
             colorDayTerrainMidland2: 0x89450e,
             colorDayTerrainHighland: 0x8c8c8c,
-            // colorDayTerrainLowland1: 0x4d7848,
-            // colorDayTerrainLowland2: 0x8db17b,
-            // colorDayTerrainMidland1: 0xa9752e,
-            // colorDayTerrainHighland: 0xacacac,
             colorNightTerrainGroundLevel: 0x000000,
             colorNightTerrainLowland1: 0x000000,
             colorNightTerrainLowland2: 0x181818,
