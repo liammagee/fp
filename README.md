@@ -120,7 +120,7 @@ The following are a partial list of these options:
          + *terrainOffset*: The amount to offset the agent from the underlying terrain.
  - **Building Options**
      + *create*: Whether agents can create buildings.
-     + *maxNumber*: The maximum number of buildings the simulation can hold.
+     + *maxNumber*: The maximum number of buildings the simulation can hold - for performance reasons.
      + *detectBuildingCollisions*: Whether new buildings should avoid existing buildings.
      + *detectRoadCollisions*: Whether new buildings should avoid existing roads.
      + Form
@@ -167,7 +167,7 @@ The following are a partial list of these options:
             - *showWindows*: Whether to show the windows of the building.
             - *windowsRandomise*: Whether to randomise the appearance of windows.
             - *windowsFlickerRate*: The rate at which to change the appearance of windows.
-            - *windowWidth*: The width of windows.
+            - *windowWidth*: The width of window segments.
             - *windowPercent*: The percentage of the overall window segment to fill with the window.
             - *windowsStartY*: The bottom of the window, relative to the wall.
             - *windowsEndY*: The top of the window, relative to the wall.
@@ -186,19 +186,19 @@ The following are a partial list of these options:
         * *riseRate*: The rate at which buildings should fall.
  - **Road Options**
      + *create*: Whether agents can build roads.
-     + *maxNumber*:
-     + *roadWidth*:
-     + *roadDeviation*:
-     + *roadRadiusSegments*:
-     + *roadSegments*:
-     + *initialRadius*:
-     + *probability*:
-     + *lenMinimum*:
-     + *lenMaximum*:
-     + *lenDistributionFactor*:
-     + *overlapThreshold*:
-     + *flattenAdjustment*:
-     + *flattenLift*:
+     + *maxNumber*: The maximum number of roads the simulation can hold  - for performance reasons.
+     + *roadWidth*: The standard width of roads.
+     + *roadDeviation*: The deviation of a road from the standard width.
+     + *roadRadiusSegments*: The number of radial segments, giving greater defintion.
+     + *roadSegments*: The number of length segments, also giving greater defintion.
+     + *initialRadius*: The initial radius of roads.
+     + *probability*: The likelihood a road will be constructed.
+     + *lenMinimum*: The minimum length of a road.
+     + *lenMaximum*: The maximum length of a road.
+     + *lenDistributionFactor*: The distribution of road lengths.
+     + *overlapThreshold*: A threshold determining the likelihood of roads overlapping.
+     + *flattenAdjustment*: The amount to flatten the road 'tube'.
+     + *flattenLift*: The amount to lift the road from the terrain.
  - **Terrain Options**
      + *renderAsSphere*:
      + *loadHeights*:

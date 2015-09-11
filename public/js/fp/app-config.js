@@ -661,80 +661,93 @@ define( [
             create: false,
 
             /**
-             * [maxNumber description]
+             * The maximum number of roads the simulation can hold.
+             *
              * @type {Number}
              */
             maxNumber: 200,  // Maximum number of roads - for performance reasons
 
             /**
-             * [roadWidth description]
+             * The standard width of roads.
+             *
              * @type {Number}
              */
             roadWidth: 20,
 
             /**
-             * [roadDeviation description]
+             * The deviation of a road from the standard width.
+             *
              * @type {Number}
              */
             roadDeviation: 20,
 
             /**
-             * [roadRadiusSegments description]
+             * The number of radial segments, giving greater defintion.
+             *
              * @type {Number}
              */
             roadRadiusSegments: 10,
 
             /**
-             * [roadSegments description]
+             * The number of length segments, also giving greater defintion.
+             *
              * @type {Number}
              */
             roadSegments: 10,
 
             /**
-             * [initialRadius description]
+             * The initial radius of roads.
+             *
              * @type {Number}
              */
             initialRadius: 100,
 
             /**
-             * [probability description]
+             * The likelihood a road will be constructed.
+             *
              * @type {Number}
              */
             probability: 1,
 
             /**
-             * [lenMinimum description]
+             * The minimum length of a road.
+             *
              * @type {Number}
              */
             lenMinimum: 100,
 
             /**
-             * [lenMaximum description]
+             * The maximum length of a road.
+             *
              * @type {Number}
              */
             lenMaximum: 2000,
 
             /**
-             * [lenDistributionFactor description]
+             * The distribution of road lengths.
+             *
              * @type {Number}
              */
             lenDistributionFactor: 3,
 
             /**
-             * [overlapThreshold description]
+             * A threshold determining the likelihood of roads overlapping.
+             *
              * @type {Number}
              */
             overlapThreshold: 3,
 
 
             /**
-             * [flattenAdjustment description]
+             * The amount to flatten the road 'tube'.
+             *
              * @type {Number}
              */
             flattenAdjustment: 0.025,
 
             /**
-             * [flattenLift description]
+             * The amount to lift the road from the terrain.
+             *
              * @type {Number}
              */
             flattenLift: 20
