@@ -14,33 +14,14 @@ define( [
      */
     FiercePlanet.AppConfig = function() {
 
-        /**
-         * World options.
-         * @namespace fp~AppConfig~worldOptions
-         */
-        this.worldOptions = {
-
-            /**
-             * Maximum depth to search for land.
-             * @memberOf fp~AppConfig~worldOptions
-             * @inner
-             */
-            maxLandSearchDepth: 2,
-
-            /**
-             * Number of index points to use in search ( depends on building size )
-             * @memberOf fp~AppConfig~worldOptions
-             * @inner
-             */
-            searchIncrement: 2
-
-        };
 
         /**
          * Agent options.
          * @namespace fp~AppConfig~agentOptions
          */
         this.agentOptions = {
+
+            // Initial generation options
 
             /**
              * The initial number of agents populating the simulation.
@@ -102,11 +83,35 @@ define( [
             initialCircle: true,
 
             /**
+             * The initial speed of the agent.
+             *
+             * @type {Number}
+             */
+            initialSpeed: 20,
+
+            /**
+             * The amount to perturb, or modify, the agent's direction each tick.
+             *
+             * @type {Number}
+             */
+            initialPerturbBy: 0.05,
+
+            /**
              * Whether the agent's age is randomly set, initially.
              *
              * @type {Boolean}
              */
             randomAge: true,
+
+            /**
+             * Whether to shuffle agents before each tick. Shuffling can be expensive for large number of agents, but can ensure properly randomised simulations.
+             *
+             * @type {Boolean}
+             */
+            shuffle: false,
+
+
+            // Network options
 
             /**
              * Whether agents can establish links with each other
@@ -151,49 +156,92 @@ define( [
             chanceToFindPathToOtherAgentHome: 0.00,
 
 
+            // Movement options
+
+            /**
+             * Agents cannot move across water.
+             *
+             * @type {Boolean}
+             */
             noWater: false,
 
-
+            /**
+             * Agents cannot go up hill.
+             *
+             * @type {Boolean}
+             */
             noUphill: false, // Eventually remove for more fine-grained weight control
 
-
-            useStickman: true,
-
-
+            /**
+             * The likelihood of an agent travelling up, when visting their own home.
+             *
+             * @type {Number}
+             */
             visitHomeBuilding: 0.02,
 
 
+            /**
+             * The likelihood of an agent travelling up, when visting another agent's home.
+             *
+             * @type {Number}
+             */
             visitOtherBuilding: 0.002,
 
 
+            // Visualisation options
+
+            /**
+             * Whether to use a 'stickman' image. Otherwise, use a circle.
+             *
+             * @type {Boolean}
+             */
+            useStickman: true,
+
+            /**
+             * The size to draw the agent.
+             *
+             * @type {Number}
+             */
             size: 40,
 
-
+            /**
+             * The amount to offset the agent from the underlying terrain.
+             * @type {Number}
+             */
             terrainOffset: 0,
 
-
-            shuffle: false,
-
-
-            initialSpeed: 20,
-
-
-            initialPerturbBy: 0.05,
-
-
+            /**
+             * Whether the agent's movement should be calculated, relative to the current patch the agent is on.
+             *
+             * @type {Boolean}
+             */
             movementRelativeToPatch: false,
 
-
+            /**
+             * The amount to multiply the agent's speed, relative to the size of the patch.
+             *
+             * @type {Number}
+             */
             movementInPatch: 1,
 
-
+            /**
+             * Whether the agent's movement should be strictly cardinal (N/NE/E/SE/S/SW/W/NW).
+             *
+             * @type {Boolean}
+             */
             movementStrictlyIntercardinal: false,
 
-
-
+            /**
+             * Whether to recaculate the agent's movement, every tick.
+             * @type {Number}
+             */
             changeDirectionEveryTick: 100,
 
-
+            /**
+             * Whether to perturb, or slightly adjust, the agent's movement, every tick.
+             *
+             * @type {Number}
+             */
             perturbDirectionEveryTick: 10,
 
         };
@@ -763,6 +811,30 @@ define( [
         this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor( Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight );
         this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor( Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth );
         this.buildingOptions.length = this.buildingOptions.minLength + Math.floor( Math.random() * this.buildingOptions.maxLength - this.buildingOptions.minLength );
+
+
+        /**
+         * World options.
+         * @namespace fp~AppConfig~worldOptions
+         */
+        this.worldOptions = {
+
+            /**
+             * Maximum depth to search for land.
+             * @memberOf fp~AppConfig~worldOptions
+             * @inner
+             */
+            maxLandSearchDepth: 2,
+
+            /**
+             * Number of index points to use in search ( depends on building size )
+             * @memberOf fp~AppConfig~worldOptions
+             * @inner
+             */
+            searchIncrement: 2
+
+        };
+
 
         this.sunOptions  = {
             turbidity: 10,

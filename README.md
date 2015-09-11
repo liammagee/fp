@@ -93,7 +93,10 @@ The following are a partial list of these options:
          * *initialExtent*: The *initial* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
          * *maxExtent*: The *maximum* extent, or diameter, around the point of origin, where agents can be generated, expressed as a percentage (0 - 100).
          * *initialCircle*: Whether the initial distribution of agents is in a circle. If false, the distribution is a square.
+         * *initialSpeed*: The initial speed of the agent.
+         * *initialPerturbBy*: The amount to perturb, or modify, the agent's direction each tick.
          * *randomAge*: Whether the agent's age is randomly set, initially.
+         * *shuffle*: Whether to shuffle agents before each tick. Shuffling can be expensive for large number of agents, but can ensure properly randomised simulations.
      + Network options:
          * *establishLinks*: Whether agents can establish links with each other.
          * *chanceToJoinNetwork*: The likelihood of establishing a link when meeting another agent (values are between 0.0 and 1.0).
@@ -101,21 +104,20 @@ The following are a partial list of these options:
          * *chanceToJoinNetworkWithBothHomes*: The likelihood of establishing a link when meeting another agent, when the other agent has a home.
          * *chanceToFindPathToHome*: The likelihood of disrupting a random walk to find a path home.
          * *chanceToFindPathToOtherAgentHome*: The likelihood of disrupting a random walk to find a path to another, linked agent's home.
-     + *noWater*: 
-     + *noUphill*: 
-     + *useStickman*: 
-     + *visitHomeBuilding*: 
-     + *visitOtherBuilding*: 
-     + *size*: 
-     + *terrainOffset*: 
-     + *shuffle*: 
-     + *initialSpeed*: 
-     + *initialPerturbBy*: 
-     + *movementRelativeToPatch*: 
-     + *movementInPatch*: 
-     + *movementStrictlyIntercardinal*: 
-     + *changeDirectionEveryTick*: 
-     + *perturbDirectionEveryTick*: 
+     + Movement options:
+         * *noWater*: Agents cannot move across water.
+         * *noUphill*: Agents cannot go up hill.
+         * *visitHomeBuilding*: The likelihood of an agent travelling up, when visting their own home.
+         * *visitOtherBuilding*: The likelihood of an agent travelling up, when visting another agent's home. 
+         * *movementRelativeToPatch*: Whether the agent's movement should be calculated, relative to the current patch the agent is on.
+         * *movementInPatch*: 
+         * *movementStrictlyIntercardinal*: 
+         * *changeDirectionEveryTick*: 
+         * *perturbDirectionEveryTick*: 
+     + Visualisation options:
+         * *useStickman*: Whether to use a 'stickman' image. Otherwise, use a circle.
+         + *size*: The size to draw the agent.
+         + *terrainOffset*: The amount to offset the agent from the underlying terrain.
  - **Building Options**
      + *create*:
      + *maxNumber*:
