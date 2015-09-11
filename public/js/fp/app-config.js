@@ -283,173 +283,179 @@ define( [
             // Building form
 
             /**
-             * [buildingForm description]
+             * The form building should take. Can be one of the following values: "rectangle", "octagon", "fivesided", "triangle", "concave".
+             *
              * @type {String}
              */
             buildingForm: "rectangle",
 
             /**
-             * [randomForm description]
+             * Whether the building's form should be randomly assigned from one of the five values above.
+             *
              * @type {Boolean}
              */
             randomForm: false,
 
             /**
-             * [spread description]
+             * How far apart buildings must be from eachother.
+             *
              * @type {Number}
              */
             spread: 10,
 
             /**
-             * [rotateRandomly description]
+             * Whether buildings should be rotated randomly.
+             *
              * @type {Boolean}
              */
             rotateRandomly: false,
 
             /**
-             * [rotateSetAngle description]
+             * Whether buildings should be positioned at a set angle.
+             *
              * @type {Number}
              */
             rotateSetAngle: 0,
 
             /**
-             * [destroyOnComplete description]
+             * Whether buildings should be destroyed, once created.
+             *
              * @type {Boolean}
              */
             destroyOnComplete: false,
 
             /**
-             * [loopCreateDestroy description]
+             * Whether buildings should go in a loop of being created and destroyed.
+             *
              * @type {Boolean}
              */
             loopCreateDestroy: false,
 
             // Influences
             /**
-             * [roads description]
+             * The influence of a road on the construction of a new building.
+             *
              * @type {Number}
              */
             roads: 0.0,
 
             /**
-             * [water description]
+             * The influence of water on the construction of a new building.
+             *
              * @type {Number}
              */
             water: 0.4,
 
             /**
-             * [otherBuildings description]
+             * The influence of other buildings on the construction of a new building.
+             *
              * @type {Number}
              */
             otherBuildings: 0.9,
 
             /**
-             * [distanceFromOtherBuildingsMin description]
+             * The minimum distance of other buildings must be to a new building.
+             *
              * @type {Number}
              */
             distanceFromOtherBuildingsMin: 800,
 
             /**
-             * [distanceFromOtherBuildingsMax description]
+             * The maximum distance of other buildings must be to a new building.
+             *
              * @type {Number}
              */
             distanceFromOtherBuildingsMax: 1000,
 
             /**
-             * [buildingHeight description]
+             * The influence of other buildings of a certain height on the construction of a new building.
+             *
              * @type {Number}
              */
             buildingHeight: 0.1,
 
-            // Animation
-            /**
-             * [turning description]
-             * @type {Boolean}
-             */
-            turning: false,
-
-            /**
-             * [falling description]
-             * @type {Boolean}
-             */
-            falling: false,
-
-            /**
-             * [riseRate description]
-             * @type {Number}
-             */
-            riseRate: 10,
-
             // Dimensions
 
             /**
-             * [minHeight description]
+             * The minimum height of a building.
+             *
              * @type {Number}
              */
             minHeight: 10,
 
             /**
-             * [maxHeight description]
+             * The maximum height of a building.
+             *
              * @type {Number}
              */
             maxHeight: 70,
 
             /**
-             * [heightA description]
+             * A building will have a maximum height it can aspire to, based on a given probability. *heightA* refers to the exponential factor in this calculation.
+             *
              * @type {Number}
              */
             heightA: 2,
 
             /**
-             * [heightB description]
+             * A building will have a maximum height it can aspire to, based on a given probability. *heightB* refers to the additive factor in this calculation, which also constitutes the *minimum height*.
+             *
              * @type {Number}
              */
             heightB: 10,
 
             /**
-             * [minWidth description]
+             * The minimum width of a building.
+             *
              * @type {Number}
              */
             minWidth: 40,
 
             /**
-             * [maxWidth description]
+             * The maximum width of a building.
+             *
              * @type {Number}
              */
             maxWidth: 200,
 
             /**
-             * [minLength description]
+             * The minimum length of a building.
+             *
              * @type {Number}
              */
             minLength: 40,
 
             /**
-             * [maxLength description]
+             * The maximum length of a building.
+             *
              * @type {Number}
              */
             maxLength: 200,
 
             /**
-             * [maxLevels description]
+             * The maximum number of levels of a building.
+             *
              * @type {Number}
              */
             maxLevels: 0,
 
             /**
-             * [width description]
+             * A set width for buildings.
+             *
              * @type {Number}
              */
             width: 0,
 
             /**
-             * [length description]
+             * A set length for buildings.
+             *
              * @type {Number}
              */
             length: 0,
 
             /**
-             * [levelHeight description]
+             * The height of a level.
+             *
              * @type {Number}
              */
             levelHeight: 40,
@@ -457,147 +463,190 @@ define( [
             // View parameters
 
             /**
-             * [useShader description]
+             * Whether to use shaders to render buildings.
+             *
              * @type {Boolean}
              */
             useShader: true,
 
             /**
-             * [useLevelOfDetail description]
+             * Whether to use level of detail for buildings, simplifying their representation at a distance.
+             *
              * @type {Boolean}
              */
             useLevelOfDetail: true,
 
             /**
-             * [highResDistance description]
+             * The distance at which to show the building in high resolution.
+             *
              * @type {Number}
              */
             highResDistance: 1000,
 
             /**
-             * [lowResDistance description]
+             * The distance at which to show the building in low resolution.
+             *
              * @type {Number}
              */
             lowResDistance: 7500,
 
             /**
-             * [opacity description]
+             * The amount of opacity to show the building.
+             *
              * @type {Number}
              */
             opacity: 1.0,
 
             // Fill parameters
             /**
-             * [showFill description]
+             * Whether to show the walls of the building.
+             *
              * @type {Boolean}
              */
             showFill: true,
 
             /**
-             * [fillRooves description]
+             * Whether to show the rooves of the building.
+             *
              * @type {Boolean}
              */
             fillRooves: false,
 
             // Stroke parameters
             /**
-             * [showLines description]
+             * Whether to show the lines of the building.
+             *
              * @type {Boolean}
              */
             showLines: true,
 
             /**
-             * [linewidth description]
+             * The width of the building line.
              * @type {Number}
              */
             linewidth: 1.0,
 
             // Window parameters
             /**
-             * [showWindows description]
+             * Whether to show the windows of the building.
+             *
              * @type {Boolean}
              */
             showWindows: true,
 
             /**
-             * [windowsRandomise description]
+             * Whether to randomise the appearance of windows.
              * @type {Boolean}
              */
             windowsRandomise: false,
 
             /**
-             * [windowsFlickerRate description]
+             * The rate at which to change the appearance of windows.
+             *
              * @type {Number}
              */
             windowsFlickerRate: 0.05,
 
             /**
-             * [windowWidth description]
+             * The width of window segments.
+             *
              * @type {Number}
              */
             windowWidth: 15,
 
             /**
-             * [windowPercent description]
+             * The percentage of the overall window segment to fill with the window.
+             *
              * @type {Number}
              */
             windowPercent: 60,
 
             /**
-             * [windowsStartY description]
+             * The bottom of the window, relative to the wall.
+             *
              * @type {Number}
              */
             windowsStartY: 40,
 
             /**
-             * [windowsEndY description]
+             * The top of the window, relative to the wall.
+             *
              * @type {Number}
              */
             windowsEndY: 80,
 
             /**
-             * [windowsLine description]
+             * Whether to draw the line of the window.
+             *
              * @type {Boolean}
              */
             windowsLine: true,
 
             /**
-             * [windowsFill description]
+             * Whether to fill in the window.
+             *
              * @type {Boolean}
              */
             windowsFill: false,
 
             // Stagger
             /**
-             * [stagger description]
+             * Whether to stagger the height of the building.
+             *
              * @type {Boolean}
              */
             stagger: true,
 
             /**
-             * [staggerAmount description]
+             * The amount to 'step' the stagger.
+             *
              * @type {Number}
              */
             staggerAmount: 40,
 
             // Taper
             /**
-             * [taper description]
+             * Whether to taper the stagger of the building. This results in a curved rather than regular stagger, according to random distribution drawn from an exponential sample.
+             *
              * @type {Boolean}
              */
             taper: true,
 
             /**
-             * [taperExponent description]
+             * The exponential amount of the taper.
+             *
              * @type {Number}
              */
             taperExponent: 2,
 
             /**
-             * [taperDistribution description]
+             * The distribution of the taper.
+             *
              * @type {Number}
              */
             taperDistribution: 1,
+
+            // Animation
+            /**
+             * Whether buildings should be shown in a turning motion.
+             *
+             * @type {Boolean}
+             */
+            turning: false,
+
+            /**
+             * Whether buildings should be shown falling.
+             *
+             * @type {Boolean}
+             */
+            falling: false,
+
+            /**
+             * The rate at which buildings should fall.
+             *
+             * @type {Number}
+             */
+            riseRate: 10,
 
         };
 
@@ -605,7 +654,8 @@ define( [
         this.roadOptions = {
 
             /**
-             * [create description]
+             * Whether agents can build roads.
+             *
              * @type {Boolean}
              */
             create: false,
