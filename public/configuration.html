@@ -91,7 +91,7 @@
         </ol>
         <pre><code>    gdal_translate -srcwin 1800 900 3601 3601 Sydney.tif Sydney-local.tif</code></pre>
         <ol start="6" type="1">
-        <li>Then to translate to a header-less heightmap file of appropriate scale</li>
+        <li>Then to translate to a header-less heightmap file of appropriate scale, where ‘1000’ is in metres, and ‘65535’ represents the maximum value of 2 bytes.</li>
         </ol>
         <pre><code>
             gdal_translate -scale 0 1000 0 65535 -ot UInt16 -outsize 900 900 -of ENVI Sydney-local.tif Sydney-local.bin

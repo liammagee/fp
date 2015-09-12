@@ -16,7 +16,7 @@ Basic Agent Movement
 In this default model, agents spread across the landscape.
 They create modest size dwellings as they go, in a single sprawling settlement.
 
-[Open in a new window](projects/interwoven-cities/1.html)
+[Open in a new window](projects/interwoven-cities/1-single-settlement.html)
 
 
 
@@ -32,7 +32,7 @@ distance from each other.
 Each settlement is able to develop vertically as well as horizontally,
 building a series of cities. 
 
-[Open in a new window](projects/interwoven-cities/2.html)
+[Open in a new window](projects/interwoven-cities/2-multiple-settlements.html)
 
 
 
@@ -47,7 +47,7 @@ The first "interwoven" model demonstrates the kinds of networks
 that develop from a single sprawling metropolis, similar to
 *Basic Agent Movement*, but with a resulting form of an urban fabric.
 
-[Open in a new window](projects/interwoven-cities/3.html)
+[Open in a new window](projects/interwoven-cities/3-interwoven-city.html)
 
 
 
@@ -66,7 +66,7 @@ agents in their network. Over a period of time, a more loose but still
 distinctive fabric becomes woven between the various settlement areas.
 
 
-[Open in a new window](projects/interwoven-cities/4.html)
+[Open in a new window](projects/interwoven-cities/4-interwoven-cities.html)
 
 
 

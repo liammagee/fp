@@ -44,8 +44,8 @@
                         "4": {
                             "shaderUse": true,
                             "shaderShadowMix": 0.5,
-                            "gridExtent": 7200,
-                            "gridPoints": 900,
+                            "gridExtent": 36000,
+                            "gridPoints": 1800,
                             "multiplier": 1,
                             // 1arc source is downscaled by a factor of 4
                             // From 3601 to 900
@@ -53,8 +53,9 @@
                             // We are 'scaling' points over the griad at a factor of 10
                             // So a 'realistic' representation needs to divide
                             // heights by  120m / 8 = 15.
-                            "maxTerrainHeight": 4,
-                            "mapFile": "/assets/Sydney-local.bin",
+                            "maxTerrainHeight": 1,
+                            // "mapFile": "/assets/Sydney-local.bin",
+                            "mapFile": "/assets/Sydney-local-full.bin",
                         },
                         "5": {
                             "waterShow": false,
@@ -64,8 +65,7 @@
                             "dayShow": true,
                             "patchesShow": false,
 
-                            "lightDirectionalShow": true,
-                            "cameraOverride": true,
+                            "lightDirectionalShow": true,                           "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 1000,
                             "cameraZ": 1000,

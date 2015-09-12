@@ -258,8 +258,8 @@ define(
                     fp.controls.enableZoom = true;
                     fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
-                    fp.controls.minDistance = 250.0;
-                    fp.controls.maxDistance = 10000.0;
+                    fp.controls.minDistance = 0.0;
+                    fp.controls.maxDistance = fp.appConfig.terrainOptions.gridExtent;
 
                 }
 
@@ -335,12 +335,13 @@ define(
                     fp.appConfig.colorOptions.colorLightDirectionalIntensity
                 );
                 // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
-                fp.lightDirectional.position.set( -40000, 40000, -40000 );
+                var extent = fp.terrain.gridExtent;
+                fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
                 fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
                 fp.lightDirectional.castShadow = true;
                 // these six values define the boundaries of the yellow box seen above
-                fp.lightDirectional.shadowCameraNear = 250;
-                fp.lightDirectional.shadowCameraFar = 80000;
+                fp.lightDirectional.shadowCameraNear = extent / 10;
+                fp.lightDirectional.shadowCameraFar = extent * 8;
                 // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
                 var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
                 fp.lightDirectional.shadowMapWidth = d;
@@ -775,9 +776,14 @@ define(
 
                 if ( !fp.appConfig.displayOptions.cursorShow ) {
 
-                    fp.controls.update( fp.clock.getDelta() );
+                    if ( fp.controls.update ) {
+
+                        fp.controls.update( fp.clock.getDelta() );
+
+                    }
 
                     if ( !_.isUndefined( fp.controls.getObject ) ) {
+
                         var obj = fp.controls.getObject();
                         var height = fp.getHeight( obj.position.x, obj.position.z );
                         /*

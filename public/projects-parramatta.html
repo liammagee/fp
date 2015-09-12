@@ -62,6 +62,24 @@
        <div class="col-md-8" role="main">
         <h1 id="basic-parramatta-river-model">Basic Parramatta River Model</h1>
         <p><a href="projects/parramatta-river/basic.html">Open in a new window</a></p>
+        <h1 id="camelia">Camelia</h1>
+        <p><a href="projects/parramatta-river/camelia.html">Open in a new window</a></p>
+        <p>Commands to generate the high-res geography:</p>
+        <ol type="1">
+        <li><p>Download the following digital elevation files from <a href="http://earthexplorer.usgs.gov/">USGS</a>:</p>
+        <ul>
+        <li>s34_e150_1arc_v3.tif</li>
+        <li>s34_e151_1arc_v3.tif</li>
+        <li>s35_e150_1arc_v3.tif</li>
+        <li>s35_e151_1arc_v3.tif</li>
+        </ul></li>
+        <li><p>Merge with:</p>
+        <p>gdal_merge.py -o Greater-Sydney.tif s34_e150_1arc_v3.tif s34_e151_1arc_v3.tif s35_e150_1arc_v3.tif s35_e151_1arc_v3.tif</p></li>
+        <li><p>Sample Camelia from the merged file:</p>
+        <p>gdal_translate -srcwin 3300 3000 601 601 Greater-Sydney.tif Camelia.tif</p></li>
+        <li><p>Convert to headless heightmap:</p>
+        <p>gdal_translate -ot UInt16 -outsize 601 601 -of ENVI Camelia.tif Camelia.bin</p></li>
+        </ol>
         <div class="references">
         
         </div>
