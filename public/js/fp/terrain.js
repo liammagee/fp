@@ -137,18 +137,26 @@ define(
 
                 if ( fp.appConfig.terrainOptions.loadHeights ) {
 
+                    var maxHeight = 0;
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
 
-                        if ( i == 0 ) {
-                            console.log( data[ i ] )
+                        var height = data[ i ];
+
+                        if ( maxHeight < height ) {
+
+                            maxHeight = height;
+
                         }
 
                         geometry.attributes.position.array[ j + 2 ] =
-                            data[ i ] /
+                            height /
                             fp.appConfig.terrainOptions.maxTerrainHeight *
                             fp.appConfig.terrainOptions.multiplier;
 
                     }
+
+                    this.maxTerrainHeight = maxHeight;
+
 
                 }
                 else {

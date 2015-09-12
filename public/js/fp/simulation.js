@@ -258,7 +258,7 @@ define(
                     fp.controls.enableZoom = true;
                     fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
-                    fp.controls.minDistance = 0.0;
+                    fp.controls.minDistance = 1.0;
                     fp.controls.maxDistance = fp.appConfig.terrainOptions.gridExtent;
 
                 }
@@ -419,7 +419,9 @@ define(
 
                     var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
                     waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+
                     fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
+
                         textureWidth: 512,
                         textureHeight: 512,
                         waterNormals: waterNormals,
@@ -428,6 +430,7 @@ define(
                         sunColor: 0xffffff,
                         waterColor: 0x001e0f,
                         distortionScale: 50.0,
+
                     } );
 
                     if ( !_.isUndefined( fp.waterMesh ) ) {
@@ -443,7 +446,7 @@ define(
 
                     fp.waterMesh.add( fp.water );
                     fp.waterMesh.rotation.x = - Math.PI * 0.5;
-                    fp.waterMesh.position.y = -10;
+                    fp.waterMesh.position.y = 0;
 
                 }
 
@@ -1936,6 +1939,7 @@ define(
                     terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "defaultHeight", -100, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 0, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );

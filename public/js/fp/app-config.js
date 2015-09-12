@@ -1140,12 +1140,13 @@ define( [
 
             // Terrain Colours
 
+            // Day Colours picked from: http://gis.stackexchange.com/questions/25099/what-is-the-best-colour-ramp-to-use-for-elevation
             /**
              * The colour of the terrain at sea level during the day.
              *
              * @type {Number}
              */
-            colorDayTerrainGroundLevel: 0x969696,
+            colorDayTerrainGroundLevel: 0x49752d,
 
             /**
              * The colour of the terrain at sea level during the night.
@@ -1159,7 +1160,7 @@ define( [
              *
              * @type {Number}
              */
-            colorDayTerrainLowland1: 0x2d5828,
+            colorDayTerrainLowland1: 0x628838,
 
             /**
              * The colour of the terrain on lowlands (level 1) during the night.
@@ -1173,7 +1174,7 @@ define( [
              *
              * @type {Number}
              */
-            colorDayTerrainLowland2: 0x6d915b,
+            colorDayTerrainLowland2: 0x7b9b46,
 
             /**
              * The colour of the terrain on lowlands (level 2) during the night.
@@ -1187,7 +1188,7 @@ define( [
              *
              * @type {Number}
              */
-            colorDayTerrainMidland1: 0x89450e,
+            colorDayTerrainMidland1: 0x8CC65B,
 
             /**
              * The colour of the terrain on midlands (level 1) during the night.
@@ -1201,7 +1202,7 @@ define( [
              *
              * @type {Number}
              */
-            colorDayTerrainMidland2: 0x89450e,
+            colorDayTerrainMidland2: 0xe9e07d,
 
             /**
              * The colour of the terrain on midlands (level 2) during the night.
@@ -1215,7 +1216,7 @@ define( [
              *
              * @type {Number}
              */
-            colorDayTerrainHighland: 0x8c8c8c,
+            colorDayTerrainHighland: 0x793833,
 
             /**
              * The colour of the terrain on highlands during the night.
