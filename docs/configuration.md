@@ -38,7 +38,7 @@ These notes cover a range of different topics for using or extending the *Fierce
     gdal_translate -srcwin 1800 900 3601 3601 Sydney.tif Sydney-local.tif
 ```
 
-6.  Then to translate to a header-less heightmap file of appropriate scale
+6.  Then to translate to a header-less heightmap file of appropriate scale, where '1000' is in metres, and '65535' represents the maximum value of 2 bytes.
 
 ```
 

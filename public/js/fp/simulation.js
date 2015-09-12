@@ -29,6 +29,7 @@ define(
          * @namespace fp
          */
         FiercePlanet.Simulation = function() {
+
             var fp = this;
 
             // Export the entire namespace, so classes can be instantiated
@@ -1177,7 +1178,9 @@ define(
                             positions[ 3 * ( indexMirroredOnY + ( fp.terrain.gridPoints * j ) ) + 2 ]
                     ) );
                 }
+
                 return _.compact( surroundingCells );
+
             };
 
             /**
@@ -1927,7 +1930,7 @@ define(
                     terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
-                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 0, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );

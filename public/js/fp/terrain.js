@@ -139,9 +139,13 @@ define(
 
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
 
+                        if ( i == 0 ) {
+                            console.log( data[ i ] )
+                        }
+
                         geometry.attributes.position.array[ j + 2 ] =
-                            data[ i ] / 65535 *
-                            fp.terrain.maxTerrainHeight *
+                            data[ i ] /
+                            fp.appConfig.terrainOptions.maxTerrainHeight *
                             fp.appConfig.terrainOptions.multiplier;
 
                     }
