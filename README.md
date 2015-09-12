@@ -3,7 +3,7 @@
 
 # Fierce Planet
 
-[Fierce Planet](http://www.fierce-planet.com) is an open source toolkit for developing agent-based models, with a particular focus on urban and social simulations.
+[Fierce Planet](http://www.fierce-planet.com) is an open source toolkit for developing agent-based models, with a focus on urban and social simulations.
 
 It runs on [Node.js](http://nodejs.org) on the server, and uses 
 [Three.js](http://threejs.org) extensively to generate 3D simulations in the browser. [Click here](https://get.webgl.org/) to check your browser is compatible.
