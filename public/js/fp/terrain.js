@@ -59,6 +59,7 @@ define(
                 //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
 
                 var uniforms = {
+
                     // Lambert settings
                     emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
                     diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
