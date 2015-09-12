@@ -1138,277 +1138,330 @@ define( [
 
         this.colorOptions = {
 
-            /**
-             * [colorDayBackground description]
-             * @type {[type]}
-             */
-            colorDayBackground: 0x000000,
+            // Terrain Colours
 
             /**
-             * [colorDayRoad description]
-             * @type {[type]}
-             */
-            colorDayRoad: 0x474747,
-
-            /**
-             * [colorDayAgent description]
-             * @type {[type]}
-             */
-            colorDayAgent: 0x4747b3,
-
-            /**
-             * [colorDayNetwork description]
-             * @type {[type]}
-             */
-            colorDayNetwork: 0x474747,
-
-            /**
-             * [colorDayTrail description]
-             * @type {[type]}
-             */
-            colorDayTrail: 0x474747,
-
-            /**
-             * [colorDayPath description]
-             * @type {[type]}
-             */
-            colorDayPath: 0x474747,
-
-            /**
-             * [colorDayBuildingFill description]
-             * @type {[type]}
-             */
-            colorDayBuildingFill: 0xb1abab,
-
-            /**
-             * [colorDayBuildingLine description]
-             * @type {[type]}
-             */
-            colorDayBuildingLine: 0x222222,
-
-            /**
-             * [colorDayBuildingWindow description]
-             * @type {[type]}
-             */
-            colorDayBuildingWindow: 0x222222,
-
-            /**
-             * [colorNightBackground description]
-             * @type {[type]}
-             */
-            colorNightBackground: 0x636363,
-
-            /**
-             * [colorNightRoad description]
-             * @type {[type]}
-             */
-            colorNightRoad: 0x474747,
-
-            /**
-             * [colorNightAgent description]
-             * @type {[type]}
-             */
-            colorNightAgent: 0x47b347,
-
-            /**
-             * [colorNightNetwork description]
-             * @type {[type]}
-             */
-            colorNightNetwork: 0x47b347,
-
-            /**
-             * [colorNightTrail description]
-             * @type {[type]}
-             */
-            colorNightTrail: 0x47b347,
-
-            /**
-             * [colorNightNetworPath description]
-             * @type {[type]}
-             */
-            colorNightNetworPath: 0x47b347,
-
-            /**
-             * [colorNightPath description]
-             * @type {[type]}
-             */
-            colorNightPath: 0x47b347,
-
-            /**
-             * [colorNightBuildingFill description]
-             * @type {[type]}
-             */
-            colorNightBuildingFill: 0x838383,
-
-            /**
-             * [colorNightBuildingLine description]
-             * @type {[type]}
-             */
-            colorNightBuildingLine: 0x838383,
-
-            /**
-             * [colorNightBuildingWindow description]
-             * @type {[type]}
-             */
-            colorNightBuildingWindow: 0xffff8f,
-
-            /**
-             * [colorGraphPopulation description]
-             * @type {[type]}
-             */
-            colorGraphPopulation: 0x4747b3,
-
-            /**
-             * [colorGraphHealth description]
-             * @type {[type]}
-             */
-            colorGraphHealth: 0xb34747,
-
-            /**
-             * [colorGraphPatchValues description]
-             * @type {[type]}
-             */
-            colorGraphPatchValues: 0x47b347,
-
-            /**
-             * [colorLightHemisphereSky description]
-             * @type {[type]}
-             */
-            colorLightHemisphereSky: 0xbfbfbf,
-
-            /**
-             * [colorLightHemisphereGround description]
-             * @type {[type]}
-             */
-            colorLightHemisphereGround: 0xbfbfbf,
-
-            /**
-             * [colorLightHemisphereIntensity description]
-             * @type {Number}
-             */
-            colorLightHemisphereIntensity: 1.0,
-
-            /**
-             * [colorLightDirectional description]
-             * @type {[type]}
-             */
-            colorLightDirectional: 0xffffff,
-
-            /**
-             * [colorLightDirectionalIntensity description]
-             * @type {Number}
-             */
-            colorLightDirectionalIntensity: 0.5,
-
-            /**
-             * [colorDayTerrainGroundLevel description]
+             * The colour of the terrain at sea level during the day.
+             *
              * @type {[type]}
              */
             colorDayTerrainGroundLevel: 0x969696,
 
             /**
-             * [colorDayTerrainLowland1 description]
-             * @type {[type]}
-             */
-            colorDayTerrainLowland1: 0x2d5828,
-
-            /**
-             * [colorDayTerrainLowland2 description]
-             * @type {[type]}
-             */
-            colorDayTerrainLowland2: 0x6d915b,
-
-            /**
-             * [colorDayTerrainMidland1 description]
-             * @type {[type]}
-             */
-            colorDayTerrainMidland1: 0x89450e,
-
-            /**
-             * [colorDayTerrainMidland2 description]
-             * @type {[type]}
-             */
-            colorDayTerrainMidland2: 0x89450e,
-
-            /**
-             * [colorDayTerrainHighland description]
-             * @type {[type]}
-             */
-            colorDayTerrainHighland: 0x8c8c8c,
-
-            /**
-             * [colorNightTerrainGroundLevel description]
+             * The colour of the terrain at sea level during the night.
+             *
              * @type {[type]}
              */
             colorNightTerrainGroundLevel: 0x000000,
 
             /**
-             * [colorNightTerrainLowland1 description]
+             * The colour of the terrain on lowlands (level 1) during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayTerrainLowland1: 0x2d5828,
+
+            /**
+             * The colour of the terrain on lowlands (level 1) during the night.
+             *
              * @type {[type]}
              */
             colorNightTerrainLowland1: 0x000000,
 
             /**
-             * [colorNightTerrainLowland2 description]
+             * The colour of the terrain on lowlands (level 2) during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayTerrainLowland2: 0x6d915b,
+
+            /**
+             * The colour of the terrain on lowlands (level 2) during the night.
+             *
              * @type {[type]}
              */
             colorNightTerrainLowland2: 0x181818,
 
             /**
-             * [colorNightTerrainMidland1 description]
+             * The colour of the terrain on midlands (level 1) during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayTerrainMidland1: 0x89450e,
+
+            /**
+             * The colour of the terrain on midlands (level 1) during the night.
+             *
              * @type {[type]}
              */
             colorNightTerrainMidland1: 0x282828,
 
             /**
-             * [colorNightTerrainMidland2 description]
+             * The colour of the terrain on midlands (level 2)  during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayTerrainMidland2: 0x89450e,
+
+            /**
+             * The colour of the terrain on midlands (level 2) during the night.
+             *
              * @type {[type]}
              */
             colorNightTerrainMidland2: 0x3a3a3a,
 
             /**
-             * [colorNightTerrainHighland description]
+             * The colour of the terrain on highlands during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayTerrainHighland: 0x8c8c8c,
+
+            /**
+             * The colour of the terrain on highlands during the night.
+             *
              * @type {[type]}
              */
             colorNightTerrainHighland: 0x4c4c4c,
 
             /**
-             * [colorTerrainStop1 description]
+             * The proportion of *maxTerrainHeight* at which to transition from sea level to lowlands (level 1).
+             *
              * @type {Number}
              */
             colorTerrainStop1: 0.2,
 
             /**
-             * [colorTerrainStop2 description]
+             * The proportion of *maxTerrainHeight* at which to transition from lowlevel (level 1) to lowlands (level 2).
+             *
              * @type {Number}
              */
             colorTerrainStop2: 0.4,
 
             /**
-             * [colorTerrainStop3 description]
+             * The proportion of *maxTerrainHeight* at which to transition from lowlands (level 2) to midlands (level 1).
+             *
              * @type {Number}
              */
             colorTerrainStop3: 0.6,
 
             /**
-             * [colorTerrainStop4 description]
+             * The proportion of *maxTerrainHeight* at which to transition from midlands (level 1) to midlands (level 2).
+             *
              * @type {Number}
              */
             colorTerrainStop4: 0.8,
 
             /**
-             * [colorTerrainStop5 description]
+             * The proportion of *maxTerrainHeight* at which to transition from midlands (level 2) to highlands.
+             *
              * @type {Number}
              */
             colorTerrainStop5: 1.0,
 
             /**
-             * [colorTerrainOpacity description]
+             * The opacity of the terrain colours (low values will make the terrain "see through").
+             *
              * @type {Number}
              */
-            colorTerrainOpacity: 1.0
+            colorTerrainOpacity: 1.0,
+
+
+            // Building Colours
+
+            /**
+             *The color of building walls during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayBuildingFill: 0xb1abab,
+
+            /**
+             * The color of building walls during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightBuildingFill: 0x838383,
+
+            /**
+             * The color of building lines during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayBuildingLine: 0x222222,
+
+            /**
+             * The color of building lines during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightBuildingLine: 0x838383,
+
+            /**
+             * The color of building windows during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayBuildingWindow: 0x222222,
+
+            /**
+             * The color of building windows during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightBuildingWindow: 0xffff8f,
+
+
+            // Graph colours
+
+            /**
+             * The colour of the *first* graphed line (defaults to the simulation's *agent population*).
+             *
+             * @type {[type]}
+             */
+            colorGraphPopulation: 0x4747b3,
+
+            /**
+             * The colour of the *second* graphed line (defaults to the simulation's *agent mean health*).
+             *
+             * @type {[type]}
+             */
+            colorGraphHealth: 0xb34747,
+
+            /**
+             * The colour of the *second* graphed line (defaults to the simulation's *patches' mean value*).
+             *
+             * @type {[type]}
+             */
+            colorGraphPatchValues: 0x47b347,
+
+            // Lighting colours
+
+            /**
+             * The sky colour of the hemisphere light.
+             *
+             * @type {[type]}
+             */
+            colorLightHemisphereSky: 0xbfbfbf,
+
+            /**
+             * The ground colour of the hemisphere light.
+             *
+             * @type {[type]}
+             */
+            colorLightHemisphereGround: 0xbfbfbf,
+
+            /**
+             * The intensity of the hemisphere light.
+             *
+             * @type {Number}
+             */
+            colorLightHemisphereIntensity: 1.0,
+
+            /**
+             * The colour of the directional light.
+             *
+             * @type {[type]}
+             */
+            colorLightDirectional: 0xffffff,
+
+            /**
+             * The intensity of the directional light.
+             *
+             * @type {Number}
+             */
+            colorLightDirectionalIntensity: 0.5,
+
+
+            // Other colours
+
+            /**
+             * The color of the world background during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayBackground: 0x000000,
+
+            /**
+             * The color of the world background during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightBackground: 0x636363,
+
+            /**
+             * The color of roads during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayRoad: 0x474747,
+
+            /**
+             * The color of roads during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightRoad: 0x474747,
+
+            /**
+             * The color of agents during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayAgent: 0x4747b3,
+
+            /**
+             * The color of agents during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightAgent: 0x47b347,
+
+            /**
+             * The color of agent networks during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayNetwork: 0x474747,
+
+            /**
+             * The color of agent networks during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightNetwork: 0x47b347,
+
+            /**
+             * The color of agent trails during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayTrail: 0x474747,
+
+            /**
+             * The color of agent trails during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightTrail: 0x47b347,
+
+            /**
+             * The color of agent paths during the day.
+             *
+             * @type {[type]}
+             */
+            colorDayPath: 0x474747,
+
+            /**
+             * The color of agent paths during the night.
+             *
+             * @type {[type]}
+             */
+            colorNightPath: 0x47b347
 
         };
+
+        // Assign values based on calculations
 
         this.buildingOptions.maxHeight = ( this.buildingOptions.minHeight > this.buildingOptions.maxHeight ) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
         this.buildingOptions.maxWidth = ( this.buildingOptions.minWidth > this.buildingOptions.maxWidth ) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
@@ -1420,6 +1473,7 @@ define( [
 
         /**
          * World options.
+         *
          * @namespace fp~AppConfig~worldOptions
          */
         this.worldOptions = {
@@ -1440,8 +1494,12 @@ define( [
 
         };
 
-
-        this.sunOptions  = {
+        /**
+         * Sun options.
+         *
+         * @type {Object}
+         */
+        this.sunOptions = {
             turbidity: 10,
             reileigh: 2,
             mieCoefficient: 0.005,

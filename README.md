@@ -236,13 +236,6 @@ The following are a partial list of these options:
      + *skyboxShow*: Whether to render the skybox for the day view.
      + *chartShow*: Whether to render the chart, displaying the simulation outputs.
      + *guiShow*: Whether to render the GUI control panel [duplicates the *guiControlsShow*?].
-     + *guiShowControls*: Whether to render the GUI controls (*Setup*, *Run*, etc.).
-     + *guiShowAgentFolder*: Whether to render the GUI agent folder and options.
-     + *guiShowBuildingsFolder*: Whether to render the GUI building folder and options.
-     + *guiShowRoadsFolder*: Whether to render the GUI roads folder and options.
-     + *guiShowTerrainFolder*: Whether to render the GUI terrain folder and options.
-     + *guiShowDisplayFolder*: Whether to render the GUI display folder and options.
-     + *guiShowColorFolder*: Whether to render the GUI colour folder and options.
      + *pathsShow*: Whether to render paths traversed by agents.
      + *terrainShow*: Whether to render the terrain.
      + *lightHemisphereShow*: Whether to render the hemisphere light.
@@ -254,52 +247,64 @@ The following are a partial list of these options:
      + *cameraY*: If *cameraOverride* is true, the Y position of the camera.
      + *cameraZ*: If *cameraOverride* is true, the Z position of the camera.
      + *maximiseView*: Whether to maximise the screen.
+     + Folder Options:
+        * *guiShowControls*: Whether to render the GUI controls (*Setup*, *Run*, etc.).
+        * *guiShowAgentFolder*: Whether to render the GUI agent folder and options.
+        * *guiShowBuildingsFolder*: Whether to render the GUI building folder and options.
+        * *guiShowRoadsFolder*: Whether to render the GUI roads folder and options.
+        * *guiShowTerrainFolder*: Whether to render the GUI terrain folder and options.
+        * *guiShowDisplayFolder*: Whether to render the GUI display folder and options.
+        * *guiShowColorFolder*: Whether to render the GUI colour folder and options.
  - **Colour Options**
-     + *colorDayBackground*:
-     + *colorDayRoad*:
-     + *colorDayAgent*:
-     + *colorDayNetwork*:
-     + *colorDayTrail*:
-     + *colorDayPath*:
-     + *colorDayBuildingFill*:
-     + *colorDayBuildingLine*:
-     + *colorDayBuildingWindow*:
-     + *colorNightBackground*:
-     + *colorNightRoad*:
-     + *colorNightAgent*:
-     + *colorNightNetwork*:
-     + *colorNightTrail*:
-     + *colorNightNetworPath*:
-     + *colorNightPath*:
-     + *colorNightBuildingFill*:
-     + *colorNightBuildingLine*:
-     + *colorNightBuildingWindow*:
-     + *colorGraphPopulation*:
-     + *colorGraphHealth*:
-     + *colorGraphPatchValues*:
-     + *colorLightHemisphereSky*:
-     + *colorLightHemisphereGround*:
-     + *colorLightHemisphereIntensity*:
-     + *colorLightDirectional*:
-     + *colorLightDirectionalIntensity*:
-     + *colorDayTerrainGroundLevel*:
-     + *colorDayTerrainHighland*:
-     + *colorDayTerrainLowland1*:
-     + *colorDayTerrainLowland2*:
-     + *colorDayTerrainMidland1*:
-     + *colorDayTerrainHighland*:
-     + *colorNightTerrainGroundLevel*:
-     + *colorNightTerrainLowland1*:
-     + *colorNightTerrainLowland2*:
-     + *colorNightTerrainMidland1*:
-     + *colorNightTerrainMidland2*:
-     + *colorNightTerrainHighland*:
-     + *colorTerrainStop1*:
-     + *colorTerrainStop2*:
-     + *colorTerrainStop3*:
-     + *colorTerrainStop4*:
-     + *colorTerrainStop5*:
-     + *colorTerrainOpacity*:
+     + Terrain Colors
+         * *colorDayTerrainGroundLevel*: The colour of the terrain at sea level during the day. 
+         * *colorNightTerrainGroundLevel*: The colour of the terrain at sea level during the night.
+         * *colorDayTerrainLowland1*: The colour of the terrain on lowlands (level 1) during the day.
+         * *colorNightTerrainLowland1*: The colour of the terrain on lowlands (level 1) during the night.
+         * *colorDayTerrainLowland2*: The colour of the terrain on lowlands (level 2) during the day.
+         * *colorNightTerrainLowland2*: The colour of the terrain on lowlands (level 2) during the night.
+         * *colorDayTerrainMidland1*: The colour of the terrain on midlands (level 1) during the day.
+         * *colorNightTerrainMidland1*: The colour of the terrain on midlands (level 1) during the night.
+         * *colorDayTerrainMidland2: The colour of the terrain on midlands (level 2)  during the day.
+         * *colorNightTerrainMidland2*: The colour of the terrain on midlands (level 2) during the night.
+         * *colorDayTerrainHighland*: The colour of the terrain on highlands during the day.
+         * *colorNightTerrainHighland*: The colour of the terrain on highlands during the night.
+         * *colorTerrainStop1*: The proportion of *maxTerrainHeight* at which to transition from sea level to lowlands (level 1).
+         * *colorTerrainStop2*: The proportion of *maxTerrainHeight* at which to transition from lowlevel (level 1) to lowlands (level 2).
+         * *colorTerrainStop3*: The proportion of *maxTerrainHeight* at which to transition from lowlands (level 2) to midlands (level 1).
+         * *colorTerrainStop4*: The proportion of *maxTerrainHeight* at which to transition from midlands (level 1) to midlands (level 2).
+         * *colorTerrainStop5*: The proportion of *maxTerrainHeight* at which to transition from midlands (level 2) to highlands.
+         * *colorTerrainOpacity*: The opacity of the terrain colours (low values will make the terrain "see through").
+     + Building Colours
+         * *colorDayBuildingFill*: The color of building walls during the day.
+         * *colorNightBuildingFill*: The color of building walls during the night.
+         * *colorDayBuildingLine*: The color of building lines during the day.
+         * *colorNightBuildingLine*: The color of building lines during the night.
+         * *colorDayBuildingWindow*: The color of building windows during the day.
+         * *colorNightBuildingWindow*: The color of building windows during the night.
+     + Graph Colours
+         * *colorGraphPopulation*: The colour of the *first* graphed line (defaults to the simulation's *agent population*).
+         * *colorGraphHealth*: The colour of the *second* graphed line (defaults to the simulation's *agent mean health*).
+         * *colorGraphPatchValues*: The colour of the *second* graphed line (defaults to the simulation's *patches' mean value*).
+     + Lighting Colours
+         * *colorLightHemisphereSky*: The sky colour of the hemisphere light.
+         * *colorLightHemisphereGround*: The ground colour of the hemisphere light.
+         * *colorLightHemisphereIntensity*: The intensity of the hemisphere light.
+         * *colorLightDirectional*: The colour of the directional light.
+         * *colorLightDirectionalIntensity*: The intensity of the directional light.
+     + Other Colours
+         * *colorDayBackground*:  The color of the world background during the day.
+         * *colorNightBackground*: The color of the world background during the night.
+         * *colorDayRoad*: The color of roads during the day.
+         * *colorNightRoad*: The color of roads during the night.
+         * *colorDayAgent*: The color of agents during the day.
+         * *colorNightAgent*: The color of agents during the night.
+         * *colorDayNetwork*: The color of agent networks during the day.
+         * *colorNightNetwork*: The color of agent networks during the night.
+         * *colorDayTrail*: The color of agent trails during the day.
+         * *colorNightTrail*: The color of agent trails during the night.
+         * *colorDayPath*: The color of agent paths during the day.
+         * *colorNightPath*: The color of agent paths during the night.
 
 
 Some simulations also include additional options that adjust the behaviour of their particular model.

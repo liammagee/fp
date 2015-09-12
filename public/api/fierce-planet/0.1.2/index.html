@@ -277,13 +277,6 @@ node app.js</p>
 <li><em>skyboxShow</em>: Whether to render the skybox for the day view.</li>
 <li><em>chartShow</em>: Whether to render the chart, displaying the simulation outputs.</li>
 <li><em>guiShow</em>: Whether to render the GUI control panel [duplicates the <em>guiControlsShow</em>?].</li>
-<li><em>guiShowControls</em>: Whether to render the GUI controls (<em>Setup</em>, <em>Run</em>, etc.).</li>
-<li><em>guiShowAgentFolder</em>: Whether to render the GUI agent folder and options.</li>
-<li><em>guiShowBuildingsFolder</em>: Whether to render the GUI building folder and options.</li>
-<li><em>guiShowRoadsFolder</em>: Whether to render the GUI roads folder and options.</li>
-<li><em>guiShowTerrainFolder</em>: Whether to render the GUI terrain folder and options.</li>
-<li><em>guiShowDisplayFolder</em>: Whether to render the GUI display folder and options.</li>
-<li><em>guiShowColorFolder</em>: Whether to render the GUI colour folder and options.</li>
 <li><em>pathsShow</em>: Whether to render paths traversed by agents.</li>
 <li><em>terrainShow</em>: Whether to render the terrain.</li>
 <li><em>lightHemisphereShow</em>: Whether to render the hemisphere light.</li>
@@ -295,54 +288,78 @@ node app.js</p>
 <li><em>cameraY</em>: If <em>cameraOverride</em> is true, the Y position of the camera.</li>
 <li><em>cameraZ</em>: If <em>cameraOverride</em> is true, the Z position of the camera.</li>
 <li><em>maximiseView</em>: Whether to maximise the screen.</li>
+<li>Folder Options:<ul>
+<li><em>guiShowControls</em>: Whether to render the GUI controls (<em>Setup</em>, <em>Run</em>, etc.).</li>
+<li><em>guiShowAgentFolder</em>: Whether to render the GUI agent folder and options.</li>
+<li><em>guiShowBuildingsFolder</em>: Whether to render the GUI building folder and options.</li>
+<li><em>guiShowRoadsFolder</em>: Whether to render the GUI roads folder and options.</li>
+<li><em>guiShowTerrainFolder</em>: Whether to render the GUI terrain folder and options.</li>
+<li><em>guiShowDisplayFolder</em>: Whether to render the GUI display folder and options.</li>
+<li><em>guiShowColorFolder</em>: Whether to render the GUI colour folder and options.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li><strong>Colour Options</strong><ul>
-<li><em>colorDayBackground</em>:</li>
-<li><em>colorDayRoad</em>:</li>
-<li><em>colorDayAgent</em>:</li>
-<li><em>colorDayNetwork</em>:</li>
-<li><em>colorDayTrail</em>:</li>
-<li><em>colorDayPath</em>:</li>
-<li><em>colorDayBuildingFill</em>:</li>
-<li><em>colorDayBuildingLine</em>:</li>
-<li><em>colorDayBuildingWindow</em>:</li>
-<li><em>colorNightBackground</em>:</li>
-<li><em>colorNightRoad</em>:</li>
-<li><em>colorNightAgent</em>:</li>
-<li><em>colorNightNetwork</em>:</li>
-<li><em>colorNightTrail</em>:</li>
-<li><em>colorNightNetworPath</em>:</li>
-<li><em>colorNightPath</em>:</li>
-<li><em>colorNightBuildingFill</em>:</li>
-<li><em>colorNightBuildingLine</em>:</li>
-<li><em>colorNightBuildingWindow</em>:</li>
-<li><em>colorGraphPopulation</em>:</li>
-<li><em>colorGraphHealth</em>:</li>
-<li><em>colorGraphPatchValues</em>:</li>
-<li><em>colorLightHemisphereSky</em>:</li>
-<li><em>colorLightHemisphereGround</em>:</li>
-<li><em>colorLightHemisphereIntensity</em>:</li>
-<li><em>colorLightDirectional</em>:</li>
-<li><em>colorLightDirectionalIntensity</em>:</li>
-<li><em>colorDayTerrainGroundLevel</em>:</li>
-<li><em>colorDayTerrainHighland</em>:</li>
-<li><em>colorDayTerrainLowland1</em>:</li>
-<li><em>colorDayTerrainLowland2</em>:</li>
-<li><em>colorDayTerrainMidland1</em>:</li>
-<li><em>colorDayTerrainHighland</em>:</li>
-<li><em>colorNightTerrainGroundLevel</em>:</li>
-<li><em>colorNightTerrainLowland1</em>:</li>
-<li><em>colorNightTerrainLowland2</em>:</li>
-<li><em>colorNightTerrainMidland1</em>:</li>
-<li><em>colorNightTerrainMidland2</em>:</li>
-<li><em>colorNightTerrainHighland</em>:</li>
-<li><em>colorTerrainStop1</em>:</li>
-<li><em>colorTerrainStop2</em>:</li>
-<li><em>colorTerrainStop3</em>:</li>
-<li><em>colorTerrainStop4</em>:</li>
-<li><em>colorTerrainStop5</em>:</li>
-<li><em>colorTerrainOpacity</em>:</li>
+<li>Terrain Colors<ul>
+<li><em>colorDayTerrainGroundLevel</em>: The colour of the terrain at sea level during the day. </li>
+<li><em>colorNightTerrainGroundLevel</em>: The colour of the terrain at sea level during the night.</li>
+<li><em>colorDayTerrainLowland1</em>: The colour of the terrain on lowlands (level 1) during the day.</li>
+<li><em>colorNightTerrainLowland1</em>: The colour of the terrain on lowlands (level 1) during the night.</li>
+<li><em>colorDayTerrainLowland2</em>: The colour of the terrain on lowlands (level 2) during the day.</li>
+<li><em>colorNightTerrainLowland2</em>: The colour of the terrain on lowlands (level 2) during the night.</li>
+<li><em>colorDayTerrainMidland1</em>: The colour of the terrain on midlands (level 1) during the day.</li>
+<li><em>colorNightTerrainMidland1</em>: The colour of the terrain on midlands (level 1) during the night.</li>
+<li>*colorDayTerrainMidland2: The colour of the terrain on midlands (level 2)  during the day.</li>
+<li><em>colorNightTerrainMidland2</em>: The colour of the terrain on midlands (level 2) during the night.</li>
+<li><em>colorDayTerrainHighland</em>: The colour of the terrain on highlands during the day.</li>
+<li><em>colorNightTerrainHighland</em>: The colour of the terrain on highlands during the night.</li>
+<li><em>colorTerrainStop1</em>: The proportion of <em>maxTerrainHeight</em> at which to transition from sea level to lowlands (level 1).</li>
+<li><em>colorTerrainStop2</em>: The proportion of <em>maxTerrainHeight</em> at which to transition from lowlevel (level 1) to lowlands (level 2).</li>
+<li><em>colorTerrainStop3</em>: The proportion of <em>maxTerrainHeight</em> at which to transition from lowlands (level 2) to midlands (level 1).</li>
+<li><em>colorTerrainStop4</em>: The proportion of <em>maxTerrainHeight</em> at which to transition from midlands (level 1) to midlands (level 2).</li>
+<li><em>colorTerrainStop5</em>: The proportion of <em>maxTerrainHeight</em> at which to transition from midlands (level 2) to highlands.</li>
+<li><em>colorTerrainOpacity</em>: The opacity of the terrain colours (low values will make the terrain &quot;see through&quot;).</li>
+</ul>
+</li>
+<li>Building Colours<ul>
+<li><em>colorDayBuildingFill</em>: The color of building walls during the day.</li>
+<li><em>colorNightBuildingFill</em>: The color of building walls during the night.</li>
+<li><em>colorDayBuildingLine</em>: The color of building lines during the day.</li>
+<li><em>colorNightBuildingLine</em>: The color of building lines during the night.</li>
+<li><em>colorDayBuildingWindow</em>: The color of building windows during the day.</li>
+<li><em>colorNightBuildingWindow</em>: The color of building windows during the night.</li>
+</ul>
+</li>
+<li>Graph Colours<ul>
+<li><em>colorGraphPopulation</em>: The colour of the <em>first</em> graphed line (defaults to the simulation's <em>agent population</em>).</li>
+<li><em>colorGraphHealth</em>: The colour of the <em>second</em> graphed line (defaults to the simulation's <em>agent mean health</em>).</li>
+<li><em>colorGraphPatchValues</em>: The colour of the <em>second</em> graphed line (defaults to the simulation's <em>patches' mean value</em>).</li>
+</ul>
+</li>
+<li>Lighting Colours<ul>
+<li><em>colorLightHemisphereSky</em>: The sky colour of the hemisphere light.</li>
+<li><em>colorLightHemisphereGround</em>: The ground colour of the hemisphere light.</li>
+<li><em>colorLightHemisphereIntensity</em>: The intensity of the hemisphere light.</li>
+<li><em>colorLightDirectional</em>: The colour of the directional light.</li>
+<li><em>colorLightDirectionalIntensity</em>: The intensity of the directional light.</li>
+</ul>
+</li>
+<li>Other Colours<ul>
+<li><em>colorDayBackground</em>:  The color of the world background during the day.</li>
+<li><em>colorNightBackground</em>: The color of the world background during the night.</li>
+<li><em>colorDayRoad</em>: The color of roads during the day.</li>
+<li><em>colorNightRoad</em>: The color of roads during the night.</li>
+<li><em>colorDayAgent</em>: The color of agents during the day.</li>
+<li><em>colorNightAgent</em>: The color of agents during the night.</li>
+<li><em>colorDayNetwork</em>: The color of agent networks during the day.</li>
+<li><em>colorNightNetwork</em>: The color of agent networks during the night.</li>
+<li><em>colorDayTrail</em>: The color of agent trails during the day.</li>
+<li><em>colorNightTrail</em>: The color of agent trails during the night.</li>
+<li><em>colorDayPath</em>: The color of agent paths during the day.</li>
+<li><em>colorNightPath</em>: The color of agent paths during the night.</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -363,7 +380,7 @@ node app.js</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Sat Sep 12 2015 00:11:56 GMT+1000 (AEST)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0-dev</a> on Sat Sep 12 2015 11:51:20 GMT+1000 (AEST)
 </footer>
 
 <script> prettyPrint(); </script>

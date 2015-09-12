@@ -2037,8 +2037,6 @@ define(
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightAgent" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
-                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
-                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayTrail" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightTrail" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayPath" );
