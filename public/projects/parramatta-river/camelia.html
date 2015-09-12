@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <title>Fierce Planet</title>
+        <link rel="stylesheet" type="text/css" href="/css/fp.css">
+        <script src="/js/require.js"></script>
+        <script>
+
+        require.config({
+
+          baseUrl: '/js',
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
+
+        });
+
+        require( [ 'fp' ],
+
+            function( fp ) {
+
+                window.fp = fp;
+
+                var config = {
+                  "preset": "Default",
+                  "remembered": {
+                    "Default": {
+                        "1": {
+                            "noWater": true,
+                            "size": 20,
+                         },
+                        "2": {
+                            "detectBuildingCollisions": true,
+                            "detectRoadCollisions": true,
+                            "windowsRandomise": true,
+                            "randomForm": true,
+                            "rotateRandomly": false,
+                            "minHeight": 10,
+                            "maxHeight": 100,
+                            "stagger": true,
+                            "taper": true,
+                        },
+                        "3": {
+                            "create": false
+                        },
+                        "4": {
+                            "shaderUse": true,
+                            "shaderShadowMix": 0.95,
+                            "gridExtent": 7200,
+                            "gridPoints": 601,
+                            "multiplier": 1,
+                            "defaultHeight": 0,
+                            // 1arc source is downscaled by a factor of 4
+                            // From 3601 to 900
+                            // So heights are measured at 30m * 4 = 120m
+                            // We are 'scaling' points over the griad at a factor of 10
+                            // So a 'realistic' representation needs to divide
+                            // heights by  120m / 8 = 15.
+                            "maxTerrainHeight": 1,
+                            // "mapFile": "/assets/Sydney-local.bin",
+                            "mapFile": "/assets/Camelia.bin"
+                        },
+                        "5": {
+                            "waterShow": true,
+                            "terrainShow": true,
+                            "buildingsShow": true,
+                            "roadsShow": false,
+                            "dayShow": true,
+                            "patchesShow": false,
+
+                            "lightDirectionalShow": true,                           "cameraOverride": true,
+                            "cameraX": 0,
+                            "cameraY": 1000,
+                            "cameraZ": 1000,
+                        },
+                        "6": {
+                            "colorTerrainStop1": 0.025,
+                            "colorTerrainStop2": 0.15,
+                            "colorTerrainStop3": 0.5,
+                            "colorTerrainStop4": 0.75,
+                            "colorTerrainStop5": 0.95,
+
+
+                            "coloriseAgentsByHealth": false,
+                        },
+                    }
+                  }
+                }
+                var sim =  {
+                    counter: 0,
+
+                    setup: function() {
+                    },
+                    tick: function() {
+                    }
+                }
+
+                fp.init( config, sim, function() {
+                    fp.appController.Setup();
+                } );
+            }
+        );
+
+        </script>
+    </head>
+    <body>
+        <div id="container"></div>
+    </body>
+</html>
