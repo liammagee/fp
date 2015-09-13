@@ -9,6 +9,9 @@
 
 [Open in a new window](projects/parramatta-river/camelia.html)
 
+
+## Notes
+
 Commands to generate the high-res geography:
 
 1. Download the following digital elevation files from [USGS](http://earthexplorer.usgs.gov/):

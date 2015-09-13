@@ -19,11 +19,14 @@
 
                 window.fp = fp;
 
+                var roadColor = fp.buildColorInteger(0, 0, 0);
+
                 var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
                         "1": {
+                            "initialPopulation": 0,
                             "noWater": true,
                             "size": 20,
                          },
@@ -39,15 +42,20 @@
                             "taper": true,
                         },
                         "3": {
-                            "create": false
+                            "create": true,
+                            "roadWidth": 10,
+                            "overlapThreshold": 100,
+                            "flattenLift": 10,
+                            "roadRadiusSegments": 8
                         },
                         "4": {
+                            "loadHeights": true,
                             "shaderUse": true,
                             "shaderShadowMix": 0.95,
-                            "gridExtent": 7200,
+                            "gridExtent": 6010,
                             "gridPoints": 601,
                             "multiplier": 1,
-                            "defaultHeight": 0,
+                            "defaultHeight": 1,
                             // 1arc source is downscaled by a factor of 4
                             // From 3601 to 900
                             // So heights are measured at 30m * 4 = 120m
@@ -62,39 +70,66 @@
                             "waterShow": true,
                             "terrainShow": true,
                             "buildingsShow": true,
-                            "roadsShow": false,
+                            "roadsShow": true,
                             "dayShow": true,
                             "patchesShow": false,
 
-                            "lightDirectionalShow": true,                           "cameraOverride": true,
+                            "lightDirectionalShow": true,                           
+                            "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 1000,
                             "cameraZ": 1000,
                         },
                         "6": {
-                            "colorTerrainStop1": 0.025,
-                            "colorTerrainStop2": 0.15,
-                            "colorTerrainStop3": 0.5,
-                            "colorTerrainStop4": 0.75,
+                            "colorTerrainStop1": 0.05,
+                            "colorTerrainStop2": 0.35,
+                            "colorTerrainStop3": 0.65,
+                            "colorTerrainStop4": 0.85,
                             "colorTerrainStop5": 0.95,
 
-
                             "coloriseAgentsByHealth": false,
+
+                            "colorDayRoad": roadColor
                         },
+                
                     }
+                
                   }
-                }
+                
+                };
+
                 var sim =  {
                     counter: 0,
+                    clashCounter: 0,
+                    dim: 1000,
+                    grid: 1,
+                    maxBuildings: 200,
 
                     setup: function() {
+
+                        // Create M4
+                        var i;
+                        var x1 = -1000,
+                            x2 = -500,
+                            z1 = 1000,
+                            z2 = 1000,
+                            y1 = -20,
+                            y2 = -20,
+                            p1 = new THREE.Vector3( x1, y1, z1 ),
+                            p2 = new THREE.Vector3( x2, y2, z2 );
+
+                        fp.roadNetwork.addRoad( p1, p2, 10 );
+
+
                     },
                     tick: function() {
                     }
                 }
 
                 fp.init( config, sim, function() {
+
                     fp.appController.Setup();
+
                 } );
             }
         );
