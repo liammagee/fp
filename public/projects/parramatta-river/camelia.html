@@ -48,7 +48,7 @@
                             "overlapThreshold": 100,
                             "flattenLift": 10,
                             "roadRadiusSegments": 8,
-                            "roadDeviation": 2
+                            "roadDeviation": 10
                         },
                         "4": {
                             "loadHeights": true,
@@ -69,6 +69,7 @@
                             "mapFile": "/assets/Camelia.bin"
                         },
                         "5": {
+
                             "waterShow": true,
                             "terrainShow": true,
                             "buildingsShow": true,
@@ -127,16 +128,16 @@
                         p1_M4.z *= multiplier;
                         p2_M4.x *= multiplier;
                         p2_M4.z *= multiplier;
-                        fp.roadNetwork.addRoad( p1_M4, p2_M4, 10 );
+                        fp.roadNetwork.addRoad( p1_M4, p2_M4, 5 * multiplier );
 
                         // Create Parramatta Rd
-                        var p1_PR = new THREE.Vector3( -2500, 0, 850 );
-                        var p2_PR = new THREE.Vector3( 1000, 0, 2220 );
+                        var p1_PR = new THREE.Vector3( -2500, 0, 900 );
+                        var p2_PR = new THREE.Vector3( 1000, 0, 2250 );
                         p1_PR.x *= multiplier;
                         p1_PR.z *= multiplier;
                         p2_PR.x *= multiplier;
                         p2_PR.z *= multiplier;
-                        fp.roadNetwork.addRoad( p1_PR, p2_PR, 10 );
+                        fp.roadNetwork.addRoad( p1_PR, p2_PR, 5 * multiplier );
 
                         // Create Victoria Rd
                         var p1_VR = new THREE.Vector3( -2500, 0, 100 );
@@ -145,7 +146,7 @@
                         p1_VR.z *= multiplier;
                         p2_VR.x *= multiplier;
                         p2_VR.z *= multiplier;
-                        fp.roadNetwork.addRoad( p1_VR, p2_VR, 10 );
+                        fp.roadNetwork.addRoad( p1_VR, p2_VR, 5 * multiplier );
 
                         // Create Silverwater
                         var p1_SW = new THREE.Vector3( -1000, 0, 0 );
@@ -154,7 +155,7 @@
                         p1_SW.z *= multiplier;
                         p2_SW.x *= multiplier;
                         p2_SW.z *= multiplier;
-                        fp.roadNetwork.addRoad( p1_SW, p2_SW, 10 );
+                        fp.roadNetwork.addRoad( p1_SW, p2_SW, 5 * multiplier );
 
                         // Creeate James Ruse Drv
                         var p1_JR = new THREE.Vector3( -2080, 0, 0 );
@@ -163,7 +164,7 @@
                         p1_JR.z *= multiplier;
                         p2_JR.x *= multiplier;
                         p2_JR.z *= multiplier;
-                        fp.roadNetwork.addRoad( p1_JR, p2_JR, 10 );
+                        fp.roadNetwork.addRoad( p1_JR, p2_JR, 5 * multiplier );
 
                     },
 
@@ -210,6 +211,7 @@
                         }
 
                     }
+                    
                 }
 
                 fp.init( config, sim, function() {
