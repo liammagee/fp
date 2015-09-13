@@ -41,9 +41,10 @@ define( [
                 var xd = p2.x - xLast, zd = p2.z - zLast;
                 var distance = Math.sqrt( xd * xd + zd * zd ) / fp.appConfig.roadOptions.roadSegments,
                     remaining = distance;
-                var yOffset = fp.appConfig.terrainOptions.defaultHeight + 20; //fp.appConfig.buildingOptions.levelHeight - 10;
+                var yOffset = fp.appConfig.terrainOptions.defaultHeight;
                 p1 = new THREE.Vector3( p1.x, fp.getHeight( p1.x, p1.z ) + yOffset, p1.z );
                 p2 = new THREE.Vector3( p2.x, fp.getHeight( p2.x, p2.z ) + yOffset, p2.z );
+
                 points.push( p1 );
                 
                 for ( var i = 0; i < distance; i++ ) {
@@ -78,6 +79,7 @@ define( [
                         var xR = x0 + Math.cos( angleRight ) * k,
                             zR = z0 + Math.sin( angleRight ) * k,
                             yR = fp.getHeight( xR, zR ) + yOffset;
+
                         if ( yR < y && yR > 0 ) {
 
                             x = xR;
@@ -94,9 +96,19 @@ define( [
                         x = Math.round( x );
                         y = Math.round( y );
                         z = Math.round( z );
+
+                        // Make a 10m bridge over water
+                        if ( y == 0 ) {
+
+                            y += 10;
+
+                        }
+
                         var point = new THREE.Vector3( x, y, z );
                         points.push( point );
                         
+                        // Attempto to interpolate - NOT WORKING
+                        /*
                         if ( y != yLast ) {
 
                             var yDiff = y - yLast;
@@ -104,13 +116,16 @@ define( [
                             
                             for ( k = lastChange + 1; k < i; k++ ) {
 
-                                var change = yDiff * ( (k - lastChange ) / shift );
+                                var change = yDiff * ( ( k - lastChange ) / shift );
                                 point.y += change;
 
                             }
+                        
                             lastChange = i;
 
                         }
+                        */
+
                     }
 
                     xLast = x;
@@ -123,6 +138,7 @@ define( [
                 }
                 
                 points.push( p2 );
+
                 return points;
 
             };
@@ -154,7 +170,7 @@ define( [
                     }
 
                 }
-                
+
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( lineUnion );
                 var polygon = polygonizer.getPolygons().toArray()[ 0 ];
@@ -171,23 +187,34 @@ define( [
              * @param {Number} roadWidth
              */
             this.addRoad = function( p1, p2, roadWidth ) {
+
                 var points = this.getRoadTerrainPoints( p1, p2 );
 
                 // Use a cut-off of 5 intersecting points to prevent this road being built
                 var jstsCoords = _.map( points, function( p ) { return new jsts.geom.Coordinate( p.x, p.z ); } );
                 var jstsGeom = new jsts.geom.LineString( jstsCoords );
                 var overlap = fp.roadNetwork.countCollisions( jstsGeom );
-                if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
+                
+                if ( overlap > fp.appConfig.roadOptions.overlapThreshold ) {
+
                     return false;
+
+                }
 
                 // The above code probably should supercede this
                 var thisIndexValues = _.map( points, function( p ) { return fp.getIndex( p.x,p.z ); } );
                 overlap = _.intersection( fp.roadNetwork.indexValues, thisIndexValues ).length;
-                if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
+                
+                if ( overlap > fp.appConfig.roadOptions.overlapThreshold ) {
+
                     return false;
 
+                }
+
                 var extrudePath = new THREE.CatmullRomCurve3( points );
-                var roadColor = ( fp.appConfig.displayOptions.dayShow ) ? fp.appConfig.colorOptions.colorDayRoad : fp.appConfig.colorOptions.colorNightRoad;
+                var roadColor = ( fp.appConfig.displayOptions.dayShow ) ? 
+                                fp.appConfig.colorOptions.colorDayRoad : 
+                                fp.appConfig.colorOptions.colorNightRoad;
                 // var roadMaterial = new THREE.MeshBasicMaterial( { color: roadColor } );
                 var roadMaterial = new THREE.MeshLambertMaterial( { color: roadColor } );
                 roadMaterial.side = THREE.DoubleSide;
@@ -196,6 +223,7 @@ define( [
                 var adjust = fp.appConfig.roadOptions.flattenAdjustment,
                     lift = fp.appConfig.roadOptions.flattenLift;
                 var vertices = roadGeom.vertices;
+                
                 for ( var i = 0; i <= vertices.length - fp.appConfig.roadOptions.roadRadiusSegments; i += fp.appConfig.roadOptions.roadRadiusSegments ) {
                 
                     var coil = vertices.slice( i, i + fp.appConfig.roadOptions.roadRadiusSegments );

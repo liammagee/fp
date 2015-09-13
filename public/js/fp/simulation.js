@@ -258,8 +258,8 @@ define(
                     fp.controls.enableZoom = true;
                     fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
-                    fp.controls.minDistance = 1.0;
-                    fp.controls.maxDistance = fp.appConfig.terrainOptions.gridExtent;
+                    fp.controls.minDistance = - fp.appConfig.terrainOptions.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                    fp.controls.maxDistance = fp.appConfig.terrainOptions.gridExtent * fp.appConfig.terrainOptions.multiplier;
 
                 }
 
@@ -1309,36 +1309,49 @@ define(
                 }
             };
 
+
             /**
-             * @memberof fp
+             * Takes mouse coordinates, and finds the point these intersect with the terrain's plane.
+             *
+             * @param   {Object} eventInfo
+             * @return  {THREE.Vector3} intersected point
              */
             fp.mouseIntersects = function( eventInfo ) {
-                //this where begin to transform the mouse cordinates to three,js cordinates
+
+                // This where to begin to transform the mouse cordinates to three,js cordinates
                 fp.mouse.x = ( eventInfo.clientX / window.innerWidth ) * 2 - 1;
                 fp.mouse.y = -( eventInfo.clientY / window.innerHeight ) * 2 + 1;
 
-                //this vector caries the mouse click cordinates
+                // This vector caries the mouse click cordinates
                 fp.mouseVector.set( fp.mouse.x, fp.mouse.y, fp.mouse.z );
 
-                //the final step of the transformation process, basically this method call
-                //creates a point in 3d space where the mouse click occurd
+                // The final step of the transformation process, basically this method call
+                // creates a point in 3d space where the mouse click occured
                 fp.mouseVector.unproject( fp.camera );
 
                 var direction = fp.mouseVector.sub( fp.camera.position ).normalize();
 
                 fp.ray.set( fp.camera.position, direction );
 
-                //asking the raycaster if the mouse click touched the sphere object
+                // Asking the raycaster if the mouse click touched the sphere object
                 var intersects = fp.ray.intersectObject( fp.terrain.plane );
 
-                //the ray will return an array with length of 1 or greater if the mouse click
-                //does touch the plane object
+                // The ray will return an array with length of 1 or greater if the mouse click
+                // does touch the plane object
                 var point;
-                if ( intersects.length > 0 )
+                if ( intersects.length > 0 ) {
+
                     point = intersects[ 0 ].point;
+                    
+                    // Get the correct height
+                    point.y = fp.getHeight( point.x, point.z );
+
+                }
 
                 return point;
+
             };
+
 
             /**
              * @memberof fp
@@ -1391,7 +1404,7 @@ define(
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                var planePoint = fp.mouseIntersects( eventInfo ), p1, p2;
+                var planePoint = fp.mouseIntersects( eventInfo );
 
                 if ( ! eventInfo.metaKey ) {
 
@@ -1401,6 +1414,8 @@ define(
                 }
 
                 if ( !_.isUndefined( planePoint ) ) {
+
+                    var p1, p2;
 
                     if ( _.isUndefined( p1 ) ) {
 

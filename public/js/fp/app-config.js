@@ -675,7 +675,8 @@ define( [
             roadWidth: 20,
 
             /**
-             * The deviation of a road from the standard width.
+             * The amount, in metres, to deviate from a 'straight' path to find 
+             * an alternative route that produces a more level road.
              *
              * @type {Number}
              */

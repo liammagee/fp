@@ -157,6 +157,19 @@ define(
 
                         }
 
+                        // Dampen for low level areas, to accentuate water mass
+                        if ( height < 5 ) {
+
+                            height -= 0;
+
+                        }
+
+                        if ( height < 0 ) {
+
+                            height = 0;
+
+                        }
+
                         geometry.attributes.position.array[ j + 2 ] =
                             height /
                             fp.appConfig.terrainOptions.maxTerrainHeight *

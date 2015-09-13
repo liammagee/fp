@@ -19,7 +19,8 @@
 
                 window.fp = fp;
 
-                var roadColor = fp.buildColorInteger(0, 0, 0);
+                var roadColor = fp.buildColorInteger(60, 60, 60);
+                var multiplier = 4;
 
                 var config = {
                   "preset": "Default",
@@ -36,17 +37,18 @@
                             "windowsRandomise": true,
                             "randomForm": true,
                             "rotateRandomly": false,
-                            "minHeight": 10,
-                            "maxHeight": 100,
-                            "stagger": true,
-                            "taper": true,
+                            "minHeight": 1,
+                            "maxHeight": 5,
+                            "stagger": false,
+                            "taper": false,
                         },
                         "3": {
                             "create": true,
                             "roadWidth": 10,
                             "overlapThreshold": 100,
                             "flattenLift": 10,
-                            "roadRadiusSegments": 8
+                            "roadRadiusSegments": 8,
+                            "roadDeviation": 2
                         },
                         "4": {
                             "loadHeights": true,
@@ -54,7 +56,7 @@
                             "shaderShadowMix": 0.95,
                             "gridExtent": 6010,
                             "gridPoints": 601,
-                            "multiplier": 1,
+                            "multiplier": multiplier,
                             "defaultHeight": 1,
                             // 1arc source is downscaled by a factor of 4
                             // From 3601 to 900
@@ -73,12 +75,13 @@
                             "roadsShow": true,
                             "dayShow": true,
                             "patchesShow": false,
+                            "hudShow": true,
 
                             "lightDirectionalShow": true,                           
                             "cameraOverride": true,
-                            "cameraX": 0,
-                            "cameraY": 1000,
-                            "cameraZ": 1000,
+                            "cameraX": -500,
+                            "cameraY": 5000,
+                            "cameraZ": 0,
                         },
                         "6": {
                             "colorTerrainStop1": 0.05,
@@ -104,31 +107,115 @@
                     dim: 1000,
                     grid: 1,
                     maxBuildings: 200,
+                    nwX: -2080 * multiplier,
+                    nwZ: 150 * multiplier,
+                    swX: -2180 * multiplier,
+                    swZ: 1100 * multiplier,
+                    neX: -1100 * multiplier,
+                    neZ: 250 * multiplier,
+                    seX: -1200 * multiplier,
+                    seZ: 1500 * multiplier,
 
                     setup: function() {
 
+                        fp.timescale.ticksToYear = 1;
+
                         // Create M4
-                        var i;
-                        var x1 = -1000,
-                            x2 = -500,
-                            z1 = 1000,
-                            z2 = 1000,
-                            y1 = -20,
-                            y2 = -20,
-                            p1 = new THREE.Vector3( x1, y1, z1 ),
-                            p2 = new THREE.Vector3( x2, y2, z2 );
+                        var p1_M4 = new THREE.Vector3( -2500, 0, 800 );
+                        var p2_M4 = new THREE.Vector3( 1000, 0, 2200 );
+                        p1_M4.x *= multiplier;
+                        p1_M4.z *= multiplier;
+                        p2_M4.x *= multiplier;
+                        p2_M4.z *= multiplier;
+                        fp.roadNetwork.addRoad( p1_M4, p2_M4, 10 );
 
-                        fp.roadNetwork.addRoad( p1, p2, 10 );
+                        // Create Parramatta Rd
+                        var p1_PR = new THREE.Vector3( -2500, 0, 850 );
+                        var p2_PR = new THREE.Vector3( 1000, 0, 2220 );
+                        p1_PR.x *= multiplier;
+                        p1_PR.z *= multiplier;
+                        p2_PR.x *= multiplier;
+                        p2_PR.z *= multiplier;
+                        fp.roadNetwork.addRoad( p1_PR, p2_PR, 10 );
 
+                        // Create Victoria Rd
+                        var p1_VR = new THREE.Vector3( -2500, 0, 100 );
+                        var p2_VR = new THREE.Vector3( 0, 0, 300 );
+                        p1_VR.x *= multiplier;
+                        p1_VR.z *= multiplier;
+                        p2_VR.x *= multiplier;
+                        p2_VR.z *= multiplier;
+                        fp.roadNetwork.addRoad( p1_VR, p2_VR, 10 );
+
+                        // Create Silverwater
+                        var p1_SW = new THREE.Vector3( -1000, 0, 0 );
+                        var p2_SW = new THREE.Vector3( -1400, 0, 2000 );
+                        p1_SW.x *= multiplier;
+                        p1_SW.z *= multiplier;
+                        p2_SW.x *= multiplier;
+                        p2_SW.z *= multiplier;
+                        fp.roadNetwork.addRoad( p1_SW, p2_SW, 10 );
+
+                        // Creeate James Ruse Drv
+                        var p1_JR = new THREE.Vector3( -2080, 0, 0 );
+                        var p2_JR = new THREE.Vector3( -2180, 0, 2000 );
+                        p1_JR.x *= multiplier;
+                        p1_JR.z *= multiplier;
+                        p2_JR.x *= multiplier;
+                        p2_JR.z *= multiplier;
+                        fp.roadNetwork.addRoad( p1_JR, p2_JR, 10 );
 
                     },
+
                     tick: function() {
+
+                        var minHeight = 30, maxHeight = 100;
+                        var spanX = ( this.nwX - this.seX ) ;
+                        var spanZ = ( this.swZ - this.neZ );
+
+                        if ( fp.buildingNetwork.buildings.length < this.maxBuildings  ) {
+
+                            var x = this.seX + Math.floor( Math.random() * spanX ),
+                                z = this.neZ + Math.floor( Math.random() * spanZ ),
+                                y = fp.getHeight(x, z) + fp.appConfig.terrainOptions.defaultHeight;
+
+                            var position = new THREE.Vector3( x, y, z );
+                            var dimensions = fp.buildingNetwork.generateRandomDimensions();
+                            // var dimensions = {
+                            //     levels: fp.appConfig.buildingOptions.minHeight,
+                            //     width: fp.appConfig.buildingOptions.minWidth,
+                            //     length: fp.appConfig.buildingOptions.minLength
+                            // }
+                            var building = fp.buildingNetwork.createBuilding( position, dimensions );
+
+                            if ( typeof( building ) !== "undefined" ) {
+
+                                var height = Math.floor( Math.random() * (maxHeight - minHeight) ) + minHeight;
+
+                                for (var i = 0; i < height; i++) {
+
+                                    while ( building.canAddFloor() ) {
+
+                                        building.addFloor();
+
+                                    }
+                                }
+
+                            }
+                            else {
+
+                                this.counter++;
+
+                            }
+                        }
+
                     }
                 }
 
                 fp.init( config, sim, function() {
 
                     fp.appController.Setup();
+                    fp.appController.Run();
 
                 } );
             }
@@ -137,6 +224,19 @@
         </script>
     </head>
     <body>
+        <div id="hudDiv" style="display: none">
+            <div id="output">
+                <div id="year">
+                    <b>Year:</b> <span id="yearValue"></span>
+                </div>
+                <div id="speed">
+                    <b>Speed:</b> <span id="speedValue"></span>
+                </div>
+                <div id="population">
+                     <b>Pop.:</b> <span id="populationValue"></span>
+                </div>
+            </div>
+        </div>
         <div id="container"></div>
     </body>
 </html>
