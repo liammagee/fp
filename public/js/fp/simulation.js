@@ -1343,39 +1343,75 @@ define(
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                if ( !fp.appConfig.displayOptions.cursorShow )
+                if ( !fp.appConfig.displayOptions.cursorShow ) {
+
                     return;
 
+                }
+
                 var planePoint = fp.mouseIntersects( eventInfo );
-                if ( fp.appConfig.displayOptions.cursorShowCell )
+
+                if ( fp.appConfig.displayOptions.cursorShowCell ) {
+
                     fp.cursor.createCellFill( planePoint.x, planePoint.z );
-                else
+
+                }
+                else {
+
                     fp.cursor.createCell( planePoint.x, planePoint.z );
 
-                if ( eventInfo.which == 1 )
+                }
+
+                // Specific behaviour for flatting terrain
+                if ( eventInfo.which == 1 ) {
+                    
                     fp.terrain.flattenTerrain();
+
+                }
+
             };
 
+
             /**
+             * Responds to mouse up events.
+             * If the meta/alt key is pressed, either (a) creating the starting point of a road or
+             * (b) marking the end point, and adding the road.
+             * 
+             * Otherwise, simply prints the plane point, if any, to the console.
+             * 
+             * @param   {Object} eventInfo
              * @memberof fp
              */
             fp.onMouseUp = function( eventInfo ) {
+
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                if ( ! eventInfo.metaKey )
+                if ( ! eventInfo.metaKey ) {
+
                     return;
 
+                }
+
                 var planePoint = fp.mouseIntersects( eventInfo ), p1, p2;
+
                 if ( !_.isUndefined( planePoint ) ) {
-                    if ( _.isUndefined( p1 ) )
+
+                    if ( _.isUndefined( p1 ) ) {
+
                         p1 = planePoint;
+
+                    }
                     else if ( _.isUndefined( p2 )) {
+                        
                         p2 = planePoint;
                         fp.roadNetwork.addRoad( p1, p2, appConfig.roadOptions.roadWidth );
                         p1 = p2 = undefined;
+
                     }
+
                 }
+
             };
 
 
@@ -1384,33 +1420,60 @@ define(
              * @memberof fp
              */
             fp.toggleAgentState = function() {
-                if ( !fp.appConfig.displayOptions.agentsShow )
+                
+                if ( !fp.appConfig.displayOptions.agentsShow ) {
+
                     fp.scene.remove(  fp.agentNetwork.particles  );
-                else
+
+                }
+                else {
+
                     fp.scene.add(  fp.agentNetwork.particles  );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of the building network.
              * @memberof fp
              */
             fp.toggleBuildingState = function() {
-                if ( !fp.appConfig.displayOptions.buildingsShow )
+
+                if ( !fp.appConfig.displayOptions.buildingsShow ) {
+
                     fp.scene.remove( fp.buildingNetwork.networkMesh );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.buildingNetwork.networkMesh );
+
+                }
+                
             };
+
 
             /**
              * Toggles the visibility of the raod network.
              * @memberof fp
              */
             fp.toggleRoadState = function() {
-                if ( !fp.appConfig.displayOptions.roadsShow )
+
+                if ( !fp.appConfig.displayOptions.roadsShow ) {
+
                     fp.scene.remove( fp.roadNetwork.networkMesh );
-                else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
+
+                }
+                else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) ) {
+
                     fp.scene.add( fp.roadNetwork.networkMesh );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of water.
@@ -1438,17 +1501,30 @@ define(
              * @memberof fp
              */
             fp.toggleAgentNetwork = function() {
+
                 if ( !fp.appConfig.displayOptions.networkShow ) {
+
                     fp.agentNetwork.networks.forEach( function( network ) {
+
                         fp.scene.remove( network.networkMesh );
+
                     } );
+
                 }
                 else {
+
                     fp.agentNetwork.networks.forEach( function( network ) {
-                        if ( !_.isNull( network.networkMesh ) )
+
+                        if ( !_.isNull( network.networkMesh ) ) {
+
                             fp.scene.add( network.networkMesh );
+
+                        }
+
                     } );
+
                 }
+
             };
 
             /**
@@ -1467,13 +1543,19 @@ define(
              * @memberof fp
              */
             fp.toggleTrailState = function() {
+
                 if ( !fp.appConfig.displayOptions.trailsShow ||
                     !fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.remove( fp.trailNetwork.globalTrailLine );
+
                 }
                 else if ( appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
+
                 }
+
             };
 
 
