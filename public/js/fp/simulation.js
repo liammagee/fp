@@ -957,6 +957,7 @@ define(
 
             /**
              * Gets the terrain height for a given ( x, y ) co-ordinate.
+             *
              * @memberof fp
              */
             fp.getHeight = function( x, y ) {
@@ -996,6 +997,7 @@ define(
                 return 0.0;
             };
 
+
             /**
              * Count how many surrounding cells are also sea level
              * @memberof fp
@@ -1014,8 +1016,9 @@ define(
                 return seaLevelNeighbours / totalNeighbours;
             };
 
+
             /**
-             * Count how many surrounding cells are also buildings
+             * Count how many surrounding cells are also buildings.
              * @memberof fp
              * @param  {Number} index
              * @return {Number}
@@ -1034,6 +1037,7 @@ define(
                 // Return true if the probability is greater than 1 minus the target value
                 return ( chance > ( 1 - threshold ) );
             };
+
 
             /**
              * Count how many surrounding cells are also buildings
@@ -1387,13 +1391,14 @@ define(
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
+                var planePoint = fp.mouseIntersects( eventInfo ), p1, p2;
+
                 if ( ! eventInfo.metaKey ) {
 
+                    console.log( planePoint )
                     return;
 
                 }
-
-                var planePoint = fp.mouseIntersects( eventInfo ), p1, p2;
 
                 if ( !_.isUndefined( planePoint ) ) {
 
@@ -1451,7 +1456,7 @@ define(
                     fp.scene.add( fp.buildingNetwork.networkMesh );
 
                 }
-                
+
             };
 
 
