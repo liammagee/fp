@@ -1419,7 +1419,7 @@ define(
                 if ( ! eventInfo.metaKey ) {
 
                     // Useful for debugging
-                    // console.log( planePoint )
+                    console.log( planePoint )
                     return;
 
                 }
@@ -2095,9 +2095,9 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
                     displayFolder.add( fp.appConfig.displayOptions, "firstPersonView" ).onFinishChange( fp.resetControls );
                     displayFolder.add( fp.appConfig.displayOptions, "cameraOverride" ).onFinishChange( fp.resetControls );
-                    displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 5000 ).onFinishChange( fp.resetControls );
-                    displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 5000 ).onFinishChange( fp.resetControls );
-                    displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 5000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 10000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 10000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 10000 ).onFinishChange( fp.resetControls );
                     displayFolder.add( fp.appConfig.displayOptions, "maximiseView" );
                     displayFolder.add( fp.appConfig.displayOptions, "guiShow" );
 

@@ -138,6 +138,7 @@ define(
                     n = Math.sqrt( l ),
                     k = l + 1;
 
+
                 if ( fp.appConfig.terrainOptions.loadHeights ) {
 
                     var minHeight, maxHeight;
@@ -191,8 +192,8 @@ define(
 
                 }
 
-                // console.log("min height: " + minHeight)
-                // console.log("max height: " + maxHeight)
+                console.log("min height: " + minHeight)
+                console.log("max height: " + maxHeight)
 
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( {
 

@@ -17,11 +17,13 @@ var loadCustomTerrain = function( terrainURL ) {
         var len = lines.length;
         var heights = lines.slice(6, lines.length - 1).join( ' ' ).split( ' ' );
         // Get data into a scale initTerrain expects
-            heights = _.chain( heights).map( function( h ) { var v = parseFloat( h ); return isNaN( v ) ? null : v; } ).compact().value();
+        heights = _.chain( heights).map( function( h ) { var v = parseFloat( h ); return isNaN( v ) ? null : v; } ).compact().value();
 
         var max = _.max( heights );
         var min = _.min( heights );
-        heights = _.map( heights, function( h ) { return 65535 * ( ( h - min ) / ( max - min ) ); } );
+        // heights = _.map( heights, function( h ) { return 5 * h - min; } );
+        // heights = _.map( heights, function( h ) { return 1000 * ( ( h - min ) / ( max - min ) ); } );
+        // console.log(( ( max - min ) ))
         fp.appConfig.terrainOptions.loadHeights  = true;
         fp.terrain.initTerrain( heights );
 
