@@ -22,6 +22,15 @@ define(
                 "2": { "create": false },
                 "3": { "create": false },
                 "4": {
+                    "mapIndex": 1,
+                    "multiplier": 1,
+                    "loadHeights": true,
+                    "gridExtent": 8000,
+                    "gridPoints": 400,
+                    "maxTerrainHeight": 400,
+                    "patchSize": 21
+                },
+                "5": {
                     "waterShow": true,
                     "terrainShow": true,
                     "buildingsShow": false,
@@ -39,7 +48,7 @@ define(
                     "cameraZ": 0,
                     // "guiShowColorFolder": false
                 },
-                "5": {
+                "6": {
                     "colorNightAgent": 0x00ff00,
                     "colorNightTerrainGroundLevel": 0x000000,
                     "colorNightTerrainLowland1": 0x272727,
@@ -55,15 +64,6 @@ define(
                     "colorLightDirectionalIntensity": 1.0,
 
                     "coloriseAgentsByHealth": false,
-                },
-                "6": {
-                    "mapIndex": 1,
-                    "multiplier": 1,
-                    "loadHeights": true,
-                    "gridExtent": 8000,
-                    "gridPoints": 400,
-                    "maxTerrainHeight": 400,
-                    "patchSize": 21
                 },
 
             }

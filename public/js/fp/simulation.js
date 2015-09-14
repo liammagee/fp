@@ -331,28 +331,38 @@ define(
                     // fp.scene.add( fp.lightHemisphere );
 
                 fp.lightDirectional = new THREE.DirectionalLight(
+                    
                     new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
                     fp.appConfig.colorOptions.colorLightDirectionalIntensity
+
                 );
-                // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
+
                 var extent = fp.terrain.gridExtent;
                 fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
-                fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
-                fp.lightDirectional.castShadow = true;
-                // these six values define the boundaries of the yellow box seen above
-                fp.lightDirectional.shadowCameraNear = extent / 10;
-                fp.lightDirectional.shadowCameraFar = extent * 8;
-                // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
-                var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
-                fp.lightDirectional.shadowMapWidth = d;
-                fp.lightDirectional.shadowMapHeight = d;
-                fp.lightDirectional.shadowCameraLeft = -d;
-                fp.lightDirectional.shadowCameraRight = d;
-                fp.lightDirectional.shadowCameraTop = d;
-                fp.lightDirectional.shadowCameraBottom = -d;
-                fp.lightDirectional.shadowBias = -0.0001;
-                //fp.lightDirectional.shadowBias = -0.05;
-                // fp.lightDirectional.shadowCameraVisible = true; // for debugging
+    
+                if ( fp.appConfig.displayOptions.lightDirectionalShadowShow ) {
+
+                    fp.lightDirectional.castShadow = true;
+                    fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
+
+                    // these six values define the boundaries of the yellow box seen above
+                    fp.lightDirectional.shadowCameraNear = extent / 10;
+                    fp.lightDirectional.shadowCameraFar = extent * 8;
+
+                    // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
+                    var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
+                    fp.lightDirectional.shadowMapWidth = d;
+                    fp.lightDirectional.shadowMapHeight = d;
+                    fp.lightDirectional.shadowCameraLeft = -d;
+                    fp.lightDirectional.shadowCameraRight = d;
+                    fp.lightDirectional.shadowCameraTop = d;
+                    fp.lightDirectional.shadowCameraBottom = -d;
+                    fp.lightDirectional.shadowBias = -0.0001;
+                    //fp.lightDirectional.shadowBias = -0.05;
+                    // fp.lightDirectional.shadowCameraVisible = true; // for debugging
+
+                }
+
                 if ( fp.appConfig.displayOptions.lightDirectionalShow ) {
 
                     fp.scene.add( fp.lightDirectional );
@@ -1342,7 +1352,7 @@ define(
                 if ( intersects.length > 0 ) {
 
                     point = intersects[ 0 ].point;
-                    
+
                     // Get the correct height
                     point.y = fp.getHeight( point.x, point.z );
 
@@ -2081,6 +2091,7 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "terrainShow" ).onFinishChange( fp.toggleTerrainPlane );
                     displayFolder.add( fp.appConfig.displayOptions, "lightHemisphereShow" ).onFinishChange( fp.toggleLights );
                     displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShow" ).onFinishChange( fp.toggleLights );
+                    displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShadowShow" );
                     displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
                     displayFolder.add( fp.appConfig.displayOptions, "firstPersonView" ).onFinishChange( fp.resetControls );
                     displayFolder.add( fp.appConfig.displayOptions, "cameraOverride" ).onFinishChange( fp.resetControls );
