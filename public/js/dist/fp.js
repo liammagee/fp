@@ -43340,6 +43340,7 @@ define( 'fp/road-network',[
             this.networkGeometry = null;
             this.intersections = [ ];
 
+
             /**
              * Creates a series of points from a start to end points.
              * The "road" will try to follow the path of least resistance
@@ -43353,7 +43354,7 @@ define( 'fp/road-network',[
              */
             this.getRoadTerrainPoints = function( p1, p2 ) {
 
-                var points = [ ];
+                var points = [];
                 var xLast = p1.x, yLast = 0, zLast = p1.z, lastChange = 0;
                 var xd = p2.x - xLast, zd = p2.z - zLast;
                 var distance = Math.sqrt( xd * xd + zd * zd ) / fp.appConfig.roadOptions.roadSegments,
