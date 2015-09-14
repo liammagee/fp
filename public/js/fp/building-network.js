@@ -28,13 +28,17 @@ define( [
              * Currently evaluates for proximity of local roads, water, buildings and building height
              */
             this.proximityFunctions = function() {
+                
                 return [
+
                     // [ fp.checkProximityOfRoads, fp.appConfig.buildingOptions.roads ],
                     // [ fp.checkProximityOfWater, fp.appConfig.buildingOptions.water ],
                     [ fp.checkProximityOfBuildings, fp.appConfig.buildingOptions.otherBuildings ],
                     [ fp.checkNearestNeighbour, fp.appConfig.buildingOptions.distanceFromOtherBuildingsMin, fp.appConfig.buildingOptions.distanceFromOtherBuildingsMax ],
                     // [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight  ]
+                
                 ];
+
              };
 
             /**
@@ -42,11 +46,15 @@ define( [
              * @return {object} contains levels, width, length properties
              */
             this.generateRandomDimensions = function() {
+                
                 return {
+
                     levels: fp.appConfig.buildingOptions.minHeight + Math.floor( Math.random() * ( fp.appConfig.buildingOptions.maxHeight - fp.appConfig.buildingOptions.minHeight ) ) ,
                     width: fp.appConfig.buildingOptions.minWidth + Math.floor( Math.random() * ( fp.appConfig.buildingOptions.maxWidth - fp.appConfig.buildingOptions.minWidth )) ,
                     length: fp.appConfig.buildingOptions.minLength + Math.floor( Math.random() * ( fp.appConfig.buildingOptions.maxLength - fp.appConfig.buildingOptions.minLength ))
+
                 };
+
             };
 
             /**
@@ -54,6 +62,7 @@ define( [
              * // Simplified 2d alternative for collision detection
              */
             this.get2dPoints = function( building ) {
+
                 var points = [ ];
                 var firstFloor = building.highResMeshContainer.children[ 0 ],
                     position = building.highResMeshContainer.position,
@@ -65,23 +74,38 @@ define( [
                     wX = ff1.x - ff0.x, wZ = ff1.z - ff0.z, lX = ff3.x - ff0.x, lZ = ff3.z - ff0.z,
                     wXa = Math.abs( wX ) + 1, wZa = Math.abs( wZ ) + 1, lXa = Math.abs( lX ) + 1, lZa = Math.abs( lZ ) + 1,
                     wXi = Math.round( wX / wXa ), wZi = Math.round( wZ / wZa ), lXi = Math.round( lX / lXa ), lZi = Math.round( lZ / lZa );
+
                 var indexPrev = -1, offset = 1;
+
                 for ( var i = 0; i < wXa; i += offset ) {
+
                     for ( var j = 0; j < wZa; j += offset ) {
+
                         var wXLocal = ff0.x + i * wXi, wZLocal = ff0.z + j * wZi;
                         for ( var k = 0; k < lXa; k += offset ) {
+
                             for ( var l = 0; l < lZa; l += offset ) {
+
                                 var lXLocal = wXLocal + k * lXi, lZLocal = wZLocal + l * lZi;
                                 var coordinate = { x: lXLocal, y: lZLocal };
                                 if ( points.indexOf( coordinate ) == -1 ) {
+
                                     points.push( coordinate );
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
                 return points;
+
             };
+
 
             /**
              * Get a 2-dimensional array of points representing <em>all</em>
@@ -90,8 +114,11 @@ define( [
              * @return {Array} points
              */
             this.get2dIndexPoints = function( building ) {
+
                 return _.map( this.get2dPoints( building ), function( point ) { return fp.getIndex( point.x, point.y ); }  ) ;
+
             };
+
 
             /**
              * Get a 2-dimensional array of points representing the bounding box
@@ -100,6 +127,7 @@ define( [
              * @return {Array} points
              */
             this.get2dPointsForBoundingBox = function( building ) {
+
                 var points = [ ];
                 // var firstFloor = building.highResMeshContainer.children[ 0 ],
                 //     position = building.highResMeshContainer.position,
@@ -109,13 +137,19 @@ define( [
                     position = building.highResMeshContainer.position,
                     vertices = firstFloor.geometry.vertices,
                     verticesOnBase = vertices.length;
+
                 for ( var i = 0; i < verticesOnBase / 2; i++ ) {
+
                     // Adjust for the vertex's rotation, and add its position
                     var point  = vertices[ i ].clone().applyMatrix4( firstFloor.matrix );//.add( position );
                     points.push( { x: point.x, y: point.z } );
+
                 }
+
                 return points;
+
             };
+
 
             /**
              * Creates a JSTS geometry from the bounding box of the building.
@@ -138,9 +172,11 @@ define( [
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( lineUnion );
                 var polygon = polygonizer.getPolygons().toArray()[ 0 ];
+
                 return polygon.buffer( 0 );
 
             };
+
 
             /**
              * Checks whether this building collides with any existing buildings.
@@ -148,6 +184,7 @@ define( [
              * @return {Boolean}
              */
             this.collidesWithOtherBuildings = function( building ) {
+
                 // Quick check
                 if ( this.buildingHash[ fp.getIndex( building.lod.position.x, building.lod.position.z ) ] )
                     return true;
@@ -158,8 +195,11 @@ define( [
                         return true;
                     }
                 }
+
                 return false; // Be optimistic
+
             };
+
 
             /**
              * Checks whether this building collides with any parts of the road
@@ -168,24 +208,41 @@ define( [
              * @return {Boolean}
              */
             this.collidesWithRoads = function( building ) {
-                if ( _.isNull( fp.roadNetwork.networkGeometry ) )
+                
+                if ( _.isNull( fp.roadNetwork.networkGeometry ) ) {
+
                     return false;
+
+                }
+
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
                 return fp.roadNetwork.networkGeometry.crosses( buildingGeometry );
+
             };
+
 
             /**
              * Updates each building.
              */
             this.updateBuildings = function() {
-                if ( ! fp.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
+                
+                if ( ! fp.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow ) {
+
                     return;
+
+                }
+
                 for ( var i = 0; i < fp.buildingNetwork.buildings.length; i++ ) {
                     var building = fp.buildingNetwork.buildings[ i ];
                     var likelihoodToGrow = Math.random();
-                    if ( likelihoodToGrow > fp.likelihoodOfGrowth() )
+                    if ( likelihoodToGrow > fp.likelihoodOfGrowth() ) {
+
                         building.updateBuilding();
+
+                    }
+
                 }
+
             };
 
             /**
@@ -280,11 +337,6 @@ define( [
 
                 }
 
-                console.log( building.mesh.rotation )
-                console.log( building.lod.rotation )
-                console.log( building.highResMeshContainer.rotation )
-                console.log( building.lowResMeshContainer.rotation )
-
                 return building;
 
             };
@@ -294,4 +346,5 @@ define( [
         return FiercePlanet;
 
     }
+
 )

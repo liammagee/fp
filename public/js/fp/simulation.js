@@ -1408,7 +1408,8 @@ define(
 
                 if ( ! eventInfo.metaKey ) {
 
-                    console.log( planePoint )
+                    // Useful for debugging
+                    // console.log( planePoint )
                     return;
 
                 }
