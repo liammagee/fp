@@ -87,15 +87,39 @@
         <h2 id="modelling-sustainability">Modelling Sustainability</h2>
         <h3 id="malthus">Malthusian Populations</h3>
         <p>This scenario again builds on the previous one by introducing the dynamic of population growth as directly connected to resource consumption and availability.</p>
+        <p>It contains addition parameters that condition the behaviour of the simulation:</p>
+        <ul>
+        <li><em>reproductionChance</em>: The likelihood that when agents of different genders meet, they will reproduce (defaults to <strong>5%</strong>).</li>
+        <li><em>maxChildren</em>: The maximum number of children a female agent can produce (defaults to <strong>10</strong>).</li>
+        <li><em>energyLoss</em>: The energy loss each agent experiences each ‘tick’, or move (defaults to <strong>0.15</strong>).</li>
+        <li><em>energyGain</em>: The energy gain each agent experiences each ‘tick’, or move, <em>where the patch has sufficient resources</em> (defaults to <strong>0.15</strong>).</li>
+        <li><em>rateOfConsumption</em>: The rate at which patches lose resources due agent consumption (defaults to <strong>0.2</strong>).</li>
+        <li><em>rateOfRecovery</em>: The rate at which patches recover resources each ‘tick’, or move (defaults to <strong>0.005</strong>).</li>
+        </ul>
         <p><a href="projects/sustainability/4-malthus.html">Open in a new window</a></p>
         <h3 id="limits-to-growth">Limits to Growth</h3>
         <p>This model introduces a simplified set of assumptions from the 1972 (rereleased in 2004) report of the Club of Rome to again demonstrate the concept of limits to growth.</p>
+        <p>Unlike the <em>Malthusian</em> model, the <em>Limits to Growth</em> model treats the sustainability of resources as a global property. While agents continue to consume resources on the patch they belong to, once that patch is completely depleted, agents will draw resources from other random patches in the world. This better approximates to the <em>Limits to Growth</em> modelling.</p>
+        <p>This model contains the same additional parameters as the <em>Malthusian</em> model above. It also contains:</p>
+        <ul>
+        <li><em>foodEfficiency</em>: this parameter conditions the extent to which patch resources are converted into food agents consume (defaults to <strong>0.3</strong>).</li>
+        </ul>
         <p><a href="projects/sustainability/5-limits-to-growth.html">Open in a new window</a></p>
         <h3 id="green-revolution">The Green Revolution</h3>
         <p>This model builds upon (and critiques) the classic Malthusian scenario by acknowledging the role of technological advances in increasing both the effectiveness and efficiency of resource utilisation and the availability of new resource sources.</p>
+        <p>This model contains the same additional parameters as the <em>Limits to Growth</em> model above. It also contains:</p>
+        <ul>
+        <li><em>growthInFoodEfficiency</em>: conditions the improvement in the efficiency of providing food to agents each year, to model more efficient agricultural production due to technology and other factors (defaults to <strong>0.025</strong>).</li>
+        </ul>
         <p><a href="projects/sustainability/6-green-revolution.html">Open in a new window</a></p>
         <h3 id="triple-bottom-line">Triple Bottom Line</h3>
-        <p>This model further applies the assumptions of the concept of TBL accounting.</p>
+        <p>This model further applies the assumptions of the concept of <em>Triple Bottom Line</em> accounting.</p>
+        <p>It uses the same set of additional parameters as the <em>The Green Revolution</em> model. However its outputs, visible in the graph, are different. The following values</p>
+        <ul>
+        <li><em>Blue</em> - shows the overall <em>Economic</em> value of the model.</li>
+        <li><em>Red</em> - shows the overall <em>Social</em> value of the model.</li>
+        <li><em>Green</em> - shows the overall <em>Environmental</em> value of the model.</li>
+        </ul>
         <p><a href="projects/sustainability/7-triple-bottom-line.html">Open in a new window</a></p>
         <!-- ## The 4 pillars of sustainability and the social ecology model -->
         <!-- *Description:* as above it includes the assumptions of these two related
