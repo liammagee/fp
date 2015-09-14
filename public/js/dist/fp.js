@@ -37743,15 +37743,22 @@ define( 'fp/app-state',[
 
 
         /**
-         * Represents relevant state about the application.
+         * Represents relevant state about a given simulation.
+         *
          * @constructor
          * @memberof fp
          * @inner
          */
-        FiercePlanet.appState = {
-            animate: true,
-            runSimulation: false,
-            stepSimulation: false
+        FiercePlanet.AppState = function( fp ) {
+
+            return {
+
+                animate: true,
+                runSimulation: false,
+                stepSimulation: false
+
+            };
+
         };
 
         return FiercePlanet;
@@ -37871,15 +37878,17 @@ define( 'fp/app-controller',[
 
                 }
 
+                fp.trailNetwork.buildTrailNetwork( false );
+
+                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
+
+                // Call this after the sim setup has been called, in
+                // case the attributes need updating
                 if ( fp.appConfig.displayOptions.patchesShow ) {
 
                     fp.patchNetwork.updateTerrainPatchAttributes();
 
                 }
-
-                fp.trailNetwork.buildTrailNetwork( false );
-
-                fp.sim.setup.call( fp.sim ); // Get around binding problem - see: http://alistapart.com/article/getoutbindingsituations
 
             };
 
@@ -37889,12 +37898,12 @@ define( 'fp/app-controller',[
              */
             this.Run = function() {
 
-                FiercePlanet.appState.runSimulation = !FiercePlanet.appState.runSimulation;
-                FiercePlanet.appState.stepSimulation = false;
+                fp.appState.runSimulation = !fp.appState.runSimulation;
+                fp.appState.stepSimulation = false;
 
                 if ( !_.isUndefined( fp.chart ) ) {
 
-                    if ( FiercePlanet.appState.runSimulation ) {
+                    if ( fp.appState.runSimulation ) {
 
                         fp.chart.chart.start();
 
@@ -37915,7 +37924,7 @@ define( 'fp/app-controller',[
              */
             this.Step = function() {
 
-                FiercePlanet.appState.runSimulation = FiercePlanet.appState.stepSimulation = true;
+                fp.appState.runSimulation = fp.appState.stepSimulation = true;
 
             };
 
@@ -38046,8 +38055,1468 @@ define( 'fp/app-config',[
      */
     FiercePlanet.AppConfig = function() {
 
+
+        /**
+         * Agent options.
+         * @namespace fp~AppConfig~agentOptions
+         */
+        this.agentOptions = {
+
+            // Initial generation options
+
+            /**
+             * The initial number of agents populating the simulation.
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            initialPopulation: 100,
+
+            // NOTE: Settings for Melbourne: initialX: -500, initialY: -1500,
+
+            /**
+             * The <em>x</em> co-ordinate of the point of origin around which agents are initially generated,
+             * expressed as a percentage (0 - 100) of distance from the actual grid center.
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            initialX: 50,
+
+            /**
+             * The <em>y</em> co-ordinate of the point of origin around which agents are initially generated,
+             * expressed as a percentage (0 - 100) of distance from the actual grid center.
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            initialY: 50,
+
+            /**
+             * The <em>initial</em> extent, or diameter, around the point of
+             * origin, where agents can be generated, expressed as a percentage (0 - 100).
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            initialExtent: 10,
+
+            /**
+             * The <em>maximum</em> extent, or diameter, around the point of
+             *  origin, where agents can be generated, expressed as a percentage (0 - 100).
+             *
+             * @type {Number}
+             * @memberOf fp~AppConfig~agentOptions
+             * @inner
+             */
+            maxExtent: 100,
+
+            /**
+             * Whether the initial distribution of agents is in a circle.
+             * If false, the distribution is a square.
+             *
+             * @type {Boolean}
+             */
+            initialCircle: true,
+
+            /**
+             * The initial speed of the agent.
+             *
+             * @type {Number}
+             */
+            initialSpeed: 20,
+
+            /**
+             * The amount to perturb, or modify, the agent's direction each tick.
+             *
+             * @type {Number}
+             */
+            initialPerturbBy: 0.05,
+
+            /**
+             * Whether the agent's age is randomly set, initially.
+             *
+             * @type {Boolean}
+             */
+            randomAge: true,
+
+            /**
+             * Whether to shuffle agents before each tick. Shuffling can be expensive for large number of agents, but can ensure properly randomised simulations.
+             *
+             * @type {Boolean}
+             */
+            shuffle: false,
+
+
+            // Network options
+
+            /**
+             * Whether agents can establish links with each other
+             *
+             * @type {Boolean}
+             */
+            establishLinks: false,
+
+            /**
+             * The likelihood of joining networks when meeting another agent (values are between 0.0 and 1.0).
+             *
+             * @type {Number}
+             */
+            chanceToJoinNetwork: 0.05,
+
+            /**
+             * The likelihood of joining networks when meeting another agent, when the other agent has a home  (values are between 0.0 and 1.0).
+             *
+             * @type {Number}
+             */
+            chanceToJoinNetworkWithHome: 0.05,
+
+            /**
+             * The likelihood of establishing a link when meeting another agent, when the other agent has a home.
+             *
+             * @type {Number}
+             */
+            chanceToJoinNetworkWithBothHomes: 0.05,
+
+            /**
+             * The likelihood of disrupting a random walk to find a path home.
+             *
+             * @type {Number}
+             */
+            chanceToFindPathToHome: 0.00,
+
+            /**
+             * The likelihood of disrupting a random walk to find a path to another, linked agent's home.
+             *
+             * @type {Number}
+             */
+            chanceToFindPathToOtherAgentHome: 0.00,
+
+
+            // Movement options
+
+            /**
+             * Agents cannot move across water.
+             *
+             * @type {Boolean}
+             */
+            noWater: false,
+
+            /**
+             * Agents cannot go up hill.
+             *
+             * @type {Boolean}
+             */
+            noUphill: false, // Eventually remove for more fine-grained weight control
+
+            /**
+             * The likelihood of an agent travelling up, when visting their own home.
+             *
+             * @type {Number}
+             */
+            visitHomeBuilding: 0.02,
+
+
+            /**
+             * The likelihood of an agent travelling up, when visting another agent's home.
+             *
+             * @type {Number}
+             */
+            visitOtherBuilding: 0.002,
+
+
+            // Visualisation options
+
+            /**
+             * Whether to use a 'stickman' image. Otherwise, use a circle.
+             *
+             * @type {Boolean}
+             */
+            useStickman: true,
+
+            /**
+             * The size to draw the agent.
+             *
+             * @type {Number}
+             */
+            size: 40,
+
+            /**
+             * The amount to offset the agent from the underlying terrain.
+             * @type {Number}
+             */
+            terrainOffset: 0,
+
+            /**
+             * Whether the agent's movement should be calculated, relative to the current patch the agent is on.
+             *
+             * @type {Boolean}
+             */
+            movementRelativeToPatch: false,
+
+            /**
+             * The amount to multiply the agent's speed, relative to the size of the patch.
+             *
+             * @type {Number}
+             */
+            movementInPatch: 1,
+
+            /**
+             * Whether the agent's movement should be strictly cardinal (N/NE/E/SE/S/SW/W/NW).
+             *
+             * @type {Boolean}
+             */
+            movementStrictlyIntercardinal: false,
+
+            /**
+             * Whether to recaculate the agent's movement, every tick.
+             * @type {Number}
+             */
+            changeDirectionEveryTick: 100,
+
+            /**
+             * Whether to perturb, or slightly adjust, the agent's movement, every tick.
+             *
+             * @type {Number}
+             */
+            perturbDirectionEveryTick: 10,
+
+        };
+
+
+        this.buildingOptions = {
+
+
+            /**
+             * Whether agents can create buildings.
+             *
+             * @type {Boolean}
+             */
+            create: true,
+
+            /**
+             * The maximum number of buildings the simulation can hold.
+             *
+             * @type {Number}
+             */
+            maxNumber: 250,
+
+            // Collision detection
+            /**
+             * Whether new buildings should avoid existing buildings.
+             *
+             * @type {Boolean}
+             */
+            detectBuildingCollisions: true,
+
+            /**
+             * Whether new buildings should avoid existing roads.
+             *
+             * @type {Boolean}
+             */
+            detectRoadCollisions: true,
+
+
+            // Building form
+
+            /**
+             * The form building should take. Can be one of the following values: "rectangle", "octagon", "fivesided", "triangle", "concave".
+             *
+             * @type {String}
+             */
+            buildingForm: "rectangle",
+
+            /**
+             * Whether the building's form should be randomly assigned from one of the five values above.
+             *
+             * @type {Boolean}
+             */
+            randomForm: false,
+
+            /**
+             * How far apart buildings must be from eachother.
+             *
+             * @type {Number}
+             */
+            spread: 10,
+
+            /**
+             * Whether buildings should be rotated randomly.
+             *
+             * @type {Boolean}
+             */
+            rotateRandomly: false,
+
+            /**
+             * Whether buildings should be positioned at a set angle.
+             *
+             * @type {Number}
+             */
+            rotateSetAngle: 0,
+
+            /**
+             * Whether buildings should be destroyed, once created.
+             *
+             * @type {Boolean}
+             */
+            destroyOnComplete: false,
+
+            /**
+             * Whether buildings should go in a loop of being created and destroyed.
+             *
+             * @type {Boolean}
+             */
+            loopCreateDestroy: false,
+
+            // Influences
+            /**
+             * The influence of a road on the construction of a new building.
+             *
+             * @type {Number}
+             */
+            roads: 0.0,
+
+            /**
+             * The influence of water on the construction of a new building.
+             *
+             * @type {Number}
+             */
+            water: 0.4,
+
+            /**
+             * The influence of other buildings on the construction of a new building.
+             *
+             * @type {Number}
+             */
+            otherBuildings: 0.9,
+
+            /**
+             * The minimum distance of other buildings must be to a new building.
+             *
+             * @type {Number}
+             */
+            distanceFromOtherBuildingsMin: 800,
+
+            /**
+             * The maximum distance of other buildings must be to a new building.
+             *
+             * @type {Number}
+             */
+            distanceFromOtherBuildingsMax: 1000,
+
+            /**
+             * The influence of other buildings of a certain height on the construction of a new building.
+             *
+             * @type {Number}
+             */
+            buildingHeight: 0.1,
+
+            // Dimensions
+
+            /**
+             * The minimum height of a building.
+             *
+             * @type {Number}
+             */
+            minHeight: 10,
+
+            /**
+             * The maximum height of a building.
+             *
+             * @type {Number}
+             */
+            maxHeight: 70,
+
+            /**
+             * A building will have a maximum height it can aspire to, based on a given probability. *heightA* refers to the exponential factor in this calculation.
+             *
+             * @type {Number}
+             */
+            heightA: 2,
+
+            /**
+             * A building will have a maximum height it can aspire to, based on a given probability. *heightB* refers to the additive factor in this calculation, which also constitutes the *minimum height*.
+             *
+             * @type {Number}
+             */
+            heightB: 10,
+
+            /**
+             * The minimum width of a building.
+             *
+             * @type {Number}
+             */
+            minWidth: 40,
+
+            /**
+             * The maximum width of a building.
+             *
+             * @type {Number}
+             */
+            maxWidth: 200,
+
+            /**
+             * The minimum length of a building.
+             *
+             * @type {Number}
+             */
+            minLength: 40,
+
+            /**
+             * The maximum length of a building.
+             *
+             * @type {Number}
+             */
+            maxLength: 200,
+
+            /**
+             * The maximum number of levels of a building.
+             *
+             * @type {Number}
+             */
+            maxLevels: 0,
+
+            /**
+             * A set width for buildings.
+             *
+             * @type {Number}
+             */
+            width: 0,
+
+            /**
+             * A set length for buildings.
+             *
+             * @type {Number}
+             */
+            length: 0,
+
+            /**
+             * The height of a level.
+             *
+             * @type {Number}
+             */
+            levelHeight: 40,
+
+            // View parameters
+
+            /**
+             * Whether to use shaders to render buildings.
+             *
+             * @type {Boolean}
+             */
+            useShader: true,
+
+            /**
+             * Whether to use level of detail for buildings, simplifying their representation at a distance.
+             *
+             * @type {Boolean}
+             */
+            useLevelOfDetail: true,
+
+            /**
+             * The distance at which to show the building in high resolution.
+             *
+             * @type {Number}
+             */
+            highResDistance: 1000,
+
+            /**
+             * The distance at which to show the building in low resolution.
+             *
+             * @type {Number}
+             */
+            lowResDistance: 7500,
+
+            /**
+             * The amount of opacity to show the building.
+             *
+             * @type {Number}
+             */
+            opacity: 1.0,
+
+            // Fill parameters
+            /**
+             * Whether to show the walls of the building.
+             *
+             * @type {Boolean}
+             */
+            showFill: true,
+
+            /**
+             * Whether to show the rooves of the building.
+             *
+             * @type {Boolean}
+             */
+            fillRooves: false,
+
+            // Stroke parameters
+            /**
+             * Whether to show the lines of the building.
+             *
+             * @type {Boolean}
+             */
+            showLines: true,
+
+            /**
+             * The width of the building line.
+             * @type {Number}
+             */
+            linewidth: 1.0,
+
+            // Window parameters
+            /**
+             * Whether to show the windows of the building.
+             *
+             * @type {Boolean}
+             */
+            showWindows: true,
+
+            /**
+             * Whether to randomise the appearance of windows.
+             * @type {Boolean}
+             */
+            windowsRandomise: false,
+
+            /**
+             * The rate at which to change the appearance of windows.
+             *
+             * @type {Number}
+             */
+            windowsFlickerRate: 0.05,
+
+            /**
+             * The width of window segments.
+             *
+             * @type {Number}
+             */
+            windowWidth: 15,
+
+            /**
+             * The percentage of the overall window segment to fill with the window.
+             *
+             * @type {Number}
+             */
+            windowPercent: 60,
+
+            /**
+             * The bottom of the window, relative to the wall.
+             *
+             * @type {Number}
+             */
+            windowsStartY: 40,
+
+            /**
+             * The top of the window, relative to the wall.
+             *
+             * @type {Number}
+             */
+            windowsEndY: 80,
+
+            /**
+             * Whether to draw the line of the window.
+             *
+             * @type {Boolean}
+             */
+            windowsLine: true,
+
+            /**
+             * Whether to fill in the window.
+             *
+             * @type {Boolean}
+             */
+            windowsFill: false,
+
+            // Stagger
+            /**
+             * Whether to stagger the height of the building.
+             *
+             * @type {Boolean}
+             */
+            stagger: true,
+
+            /**
+             * The amount to 'step' the stagger.
+             *
+             * @type {Number}
+             */
+            staggerAmount: 40,
+
+            // Taper
+            /**
+             * Whether to taper the stagger of the building. This results in a curved rather than regular stagger, according to random distribution drawn from an exponential sample.
+             *
+             * @type {Boolean}
+             */
+            taper: true,
+
+            /**
+             * The exponential amount of the taper.
+             *
+             * @type {Number}
+             */
+            taperExponent: 2,
+
+            /**
+             * The distribution of the taper.
+             *
+             * @type {Number}
+             */
+            taperDistribution: 1,
+
+            // Animation
+            /**
+             * Whether buildings should be shown in a turning motion.
+             *
+             * @type {Boolean}
+             */
+            turning: false,
+
+            /**
+             * Whether buildings should be shown falling.
+             *
+             * @type {Boolean}
+             */
+            falling: false,
+
+            /**
+             * The rate at which buildings should fall.
+             *
+             * @type {Number}
+             */
+            riseRate: 10,
+
+        };
+
+
+        this.roadOptions = {
+
+            /**
+             * Whether agents can build roads.
+             *
+             * @type {Boolean}
+             */
+            create: false,
+
+            /**
+             * The maximum number of roads the simulation can hold.
+             *
+             * @type {Number}
+             */
+            maxNumber: 200,  // Maximum number of roads - for performance reasons
+
+            /**
+             * The standard width of roads.
+             *
+             * @type {Number}
+             */
+            roadWidth: 20,
+
+            /**
+             * The amount, in metres, to deviate from a 'straight' path to find 
+             * an alternative route that produces a more level road.
+             *
+             * @type {Number}
+             */
+            roadDeviation: 20,
+
+            /**
+             * The number of radial segments, giving greater defintion.
+             *
+             * @type {Number}
+             */
+            roadRadiusSegments: 10,
+
+            /**
+             * The number of length segments, also giving greater defintion.
+             *
+             * @type {Number}
+             */
+            roadSegments: 10,
+
+            /**
+             * The initial radius of roads.
+             *
+             * @type {Number}
+             */
+            initialRadius: 100,
+
+            /**
+             * The likelihood a road will be constructed.
+             *
+             * @type {Number}
+             */
+            probability: 1,
+
+            /**
+             * The minimum length of a road.
+             *
+             * @type {Number}
+             */
+            lenMinimum: 100,
+
+            /**
+             * The maximum length of a road.
+             *
+             * @type {Number}
+             */
+            lenMaximum: 2000,
+
+            /**
+             * The distribution of road lengths.
+             *
+             * @type {Number}
+             */
+            lenDistributionFactor: 3,
+
+            /**
+             * A threshold determining the likelihood of roads overlapping.
+             *
+             * @type {Number}
+             */
+            overlapThreshold: 3,
+
+
+            /**
+             * The amount to flatten the road 'tube'.
+             *
+             * @type {Number}
+             */
+            flattenAdjustment: 0.025,
+
+            /**
+             * The amount to lift the road from the terrain.
+             *
+             * @type {Number}
+             */
+            flattenLift: 20
+
+        };
+
+
+        this.terrainOptions = {
+
+            /**
+             * Whether to render the terrain as a sphere, instead of as a plane.
+             *
+             * @type {Boolean}
+             */
+            renderAsSphere: true,
+
+            /**
+             * Whether to load heights; otherwise the terrain will be purely flat.
+             *
+             * @type {Boolean}
+             */
+            loadHeights: true,
+
+            /**
+             * The extent, in width and length, of the grid.
+             *
+             * @type {Number}
+             */
+            gridExtent: 8000,
+
+            /**
+             * The number of points to plot on the grid. Each point represents a specific height that could vary,
+             *
+             * @type {Number}
+             */
+            gridPoints: 400,
+
+            /**
+             * The maximum terrain height, against which all heights are normalised.
+             *
+             * @type {Number}
+             */
+            maxTerrainHeight: 400,
+
+            /**
+             * Whether to use the in-built terrain shader, which allows for different heights to use a blend of colour options.
+             *
+             * @type {Boolean}
+             */
+            shaderUse: true,
+
+            /**
+             * The amount to mix in shadows to the shader view.
+             *
+             * @type {Number}
+             */
+            shaderShadowMix: 0.5,
+
+            /**
+             * Multiplies the *gridExtent*, to stretch the terrain.
+             *
+             * @type {Number}
+             */
+            multiplier: 1,
+
+            /**
+             * An index to the in-built list of maps (currently either 0 or 1).
+             *
+             * @type {Number}
+             */
+            mapIndex: 0,
+
+            /**
+             * A URL to a specific map file, to use in place of the built-in maps.
+             *
+             * @type {String}
+             */
+            mapFile: "",
+
+            /**
+             * The size of the patch - in number of *gridPoints*.
+             *
+             * @type {Number}
+             */
+            patchSize: 4,
+
+            /**
+             * The default height of the terrain (can be offset from water, if shown).
+             *
+             * @type {Number}
+             */
+            defaultHeight: 0
+
+        };
+
+
+        this.displayOptions = {
+
+            /**
+             * Whether to render agents.
+             *
+             * @type {Boolean}
+             */
+            agentsShow: true,
+
+            /**
+             * Whether to render buildings.
+             *
+             * @type {Boolean}
+             */
+            buildingsShow: true,
+
+            /**
+             * Whether to render roads.
+             *
+             * @type {Boolean}
+             */
+            roadsShow: true,
+
+            /**
+             * Whether to render water, around the terrain.
+             *
+             * @type {Boolean}
+             */
+            waterShow: true,
+
+            /**
+             * Whether to render agent networks, if they are created - the *establishLink* option must be set for this option to have an effect.
+             *
+             * @type {Boolean}
+             */
+            networkShow: false,
+
+            /**
+             * Whether to use bezier curves for network connections between agents.
+             *
+             * @type {Boolean}
+             */
+            networkCurve: true,
+
+            /**
+             * The number of points to plot curves for connections between agents.
+             *
+             * @type {Number}
+             */
+            networkCurvePoints: 20,
+
+            /**
+             * Whether to render patches.
+             *
+             * @type {Boolean}
+             */
+            patchesShow: false,
+
+            /**
+             * Whether to update patches.
+             *
+             * @type {Boolean}
+             */
+            patchesUpdate: true,
+
+            /**
+             * Whether to render trails, created by agents.
+             *
+             * @type {Boolean}
+             */
+            trailsShow: false,
+
+            /**
+             * Whether to render trails as lines.
+             *
+             * @type {Boolean}
+             */
+            trailsShowAsLines: false,
+
+            /**
+             * Whether to update trails.
+             *
+             * @type {Boolean}
+             */
+            trailsUpdate: false,
+
+            /**
+             * The length of trails - conditions the number of previous positions remembered by agents.
+             *
+             * @type {Number}
+             */
+            trailLength: 10000,
+
+            /**
+             * Whether to render a mouse cursor on the terrain.
+             *
+             * @type {Boolean}
+             */
+            cursorShow: false,
+
+            /**
+             * Whether to render the mouse cursor as a 'cell' on the terrain.
+             *
+             * @type {Boolean}
+             */
+            cursorShowCell: true,
+
+            /**
+             * Whether to render the stats monitor.
+             *
+             * @type {Boolean}
+             */
+            statsShow: true,
+
+            /**
+             * Whether to render the 'heads-up display'.
+             *
+             * @type {Boolean}
+             */
+            hudShow: true,
+
+            /**
+             * Whether to render the GUI control panel.
+             *
+             * @type {Boolean}
+             */
+            guiControlsShow: true,
+
+            /**
+             * Whether to render the building, roads and terrain using a wireframe connecting mesh points.
+             *
+             * @type {Boolean}
+             */
+            wireframeShow: false,
+
+            /**
+             * Whether to render the simulation as a day rather than night.
+             *
+             * @type {Boolean}
+             */
+            dayShow: false,
+
+            /**
+             * Whether to render the skybox for the day view.
+             *
+             * @type {Boolean}
+             */
+            skyboxShow: true,
+
+            /**
+             * Whether to render the chart, displaying the simulation outputs.
+             *
+             * @type {Boolean}
+             */
+            chartShow: true,
+
+            /**
+             * Whether to render the GUI control panel [duplicates the *guiControlsShow*?].
+             *
+             * @type {Boolean}
+             */
+            guiShow: true,
+
+            /**
+             * Whether to render the GUI controls (*Setup*, *Run*, etc.).
+             *
+             * @type {Boolean}
+             */
+            guiShowControls: true,
+
+            /**
+             * Whether to render the GUI agent folder and options.
+             *
+             * @type {Boolean}
+             */
+            guiShowAgentFolder: true,
+
+            /**
+             * Whether to render the GUI building folder and options.
+             *
+             * @type {Boolean}
+             */
+            guiShowBuildingsFolder: true,
+
+            /**
+             * Whether to render the GUI roads folder and options.
+             *
+             * @type {Boolean}
+             */
+            guiShowRoadsFolder: true,
+
+            /**
+             * Whether to render the GUI terrain folder and options.
+             *
+             * @type {Boolean}
+             */
+            guiShowTerrainFolder: true,
+
+            /**
+             * Whether to render the GUI display folder and options.
+             *
+             * @type {Boolean}
+             */
+            guiShowDisplayFolder: true,
+
+            /**
+             * Whether to render the GUI colour folder and options.
+             *
+             * @type {Boolean}
+             */
+            guiShowColorFolder: true,
+
+            /**
+             * Whether to render paths traversed by agents.
+             *
+             * @type {Boolean}
+             */
+            pathsShow: true,
+
+            /**
+             * Whether to render the terrain.
+             *
+             * @type {Boolean}
+             */
+            terrainShow: true,
+
+            /**
+             * Whether to render the hemisphere light.
+             *
+             * @type {Boolean}
+             */
+            lightHemisphereShow: false,
+
+            /**
+             * Whether to render the directonal light.
+             *
+             * @type {Boolean}
+             */
+            lightDirectionalShow: true,
+
+            /**
+             * Whether to render agent's health by colour (where red indicates low health. The alternative is to use opacity.
+             *
+             * @type {Boolean}
+             */
+            coloriseAgentsByHealth: false,
+
+            /**
+             * Whether to use the first person view [**NOT WORKING CURRENTLY**].
+             *
+             * @type {Boolean}
+             */
+            firstPersonView: false,
+
+            /**
+             * Whether to use custom camera settings.
+             *
+             * @type {Boolean}
+             */
+            cameraOverride: false,
+
+            /**
+             * If *cameraOverride* is true, the X position of the camera.
+             *
+             * @type {Number}
+             */
+            cameraX: 0,
+
+            /**
+             * If *cameraOverride* is true, the Y position of the camera.
+             *
+             * @type {Number}
+             */
+            cameraY: 200,
+
+            /**
+             * If *cameraOverride* is true, the Z position of the camera.
+             *
+             * @type {Number}
+             */
+            cameraZ: 800,
+
+            /**
+             * Whether to maximise the screen.
+             *
+             * @type {Boolean}
+             */
+            maximiseView: true
+
+        };
+
+
+        this.colorOptions = {
+
+            // Terrain Colours
+
+            // Day Colours picked from: http://gis.stackexchange.com/questions/25099/what-is-the-best-colour-ramp-to-use-for-elevation
+            /**
+             * The colour of the terrain at sea level during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTerrainGroundLevel: 0x49752d,
+
+            /**
+             * The colour of the terrain at sea level during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTerrainGroundLevel: 0x000000,
+
+            /**
+             * The colour of the terrain on lowlands (level 1) during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTerrainLowland1: 0x628838,
+
+            /**
+             * The colour of the terrain on lowlands (level 1) during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTerrainLowland1: 0x000000,
+
+            /**
+             * The colour of the terrain on lowlands (level 2) during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTerrainLowland2: 0x7b9b46,
+
+            /**
+             * The colour of the terrain on lowlands (level 2) during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTerrainLowland2: 0x181818,
+
+            /**
+             * The colour of the terrain on midlands (level 1) during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTerrainMidland1: 0x8CC65B,
+
+            /**
+             * The colour of the terrain on midlands (level 1) during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTerrainMidland1: 0x282828,
+
+            /**
+             * The colour of the terrain on midlands (level 2)  during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTerrainMidland2: 0xe9e07d,
+
+            /**
+             * The colour of the terrain on midlands (level 2) during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTerrainMidland2: 0x3a3a3a,
+
+            /**
+             * The colour of the terrain on highlands during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTerrainHighland: 0x793833,
+
+            /**
+             * The colour of the terrain on highlands during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTerrainHighland: 0x4c4c4c,
+
+            /**
+             * The proportion of *maxTerrainHeight* at which to transition from sea level to lowlands (level 1).
+             *
+             * @type {Number}
+             */
+            colorTerrainStop1: 0.2,
+
+            /**
+             * The proportion of *maxTerrainHeight* at which to transition from lowlevel (level 1) to lowlands (level 2).
+             *
+             * @type {Number}
+             */
+            colorTerrainStop2: 0.4,
+
+            /**
+             * The proportion of *maxTerrainHeight* at which to transition from lowlands (level 2) to midlands (level 1).
+             *
+             * @type {Number}
+             */
+            colorTerrainStop3: 0.6,
+
+            /**
+             * The proportion of *maxTerrainHeight* at which to transition from midlands (level 1) to midlands (level 2).
+             *
+             * @type {Number}
+             */
+            colorTerrainStop4: 0.8,
+
+            /**
+             * The proportion of *maxTerrainHeight* at which to transition from midlands (level 2) to highlands.
+             *
+             * @type {Number}
+             */
+            colorTerrainStop5: 1.0,
+
+            /**
+             * The opacity of the terrain colours (low values will make the terrain "see through").
+             *
+             * @type {Number}
+             */
+            colorTerrainOpacity: 1.0,
+
+
+            // Building Colours
+
+            /**
+             *The color of building walls during the day.
+             *
+             * @type {Number}
+             */
+            colorDayBuildingFill: 0xb1abab,
+
+            /**
+             * The color of building walls during the night.
+             *
+             * @type {Number}
+             */
+            colorNightBuildingFill: 0x838383,
+
+            /**
+             * The color of building lines during the day.
+             *
+             * @type {Number}
+             */
+            colorDayBuildingLine: 0x222222,
+
+            /**
+             * The color of building lines during the night.
+             *
+             * @type {Number}
+             */
+            colorNightBuildingLine: 0x838383,
+
+            /**
+             * The color of building windows during the day.
+             *
+             * @type {Number}
+             */
+            colorDayBuildingWindow: 0x222222,
+
+            /**
+             * The color of building windows during the night.
+             *
+             * @type {Number}
+             */
+            colorNightBuildingWindow: 0xffff8f,
+
+
+            // Graph colours
+
+            /**
+             * The colour of the *first* graphed line (defaults to the simulation's *agent population*).
+             *
+             * @type {Number}
+             */
+            colorGraphPopulation: 0x4747b3,
+
+            /**
+             * The colour of the *second* graphed line (defaults to the simulation's *agent mean health*).
+             *
+             * @type {Number}
+             */
+            colorGraphHealth: 0xb34747,
+
+            /**
+             * The colour of the *second* graphed line (defaults to the simulation's *patches' mean value*).
+             *
+             * @type {Number}
+             */
+            colorGraphPatchValues: 0x47b347,
+
+            // Lighting colours
+
+            /**
+             * The sky colour of the hemisphere light.
+             *
+             * @type {Number}
+             */
+            colorLightHemisphereSky: 0xbfbfbf,
+
+            /**
+             * The ground colour of the hemisphere light.
+             *
+             * @type {Number}
+             */
+            colorLightHemisphereGround: 0xbfbfbf,
+
+            /**
+             * The intensity of the hemisphere light.
+             *
+             * @type {Number}
+             */
+            colorLightHemisphereIntensity: 1.0,
+
+            /**
+             * The colour of the directional light.
+             *
+             * @type {Number}
+             */
+            colorLightDirectional: 0xffffff,
+
+            /**
+             * The intensity of the directional light.
+             *
+             * @type {Number}
+             */
+            colorLightDirectionalIntensity: 0.5,
+
+
+            // Other colours
+
+            /**
+             * The color of the world background during the day.
+             *
+             * @type {Number}
+             */
+            colorDayBackground: 0x000000,
+
+            /**
+             * The color of the world background during the night.
+             *
+             * @type {Number}
+             */
+            colorNightBackground: 0x636363,
+
+            /**
+             * The color of roads during the day.
+             *
+             * @type {Number}
+             */
+            colorDayRoad: 0x474747,
+
+            /**
+             * The color of roads during the night.
+             *
+             * @type {Number}
+             */
+            colorNightRoad: 0x474747,
+
+            /**
+             * The color of agents during the day.
+             *
+             * @type {Number}
+             */
+            colorDayAgent: 0x4747b3,
+
+            /**
+             * The color of agents during the night.
+             *
+             * @type {Number}
+             */
+            colorNightAgent: 0x47b347,
+
+            /**
+             * The color of agent networks during the day.
+             *
+             * @type {Number}
+             */
+            colorDayNetwork: 0x474747,
+
+            /**
+             * The color of agent networks during the night.
+             *
+             * @type {Number}
+             */
+            colorNightNetwork: 0x47b347,
+
+            /**
+             * The color of agent trails during the day.
+             *
+             * @type {Number}
+             */
+            colorDayTrail: 0x474747,
+
+            /**
+             * The color of agent trails during the night.
+             *
+             * @type {Number}
+             */
+            colorNightTrail: 0x47b347,
+
+            /**
+             * The color of agent paths during the day.
+             *
+             * @type {Number}
+             */
+            colorDayPath: 0x474747,
+
+            /**
+             * The color of agent paths during the night.
+             *
+             * @type {Number}
+             */
+            colorNightPath: 0x47b347
+
+        };
+
+        // Assign values based on calculations
+
+        this.buildingOptions.maxHeight = ( this.buildingOptions.minHeight > this.buildingOptions.maxHeight ) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
+        this.buildingOptions.maxWidth = ( this.buildingOptions.minWidth > this.buildingOptions.maxWidth ) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
+        this.buildingOptions.maxLength = ( this.buildingOptions.minLength > this.buildingOptions.maxLength ) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
+        this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor( Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight );
+        this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor( Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth );
+        this.buildingOptions.length = this.buildingOptions.minLength + Math.floor( Math.random() * this.buildingOptions.maxLength - this.buildingOptions.minLength );
+
+
         /**
          * World options.
+         *
          * @namespace fp~AppConfig~worldOptions
          */
         this.worldOptions = {
@@ -38069,329 +39538,11 @@ define( 'fp/app-config',[
         };
 
         /**
-         * Agent options.
-         * @namespace fp~AppConfig~agentOptions
+         * Sun options.
+         *
+         * @type {Object}
          */
-        this.agentOptions = {
-
-            /**
-             * Initial population of agents.
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            initialPopulation: 100,
-
-            /**
-             * The <em>initial</em> extent, or diameter, around the point of
-             * origin, where agents can be spawned, expressed as a percentage ( 0-100 ).
-             *
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            initialExtent: 10,
-
-            /**
-             * The <em>maximum</em> extent, or diameter, around the point of
-             *  origin, where agents can be spawed, expressed as a percentage ( 0-100 ).
-             *
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            maxExtent: 100,
-
-            // NOTE: Settings for Melbourne: initialX: -500, initialY: -1500,
-
-            /**
-             * The <em>x</em> co-ordinate of the point of origin,
-             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
-             *
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            initialX: 50,
-
-            /**
-             * The <em>y</em> co-ordinate of the point of origin,
-             * expressed as a percentage ( 0-100 ) of distance from the actual grid center.
-             *
-             * @type {Number}
-             * @memberOf fp~AppConfig~agentOptions
-             * @inner
-             */
-            initialY: 50,
-
-            /**
-             * Whether the agent's age is randomly set, initially
-             * @type {Boolean}
-             */
-            randomAge: true,
-
-            chanceToJoinNetwork: 0.05,
-            chanceToJoinNetworkWithHome: 0.05,
-            chanceToJoinNetworkWithBothHomes: 0.05,
-            chanceToFindPathToHome: 0.00,
-            chanceToFindPathToOtherAgentHome: 0.00,
-            initialCircle: true,
-            noWater: false,
-            noUphill: false, // Eventually remove for more fine-grained weight control
-            useStickman: true,
-            visitHomeBuilding: 0.02,
-            visitOtherBuilding: 0.002,
-            establishLinks: false,
-            size: 40,
-            terrainOffset: 0,
-            shuffle: false,
-            initialSpeed: 20,
-            initialPerturbBy: 0.05,
-            movementRelativeToPatch: false,
-            movementInPatch: 1,
-            movementStrictlyIntercardinal: false,
-
-            changeDirectionEveryTick: 100,
-            perturbDirectionEveryTick: 10,
-
-        };
-
-        this.buildingOptions = {
-
-            create: true,
-
-            maxNumber: 250, // Maximum number of buildings - for performance reasons
-
-            // Carry over from generation
-            heightA: 2,
-            heightB: 10,
-
-            // Influences
-            roads: 0.0,
-            water: 0.4,
-            otherBuildings: 0.9,
-            distanceFromOtherBuildingsMin: 800,
-            distanceFromOtherBuildingsMax: 1000,
-            buildingHeight: 0.1,
-
-            // Building form
-            buildingForm: "rectangle",
-            spread: 10,
-            randomForm: false,
-            rotateRandomly: false,
-            rotateSetAngle: 0,
-
-            destroyOnComplete: false,
-            loopCreateDestroy: false,
-
-            // Visualisation
-            turning: false,
-            falling: false,
-            riseRate: 10,
-
-            // Dimensions
-            minHeight: 10,
-            maxHeight: 70,
-            minWidth: 40,
-            maxWidth: 200,
-            minLength: 40,
-            maxLength: 200,
-            maxLevels: 0,
-            width: 0,
-            length: 0,
-            levelHeight: 40,
-
-            // View parameters
-            useShader: true,
-            useLevelOfDetail: true,
-            highResDistance: 1000,
-            lowResDistance: 7500,
-            opacity: 1.0,
-
-            // Fill parameters
-            showFill: true,
-            fillRooves: false,
-
-            // Stroke parameters
-            showLines: true,
-            linewidth: 1.0,
-
-            // Window parameters
-            showWindows: true,
-            windowsRandomise: false,
-            windowsFlickerRate: 0.05,
-            windowWidth: 15,
-            windowPercent: 60,
-            windowsStartY: 40,
-            windowsEndY: 80,
-            windowsLine: true,
-            windowsFill: false,
-
-            // Stagger
-            stagger: true,
-            staggerAmount: 40,
-
-            // Taper
-            taper: true,
-            taperExponent: 2,
-            taperDistribution: 1,
-
-            // Collision detection
-            detectBuildingCollisions: true,
-            detectRoadCollisions: true
-        };
-        this.roadOptions = {
-
-            create: false,
-            maxNumber: 200,  // Maximum number of roads - for performance reasons
-            roadWidth: 20,
-            roadDeviation: 20,
-            roadRadiusSegments: 10,
-            roadSegments: 10,
-            initialRadius: 100,
-            probability: 1,
-            lenMinimum: 100,
-            lenMaximum: 2000,
-            lenDistributionFactor: 3,
-            overlapThreshold: 3,
-            flattenAdjustment: 0.025,
-            flattenLift: 20
-
-        };
-
-        this.displayOptions = {
-
-            agentsShow: true,
-            buildingsShow: true,
-            roadsShow: true,
-            waterShow: true,
-            networkShow: false,
-            networkCurve: true,
-            networkCurvePoints: 20,
-            patchesShow: false,
-            patchesUpdate: true,
-            trailsShow: false,
-            trailsShowAsLines: false,
-            trailsUpdate: false,
-            trailLength: 10000,
-            cursorShow: false,
-            cursorShowCell: true,
-            statsShow: true,
-            hudShow: true,
-            guiControlsShow: true,
-            wireframeShow: false,
-            dayShow: false,
-            skyboxShow: true,
-            chartShow: true,
-            guiShow: true,
-            guiShowControls: true,
-            guiShowAgentFolder: true,
-            guiShowBuildingsFolder: true,
-            guiShowRoadsFolder: true,
-            guiShowTerrainFolder: true,
-            guiShowDisplayFolder: true,
-            guiShowColorFolder: true,
-            pathsShow: true,
-            terrainShow: true,
-            lightHemisphereShow: false,
-            lightDirectionalShow: true,
-            coloriseAgentsByHealth: false,
-            firstPersonView: false,
-            cameraOverride: false,
-            cameraX: 0,
-            cameraY: 200,
-            cameraZ: 800,
-            maximiseView: true
-
-        };
-
-
-        this.terrainOptions = {
-
-            renderAsSphere: true,
-            loadHeights: true,
-            gridExtent: 8000,
-            gridPoints: 400,
-            maxTerrainHeight: 400,
-            shaderUse: true,
-            shaderShadowMix: 0.5,
-            multiplier: 1,
-            mapIndex: 0,
-            mapFile: "",
-            patchSize: 4,
-            defaultHeight: 0
-
-        };
-
-
-        this.colorOptions = {
-
-            colorDayBackground: 0x000000,
-            colorDayRoad: 0x474747,
-            colorDayAgent: 0x4747b3,
-            colorDayNetwork: 0x474747,
-            colorDayTrail: 0x474747,
-            colorDayPath: 0x474747,
-            colorDayBuildingFill: 0xb1abab,
-            colorDayBuildingLine: 0x222222,
-            colorDayBuildingWindow: 0x222222,
-
-            colorNightBackground: 0x636363,
-            colorNightRoad: 0x474747,
-            colorNightAgent: 0x47b347,
-            colorNightNetwork: 0x47b347,
-            colorNightTrail: 0x47b347,
-            colorNightNetworPath: 0x47b347,
-            colorNightPath: 0x47b347,
-            colorNightBuildingFill: 0x838383,
-            colorNightBuildingLine: 0x838383,
-            colorNightBuildingWindow: 0xffff8f,
-
-            colorGraphPopulation: 0x4747b3,
-            colorGraphHealth: 0xb34747,
-            colorGraphPatchValues: 0x47b347,
-
-            colorLightHemisphereSky: 0xbfbfbf,
-            colorLightHemisphereGround: 0xbfbfbf,
-            colorLightHemisphereIntensity: 1.0,
-            colorLightDirectional: 0xffffff,
-            colorLightDirectionalIntensity: 0.5,
-
-            colorDayTerrainGroundLevel: 0x969696,
-            colorDayTerrainLowland1: 0x2d5828,
-            colorDayTerrainLowland2: 0x6d915b,
-            colorDayTerrainMidland1: 0x89450e,
-            colorDayTerrainMidland2: 0x89450e,
-            colorDayTerrainHighland: 0x8c8c8c,
-            // colorDayTerrainLowland1: 0x4d7848,
-            // colorDayTerrainLowland2: 0x8db17b,
-            // colorDayTerrainMidland1: 0xa9752e,
-            // colorDayTerrainHighland: 0xacacac,
-            colorNightTerrainGroundLevel: 0x000000,
-            colorNightTerrainLowland1: 0x000000,
-            colorNightTerrainLowland2: 0x181818,
-            colorNightTerrainMidland1: 0x282828,
-            colorNightTerrainMidland2: 0x3a3a3a,
-            colorNightTerrainHighland: 0x4c4c4c,
-
-            colorTerrainStop1: 0.2,
-            colorTerrainStop2: 0.4,
-            colorTerrainStop3: 0.6,
-            colorTerrainStop4: 0.8,
-            colorTerrainStop5: 1.0,
-
-            colorTerrainOpacity: 1.0
-
-        };
-
-        this.buildingOptions.maxHeight = ( this.buildingOptions.minHeight > this.buildingOptions.maxHeight ) ? this.buildingOptions.minHeight : this.buildingOptions.maxHeight;
-        this.buildingOptions.maxWidth = ( this.buildingOptions.minWidth > this.buildingOptions.maxWidth ) ? this.buildingOptions.minWidth : this.buildingOptions.maxWidth;
-        this.buildingOptions.maxLength = ( this.buildingOptions.minLength > this.buildingOptions.maxLength ) ? this.buildingOptions.minLength : this.buildingOptions.maxLength;
-        this.buildingOptions.maxLevels = this.buildingOptions.minHeight + Math.floor( Math.random() * this.buildingOptions.maxHeight - this.buildingOptions.minHeight );
-        this.buildingOptions.width = this.buildingOptions.minWidth + Math.floor( Math.random() * this.buildingOptions.maxWidth - this.buildingOptions.minWidth );
-        this.buildingOptions.length = this.buildingOptions.minLength + Math.floor( Math.random() * this.buildingOptions.maxLength - this.buildingOptions.minLength );
-
-        this.sunOptions  = {
+        this.sunOptions = {
             turbidity: 10,
             reileigh: 2,
             mieCoefficient: 0.005,
@@ -38414,7 +39565,7 @@ define( 'fp/app-config',[
 ;
 
 
-define('fpShaderUtils',["fp/fp-base"], function (FiercePlanet) {
+define('fpShaderUtils',['fp/fp-base'], function (FiercePlanet) {
 
     /**
      * Shader utilites - wrappers around Three.js Lambert and Phong shaders.
@@ -38616,6 +39767,7 @@ define(
                 //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
 
                 var uniforms = {
+
                     // Lambert settings
                     emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
                     diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
@@ -38654,14 +39806,17 @@ define(
                 };
 
                 if ( fp.appConfig.displayOptions.dayShow ) {
+
                     uniforms.groundLevelColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) };
                     uniforms.lowland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) };
                     uniforms.lowland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) };
                     uniforms.midland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland1 ) };
                     uniforms.midland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland2 ) };
                     uniforms.highlandColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) };
+
                 }
                 else {
+
                     uniforms.groundLevelColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) };
                     uniforms.lowland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) };
                     uniforms.lowland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) };
@@ -38693,14 +39848,45 @@ define(
 
                 if ( fp.appConfig.terrainOptions.loadHeights ) {
 
+                    var minHeight, maxHeight;
+
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
 
+                        var height = data[ i ];
+
+                        if ( typeof( maxHeight ) === 'undefined' ||  maxHeight < height ) {
+
+                            maxHeight = height;
+
+                        }
+                        if ( typeof( minHeight ) === 'undefined' ||  minHeight > height) {
+
+                            minHeight = height;
+
+                        }
+
+                        // Dampen for low level areas, to accentuate water mass
+                        if ( height < 5 ) {
+
+                            height -= 0;
+
+                        }
+
+                        if ( height < 0 ) {
+
+                            height = 0;
+
+                        }
+
                         geometry.attributes.position.array[ j + 2 ] =
-                            data[ i ] / 65535 *
-                            fp.terrain.maxTerrainHeight *
+                            height /
+                            fp.appConfig.terrainOptions.maxTerrainHeight *
                             fp.appConfig.terrainOptions.multiplier;
 
                     }
+
+                    this.maxTerrainHeight = maxHeight;
+
 
                 }
                 else {
@@ -38712,6 +39898,9 @@ define(
                     }
 
                 }
+
+                // console.log("min height: " + minHeight)
+                // console.log("max height: " + maxHeight)
 
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( {
 
@@ -39195,6 +40384,7 @@ define(
         };
 
         return FiercePlanet;
+
     }
 
 )
@@ -39894,39 +41084,64 @@ define( 'fp/agent',[
              */
             this.build = function() {
 
-                if ( !fp.appConfig.buildingOptions.create )
+                if ( !fp.appConfig.buildingOptions.create ) {
+
                     return false;
 
-                if ( this.home !== null )
+                }
+
+                if ( this.home !== null ) {
+
                     return false;
 
-                if ( this.position === null )
+                }
+
+                if ( this.position === null ) {
+
                     return false;
+
+                }
 
                 var index = fp.getIndex( this.position.x, this.position.z );
-                if ( _.isUndefined( index ) )
+                if ( _.isUndefined( index ) ) {
+
                     return false;
 
+                }
+
                 // Don't build in an existing position
-                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ index ] ) )
+                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ index ] ) ) {
+
                     return false;
+
+                }
 
                 var dimensions = fp.buildingNetwork.generateRandomDimensions();
 
                 if ( fp.buildingNetwork.buildings.length === 0 ) { // If there are no buildings, build an initial "seed"
+                    
                     this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
                     return ( !_.isUndefined( this.home ) );
+
                 }
-                else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber )
+                else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber ) {
+
                     return false;
 
-                if ( !_.isNull( fp.stats ) && fp.statss <= 10 )
+                }
+
+                if ( !_.isNull( fp.stats ) && fp.statss <= 10 ) {
+
                     return false;
+                    
+                }
 
                 var shouldBuildHome = this.calculateLikelihoodOfHome( index );
                 if ( shouldBuildHome ) {
+
                     this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
                     return ( !_.isUndefined( this.home ) );
+
                 }
 
                 return false;
@@ -40328,7 +41543,7 @@ define( 'fp/agent-network',[
                  */
                 this.renderFriendNetwork = function() {
 
-                    if ( !FiercePlanet.appState.runSimulation || !
+                    if ( !fp.appState.runSimulation || !
                         fp.appConfig.displayOptions.networkShow ) {
 
                         return;
@@ -40471,7 +41686,7 @@ define( 'fp/agent-network',[
                  */
                 this.updateAgentNetworkRendering = function() {
 
-                    if ( !FiercePlanet.appState.runSimulation ) {
+                    if ( !fp.appState.runSimulation ) {
 
                         return;
 
@@ -40598,7 +41813,7 @@ define( 'fp/agent-network',[
             this.updateAgents = function() {
 
                 // Return if not running
-                if ( !FiercePlanet.appState.runSimulation || _.isUndefined( this.particles ) ) {
+                if ( !fp.appState.runSimulation || _.isUndefined( this.particles ) ) {
 
                     return;
 
@@ -40939,11 +42154,13 @@ define( 'fp/building',[
          */
         FiercePlanet.Building = function( fp, form, dimensions, position, rotation ) {
 
+
             /**
              * Sets the dimensions of the building.
              * @param  {object} dimensions object containing levels, width and length properties.
              */
             this.initDimensions = function( dimensions ) {
+
                 this.lod = new THREE.LOD();
                 this.yOffset = 0;
                 this.levels = 0;
@@ -40959,15 +42176,20 @@ define( 'fp/building',[
                     wc = fp.buildColorVector( fp.appConfig.colorOptions.colorDayBuildingWindow );
                 }
                 else {
+                    
                     fc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingFill );
                     lc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingLine );
                     wc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingWindow );
+
                 }
 
                 this.lineMaterial = new THREE.LineBasicMaterial( {
+
                     color: lc,
                     linewidth: fp.appConfig.buildingOptions.linewidth
+
                 } );
+
                 this.windowMaterial = new THREE.MeshBasicMaterial( { color: wc } );
                 this.windowMaterial.side = THREE.DoubleSide;
                 this.buildingMaterial = new THREE.MeshBasicMaterial( { color: fc } );
@@ -41030,6 +42252,7 @@ define( 'fp/building',[
 
             };
 
+
             /**
              * Adds a new floor to the current building
              */
@@ -41088,7 +42311,9 @@ define( 'fp/building',[
                     }
 
                 }
+
             };
+
 
             /**
              * Removes the top floor from the current building
@@ -41100,6 +42325,7 @@ define( 'fp/building',[
                 // Update a low res model once the rest is complete
                 this.updateSimpleBuilding();
             };
+
 
             this.generateSkeleton = function ( points ) {
                 var i, base = points[ 0 ].y;
@@ -41387,7 +42613,10 @@ define( 'fp/building',[
                             b.castShadow = true;
                             b.receiveShadow = true;
                         } );
+                        
+                        // this.mesh.rotation.set( this.rotation.x + -Math.PI / 2, this.rotation.z, this.rotation.y );
                         this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
+
                         height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
@@ -41465,7 +42694,9 @@ define( 'fp/building',[
 
 
                     }
+
                 }
+
             };
 
 
@@ -41567,20 +42798,34 @@ define( 'fp/building',[
             };
 
             this.updateSimpleBuilding = function () {
+                
                 if ( this.levels > 1 ) {
-                    if ( !this.destroying )
+
+                    if ( !this.destroying ) {
+
                         this.lowResMesh.scale.set( 1, this.lowResMesh.scale.y * this.levels / ( this.levels - 1 ), 1 );
-                    else
+
+                    }
+                    else {
+
                         this.lowResMesh.scale.set( 1, this.lowResMesh.scale.y * ( this.levels - 1 ) / ( this.levels ), 1 );
+
+                    }
                 }
-                else if ( this.destroying )
+                else if ( this.destroying ) {
+
                     this.lowResMesh.scale.set( 1, 1, 1 );
+
+                }
+
             };
 
             this.translatePosition = function( x, y, z ) {
+
                 this.lod.position.set( x, y, z );
                 this.highResMeshContainer.position.set( x, y, z );
                 this.lowResMeshContainer.position.set( x, y, z );
+
             };
 
             this.windowsOutline = function( value ) {
@@ -41597,10 +42842,12 @@ define( 'fp/building',[
                     this.highResMeshContainer.remove( this.windowsFillContainer );
             };
 
+
             /**
              * Initialises the building.
              */
             this.init = function( form, dimensions, position, rotation ) {
+
                 this.originPosition = position;
                 // Use Poisson distribution with lambda of 1 to contour building heights instead
                 var w = 1 - jStat.exponential.cdf( Math.random() * 9, 1 );
@@ -41615,46 +42862,67 @@ define( 'fp/building',[
                 this.topWindow = 1.0 - ( fp.appConfig.buildingOptions.windowsStartY/ 100.0 );
                 this.windowWidth = fp.appConfig.buildingOptions.windowWidth;
                 this.windowPercent = fp.appConfig.buildingOptions.windowPercent / 100.0;
+
                 if ( fp.appConfig.buildingOptions.windowsRandomise ) {
                     // Randomise based on a normal distribution
                     var bottomWindowTmp = jStat.normal.inv( Math.random(), this.bottomWindow, 0.1 );
                     var topWindowTmp = jStat.normal.inv( Math.random(), this.topWindow, 0.1 );
                     var windowWidthTmp = jStat.normal.inv( Math.random(), this.windowWidth, 0.1 );
                     var windowPercentTmp = jStat.normal.inv( Math.random(), this.windowPercent, 0.1 );
+                
                     // Coerce value between a min and max
                     var coerceValue = function( num, min, max ) {
+
                         if ( num < min )
                             return min;
                         if ( num > max )
                             return max;
                         return num;
+                
                     };
+                
                     this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
                     this.topWindow = coerceValue( topWindowTmp, 0, 100 );
                     this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
                     this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
+                
                 }
 
-                if ( !_.isUndefined( form ) )
+                if ( !_.isUndefined( form ) ) {
+
                     this.buildingForm = form;
-                if ( !_.isUndefined( dimensions ) )
+
+                }
+                
+                if ( !_.isUndefined( dimensions ) ) {
+
                     this.initDimensions( dimensions );
+
+                }
+                
                 if ( !_.isUndefined( position ) ) {
+
                     var posY = fp.getHeight( position.x, position.z ) + fp.appConfig.buildingOptions.levelHeight;
                     this.originPosition = new THREE.Vector3( position.x, posY, position.z );
                     this.lod.position.set( position.x, posY, position.z );
                     this.highResMeshContainer.position.set( position.x, posY, position.z );
                     this.lowResMeshContainer.position.set( position.x, posY, position.z );
                 }
+                
+                
                 if ( !_.isUndefined( rotation ) ) {
+
                     this.mesh.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.lod.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.highResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.lowResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
+
                 }
+                
                 // Add an initial floor so the building is visible.
                 this.mockMesh = this.shadedShapeMock();
                 // this.addFloor();
+
             };
 
             this.mockMesh = null;
@@ -41683,16 +42951,17 @@ define( 'fp/building',[
             this.buildingForm = null;
             this.destroying = false;
             this.originPosition = null;
+            this.rotation = rotation;
 
             this.init( form, dimensions, position, rotation );
 
         };
 
 
-
         return FiercePlanet;
 
     }
+
 )
 ;
 
@@ -41725,13 +42994,17 @@ define( 'fp/building-network',[
              * Currently evaluates for proximity of local roads, water, buildings and building height
              */
             this.proximityFunctions = function() {
+                
                 return [
+
                     // [ fp.checkProximityOfRoads, fp.appConfig.buildingOptions.roads ],
                     // [ fp.checkProximityOfWater, fp.appConfig.buildingOptions.water ],
                     [ fp.checkProximityOfBuildings, fp.appConfig.buildingOptions.otherBuildings ],
                     [ fp.checkNearestNeighbour, fp.appConfig.buildingOptions.distanceFromOtherBuildingsMin, fp.appConfig.buildingOptions.distanceFromOtherBuildingsMax ],
                     // [ fp.checkProximiteBuildingHeight, fp.appConfig.buildingOptions.buildingHeight  ]
+                
                 ];
+
              };
 
             /**
@@ -41739,11 +43012,15 @@ define( 'fp/building-network',[
              * @return {object} contains levels, width, length properties
              */
             this.generateRandomDimensions = function() {
+                
                 return {
+
                     levels: fp.appConfig.buildingOptions.minHeight + Math.floor( Math.random() * ( fp.appConfig.buildingOptions.maxHeight - fp.appConfig.buildingOptions.minHeight ) ) ,
                     width: fp.appConfig.buildingOptions.minWidth + Math.floor( Math.random() * ( fp.appConfig.buildingOptions.maxWidth - fp.appConfig.buildingOptions.minWidth )) ,
                     length: fp.appConfig.buildingOptions.minLength + Math.floor( Math.random() * ( fp.appConfig.buildingOptions.maxLength - fp.appConfig.buildingOptions.minLength ))
+
                 };
+
             };
 
             /**
@@ -41751,6 +43028,7 @@ define( 'fp/building-network',[
              * // Simplified 2d alternative for collision detection
              */
             this.get2dPoints = function( building ) {
+
                 var points = [ ];
                 var firstFloor = building.highResMeshContainer.children[ 0 ],
                     position = building.highResMeshContainer.position,
@@ -41762,23 +43040,38 @@ define( 'fp/building-network',[
                     wX = ff1.x - ff0.x, wZ = ff1.z - ff0.z, lX = ff3.x - ff0.x, lZ = ff3.z - ff0.z,
                     wXa = Math.abs( wX ) + 1, wZa = Math.abs( wZ ) + 1, lXa = Math.abs( lX ) + 1, lZa = Math.abs( lZ ) + 1,
                     wXi = Math.round( wX / wXa ), wZi = Math.round( wZ / wZa ), lXi = Math.round( lX / lXa ), lZi = Math.round( lZ / lZa );
+
                 var indexPrev = -1, offset = 1;
+
                 for ( var i = 0; i < wXa; i += offset ) {
+
                     for ( var j = 0; j < wZa; j += offset ) {
+
                         var wXLocal = ff0.x + i * wXi, wZLocal = ff0.z + j * wZi;
                         for ( var k = 0; k < lXa; k += offset ) {
+
                             for ( var l = 0; l < lZa; l += offset ) {
+
                                 var lXLocal = wXLocal + k * lXi, lZLocal = wZLocal + l * lZi;
                                 var coordinate = { x: lXLocal, y: lZLocal };
                                 if ( points.indexOf( coordinate ) == -1 ) {
+
                                     points.push( coordinate );
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
                 return points;
+
             };
+
 
             /**
              * Get a 2-dimensional array of points representing <em>all</em>
@@ -41787,8 +43080,11 @@ define( 'fp/building-network',[
              * @return {Array} points
              */
             this.get2dIndexPoints = function( building ) {
+
                 return _.map( this.get2dPoints( building ), function( point ) { return fp.getIndex( point.x, point.y ); }  ) ;
+
             };
+
 
             /**
              * Get a 2-dimensional array of points representing the bounding box
@@ -41797,6 +43093,7 @@ define( 'fp/building-network',[
              * @return {Array} points
              */
             this.get2dPointsForBoundingBox = function( building ) {
+
                 var points = [ ];
                 // var firstFloor = building.highResMeshContainer.children[ 0 ],
                 //     position = building.highResMeshContainer.position,
@@ -41806,13 +43103,19 @@ define( 'fp/building-network',[
                     position = building.highResMeshContainer.position,
                     vertices = firstFloor.geometry.vertices,
                     verticesOnBase = vertices.length;
+
                 for ( var i = 0; i < verticesOnBase / 2; i++ ) {
+
                     // Adjust for the vertex's rotation, and add its position
                     var point  = vertices[ i ].clone().applyMatrix4( firstFloor.matrix );//.add( position );
                     points.push( { x: point.x, y: point.z } );
+
                 }
+
                 return points;
+
             };
+
 
             /**
              * Creates a JSTS geometry from the bounding box of the building.
@@ -41835,9 +43138,11 @@ define( 'fp/building-network',[
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( lineUnion );
                 var polygon = polygonizer.getPolygons().toArray()[ 0 ];
+
                 return polygon.buffer( 0 );
 
             };
+
 
             /**
              * Checks whether this building collides with any existing buildings.
@@ -41845,6 +43150,7 @@ define( 'fp/building-network',[
              * @return {Boolean}
              */
             this.collidesWithOtherBuildings = function( building ) {
+
                 // Quick check
                 if ( this.buildingHash[ fp.getIndex( building.lod.position.x, building.lod.position.z ) ] )
                     return true;
@@ -41855,8 +43161,11 @@ define( 'fp/building-network',[
                         return true;
                     }
                 }
+
                 return false; // Be optimistic
+
             };
+
 
             /**
              * Checks whether this building collides with any parts of the road
@@ -41865,24 +43174,41 @@ define( 'fp/building-network',[
              * @return {Boolean}
              */
             this.collidesWithRoads = function( building ) {
-                if ( _.isNull( fp.roadNetwork.networkGeometry ) )
+                
+                if ( _.isNull( fp.roadNetwork.networkGeometry ) ) {
+
                     return false;
+
+                }
+
                 var buildingGeometry = this.createJstsGeomFromBoundingBox( building );
                 return fp.roadNetwork.networkGeometry.crosses( buildingGeometry );
+
             };
+
 
             /**
              * Updates each building.
              */
             this.updateBuildings = function() {
-                if ( ! FiercePlanet.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow )
+                
+                if ( ! fp.appState.runSimulation || !fp.appConfig.displayOptions.buildingsShow ) {
+
                     return;
+
+                }
+
                 for ( var i = 0; i < fp.buildingNetwork.buildings.length; i++ ) {
                     var building = fp.buildingNetwork.buildings[ i ];
                     var likelihoodToGrow = Math.random();
-                    if ( likelihoodToGrow > fp.likelihoodOfGrowth() )
+                    if ( likelihoodToGrow > fp.likelihoodOfGrowth() ) {
+
                         building.updateBuilding();
+
+                    }
+
                 }
+
             };
 
             /**
@@ -41903,11 +43229,13 @@ define( 'fp/building-network',[
                 }
 
                 var rotateY = ( fp.appConfig.buildingOptions.rotateSetAngle / 180 ) * Math.PI;
+
                 if ( fp.appConfig.buildingOptions.rotateRandomly ) {
 
                     rotateY = Math.random() * Math.PI;
 
                 }
+
                 var rotation = new THREE.Vector3( 0, rotateY, 0 );
                 var building = new FiercePlanet.Building( fp, buildingForm, dimensions, position, rotation );
 
@@ -41934,6 +43262,7 @@ define( 'fp/building-network',[
 
                 // Handle building rotation
                 var percent = fp.terrain.wrappedPercent;
+
                 if ( percent > 0 ) {
 
                     var cv = _.clone( building.originPosition );
@@ -41983,6 +43312,7 @@ define( 'fp/building-network',[
         return FiercePlanet;
 
     }
+
 )
 ;
 
@@ -42022,70 +43352,114 @@ define( 'fp/road-network',[
              * @return {Array} points
              */
             this.getRoadTerrainPoints = function( p1, p2 ) {
+
                 var points = [ ];
                 var xLast = p1.x, yLast = 0, zLast = p1.z, lastChange = 0;
                 var xd = p2.x - xLast, zd = p2.z - zLast;
                 var distance = Math.sqrt( xd * xd + zd * zd ) / fp.appConfig.roadOptions.roadSegments,
                     remaining = distance;
-                var yOffset = fp.appConfig.terrainOptions.defaultHeight + 20; //fp.appConfig.buildingOptions.levelHeight - 10;
+                var yOffset = fp.appConfig.roadOptions.flattenLift;
                 p1 = new THREE.Vector3( p1.x, fp.getHeight( p1.x, p1.z ) + yOffset, p1.z );
                 p2 = new THREE.Vector3( p2.x, fp.getHeight( p2.x, p2.z ) + yOffset, p2.z );
+
                 points.push( p1 );
+                
                 for ( var i = 0; i < distance; i++ ) {
+
                     var angle = Math.atan2( zd, xd ),
                         angleLeft = angle - Math.PI / 2,
                         angleRight = angle + Math.PI / 2;
+                    
                     var x0 = xLast + xd * ( 1 / ( remaining + 1 )),
                         z0 = zLast + zd * ( 1 / ( remaining + 1 )),
                         y0 = fp.getHeight( x0, z0 ) + yOffset;
                     var x = x0, y = y0, z = z0, k;
+                    
                     for ( var j = 1; j <= fp.appConfig.roadOptions.roadDeviation; j++ ) {
+
                         var xL = x0 + Math.cos( angleLeft ) * j,
                             zL = z0 + Math.sin( angleLeft ) * j,
                             yL = fp.getHeight( xL, zL ) + yOffset;
+                        
                         if ( yL < y && yL > 0 ) {
+
                             x = xL;
                             y = yL;
                             z = zL;
+                        
                         }
+                    
                     }
+                    
                     for ( k = 1; k <= fp.appConfig.roadOptions.roadDeviation; k++ ) {
+
                         var xR = x0 + Math.cos( angleRight ) * k,
                             zR = z0 + Math.sin( angleRight ) * k,
                             yR = fp.getHeight( xR, zR ) + yOffset;
+
                         if ( yR < y && yR > 0 ) {
+
                             x = xR;
                             y = yR;
                             z = zR;
+
                         }
+
                     }
+                    
                     // Only create a point if there's a deviation from a straight line
                     if ( x != x0 || y != y0 || z != z0 ) {
+
                         x = Math.round( x );
-                        y = Math.round( y );
+                        y = Math.ceil( y );
                         z = Math.round( z );
+
+                        // Make a 10m bridge over water
+                        if ( y == 0 ) {
+
+                            y += 10;
+
+                        }
+
                         var point = new THREE.Vector3( x, y, z );
                         points.push( point );
+                        
+                        // Attempto to interpolate - NOT WORKING
+                        /*
                         if ( y != yLast ) {
+
                             var yDiff = y - yLast;
                             var shift = i - lastChange + 1;
+                            
                             for ( k = lastChange + 1; k < i; k++ ) {
-                                var change = yDiff * ( (k - lastChange ) / shift );
+
+                                var change = yDiff * ( ( k - lastChange ) / shift );
                                 point.y += change;
+
                             }
+                        
                             lastChange = i;
+
                         }
+                        */
+
                     }
+
                     xLast = x;
                     yLast = y;
                     zLast = z;
                     remaining--;
                     xd = p2.x - xLast;
                     zd = p2.z - zLast;
+
                 }
+                
                 points.push( p2 );
+
                 return points;
+
             };
+
 
             /**
              * Creates a JSTS geometry from the points of the road.
@@ -42093,21 +43467,35 @@ define( 'fp/road-network',[
              * @return {jsts.geom.Polygon}
              */
             this.createJstsGeomFromRoadPoints = function( points ) {
+
                 var coords = _.map( points, function( p ) { return new jsts.geom.Coordinate( p.x, p.y ); } );
                 var lineUnion, j = coords.length - 1;
+
                 for ( var i = 0; i < coords.length; i++ ) {
+
                     var line = new jsts.geom.LineString( [ coords[ i ], coords[ j ]] );
                     j = i;
-                    if ( _.isUndefined( lineUnion ) )
+                    if ( _.isUndefined( lineUnion ) ) {
+
                         lineUnion = line;
-                    else
+
+                    }
+                    else {
+
                         lineUnion = lineUnion.union( line );
+
+                    }
+
                 }
+
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( lineUnion );
                 var polygon = polygonizer.getPolygons().toArray()[ 0 ];
+
                 return polygon.buffer( 0 );
+
             };
+
 
             /**
              * Adds a road between two points, with a given width.
@@ -42116,23 +43504,34 @@ define( 'fp/road-network',[
              * @param {Number} roadWidth
              */
             this.addRoad = function( p1, p2, roadWidth ) {
+
                 var points = this.getRoadTerrainPoints( p1, p2 );
 
                 // Use a cut-off of 5 intersecting points to prevent this road being built
                 var jstsCoords = _.map( points, function( p ) { return new jsts.geom.Coordinate( p.x, p.z ); } );
                 var jstsGeom = new jsts.geom.LineString( jstsCoords );
                 var overlap = fp.roadNetwork.countCollisions( jstsGeom );
-                if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
+                
+                if ( overlap > fp.appConfig.roadOptions.overlapThreshold ) {
+
                     return false;
+
+                }
 
                 // The above code probably should supercede this
                 var thisIndexValues = _.map( points, function( p ) { return fp.getIndex( p.x,p.z ); } );
                 overlap = _.intersection( fp.roadNetwork.indexValues, thisIndexValues ).length;
-                if ( overlap > fp.appConfig.roadOptions.overlapThreshold )
+                
+                if ( overlap > fp.appConfig.roadOptions.overlapThreshold ) {
+
                     return false;
 
+                }
+
                 var extrudePath = new THREE.CatmullRomCurve3( points );
-                var roadColor = ( fp.appConfig.displayOptions.dayShow ) ? fp.appConfig.colorOptions.colorDayRoad : fp.appConfig.colorOptions.colorNightRoad;
+                var roadColor = ( fp.appConfig.displayOptions.dayShow ) ? 
+                                fp.appConfig.colorOptions.colorDayRoad : 
+                                fp.appConfig.colorOptions.colorNightRoad;
                 // var roadMaterial = new THREE.MeshBasicMaterial( { color: roadColor } );
                 var roadMaterial = new THREE.MeshLambertMaterial( { color: roadColor } );
                 roadMaterial.side = THREE.DoubleSide;
@@ -42141,15 +43540,21 @@ define( 'fp/road-network',[
                 var adjust = fp.appConfig.roadOptions.flattenAdjustment,
                     lift = fp.appConfig.roadOptions.flattenLift;
                 var vertices = roadGeom.vertices;
+                
                 for ( var i = 0; i <= vertices.length - fp.appConfig.roadOptions.roadRadiusSegments; i += fp.appConfig.roadOptions.roadRadiusSegments ) {
+                
                     var coil = vertices.slice( i, i + fp.appConfig.roadOptions.roadRadiusSegments );
                     var mean = jStat.mean( _.map( coil, function( p ) { return p.y; } ) );
+                
                     for ( var j = 0; j < coil.length; j++ ) {
+                
                         var y = coil[ j ].y;
                         var diff = y - mean;
                         var newDiff = diff * adjust;
                         vertices[ i+j ].y = lift + mean + newDiff;
+                
                     }
+                
                 }
 
                 // Cache the ordinary plane vertices
@@ -42158,28 +43563,46 @@ define( 'fp/road-network',[
                 // Transform vertices
                 var percent = fp.terrain.wrappedPercent;
                 if ( percent > 0 ) {
+                
                     var transformedVertices = [];
+                
                     for ( var k = 0; k < vertices.length; k++ ) {
+                
                         transformedVertices.push( fp.terrain.transformPointFromPlaneToSphere( vertices[ k ], percent ) );
+                
                     }
+                
                     roadGeom.vertices = transformedVertices;
+                
                 }
 
                 // Add the road
                 var roadMesh = new THREE.Mesh( roadGeom, roadMaterial );
                 fp.roadNetwork.networkMesh.add( roadMesh );
                 thisIndexValues.forEach( function( p ) { fp.roadNetwork.roads[ p ] = roadMesh; } );
-                if ( _.isNull( this.networkGeometry ) )
+                
+                if ( _.isNull( this.networkGeometry ) ) {
+
                     this.networkGeometry = new jsts.geom.LineString( jstsCoords );
+
+                }
                 else {
+                
                     try {
+                
                         this.networkGeometry = this.networkGeometry.union( jstsGeom );
+                
                     }
                     catch ( e ) { console.log( e ); } // Sometimes get a TopologyError
+                
                 }
+                
                 fp.roadNetwork.indexValues = _.uniq( _.flatten( fp.roadNetwork.indexValues.push( thisIndexValues ) ) );
+                
                 return true;
+
             };
+
 
             /**
              * Counts the number of intersections this road has with the
@@ -42188,14 +43611,28 @@ define( 'fp/road-network',[
              * @return {Number}
              */
             this.countCollisions = function( jstsGeom ) {
-                if ( _.isNull( fp.roadNetwork.networkGeometry ) )
+
+                if ( _.isNull( fp.roadNetwork.networkGeometry ) ) {
+
                     return 0;
+
+                }
+
                 var intersections = fp.roadNetwork.networkGeometry.intersection( jstsGeom );
-                if ( !_.isUndefined( intersections.geometries ) )
+                
+                if ( !_.isUndefined( intersections.geometries ) ) {
+
                     return intersections.geometries.length;
-                else // most likely an instance of jsts.geom.Point
+
+                }
+                else { // most likely an instance of jsts.geom.Point
+
                     return 1;
+
+                }
+
             };
+
 
             /**
              * Returns an array of polygons representing the city "blocks",
@@ -42204,10 +43641,13 @@ define( 'fp/road-network',[
              * @return {array} polygons
              */
             this.cityBlocks = function() {
+
                 var polygonizer = new jsts.operation.polygonize.Polygonizer();
                 polygonizer.add( this.networkGeometry );
                 return polygonizer.getPolygons().toArray();
+
             };
+
 
             /**
              * Implementation of Surveyor's Formula - cf. http://www.mathopenref.com/coordpolygonarea2.html
@@ -42215,17 +43655,23 @@ define( 'fp/road-network',[
              * @return {number}
              */
             this.getPolygonArea = function( polygon ) {
+
                 var points = polygon.shell.points;
                 var area = 0;           // Accumulates area in the loop
                 var j = points.length - 1;  // The last vertex is the 'previous' one to the first
+
                 for ( var i = 0; i < points.length; i++ ) {
+
                     area = area + ( points[ j ].x + points[ i ].x ) * ( points[ j ].y - points[ i ].y );
                     j = i;  //j is previous vertex to i
-                }
-                return area / 2;
-            };
-        };
 
+                }
+
+                return area / 2;
+
+            };
+
+        };
 
         return FiercePlanet;
 
@@ -42682,7 +44128,7 @@ define( 'fp/patch-network',[
              */
             this.updatePatchValues = function() {
 
-                if ( fp.appConfig.displayOptions.patchesUpdate && FiercePlanet.appState.runSimulation ) {
+                if ( fp.appConfig.displayOptions.patchesUpdate && fp.appState.runSimulation ) {
 
                     // Allow for overriding of the patch values
                     if ( !_.isUndefined( fp.patchNetwork.reviseValues ) ) {
@@ -42928,7 +44374,7 @@ define( 'fp/trail-network',[
              */
             this.updateTrails = function() {
 
-                if ( !FiercePlanet.appState.runSimulation ) {
+                if ( !fp.appState.runSimulation ) {
 
                     return;
 
@@ -43029,8 +44475,8 @@ define( 'fp/path-network',[
          */
         FiercePlanet.PathNetwork = function( fp ) {
 
-            var gridExtent = FiercePlanet.appConfig.terrainOptions.gridExtent;
-            var gridPoints = FiercePlanet.appConfig.terrainOptions.gridPoints;
+            var gridExtent = fp.appConfig.terrainOptions.gridExtent;
+            var gridPoints = fp.appConfig.terrainOptions.gridPoints;
             this.stepsPerNode = gridExtent / gridPoints;
 
             this.networkMesh = null;
@@ -43098,13 +44544,20 @@ define( 'fp/path-network',[
             this.findPathHome = function( agent ) {
 
                 if ( !agent.home )
-                    return [ ];
+                    return [];
+
                 var start = this.nodeAt( agent.position );
                 var end = this.nodeAt( agent.home.lod.position );
-                if ( _.isUndefined( start ) || _.isUndefined( end ) )
+
+                if ( _.isUndefined( start ) || _.isUndefined( end ) ) {
+
                     return [ ];
+
+                }
+
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
+
             };
 
 
@@ -43135,14 +44588,20 @@ define( 'fp/path-network',[
 
                 }
 
-                if ( !otherAgentHome )
-                    return [ ];
+                if ( !otherAgentHome ) {
+
+                    return [];
+
+                }
 
                 var start = this.nodeAt( agent.position );
                 var end = this.nodeAt( otherAgentHome.lod.position );
 
-                if ( _.isUndefined( start ) || _.isUndefined( end ) )
-                    return [ ];
+                if ( _.isUndefined( start ) || _.isUndefined( end ) ) {
+
+                    return [];
+
+                }
 
                 var path = astar.astar.search( this.graphAStar, start, end, { closest: this.opts.closest } );
                 return path;
@@ -43156,9 +44615,16 @@ define( 'fp/path-network',[
              * @return {Array}       of nodes describing the path
              */
             this.drawPathHome = function( agent ) {
+
                 var path = agent.pathComputed;
-                if ( _.isUndefined( path ) || path.length < 2 ) // Need 2 points for a line
+
+                // Need 2 points for a line
+                if ( _.isUndefined( path ) || path.length < 2 )  {
+
                     return undefined;
+
+                }
+
                 var pathGeom = new THREE.Geometry();
                 var multiplier = fp.terrain.ratioExtentToPoint;
                 var wrapPercent = fp.terrain.wrappedPercent;
@@ -43188,6 +44654,7 @@ define( 'fp/path-network',[
                 var pathMaterial = new THREE.LineBasicMaterial( { color: pathColor, linewidth: 1.0 } );
                 var pathLine = new THREE.Line( pathGeom, pathMaterial );
                 this.networkMesh.add( pathLine );
+
                 return pathLine;
 
             };
@@ -43198,8 +44665,11 @@ define( 'fp/path-network',[
              */
             this.updatePath = function() {
 
-                if ( !FiercePlanet.appState.runSimulation )
+                if ( !fp.appState.runSimulation ) {
+
                     return;
+
+                }
 
                 var children = fp.pathNetwork.networkMesh.children;
 
@@ -43208,6 +44678,7 @@ define( 'fp/path-network',[
                     fp.pathNetwork.networkMesh.remove( children[ i ] );
 
                 }
+
                 var agentsWithPaths = _.chain( fp.agentNetwork.agents ).
                     map( function( agent ) { if ( !_.isUndefined( agent.pathComputed ) && agent.pathComputed.length > 1 ) return agent; } ).
                         compact().
@@ -43427,7 +44898,7 @@ define( 'fp/chart',[
                 } );
 
 
-                var chartCanvas = $( '#chartDiv' )[0];
+                var chartCanvas = $( '#chartCanvas-' + fp.container.id )[0];
                 if ( chartCanvas === undefined ) {
 
                     chartCanvas = document.createElement( "canvas" );
@@ -43435,7 +44906,7 @@ define( 'fp/chart',[
 
                 }
 
-                chartCanvas.setAttribute( "id", 'chartDiv' );
+                chartCanvas.setAttribute( "id", "chartCanvas-" + fp.container.id );
                 chartCanvas.setAttribute( "width", "400px" );
                 chartCanvas.setAttribute( "height", "100px" );
                 chartCanvas.setAttribute( "style", "z-index: 1; position: absolute; left: 0px; bottom: 0px  " );
@@ -43454,7 +44925,7 @@ define( 'fp/chart',[
 
                 this.intervalID = setInterval( function() {
 
-                    if ( FiercePlanet.appState.runSimulation ) {
+                    if ( fp.appState.runSimulation ) {
 
                         for ( var i = 0; i < seriesSetFuncs.length; i++ ) {
 
@@ -43605,6 +45076,7 @@ define(
          * @namespace fp
          */
         FiercePlanet.Simulation = function() {
+
             var fp = this;
 
             // Export the entire namespace, so classes can be instantiated
@@ -43641,7 +45113,7 @@ define(
             fp.lightHemisphere = null;
             fp.lightDirectional = null;
             fp.chart = null;
-            fp.appState = FiercePlanet.appState;
+            fp.appState = new FiercePlanet.AppState();
 
 
             /**
@@ -43833,8 +45305,8 @@ define(
                     fp.controls.enableZoom = true;
                     fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
-                    fp.controls.minDistance = 250.0;
-                    fp.controls.maxDistance = 10000.0;
+                    fp.controls.minDistance = - fp.appConfig.terrainOptions.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                    fp.controls.maxDistance = fp.appConfig.terrainOptions.gridExtent * fp.appConfig.terrainOptions.multiplier;
 
                 }
 
@@ -43910,12 +45382,13 @@ define(
                     fp.appConfig.colorOptions.colorLightDirectionalIntensity
                 );
                 // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
-                fp.lightDirectional.position.set( -40000, 40000, -40000 );
+                var extent = fp.terrain.gridExtent;
+                fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
                 fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
                 fp.lightDirectional.castShadow = true;
                 // these six values define the boundaries of the yellow box seen above
-                fp.lightDirectional.shadowCameraNear = 250;
-                fp.lightDirectional.shadowCameraFar = 80000;
+                fp.lightDirectional.shadowCameraNear = extent / 10;
+                fp.lightDirectional.shadowCameraFar = extent * 8;
                 // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
                 var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
                 fp.lightDirectional.shadowMapWidth = d;
@@ -43993,7 +45466,9 @@ define(
 
                     var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
                     waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+
                     fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
+
                         textureWidth: 512,
                         textureHeight: 512,
                         waterNormals: waterNormals,
@@ -44002,6 +45477,7 @@ define(
                         sunColor: 0xffffff,
                         waterColor: 0x001e0f,
                         distortionScale: 50.0,
+
                     } );
 
                     if ( !_.isUndefined( fp.waterMesh ) ) {
@@ -44017,7 +45493,7 @@ define(
 
                     fp.waterMesh.add( fp.water );
                     fp.waterMesh.rotation.x = - Math.PI * 0.5;
-                    fp.waterMesh.position.y = -10;
+                    fp.waterMesh.position.y = 0;
 
                 }
 
@@ -44271,7 +45747,7 @@ define(
              */
             fp.doTick = function() {
 
-                if ( FiercePlanet.appState.runSimulation ) {
+                if ( fp.appState.runSimulation ) {
 
                     if ( fp.timescale.frameCounter % fp.timescale.framesToTick === 0 ) {
 
@@ -44317,9 +45793,9 @@ define(
              */
             fp.updateSimState = function() {
 
-                if ( FiercePlanet.appState.stepSimulation ) {
+                if ( fp.appState.stepSimulation ) {
 
-                    FiercePlanet.appState.runSimulation = false;
+                    fp.appState.runSimulation = false;
 
                 }
 
@@ -44350,9 +45826,14 @@ define(
 
                 if ( !fp.appConfig.displayOptions.cursorShow ) {
 
-                    fp.controls.update( fp.clock.getDelta() );
+                    if ( fp.controls.update ) {
+
+                        fp.controls.update( fp.clock.getDelta() );
+
+                    }
 
                     if ( !_.isUndefined( fp.controls.getObject ) ) {
+
                         var obj = fp.controls.getObject();
                         var height = fp.getHeight( obj.position.x, obj.position.z );
                         /*
@@ -44415,7 +45896,7 @@ define(
              */
             fp.endSim = function() {
 
-                FiercePlanet.appState.runSimulation = false;
+                fp.appState.runSimulation = false;
                 fp.appConfig.displayOptions.buildingsShow = false;
                 fp.appConfig.displayOptions.patchesUpdate = false;
 
@@ -44427,7 +45908,7 @@ define(
              */
             fp.updateTime = function() {
 
-                if ( FiercePlanet.appState.runSimulation ) {
+                if ( fp.appState.runSimulation ) {
 
                     fp.timescale.frameCounter++;
 
@@ -44523,6 +46004,7 @@ define(
 
             /**
              * Gets the terrain height for a given ( x, y ) co-ordinate.
+             *
              * @memberof fp
              */
             fp.getHeight = function( x, y ) {
@@ -44562,6 +46044,7 @@ define(
                 return 0.0;
             };
 
+
             /**
              * Count how many surrounding cells are also sea level
              * @memberof fp
@@ -44580,8 +46063,9 @@ define(
                 return seaLevelNeighbours / totalNeighbours;
             };
 
+
             /**
-             * Count how many surrounding cells are also buildings
+             * Count how many surrounding cells are also buildings.
              * @memberof fp
              * @param  {Number} index
              * @return {Number}
@@ -44600,6 +46084,7 @@ define(
                 // Return true if the probability is greater than 1 minus the target value
                 return ( chance > ( 1 - threshold ) );
             };
+
 
             /**
              * Count how many surrounding cells are also buildings
@@ -44753,7 +46238,9 @@ define(
                             positions[ 3 * ( indexMirroredOnY + ( fp.terrain.gridPoints * j ) ) + 2 ]
                     ) );
                 }
+
                 return _.compact( surroundingCells );
+
             };
 
             /**
@@ -44869,36 +46356,49 @@ define(
                 }
             };
 
+
             /**
-             * @memberof fp
+             * Takes mouse coordinates, and finds the point these intersect with the terrain's plane.
+             *
+             * @param   {Object} eventInfo
+             * @return  {THREE.Vector3} intersected point
              */
             fp.mouseIntersects = function( eventInfo ) {
-                //this where begin to transform the mouse cordinates to three,js cordinates
+
+                // This where to begin to transform the mouse cordinates to three,js cordinates
                 fp.mouse.x = ( eventInfo.clientX / window.innerWidth ) * 2 - 1;
                 fp.mouse.y = -( eventInfo.clientY / window.innerHeight ) * 2 + 1;
 
-                //this vector caries the mouse click cordinates
+                // This vector caries the mouse click cordinates
                 fp.mouseVector.set( fp.mouse.x, fp.mouse.y, fp.mouse.z );
 
-                //the final step of the transformation process, basically this method call
-                //creates a point in 3d space where the mouse click occurd
+                // The final step of the transformation process, basically this method call
+                // creates a point in 3d space where the mouse click occured
                 fp.mouseVector.unproject( fp.camera );
 
                 var direction = fp.mouseVector.sub( fp.camera.position ).normalize();
 
                 fp.ray.set( fp.camera.position, direction );
 
-                //asking the raycaster if the mouse click touched the sphere object
+                // Asking the raycaster if the mouse click touched the sphere object
                 var intersects = fp.ray.intersectObject( fp.terrain.plane );
 
-                //the ray will return an array with length of 1 or greater if the mouse click
-                //does touch the plane object
+                // The ray will return an array with length of 1 or greater if the mouse click
+                // does touch the plane object
                 var point;
-                if ( intersects.length > 0 )
+                if ( intersects.length > 0 ) {
+
                     point = intersects[ 0 ].point;
+                    
+                    // Get the correct height
+                    point.y = fp.getHeight( point.x, point.z );
+
+                }
 
                 return point;
+
             };
+
 
             /**
              * @memberof fp
@@ -44907,39 +46407,79 @@ define(
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                if ( !fp.appConfig.displayOptions.cursorShow )
+                if ( !fp.appConfig.displayOptions.cursorShow ) {
+
                     return;
 
+                }
+
                 var planePoint = fp.mouseIntersects( eventInfo );
-                if ( fp.appConfig.displayOptions.cursorShowCell )
+
+                if ( fp.appConfig.displayOptions.cursorShowCell ) {
+
                     fp.cursor.createCellFill( planePoint.x, planePoint.z );
-                else
+
+                }
+                else {
+
                     fp.cursor.createCell( planePoint.x, planePoint.z );
 
-                if ( eventInfo.which == 1 )
+                }
+
+                // Specific behaviour for flatting terrain
+                if ( eventInfo.which == 1 ) {
+                    
                     fp.terrain.flattenTerrain();
+
+                }
+
             };
 
+
             /**
+             * Responds to mouse up events.
+             * If the meta/alt key is pressed, either (a) creating the starting point of a road or
+             * (b) marking the end point, and adding the road.
+             * 
+             * Otherwise, simply prints the plane point, if any, to the console.
+             * 
+             * @param   {Object} eventInfo
              * @memberof fp
              */
             fp.onMouseUp = function( eventInfo ) {
+
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                if ( ! eventInfo.metaKey )
+                var planePoint = fp.mouseIntersects( eventInfo );
+
+                if ( ! eventInfo.metaKey ) {
+
+                    // Useful for debugging
+                    // console.log( planePoint )
                     return;
 
-                var planePoint = fp.mouseIntersects( eventInfo ), p1, p2;
+                }
+
                 if ( !_.isUndefined( planePoint ) ) {
-                    if ( _.isUndefined( p1 ) )
+
+                    var p1, p2;
+
+                    if ( _.isUndefined( p1 ) ) {
+
                         p1 = planePoint;
+
+                    }
                     else if ( _.isUndefined( p2 )) {
+                        
                         p2 = planePoint;
                         fp.roadNetwork.addRoad( p1, p2, appConfig.roadOptions.roadWidth );
                         p1 = p2 = undefined;
+
                     }
+
                 }
+
             };
 
 
@@ -44948,33 +46488,60 @@ define(
              * @memberof fp
              */
             fp.toggleAgentState = function() {
-                if ( !fp.appConfig.displayOptions.agentsShow )
+                
+                if ( !fp.appConfig.displayOptions.agentsShow ) {
+
                     fp.scene.remove(  fp.agentNetwork.particles  );
-                else
+
+                }
+                else {
+
                     fp.scene.add(  fp.agentNetwork.particles  );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of the building network.
              * @memberof fp
              */
             fp.toggleBuildingState = function() {
-                if ( !fp.appConfig.displayOptions.buildingsShow )
+
+                if ( !fp.appConfig.displayOptions.buildingsShow ) {
+
                     fp.scene.remove( fp.buildingNetwork.networkMesh );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.buildingNetwork.networkMesh );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of the raod network.
              * @memberof fp
              */
             fp.toggleRoadState = function() {
-                if ( !fp.appConfig.displayOptions.roadsShow )
+
+                if ( !fp.appConfig.displayOptions.roadsShow ) {
+
                     fp.scene.remove( fp.roadNetwork.networkMesh );
-                else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
+
+                }
+                else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) ) {
+
                     fp.scene.add( fp.roadNetwork.networkMesh );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of water.
@@ -45002,17 +46569,30 @@ define(
              * @memberof fp
              */
             fp.toggleAgentNetwork = function() {
+
                 if ( !fp.appConfig.displayOptions.networkShow ) {
+
                     fp.agentNetwork.networks.forEach( function( network ) {
+
                         fp.scene.remove( network.networkMesh );
+
                     } );
+
                 }
                 else {
+
                     fp.agentNetwork.networks.forEach( function( network ) {
-                        if ( !_.isNull( network.networkMesh ) )
+
+                        if ( !_.isNull( network.networkMesh ) ) {
+
                             fp.scene.add( network.networkMesh );
+
+                        }
+
                     } );
+
                 }
+
             };
 
             /**
@@ -45031,13 +46611,19 @@ define(
              * @memberof fp
              */
             fp.toggleTrailState = function() {
+
                 if ( !fp.appConfig.displayOptions.trailsShow ||
                     !fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.remove( fp.trailNetwork.globalTrailLine );
+
                 }
                 else if ( appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
+
                 }
+
             };
 
 
@@ -45322,6 +46908,7 @@ define(
              * @param  {Object} config  An object representation of properties to override defaults for the fp.AppConfig object.
              */
             fp.doGUI = function( config ) {
+
                 fp.appConfig = new FiercePlanet.AppConfig();
                 fp.appController = new FiercePlanet.AppController( fp );
 
@@ -45331,15 +46918,16 @@ define(
                 fp.gui.remember( fp.appConfig.agentOptions );
                 fp.gui.remember( fp.appConfig.buildingOptions );
                 fp.gui.remember( fp.appConfig.roadOptions );
+                fp.gui.remember( fp.appConfig.terrainOptions );
                 fp.gui.remember( fp.appConfig.displayOptions );
                 fp.gui.remember( fp.appConfig.colorOptions );
-                fp.gui.remember( fp.appConfig.terrainOptions );
 
                 fp.gui.add( fp.appController, "Setup" );
                 fp.gui.add( fp.appController, "Run" );
                 fp.gui.add( fp.appController, "Step" );
 
                 if ( fp.appConfig.displayOptions.guiShowControls ) {
+
                     var controlPanel = fp.gui.addFolder( "More controls" );
                     controlPanel.add( fp.appController, "SpeedUp" );
                     controlPanel.add( fp.appController, "SlowDown" );
@@ -45348,50 +46936,62 @@ define(
                     controlPanel.add( fp.appController, "SwitchTerrain" );
                     controlPanel.add( fp.appController, "WrapTerrain" );
                     controlPanel.add( fp.appController, "UnwrapTerrain" );
+
                 }
 
                 if ( fp.appConfig.displayOptions.guiShowAgentFolder ) {
+
                     var agentsFolder = fp.gui.addFolder( "Agent Options" );
+
                     agentsFolder.add( fp.appConfig.agentOptions, "initialPopulation", 0, 1000 ).step( 1 );
                     agentsFolder.add( fp.appConfig.agentOptions, "initialExtent", 1, 100 ).step( 1 );
                     agentsFolder.add( fp.appConfig.agentOptions, "maxExtent", 1, 100 ).step( 1 );
                     agentsFolder.add( fp.appConfig.agentOptions, "initialX",  0, 100 ).step( 1 );
                     agentsFolder.add( fp.appConfig.agentOptions, "initialY",  0, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 100 ).step( 1 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1 ).step( 0.05 );
                     agentsFolder.add( fp.appConfig.agentOptions, "randomAge" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
+
+                    agentsFolder.add( fp.appConfig.agentOptions, "establishLinks" );
                     agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetwork", 0.0, 1.0 ).step( 0.01 );
                     agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithHome", 0.0, 1.0 ).step( 0.01 );
                     agentsFolder.add( fp.appConfig.agentOptions, "chanceToJoinNetworkWithBothHomes", 0.0, 1.0 ).step( 0.01 );
                     agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToHome", 0.0, 1.0 ).step( 0.01 );
                     agentsFolder.add( fp.appConfig.agentOptions, "chanceToFindPathToOtherAgentHome", 0.0, 1.0 ).step( 0.01 );
-                    agentsFolder.add( fp.appConfig.agentOptions, "initialCircle" );
+
                     agentsFolder.add( fp.appConfig.agentOptions, "noWater" );
                     agentsFolder.add( fp.appConfig.agentOptions, "noUphill" );
-                    agentsFolder.add( fp.appConfig.agentOptions, "useStickman" );
                     agentsFolder.add( fp.appConfig.agentOptions, "visitHomeBuilding", 0.0, 1.0 ).step( 0.001 );
                     agentsFolder.add( fp.appConfig.agentOptions, "visitOtherBuilding", 0.0, 1.0 ).step( 0.001 );
-                    agentsFolder.add( fp.appConfig.agentOptions, "establishLinks" );
-                    agentsFolder.add( fp.appConfig.agentOptions, "shuffle" );
-                    agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
-                    agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
-                    agentsFolder.add( fp.appConfig.agentOptions, "initialSpeed", 1, 100 ).step( 1 );
-                    agentsFolder.add( fp.appConfig.agentOptions, "initialPerturbBy", 0, 1 ).step( 0.05 );
                     agentsFolder.add( fp.appConfig.agentOptions, "movementRelativeToPatch" );
                     agentsFolder.add( fp.appConfig.agentOptions, "movementInPatch", 1, 100 ).step( 1 );
                     agentsFolder.add( fp.appConfig.agentOptions, "movementStrictlyIntercardinal" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "changeDirectionEveryTick" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "perturbDirectionEveryTick" );
+
+                    agentsFolder.add( fp.appConfig.agentOptions, "useStickman" );
+                    agentsFolder.add( fp.appConfig.agentOptions, "size", 10, 1000  ).step( 10 );
+                    agentsFolder.add( fp.appConfig.agentOptions, "terrainOffset", 0, 100  ).step( 1 );
+
                 }
 
                 if ( fp.appConfig.displayOptions.guiShowBuildingsFolder ) {
+
                     var buildingsFolder = fp.gui.addFolder( "Building Options" );
                     buildingsFolder.add( fp.appConfig.buildingOptions, "create" );
                     buildingsFolder.add( fp.appConfig.buildingOptions, "maxNumber", 1, 100 ).step( 1 );
                     buildingsFolder.add( fp.appConfig.buildingOptions, "detectBuildingCollisions" );
                     buildingsFolder.add( fp.appConfig.buildingOptions, "detectRoadCollisions" );
+
                     var forms = buildingsFolder.addFolder( "Form" );
                     forms.add( fp.appConfig.buildingOptions, "buildingForm", FiercePlanet.BUILDING_FORMS.names );
                     forms.add( fp.appConfig.buildingOptions, "spread", 1, 100 ).step( 1 );
                     forms.add( fp.appConfig.buildingOptions, "randomForm" );
                     forms.add( fp.appConfig.buildingOptions, "rotateRandomly" );
                     forms.add( fp.appConfig.buildingOptions, "rotateSetAngle", 0, 360 ).step( 1 );
+
                     var dimensions = buildingsFolder.addFolder( "Dimensions" );
                     dimensions.add( fp.appConfig.buildingOptions, "minHeight", 1, 100 ).step( 1 );
                     dimensions.add( fp.appConfig.buildingOptions, "maxHeight", 2, 200 ).step( 1 );
@@ -45403,6 +47003,7 @@ define(
                     dimensions.add( fp.appConfig.buildingOptions, "maxWidth", 41, 400 ).step( 1 );
                     dimensions.add( fp.appConfig.buildingOptions, "minLength", 1, 200 ).step( 1 );
                     dimensions.add( fp.appConfig.buildingOptions, "maxLength", 41, 400 ).step( 1 );
+
                     var influences = buildingsFolder.addFolder( "Influences" );
                     influences.add( fp.appConfig.buildingOptions, "roads", 0.0, 1.0 ).step( 0.1 );
                     influences.add( fp.appConfig.buildingOptions, "water", 0.0, 1.0 ).step( 0.1 );
@@ -45410,46 +47011,60 @@ define(
                     influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMin", 0, 10000 ).step( 100 );
                     influences.add( fp.appConfig.buildingOptions, "distanceFromOtherBuildingsMax", 0, 10000 ).step( 100 );
                     influences.add( fp.appConfig.buildingOptions, "buildingHeight", 0.0, 1.0 ).step( 0.1 );
+
                     var view = buildingsFolder.addFolder( "Appearance" );
                     view.add( fp.appConfig.buildingOptions, "useShader" );
                     view.add( fp.appConfig.buildingOptions, "useLevelOfDetail" );
                     view.add( fp.appConfig.buildingOptions, "lowResDistance", 2000, 20000 ).step( 1000 );
                     view.add( fp.appConfig.buildingOptions, "highResDistance", 100, 2000 ).step( 100 );
                     view.add( fp.appConfig.buildingOptions, "opacity", 0.0, 1.0 ).step( 0.01 );
+
                     var fill = view.addFolder( "Fill" );
                     fill.add( fp.appConfig.buildingOptions, "showFill" );
                     fill.add( fp.appConfig.buildingOptions, "fillRooves" );
+
                     var line = view.addFolder( "Line" );
                     line.add( fp.appConfig.buildingOptions, "showLines" );
                     line.add( fp.appConfig.buildingOptions, "linewidth", 0.1, 8 ).step( 0.1 );
+
                     var windows = view.addFolder( "Window" );
                     var showWindowsOptions = windows.add( fp.appConfig.buildingOptions, "showWindows" );
                     showWindowsOptions.onChange( function( value ) {
+
                         fp.buildingNetwork.buildings.forEach( function( b ) {
+
                             b.uniforms.showWindows.value = value ? 1 : 0;
+
                         } );
+
                     } );
+
                     windows.add( fp.appConfig.buildingOptions, "windowsRandomise" );
                     windows.add( fp.appConfig.buildingOptions, "windowsFlickerRate", 0, 1 ).step( 0.01 );
                     windows.add( fp.appConfig.buildingOptions, "windowWidth", 1, 100 ).step( 1 );
                     windows.add( fp.appConfig.buildingOptions, "windowPercent", 1, 100 ).step( 1 );
                     windows.add( fp.appConfig.buildingOptions, "windowsStartY", 1, 100 ).step( 1 );
                     windows.add( fp.appConfig.buildingOptions, "windowsEndY", 1, 100 ).step( 1 );
+
                     var stagger = buildingsFolder.addFolder( "Stagger" );
                     stagger.add( fp.appConfig.buildingOptions, "stagger" );
                     stagger.add( fp.appConfig.buildingOptions, "staggerAmount", 1, 100 );
+
                     var taper = buildingsFolder.addFolder( "Taper" );
                     taper.add( fp.appConfig.buildingOptions, "taper" );
                     taper.add( fp.appConfig.buildingOptions, "taperExponent", 1, 10 ).step( 1 );
                     taper.add( fp.appConfig.buildingOptions, "taperDistribution", 0.1, 5 );
+
                     var animation = buildingsFolder.addFolder( "Animation" );
                     animation.add( fp.appConfig.buildingOptions, "destroyOnComplete" );
                     animation.add( fp.appConfig.buildingOptions, "loopCreateDestroy" );
                     animation.add( fp.appConfig.buildingOptions, "turning" );
                     animation.add( fp.appConfig.buildingOptions, "falling" );
+
                 }
 
                 if ( fp.appConfig.displayOptions.guiShowRoadsFolder ) {
+
                     var roadsFolder = fp.gui.addFolder( "Road Options" );
                     roadsFolder.add( fp.appConfig.roadOptions, "create" );
                     roadsFolder.add( fp.appConfig.roadOptions, "maxNumber", 1, 100 ).step( 1 );
@@ -45465,23 +47080,28 @@ define(
                     roadsFolder.add( fp.appConfig.roadOptions, "overlapThreshold", 1, 100 ).step( 1 );
                     roadsFolder.add( fp.appConfig.roadOptions, "flattenAdjustment", 0.025, 1.0 ).step( 0.025 );
                     roadsFolder.add( fp.appConfig.roadOptions, "flattenLift", 0, 40 ).step( 1 );
+
                 }
 
                 if ( fp.appConfig.displayOptions.guiShowTerrainFolder ) {
+
                     var terrainFolder = fp.gui.addFolder( "Terrain Options" );
                     terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
-                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "defaultHeight", -100, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 0, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "patchSize", 1, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "mapIndex", 0, 1 ).step( 1 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "mapFile" ).onFinishChange( fp.loadTerrain );
+
                 }
 
                 if ( fp.appConfig.displayOptions.guiShowDisplayFolder ) {
+
                     var displayFolder = fp.gui.addFolder( "Display Options" );
                     displayFolder.add( fp.appConfig.displayOptions, "agentsShow" ).onFinishChange( fp.toggleAgentState );
                     displayFolder.add( fp.appConfig.displayOptions, "buildingsShow" ).onFinishChange( fp.toggleBuildingState );
@@ -45516,6 +47136,7 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 5000 ).onFinishChange( fp.resetControls );
                     displayFolder.add( fp.appConfig.displayOptions, "maximiseView" );
                     displayFolder.add( fp.appConfig.displayOptions, "guiShow" );
+
                     var folders = displayFolder.addFolder( "Folder Options" );
                     folders.add( fp.appConfig.displayOptions, "guiShowControls" );
                     folders.add( fp.appConfig.displayOptions, "guiShowAgentFolder" );
@@ -45524,9 +47145,11 @@ define(
                     folders.add( fp.appConfig.displayOptions, "guiShowTerrainFolder" );
                     folders.add( fp.appConfig.displayOptions, "guiShowDisplayFolder" );
                     folders.add( fp.appConfig.displayOptions, "guiShowColorFolder" );
+
                 }
 
                 if ( fp.appConfig.displayOptions.guiShowColorFolder ) {
+
                     var colorFolder = fp.gui.addFolder( "Color Options" );
                     var colorTerrainFolder = colorFolder.addFolder( "Terrain Colors" );
                     colorTerrainFolder.addColor( fp.appConfig.colorOptions, "colorDayTerrainGroundLevel" ).onChange( fp.loadTerrain );
@@ -45547,6 +47170,7 @@ define(
                     colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop4", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
                     colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainStop5", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
                     colorTerrainFolder.add( fp.appConfig.colorOptions, "colorTerrainOpacity", 0.0, 1.0 ).step(0.01).onChange( fp.loadTerrain );
+
                     var colorBuildingFolder = colorFolder.addFolder( "Building Colors" );
                     colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingFill" );
                     colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingFill" );
@@ -45554,16 +47178,19 @@ define(
                     colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingLine" );
                     colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorDayBuildingWindow" );
                     colorBuildingFolder.addColor( fp.appConfig.colorOptions, "colorNightBuildingWindow" );
+
                     var colorGraphFolder = colorFolder.addFolder( "Graph Colors" );
                     colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPopulation" ).onChange( fp.updateChartColors );
                     colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphHealth" ).onChange( fp.updateChartColors );
                     colorGraphFolder.addColor( fp.appConfig.colorOptions, "colorGraphPatchValues" ).onChange( fp.updateChartColors );
+
                     var colorLightingFolder = colorFolder.addFolder( "Lighting Colors" );
                     colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereSky" ).onChange( fp.updateLighting );
                     colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightHemisphereGround" ).onChange( fp.updateLighting );
                     colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightHemisphereIntensity", 0, 1 ).step( 0.01 ).onChange( fp.updateLighting );
                     colorLightingFolder.addColor( fp.appConfig.colorOptions, "colorLightDirectional" ).onChange( fp.updateLighting );
                     colorLightingFolder.add( fp.appConfig.colorOptions, "colorLightDirectionalIntensity", 0, 1 ).step( 0.01 ).onChange( fp.updateLighting );
+
                     var colorOtherFolder = colorFolder.addFolder( "Other Colors" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayBackground" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightBackground" );
@@ -45573,12 +47200,11 @@ define(
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightAgent" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
-                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayNetwork" );
-                    colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightNetwork" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayTrail" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightTrail" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorDayPath" );
                     colorOtherFolder.addColor( fp.appConfig.colorOptions, "colorNightPath" );
+
                 }
 
                 // Need to create the GUI to seed the parameters first.
@@ -45588,7 +47214,9 @@ define(
                     return;
 
                 }
+
             };
+
         }
 
         return FiercePlanet;

@@ -544,7 +544,10 @@ define( [
                             b.castShadow = true;
                             b.receiveShadow = true;
                         } );
+                        
+                        // this.mesh.rotation.set( this.rotation.x + -Math.PI / 2, this.rotation.z, this.rotation.y );
                         this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
+
                         height = fp.getHeight( this.highResMeshContainer.position.x, this.highResMeshContainer.position.z );
                         this.mesh.position.set( this.highResMeshContainer.position.x, height, this.highResMeshContainer.position.z );
                         this.mesh.updateMatrix();
@@ -622,7 +625,9 @@ define( [
 
 
                     }
+
                 }
+
             };
 
 
@@ -877,6 +882,7 @@ define( [
             this.buildingForm = null;
             this.destroying = false;
             this.originPosition = null;
+            this.rotation = rotation;
 
             this.init( form, dimensions, position, rotation );
 

@@ -41,7 +41,7 @@ define( [
                 var xd = p2.x - xLast, zd = p2.z - zLast;
                 var distance = Math.sqrt( xd * xd + zd * zd ) / fp.appConfig.roadOptions.roadSegments,
                     remaining = distance;
-                var yOffset = fp.appConfig.terrainOptions.defaultHeight;
+                var yOffset = fp.appConfig.roadOptions.flattenLift;
                 p1 = new THREE.Vector3( p1.x, fp.getHeight( p1.x, p1.z ) + yOffset, p1.z );
                 p2 = new THREE.Vector3( p2.x, fp.getHeight( p2.x, p2.z ) + yOffset, p2.z );
 
@@ -94,7 +94,7 @@ define( [
                     if ( x != x0 || y != y0 || z != z0 ) {
 
                         x = Math.round( x );
-                        y = Math.round( y );
+                        y = Math.ceil( y );
                         z = Math.round( z );
 
                         // Make a 10m bridge over water
