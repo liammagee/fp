@@ -1,6 +1,6 @@
 "use strict";
 
-define(['fp/fp-base'], function (FiercePlanet) {
+define(["fp/fp-base"], function (FiercePlanet) {
 
     /**
      * Shader utilites - wrappers around Three.js Lambert and Phong shaders.
