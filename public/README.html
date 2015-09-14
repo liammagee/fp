@@ -32,7 +32,26 @@
 
   <!-- Pandoc Start -->
   <style type="text/css">code{white-space: pre;}</style>
-            <!-- Pandoc End -->
+        <style type="text/css">
+  table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+    margin: 0; padding: 0; vertical-align: baseline; border: none; }
+  table.sourceCode { width: 100%; line-height: 100%; }
+  td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+  td.sourceCode { padding-left: 5px; }
+  code > span.kw { color: #007020; font-weight: bold; }
+  code > span.dt { color: #902000; }
+  code > span.dv { color: #40a070; }
+  code > span.bn { color: #40a070; }
+  code > span.fl { color: #40a070; }
+  code > span.ch { color: #4070a0; }
+  code > span.st { color: #4070a0; }
+  code > span.co { color: #60a0b0; font-style: italic; }
+  code > span.ot { color: #007020; }
+  code > span.al { color: #ff0000; font-weight: bold; }
+  code > span.fu { color: #06287e; }
+  code > span.er { color: #ff0000; font-weight: bold; }
+    </style>
+          <!-- Pandoc End -->
 
 </head>
 <body>
@@ -86,16 +105,16 @@
         <p>In addition, a number of other commands can be run using <a href="http://gulpjs.com/">gulp</a>:</p>
         <h3 id="building-the-source">Building the source</h3>
         <p>To generate code documentation, run:</p>
-        <pre class="(.zsh)"><code>    gulp require</code></pre>
+        <pre class="sourceCode zsh"><code class="sourceCode zsh">    gulp require</code></pre>
         <h3 id="generating-code-docs">Generating code docs</h3>
         <p>To generate code documentation, run:</p>
-        <pre class="(.zsh)"><code>    gulp jsdoc</code></pre>
+        <pre class="sourceCode zsh"><code class="sourceCode zsh">    gulp jsdoc</code></pre>
         <h3 id="generating-the-website">Generating the website</h3>
         <p>To convert the HTML website content from the <a href="http://daringfireball.net/projects/markdown/">Markdown</a> docs:</p>
-        <pre class="(.zsh)"><code>    gulp pandoc-site</code></pre>
+        <pre class="sourceCode zsh"><code class="sourceCode zsh">    gulp pandoc-site</code></pre>
         <h3 id="running-babel-to-convert-es6-code-to-es5">Running Babel to convert ES6 code to ES5</h3>
         <p>A small amount of code currently uses <a href="https://github.com/lukehoban/es6features">ES6</a> for convenience. To convert this code to <em>ES5</em>, run:</p>
-        <pre class="(.zsh)"><code>    gulp babel-shader</code></pre>
+        <pre class="sourceCode zsh"><code class="sourceCode zsh">    gulp babel-shader</code></pre>
         <h2 id="code-layout">Code Layout</h2>
         <p>The code includes the following</p>
         <ul>

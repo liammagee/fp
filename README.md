@@ -39,7 +39,7 @@ In addition, a number of other commands can be run using [gulp](http://gulpjs.co
 
 To generate code documentation, run:
 
-~~~ (.zsh)
+~~~ {.zsh}
     gulp require
 ~~~
 
@@ -47,7 +47,7 @@ To generate code documentation, run:
 
 To generate code documentation, run:
 
-~~~ (.zsh)
+~~~ {.zsh}
     gulp jsdoc
 ~~~
 
@@ -55,7 +55,7 @@ To generate code documentation, run:
 
 To convert the HTML website content from the [Markdown](http://daringfireball.net/projects/markdown/) docs:
 
-~~~ (.zsh)
+~~~ {.zsh}
     gulp pandoc-site
 ~~~
 
@@ -63,7 +63,7 @@ To convert the HTML website content from the [Markdown](http://daringfireball.ne
 
 A small amount of code currently uses [ES6](https://github.com/lukehoban/es6features) for convenience. To convert this code to *ES5*, run:
 
-~~~ (.zsh)
+~~~ {.zsh}
     gulp babel-shader
 ~~~
 
