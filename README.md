@@ -39,29 +39,33 @@ In addition, a number of other commands can be run using [gulp](http://gulpjs.co
 
 To generate code documentation, run:
 
+~~~ (.zsh)
     gulp require
-
+~~~
 
 ### Generating code docs
 
 To generate code documentation, run:
 
+~~~ (.zsh)
     gulp jsdoc
-
+~~~
 
 ### Generating the website 
 
 To convert the HTML website content from the [Markdown](http://daringfireball.net/projects/markdown/) docs:
 
+~~~ (.zsh)
     gulp pandoc-site
-
+~~~
 
 ### Running Babel to convert ES6 code to ES5
 
 A small amount of code currently uses [ES6](https://github.com/lukehoban/es6features) for convenience. To convert this code to *ES5*, run:
 
+~~~ (.zsh)
     gulp babel-shader
-
+~~~
 
 ## Code Layout
 
