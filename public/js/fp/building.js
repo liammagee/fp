@@ -85,11 +85,13 @@ define( [
          */
         FiercePlanet.Building = function( fp, form, dimensions, position, rotation ) {
 
+
             /**
              * Sets the dimensions of the building.
              * @param  {object} dimensions object containing levels, width and length properties.
              */
             this.initDimensions = function( dimensions ) {
+
                 this.lod = new THREE.LOD();
                 this.yOffset = 0;
                 this.levels = 0;
@@ -105,15 +107,20 @@ define( [
                     wc = fp.buildColorVector( fp.appConfig.colorOptions.colorDayBuildingWindow );
                 }
                 else {
+                    
                     fc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingFill );
                     lc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingLine );
                     wc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingWindow );
+
                 }
 
                 this.lineMaterial = new THREE.LineBasicMaterial( {
+
                     color: lc,
                     linewidth: fp.appConfig.buildingOptions.linewidth
+
                 } );
+
                 this.windowMaterial = new THREE.MeshBasicMaterial( { color: wc } );
                 this.windowMaterial.side = THREE.DoubleSide;
                 this.buildingMaterial = new THREE.MeshBasicMaterial( { color: fc } );
@@ -176,6 +183,7 @@ define( [
 
             };
 
+
             /**
              * Adds a new floor to the current building
              */
@@ -234,7 +242,9 @@ define( [
                     }
 
                 }
+
             };
+
 
             /**
              * Removes the top floor from the current building
@@ -246,6 +256,7 @@ define( [
                 // Update a low res model once the rest is complete
                 this.updateSimpleBuilding();
             };
+
 
             this.generateSkeleton = function ( points ) {
                 var i, base = points[ 0 ].y;
@@ -713,20 +724,34 @@ define( [
             };
 
             this.updateSimpleBuilding = function () {
+                
                 if ( this.levels > 1 ) {
-                    if ( !this.destroying )
+
+                    if ( !this.destroying ) {
+
                         this.lowResMesh.scale.set( 1, this.lowResMesh.scale.y * this.levels / ( this.levels - 1 ), 1 );
-                    else
+
+                    }
+                    else {
+
                         this.lowResMesh.scale.set( 1, this.lowResMesh.scale.y * ( this.levels - 1 ) / ( this.levels ), 1 );
+
+                    }
                 }
-                else if ( this.destroying )
+                else if ( this.destroying ) {
+
                     this.lowResMesh.scale.set( 1, 1, 1 );
+
+                }
+
             };
 
             this.translatePosition = function( x, y, z ) {
+
                 this.lod.position.set( x, y, z );
                 this.highResMeshContainer.position.set( x, y, z );
                 this.lowResMeshContainer.position.set( x, y, z );
+
             };
 
             this.windowsOutline = function( value ) {
@@ -743,10 +768,12 @@ define( [
                     this.highResMeshContainer.remove( this.windowsFillContainer );
             };
 
+
             /**
              * Initialises the building.
              */
             this.init = function( form, dimensions, position, rotation ) {
+
                 this.originPosition = position;
                 // Use Poisson distribution with lambda of 1 to contour building heights instead
                 var w = 1 - jStat.exponential.cdf( Math.random() * 9, 1 );
@@ -761,46 +788,67 @@ define( [
                 this.topWindow = 1.0 - ( fp.appConfig.buildingOptions.windowsStartY/ 100.0 );
                 this.windowWidth = fp.appConfig.buildingOptions.windowWidth;
                 this.windowPercent = fp.appConfig.buildingOptions.windowPercent / 100.0;
+
                 if ( fp.appConfig.buildingOptions.windowsRandomise ) {
                     // Randomise based on a normal distribution
                     var bottomWindowTmp = jStat.normal.inv( Math.random(), this.bottomWindow, 0.1 );
                     var topWindowTmp = jStat.normal.inv( Math.random(), this.topWindow, 0.1 );
                     var windowWidthTmp = jStat.normal.inv( Math.random(), this.windowWidth, 0.1 );
                     var windowPercentTmp = jStat.normal.inv( Math.random(), this.windowPercent, 0.1 );
+                
                     // Coerce value between a min and max
                     var coerceValue = function( num, min, max ) {
+
                         if ( num < min )
                             return min;
                         if ( num > max )
                             return max;
                         return num;
+                
                     };
+                
                     this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
                     this.topWindow = coerceValue( topWindowTmp, 0, 100 );
                     this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
                     this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
+                
                 }
 
-                if ( !_.isUndefined( form ) )
+                if ( !_.isUndefined( form ) ) {
+
                     this.buildingForm = form;
-                if ( !_.isUndefined( dimensions ) )
+
+                }
+                
+                if ( !_.isUndefined( dimensions ) ) {
+
                     this.initDimensions( dimensions );
+
+                }
+                
                 if ( !_.isUndefined( position ) ) {
+
                     var posY = fp.getHeight( position.x, position.z ) + fp.appConfig.buildingOptions.levelHeight;
                     this.originPosition = new THREE.Vector3( position.x, posY, position.z );
                     this.lod.position.set( position.x, posY, position.z );
                     this.highResMeshContainer.position.set( position.x, posY, position.z );
                     this.lowResMeshContainer.position.set( position.x, posY, position.z );
                 }
+                
+                
                 if ( !_.isUndefined( rotation ) ) {
+
                     this.mesh.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.lod.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.highResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
                     this.lowResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
+
                 }
+                
                 // Add an initial floor so the building is visible.
                 this.mockMesh = this.shadedShapeMock();
                 // this.addFloor();
+
             };
 
             this.mockMesh = null;
@@ -835,8 +883,8 @@ define( [
         };
 
 
-
         return FiercePlanet;
 
     }
+
 )

@@ -206,11 +206,13 @@ define( [
                 }
 
                 var rotateY = ( fp.appConfig.buildingOptions.rotateSetAngle / 180 ) * Math.PI;
+
                 if ( fp.appConfig.buildingOptions.rotateRandomly ) {
 
                     rotateY = Math.random() * Math.PI;
 
                 }
+
                 var rotation = new THREE.Vector3( 0, rotateY, 0 );
                 var building = new FiercePlanet.Building( fp, buildingForm, dimensions, position, rotation );
 
@@ -237,6 +239,7 @@ define( [
 
                 // Handle building rotation
                 var percent = fp.terrain.wrappedPercent;
+
                 if ( percent > 0 ) {
 
                     var cv = _.clone( building.originPosition );
@@ -276,6 +279,11 @@ define( [
                     fp.buildingNetwork.networkJstsCache.push( this.createJstsGeomFromBoundingBox( building ) );
 
                 }
+
+                console.log( building.mesh.rotation )
+                console.log( building.lod.rotation )
+                console.log( building.highResMeshContainer.rotation )
+                console.log( building.lowResMeshContainer.rotation )
 
                 return building;
 
