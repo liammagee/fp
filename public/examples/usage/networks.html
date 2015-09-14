@@ -1,107 +1,111 @@
-<html>
-    <head>
-        <title>Fierce Planet</title>
-        <link rel="stylesheet" type="text/css" href="/css/fp.css">
-        <script src="/js/require.js"></script>
-        <script>
+    <html>
+        <head>
+            <title>Fierce Planet</title>
+            <link rel="stylesheet" type="text/css" href="/css/fp.css">
+            <script src="/js/require.js"></script>
+            <script>
 
-        require.config({
+            require.config({
 
-          baseUrl: '/js',
-          paths: {  'fp': 'fp' }
-          // paths: {  'fp': 'dist/fp' }
+              baseUrl: '/js',
+              paths: {  'fp': 'fp' }
+              // paths: {  'fp': 'dist/fp' }
 
-        });
+            });
 
-        require( [ 'fp' ],
+            require( [ 'fp' ],
 
-            function( fp ) {
+                function( fp ) {
 
-                window.fp = fp;
+                    window.fp = fp;
 
-                var config = {
-                  "preset": "Default",
-                  "remembered": {
-                    "Default": {
-                        "1": {
-                            "initialPopulation": 100,
-                            "establishLinks": true
+                    var config = {
+                      "preset": "Default",
+                      "remembered": {
+                        "Default": {
+                            "1": {
+                                "initialPopulation": 100,
+                                "establishLinks": true
+                            },
+                            "2": {
+                                "maxNumber": 100,
+                                "rotateRandomly": false,
+                                "rotateRandomly": false,
+                                "showLines": false
+                            },
+                            "3": {
+                                "create": false
+                            },
+                          "4": {
+                            "loadHeights": false,
+                            "shaderUse": false,
+                            "multiplier": 1
+                            },
+                          "5": {
+                                "buildingsShow": false,
+                                "networkShow": true,
+                                "networkCurve": false,
+                                "terrainShow": true,
+                                "dayShow": false,
+                                "waterShow": false,
+                                "skyboxShow": false,
+
+                                "lightHemisphereShow": true,
+                                "lightDirectionalShow": true,
+                                "cameraOverride": true,
+                                "cameraY": 200,
+                                "cameraZ": 800
+                            },
+                          "6": {
+                                "colorNightBackground": 245 * 256 * 256 + 241 * 256 + 222,
+                                "colorNightTerrainLowland1": 45 * 256 * 256 + 41 * 256 + 22,
+                                "coloriseAgentsByHealth": false,
+                            },
+                      
+                        }
+                      
+                      }
+                      
+                    };
+
+                    var sim =  {
+                        counter: 0,
+                        setup: function() {
+                            counter = 0;
+                            console.log("Custom set up")
                         },
-                        "2": {
-                            "maxNumber": 100,
-                            "rotateRandomly": false,
-                            "rotateRandomly": false,
-                            "showLines": false
-                        },
-                        "3": {
-                            "create": false
-                        },
-                      "4": {
-                            "buildingsShow": false,
-                            "networkShow": true,
-                            "networkCurve": false,
-                            "terrainShow": true,
-                            "dayShow": false,
-                            "waterShow": false,
-                            "skyboxShow": false,
+                        tick: function() {
+                            // console.log("Custom tick: " + (++ this.counter))
+                        }
+                    };
 
-                            "lightHemisphereShow": true,
-                            "lightDirectionalShow": true,
-                            "cameraOverride": true,
-                            "cameraY": 200,
-                            "cameraZ": 800
-                        },
-                      "5": {
-                            "colorNightBackground": 245 * 256 * 256 + 241 * 256 + 222,
-                            "colorNightTerrainLowland1": 45 * 256 * 256 + 41 * 256 + 22,
-                            "coloriseAgentsByHealth": false,
-                        },
-                      "6": {
-                        "loadHeights": false,
-                        "shaderUse": false,
-                        "multiplier": 1
-                    },
-                    }
-                  }
+                    fp.init( config, sim, function() {
+
+                        var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
+                        var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
+                        var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
+                        fp.agentNetwork.networks = [ network1, network2, network3 ];
+
+                    } );
                 }
-                var sim =  {
-                    counter: 0,
-                    setup: function() {
-                        counter = 0;
-                        console.log("Custom set up")
-                    },
-                    tick: function() {
-                        // console.log("Custom tick: " + (++ this.counter))
-                    }
-                }
+            );
 
-                fp.init( config, sim, function() {
-
-                    var network1 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 1.0, 0.0 ) );
-                    var network2 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 1.0, 0.0, 0.0 ) );
-                    var network3 = new fp.agentNetwork.AgentNetworkNetwork( new THREE.Color( 0.0, 0.0, 1.0 ) );
-                    fp.agentNetwork.networks = [ network1, network2, network3 ];
-
-                } );
-            }
-        );
-
-        </script>
-    </head>
-    <body>
-        <div id="hudDiv" style="display: none">
-            <div id="output">
-                <div id="year">
-                    <b>Year:</b> <span id="yearValue"></span>
-                </div>
-                <div id="speed">
-                    <b>Speed:</b> <span id="speedValue"></span>
-                </div>
-                <div id="population">
-                     <b>Pop.:</b> <span id="populationValue"></span>
+            </script>
+        </head>
+        <body>
+            <div id="hudDiv" style="display: none">
+                <div id="output">
+                    <div id="year">
+                        <b>Year:</b> <span id="yearValue"></span>
+                    </div>
+                    <div id="speed">
+                        <b>Speed:</b> <span id="speedValue"></span>
+                    </div>
+                    <div id="population">
+                         <b>Pop.:</b> <span id="populationValue"></span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div id="container"></div>
-    </body>
-</html>
+            <div id="container"></div>
+        </body>
+    </html>

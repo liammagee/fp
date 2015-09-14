@@ -14,7 +14,9 @@
         });
 
         require( [ 'fp' ],
+
             function( fp ) {
+
                 var config = {
                   "preset": "Default",
                   "remembered": {
@@ -43,7 +45,7 @@
                             "terrainOffset": 20,
                             "shuffle": true,
                             "movementRelativeToPatch": true,
-                            "movementInPatch": 10,
+                            "movementInPatch": 100,
                             "movementRandom": false,
                             "initialSpeed": 1,
                             "initialPerturbBy": 0,
@@ -153,8 +155,21 @@
                             // "flattenAdjustment": 0.025,
                             // "flattenLift": 20
                         },
-                        // Display options
+                        // Terrain options
                         "4": {
+                            // "renderAsSphere": true,
+                            "loadHeights": true,
+                            "gridExtent": 8000,
+                            "gridPoints": 400,
+                            "maxTerrainHeight": 400,
+                            // "shaderUse": true,
+                            "multiplier": 1,
+                            // "mapIndex": 0,
+                            "patchSize": 21 // Try for a divisor of 399 (gridPoints - 1)
+
+                         },
+                        // Display options
+                        "5": {
                             // "agentsShow": true,
                             "buildingsShow": true,
                             // "roadsShow": true,
@@ -195,7 +210,7 @@
                             // "maximiseView": true,
                         },
                         // Color options
-                        "5": {
+                        "6": {
                             // "colorDayBackground": 0x000000,
                             // "colorDayRoad": 0x474747,
                             // "colorDayAgent": 0x4747b3,
@@ -237,21 +252,11 @@
                             "colorLightDirectionalIntensity": 1.0,
 
                         },
-                        // Terrain options
-                        "6": {
-                            // "renderAsSphere": true,
-                            "loadHeights": true,
-                            "gridExtent": 8000,
-                            "gridPoints": 400,
-                            "maxTerrainHeight": 400,
-                            // "shaderUse": true,
-                            "multiplier": 1,
-                            // "mapIndex": 0,
-                            "patchSize": 21 // Try for a divisor of 399 (gridPoints - 1)
 
-                         },
                     }
+
                   }
+
                 };
 
 
