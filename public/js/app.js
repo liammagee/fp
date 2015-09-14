@@ -12,7 +12,7 @@ define( [ "fp" ], function( fp ) {
 
     	fp.appController.Setup();	
     	fp.appController.Run();	
-    	
+
     });
 
     // Trigger Jasmine
@@ -21,7 +21,5 @@ define( [ "fp" ], function( fp ) {
         window.onload();
 
     }
-
-
 
 });
