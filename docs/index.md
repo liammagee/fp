@@ -1,8 +1,6 @@
 % Fierce Planet
 
 
-# Overview
-
 [Fierce Planet](http://www.fierce-planet.com) is an open source toolkit for developing agent-based models, with a focus on urban and social simulations.
 
 Designed to work in modern, [WebGL](https://get.webgl.org/)-compatible browsers, it can be used to illustrate patterns of urban growth, sustainable development, and the emergence of social networks. It is currently developed by researchers at [RMIT University](http://www.rmit.edu.au) and [University of Western Sydney](http://www.uws.edu.au).
