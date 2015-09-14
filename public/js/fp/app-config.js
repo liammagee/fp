@@ -1086,6 +1086,13 @@ define( [
             lightDirectionalShow: true,
 
             /**
+             * Whether to include the shadows with the directional light.
+             *
+             * @type {Boolean}
+             */
+            lightDirectionalShadowShow: true,
+
+            /**
              * Whether to render agent's health by colour (where red indicates low health. The alternative is to use opacity.
              *
              * @type {Boolean}
