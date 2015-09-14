@@ -693,39 +693,64 @@ define( [
              */
             this.build = function() {
 
-                if ( !fp.appConfig.buildingOptions.create )
+                if ( !fp.appConfig.buildingOptions.create ) {
+
                     return false;
 
-                if ( this.home !== null )
+                }
+
+                if ( this.home !== null ) {
+
                     return false;
 
-                if ( this.position === null )
+                }
+
+                if ( this.position === null ) {
+
                     return false;
+
+                }
 
                 var index = fp.getIndex( this.position.x, this.position.z );
-                if ( _.isUndefined( index ) )
+                if ( _.isUndefined( index ) ) {
+
                     return false;
 
+                }
+
                 // Don't build in an existing position
-                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ index ] ) )
+                if ( !_.isUndefined( fp.buildingNetwork.buildingHash[ index ] ) ) {
+
                     return false;
+
+                }
 
                 var dimensions = fp.buildingNetwork.generateRandomDimensions();
 
                 if ( fp.buildingNetwork.buildings.length === 0 ) { // If there are no buildings, build an initial "seed"
+                    
                     this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
                     return ( !_.isUndefined( this.home ) );
+
                 }
-                else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber )
+                else if ( fp.buildingNetwork.networkMesh.children.length >= fp.appConfig.buildingOptions.maxNumber ) {
+
                     return false;
 
-                if ( !_.isNull( fp.stats ) && fp.statss <= 10 )
+                }
+
+                if ( !_.isNull( fp.stats ) && fp.statss <= 10 ) {
+
                     return false;
+                    
+                }
 
                 var shouldBuildHome = this.calculateLikelihoodOfHome( index );
                 if ( shouldBuildHome ) {
+
                     this.home = fp.buildingNetwork.createBuilding( this.position, dimensions );
                     return ( !_.isUndefined( this.home ) );
+
                 }
 
                 return false;

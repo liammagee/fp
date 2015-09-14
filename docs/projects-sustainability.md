@@ -100,6 +100,15 @@ This scenario again builds on the previous one by
 introducing the dynamic of population growth as directly connected to
 resource consumption and availability.
 
+It contains addition parameters that condition the behaviour of the simulation:
+
+ - *reproductionChance*: The likelihood that when agents of different genders meet, they will reproduce (defaults to **5%**).
+ - *maxChildren*: The maximum number of children a female agent can produce (defaults to **10**).
+ - *energyLoss*: The energy loss each agent experiences each 'tick', or move (defaults to **0.15**).
+ - *energyGain*: The energy gain each agent experiences each 'tick', or move, *where the patch has sufficient resources* (defaults to **0.15**).
+ - *rateOfConsumption*: The rate at which patches lose resources due agent consumption (defaults to **0.2**).
+ - *rateOfRecovery*: The rate at which patches recover resources each 'tick', or move (defaults to **0.005**).
+
 
 [Open in a new window](projects/sustainability/4-malthus.html)
 
@@ -113,6 +122,13 @@ resource consumption and availability.
 This model introduces a simplified set of
 assumptions from the 1972 (rereleased in 2004) report of the Club of
 Rome to again demonstrate the concept of limits to growth.
+
+Unlike the *Malthusian* model, the *Limits to Growth* model treats the sustainability of resources as a global property. While agents continue to consume resources on the patch they belong to, once that patch is completely depleted, agents will draw resources from other random patches in the world. 
+This better approximates to the *Limits to Growth* modelling.
+
+This model contains the same additional parameters as the *Malthusian* model above. It also contains:
+
+ - *foodEfficiency*: this parameter conditions the extent to which patch resources are converted into food agents consume (defaults to **0.3**).
 
 
 [Open in a new window](projects/sustainability/5-limits-to-growth.html)
@@ -128,6 +144,11 @@ This model builds upon (and critiques) the classic Malthusian
 scenario by acknowledging the role of technological advances in
 increasing both the effectiveness and efficiency of resource utilisation
 and the availability of new resource sources.
+
+This model contains the same additional parameters as the *Limits to Growth* model above. It also contains:
+
+ - *growthInFoodEfficiency*: conditions the improvement in the efficiency of providing food to agents each year, to model more efficient agricultural production due to technology and other factors (defaults to **0.025**).
+
 
 
 [Open in a new window](projects/sustainability/6-green-revolution.html)
@@ -146,9 +167,14 @@ and the availability of new resource sources.
 
 
 
-This model further applies the assumptions of the concept of TBL
+This model further applies the assumptions of the concept of *Triple Bottom Line*
 accounting.
 
+It uses the same set of additional parameters as the *The Green Revolution* model. However its outputs, visible in the graph, are different. The following values 
+
+ * *Blue* - shows the overall *Economic* value of the model.
+ * *Red* - shows the overall *Social* value of the model.
+ * *Green* - shows the overall *Environmental* value of the model.
 
 
 [Open in a new window](projects/sustainability/7-triple-bottom-line.html)

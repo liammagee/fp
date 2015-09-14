@@ -8,19 +8,24 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
 
         });
 
         require( [ 'fp' ],
+
             function( fp ) {
+
+                window.fp = fp;
+
                 var config = {
                   "preset": "Default",
                   "remembered": {
                     "Default": {
                         "1": {
-                            "noWater": true
+                            "noWater": true,
+                            "size": 2,
                          },
                         "2": {
                             "detectBuildingCollisions": true,
@@ -37,20 +42,36 @@
                             "create": false
                         },
                         "4": {
-                            "waterShow": true,
+                            "shaderUse": true,
+                            "shaderShadowMix": 0.5,
+                            "gridExtent": 36000,
+                            "gridPoints": 1800,
+                            "multiplier": 1,
+                            // 1arc source is downscaled by a factor of 4
+                            // From 3601 to 900
+                            // So heights are measured at 30m * 4 = 120m
+                            // We are 'scaling' points over the griad at a factor of 10
+                            // So a 'realistic' representation needs to divide
+                            // heights by  120m / 8 = 15.
+                            "maxTerrainHeight": 1,
+                            // "mapFile": "/assets/Sydney-local.bin",
+                            "mapFile": "/assets/Sydney-local-full.bin",
+                        },
+                        "5": {
+                            "waterShow": false,
                             "terrainShow": true,
                             "buildingsShow": true,
                             "roadsShow": false,
                             "dayShow": true,
                             "patchesShow": false,
 
-                            "lightDirectionalShow": true,
+                            "lightDirectionalShow": true,                           
                             "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 1000,
                             "cameraZ": 1000,
                         },
-                        "5": {
+                        "6": {
                             //"colorNightTerrainGroundLevel": 0x888888,
                             //"colorNightTerrainLowland1": 0x888888,
                             //"colorNightTerrainLowland2": 0x888888,
@@ -73,18 +94,13 @@
 
                             "coloriseAgentsByHealth": false,
                         },
-                        "6": {
-                            "shaderUse": true,
-                            "shaderShadowMix": 0.5,
-                            "gridExtent": 9000,
-                            "gridPoints": 900,
-                            "multiplier": 1,
-                            "maxTerrainHeight": 400,
-                            "mapFile": "/assets/Sydney-local.bin",
-                        },
+                
                     }
+                
                   }
-                }
+                
+                };
+
                 var sim =  {
                     counter: 0,
 

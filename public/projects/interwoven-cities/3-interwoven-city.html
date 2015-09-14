@@ -8,7 +8,7 @@
         require.config({
 
           baseUrl: '/js',
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
 
         });
 
@@ -27,8 +27,13 @@
                         "2": {
                         },
                         "3": {
-                            "create": true },
+                            "create": true 
+                        },
                         "4": {
+                            "multiplier": 2,
+                            "loadHeights": true
+                         },
+                        "5": {
                             "waterShow": true,
                             "terrainShow": true,
                             "dayShow": false,
@@ -38,14 +43,10 @@
                             "cameraY": 1000,
                             "cameraZ": 1000,
                         },
-                        "5": {
+                        "6": {
                             "coloriseAgentsByHealth": false,
                             "colorNightRoad": 32 * 256 * 256 + 32 * 256 + 32,
                         },
-                        "6": {
-                            "multiplier": 2,
-                            "loadHeights": true
-                         },
 
                     }
 

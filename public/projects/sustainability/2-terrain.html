@@ -8,7 +8,8 @@
         require.config({
 
           baseUrl: '/js',
-          paths: {  'fp': 'dist/fp' }
+          // paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
 
         });
 
@@ -27,6 +28,9 @@
                         "2": { },
                         "3": { "create": false },
                         "4": {
+                            "multiplier": 2,
+                        },
+                        "5": {
                             "waterShow": true,
                             "terrainShow": true,
                             "buildingsShow": false,
@@ -34,13 +38,14 @@
                             "dayShow": false,
                             "patchesShow": false,
 
-                            "lightDirectionalShow": false,
+                            "lightDirectionalShow": true,
+                            "lightDirectionalShadowShow": false,
                             "cameraOverride": true,
                             "cameraX": 0,
                             "cameraY": 1000,
                             "cameraZ": 1000,
                         },
-                        "5": {
+                        "6": {
                             "colorNightTerrainGroundLevel": 0x000000,
                             "colorNightTerrainLowland1": 0x272727,
                             "colorNightTerrainLowland2": 0x3F3F3F,
@@ -49,10 +54,6 @@
                             "colorNightTerrainHighland": 0xFDFDFD,
 
                             "coloriseAgentsByHealth": false,
-                        },
-                        "6": {
-                            "multiplier": 2,
-
                         },
 
                     }

@@ -98,14 +98,17 @@ define(
                 };
 
                 if ( fp.appConfig.displayOptions.dayShow ) {
+
                     uniforms.groundLevelColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) };
                     uniforms.lowland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) };
                     uniforms.lowland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland2 ) };
                     uniforms.midland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland1 ) };
                     uniforms.midland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainMidland2 ) };
                     uniforms.highlandColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainHighland ) };
+
                 }
                 else {
+
                     uniforms.groundLevelColor = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainGroundLevel ) };
                     uniforms.lowland1Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland1 ) };
                     uniforms.lowland2Color = { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorNightTerrainLowland2 ) };
@@ -135,16 +138,48 @@ define(
                     n = Math.sqrt( l ),
                     k = l + 1;
 
+
                 if ( fp.appConfig.terrainOptions.loadHeights ) {
+
+                    var minHeight, maxHeight;
 
                     for ( i = 0, j = 0; i < l; i++, j += 3 ) {
 
+                        var height = data[ i ];
+
+                        if ( typeof( maxHeight ) === 'undefined' ||  maxHeight < height ) {
+
+                            maxHeight = height;
+
+                        }
+                        if ( typeof( minHeight ) === 'undefined' ||  minHeight > height) {
+
+                            minHeight = height;
+
+                        }
+
+                        // Dampen for low level areas, to accentuate water mass
+                        if ( height < 5 ) {
+
+                            height -= 0;
+
+                        }
+
+                        if ( height < 0 ) {
+
+                            height = 0;
+
+                        }
+
                         geometry.attributes.position.array[ j + 2 ] =
-                            data[ i ] / 65535 *
-                            fp.terrain.maxTerrainHeight *
+                            height /
+                            fp.appConfig.terrainOptions.maxTerrainHeight *
                             fp.appConfig.terrainOptions.multiplier;
 
                     }
+
+                    this.maxTerrainHeight = maxHeight;
+
 
                 }
                 else {
@@ -156,6 +191,9 @@ define(
                     }
 
                 }
+
+                console.log("min height: " + minHeight)
+                console.log("max height: " + maxHeight)
 
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( {
 

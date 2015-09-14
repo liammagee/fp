@@ -28,13 +28,13 @@ var config = {
             // "visitHomeBuilding": 0.02,
             // "visitOtherBuilding": 0.002,
             "establishLinks": true,
-            "size": 400,
+            "size": 40,
             "terrainOffset": 0,
             // "size": 40,
             // "terrainOffset": 20,
             "useStickman": true,
             "shuffle": true,
-            "initialSpeed": 100,
+            "initialSpeed": 10,
             "initialPerturbBy": 0,
             // "movementRelativeToPatch": 100,
             // "movementInPatch": 100,
@@ -148,8 +148,21 @@ var config = {
             // "flattenAdjustment": 0.025,
             // "flattenLift": 20
         },
-        // Display options
+        // Terrain options
         "4": {
+            // "renderAsSphere": true,
+            "loadHeights": false ,
+            "gridExtent": 195,
+            "gridPoints": 195,
+            "maxTerrainHeight": 1,
+            "shaderUse": true,
+            "multiplier": 2,
+            // "mapIndex": 0,
+            "patchSize": 4 // Should be: N * patchSize = gridPoints - 1
+
+         },
+        // Display options
+        "5": {
             // "agentsShow": true,
             "buildingsShow": true,
             // "roadsShow": true,
@@ -168,6 +181,9 @@ var config = {
             "hudShow": true,
             // "wireframeShow": false,
              "dayShow": false,
+             "lightDirectionalShow": false,                           
+             "lightDirectionalShadowShow": true,                           
+
 //                             "skyboxShow": false,
             // "chartShow": true,
             // "guiShow": true,
@@ -185,11 +201,11 @@ var config = {
             "cameraOverride": true,
             "cameraX": 0,
             "cameraY": 10000,
-            "cameraZ": 9000,
+            "cameraZ": 4000,
             // "maximiseView": true,
         },
         // Color options
-        "5": {
+        "6": {
             // "colorDayBackground": 0x000000,
             // "colorDayRoad": 0x474747,
             // "colorDayAgent": 0x4747b3,
@@ -248,19 +264,6 @@ var config = {
 
             "colorTerrainOpacity": 1.0,
         },
-        // Terrain options
-        "6": {
-            // "renderAsSphere": true,
-            "loadHeights": false ,
-            "gridExtent": 8000,
-            "gridPoints": 195,
-            "maxTerrainHeight": 2400,
-            "shaderUse": true,
-            "multiplier": 1,
-            // "mapIndex": 0,
-            "patchSize": 4 // Should be: N * patchSize = gridPoints - 1
-
-         },
 
     }
 

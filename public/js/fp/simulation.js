@@ -29,6 +29,7 @@ define(
          * @namespace fp
          */
         FiercePlanet.Simulation = function() {
+
             var fp = this;
 
             // Export the entire namespace, so classes can be instantiated
@@ -257,8 +258,8 @@ define(
                     fp.controls.enableZoom = true;
                     fp.controls.enablePan = true;
                     fp.controls.noRoll = true;
-                    fp.controls.minDistance = 250.0;
-                    fp.controls.maxDistance = 10000.0;
+                    fp.controls.minDistance = - fp.appConfig.terrainOptions.gridExtent * fp.appConfig.terrainOptions.multiplier;
+                    fp.controls.maxDistance = fp.appConfig.terrainOptions.gridExtent * fp.appConfig.terrainOptions.multiplier;
 
                 }
 
@@ -330,27 +331,38 @@ define(
                     // fp.scene.add( fp.lightHemisphere );
 
                 fp.lightDirectional = new THREE.DirectionalLight(
+                    
                     new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
                     fp.appConfig.colorOptions.colorLightDirectionalIntensity
+
                 );
-                // var fp.lightDirectional = new THREE.DirectionalLight( 0x8f8f4f, 0.5 );
-                fp.lightDirectional.position.set( -40000, 40000, -40000 );
-                fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
-                fp.lightDirectional.castShadow = true;
-                // these six values define the boundaries of the yellow box seen above
-                fp.lightDirectional.shadowCameraNear = 250;
-                fp.lightDirectional.shadowCameraFar = 80000;
-                // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
-                var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
-                fp.lightDirectional.shadowMapWidth = d;
-                fp.lightDirectional.shadowMapHeight = d;
-                fp.lightDirectional.shadowCameraLeft = -d;
-                fp.lightDirectional.shadowCameraRight = d;
-                fp.lightDirectional.shadowCameraTop = d;
-                fp.lightDirectional.shadowCameraBottom = -d;
-                fp.lightDirectional.shadowBias = -0.0001;
-                //fp.lightDirectional.shadowBias = -0.05;
-                // fp.lightDirectional.shadowCameraVisible = true; // for debugging
+
+                var extent = fp.terrain.gridExtent;
+                fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
+    
+                if ( fp.appConfig.displayOptions.lightDirectionalShadowShow ) {
+
+                    fp.lightDirectional.castShadow = true;
+                    fp.lightDirectional.shadowDarkness = Math.pow( fp.appConfig.colorOptions.colorLightDirectionalIntensity, 2 );
+
+                    // these six values define the boundaries of the yellow box seen above
+                    fp.lightDirectional.shadowCameraNear = extent / 10;
+                    fp.lightDirectional.shadowCameraFar = extent * 8;
+
+                    // var d = fp.terrain.gridExtent // * fp.appConfig.terrainOptions.multiplier / 2;
+                    var d = fp.terrain.gridExtent / 2; // * fp.appConfig.terrainOptions.multiplier / 2;
+                    fp.lightDirectional.shadowMapWidth = d;
+                    fp.lightDirectional.shadowMapHeight = d;
+                    fp.lightDirectional.shadowCameraLeft = -d;
+                    fp.lightDirectional.shadowCameraRight = d;
+                    fp.lightDirectional.shadowCameraTop = d;
+                    fp.lightDirectional.shadowCameraBottom = -d;
+                    fp.lightDirectional.shadowBias = -0.0001;
+                    //fp.lightDirectional.shadowBias = -0.05;
+                    // fp.lightDirectional.shadowCameraVisible = true; // for debugging
+
+                }
+
                 if ( fp.appConfig.displayOptions.lightDirectionalShow ) {
 
                     fp.scene.add( fp.lightDirectional );
@@ -417,7 +429,9 @@ define(
 
                     var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
                     waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
+
                     fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {
+
                         textureWidth: 512,
                         textureHeight: 512,
                         waterNormals: waterNormals,
@@ -426,6 +440,7 @@ define(
                         sunColor: 0xffffff,
                         waterColor: 0x001e0f,
                         distortionScale: 50.0,
+
                     } );
 
                     if ( !_.isUndefined( fp.waterMesh ) ) {
@@ -441,7 +456,7 @@ define(
 
                     fp.waterMesh.add( fp.water );
                     fp.waterMesh.rotation.x = - Math.PI * 0.5;
-                    fp.waterMesh.position.y = -10;
+                    fp.waterMesh.position.y = 0;
 
                 }
 
@@ -774,9 +789,14 @@ define(
 
                 if ( !fp.appConfig.displayOptions.cursorShow ) {
 
-                    fp.controls.update( fp.clock.getDelta() );
+                    if ( fp.controls.update ) {
+
+                        fp.controls.update( fp.clock.getDelta() );
+
+                    }
 
                     if ( !_.isUndefined( fp.controls.getObject ) ) {
+
                         var obj = fp.controls.getObject();
                         var height = fp.getHeight( obj.position.x, obj.position.z );
                         /*
@@ -947,6 +967,7 @@ define(
 
             /**
              * Gets the terrain height for a given ( x, y ) co-ordinate.
+             *
              * @memberof fp
              */
             fp.getHeight = function( x, y ) {
@@ -986,6 +1007,7 @@ define(
                 return 0.0;
             };
 
+
             /**
              * Count how many surrounding cells are also sea level
              * @memberof fp
@@ -1004,8 +1026,9 @@ define(
                 return seaLevelNeighbours / totalNeighbours;
             };
 
+
             /**
-             * Count how many surrounding cells are also buildings
+             * Count how many surrounding cells are also buildings.
              * @memberof fp
              * @param  {Number} index
              * @return {Number}
@@ -1024,6 +1047,7 @@ define(
                 // Return true if the probability is greater than 1 minus the target value
                 return ( chance > ( 1 - threshold ) );
             };
+
 
             /**
              * Count how many surrounding cells are also buildings
@@ -1177,7 +1201,9 @@ define(
                             positions[ 3 * ( indexMirroredOnY + ( fp.terrain.gridPoints * j ) ) + 2 ]
                     ) );
                 }
+
                 return _.compact( surroundingCells );
+
             };
 
             /**
@@ -1293,36 +1319,49 @@ define(
                 }
             };
 
+
             /**
-             * @memberof fp
+             * Takes mouse coordinates, and finds the point these intersect with the terrain's plane.
+             *
+             * @param   {Object} eventInfo
+             * @return  {THREE.Vector3} intersected point
              */
             fp.mouseIntersects = function( eventInfo ) {
-                //this where begin to transform the mouse cordinates to three,js cordinates
+
+                // This where to begin to transform the mouse cordinates to three,js cordinates
                 fp.mouse.x = ( eventInfo.clientX / window.innerWidth ) * 2 - 1;
                 fp.mouse.y = -( eventInfo.clientY / window.innerHeight ) * 2 + 1;
 
-                //this vector caries the mouse click cordinates
+                // This vector caries the mouse click cordinates
                 fp.mouseVector.set( fp.mouse.x, fp.mouse.y, fp.mouse.z );
 
-                //the final step of the transformation process, basically this method call
-                //creates a point in 3d space where the mouse click occurd
+                // The final step of the transformation process, basically this method call
+                // creates a point in 3d space where the mouse click occured
                 fp.mouseVector.unproject( fp.camera );
 
                 var direction = fp.mouseVector.sub( fp.camera.position ).normalize();
 
                 fp.ray.set( fp.camera.position, direction );
 
-                //asking the raycaster if the mouse click touched the sphere object
+                // Asking the raycaster if the mouse click touched the sphere object
                 var intersects = fp.ray.intersectObject( fp.terrain.plane );
 
-                //the ray will return an array with length of 1 or greater if the mouse click
-                //does touch the plane object
+                // The ray will return an array with length of 1 or greater if the mouse click
+                // does touch the plane object
                 var point;
-                if ( intersects.length > 0 )
+                if ( intersects.length > 0 ) {
+
                     point = intersects[ 0 ].point;
 
+                    // Get the correct height
+                    point.y = fp.getHeight( point.x, point.z );
+
+                }
+
                 return point;
+
             };
+
 
             /**
              * @memberof fp
@@ -1331,39 +1370,79 @@ define(
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                if ( !fp.appConfig.displayOptions.cursorShow )
+                if ( !fp.appConfig.displayOptions.cursorShow ) {
+
                     return;
 
+                }
+
                 var planePoint = fp.mouseIntersects( eventInfo );
-                if ( fp.appConfig.displayOptions.cursorShowCell )
+
+                if ( fp.appConfig.displayOptions.cursorShowCell ) {
+
                     fp.cursor.createCellFill( planePoint.x, planePoint.z );
-                else
+
+                }
+                else {
+
                     fp.cursor.createCell( planePoint.x, planePoint.z );
 
-                if ( eventInfo.which == 1 )
+                }
+
+                // Specific behaviour for flatting terrain
+                if ( eventInfo.which == 1 ) {
+                    
                     fp.terrain.flattenTerrain();
+
+                }
+
             };
 
+
             /**
+             * Responds to mouse up events.
+             * If the meta/alt key is pressed, either (a) creating the starting point of a road or
+             * (b) marking the end point, and adding the road.
+             * 
+             * Otherwise, simply prints the plane point, if any, to the console.
+             * 
+             * @param   {Object} eventInfo
              * @memberof fp
              */
             fp.onMouseUp = function( eventInfo ) {
+
                 //stop any other event listener from recieving this event
                 eventInfo.preventDefault();
 
-                if ( ! eventInfo.metaKey )
+                var planePoint = fp.mouseIntersects( eventInfo );
+
+                if ( ! eventInfo.metaKey ) {
+
+                    // Useful for debugging
+                    console.log( planePoint )
                     return;
 
-                var planePoint = fp.mouseIntersects( eventInfo ), p1, p2;
+                }
+
                 if ( !_.isUndefined( planePoint ) ) {
-                    if ( _.isUndefined( p1 ) )
+
+                    var p1, p2;
+
+                    if ( _.isUndefined( p1 ) ) {
+
                         p1 = planePoint;
+
+                    }
                     else if ( _.isUndefined( p2 )) {
+                        
                         p2 = planePoint;
                         fp.roadNetwork.addRoad( p1, p2, appConfig.roadOptions.roadWidth );
                         p1 = p2 = undefined;
+
                     }
+
                 }
+
             };
 
 
@@ -1372,33 +1451,60 @@ define(
              * @memberof fp
              */
             fp.toggleAgentState = function() {
-                if ( !fp.appConfig.displayOptions.agentsShow )
+                
+                if ( !fp.appConfig.displayOptions.agentsShow ) {
+
                     fp.scene.remove(  fp.agentNetwork.particles  );
-                else
+
+                }
+                else {
+
                     fp.scene.add(  fp.agentNetwork.particles  );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of the building network.
              * @memberof fp
              */
             fp.toggleBuildingState = function() {
-                if ( !fp.appConfig.displayOptions.buildingsShow )
+
+                if ( !fp.appConfig.displayOptions.buildingsShow ) {
+
                     fp.scene.remove( fp.buildingNetwork.networkMesh );
-                else
+
+                }
+                else {
+
                     fp.scene.add( fp.buildingNetwork.networkMesh );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of the raod network.
              * @memberof fp
              */
             fp.toggleRoadState = function() {
-                if ( !fp.appConfig.displayOptions.roadsShow )
+
+                if ( !fp.appConfig.displayOptions.roadsShow ) {
+
                     fp.scene.remove( fp.roadNetwork.networkMesh );
-                else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) )
+
+                }
+                else if ( !_.isUndefined( fp.roadNetwork.networkMesh ) ) {
+
                     fp.scene.add( fp.roadNetwork.networkMesh );
+
+                }
+
             };
+
 
             /**
              * Toggles the visibility of water.
@@ -1426,17 +1532,30 @@ define(
              * @memberof fp
              */
             fp.toggleAgentNetwork = function() {
+
                 if ( !fp.appConfig.displayOptions.networkShow ) {
+
                     fp.agentNetwork.networks.forEach( function( network ) {
+
                         fp.scene.remove( network.networkMesh );
+
                     } );
+
                 }
                 else {
+
                     fp.agentNetwork.networks.forEach( function( network ) {
-                        if ( !_.isNull( network.networkMesh ) )
+
+                        if ( !_.isNull( network.networkMesh ) ) {
+
                             fp.scene.add( network.networkMesh );
+
+                        }
+
                     } );
+
                 }
+
             };
 
             /**
@@ -1455,13 +1574,19 @@ define(
              * @memberof fp
              */
             fp.toggleTrailState = function() {
+
                 if ( !fp.appConfig.displayOptions.trailsShow ||
                     !fp.appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.remove( fp.trailNetwork.globalTrailLine );
+
                 }
                 else if ( appConfig.displayOptions.trailsShowAsLines ) {
+
                     fp.scene.add( fp.trailNetwork.globalTrailLine );
+
                 }
+
             };
 
 
@@ -1927,7 +2052,8 @@ define(
                     terrainFolder.add( fp.appConfig.terrainOptions, "loadHeights" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridExtent", 1000, 20000 ).step( 1000 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "gridPoints", 2, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
-                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 100, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "defaultHeight", -100, 100 ).step( 1 ).onFinishChange( fp.loadTerrain );
+                    terrainFolder.add( fp.appConfig.terrainOptions, "maxTerrainHeight", 0, 2000 ).step( 100 ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderUse" ).onFinishChange( fp.loadTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "shaderShadowMix", 0, 1 ).step( 0.05 ).onFinishChange( fp.updateTerrain );
                     terrainFolder.add( fp.appConfig.terrainOptions, "multiplier", 0.1, 10 ).step( 0.1 ).onFinishChange( fp.loadTerrain );
@@ -1965,12 +2091,13 @@ define(
                     displayFolder.add( fp.appConfig.displayOptions, "terrainShow" ).onFinishChange( fp.toggleTerrainPlane );
                     displayFolder.add( fp.appConfig.displayOptions, "lightHemisphereShow" ).onFinishChange( fp.toggleLights );
                     displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShow" ).onFinishChange( fp.toggleLights );
+                    displayFolder.add( fp.appConfig.displayOptions, "lightDirectionalShadowShow" );
                     displayFolder.add( fp.appConfig.displayOptions, "coloriseAgentsByHealth" );
                     displayFolder.add( fp.appConfig.displayOptions, "firstPersonView" ).onFinishChange( fp.resetControls );
                     displayFolder.add( fp.appConfig.displayOptions, "cameraOverride" ).onFinishChange( fp.resetControls );
-                    displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 5000 ).onFinishChange( fp.resetControls );
-                    displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 5000 ).onFinishChange( fp.resetControls );
-                    displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 5000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraX", 0, 10000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraY", 0, 10000 ).onFinishChange( fp.resetControls );
+                    displayFolder.add( fp.appConfig.displayOptions, "cameraZ", 0, 10000 ).onFinishChange( fp.resetControls );
                     displayFolder.add( fp.appConfig.displayOptions, "maximiseView" );
                     displayFolder.add( fp.appConfig.displayOptions, "guiShow" );
 
