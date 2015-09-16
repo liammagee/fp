@@ -110,7 +110,7 @@ gulp.task('require', function () {
                 jquery: "utils/jquery",
                 astar: "utils/astar",
                 underscore: "utils/underscore",
-                three: "three",
+                three: "three.min",
                 jstat: "utils/jstat.min",
                 smoothie: "ux/smoothie",
                 stats: "ux/stats.min",
@@ -128,6 +128,7 @@ gulp.task('require', function () {
                 fpShaderUtils: "fp/shader-utils-compiled",
                 fpInstance: "fp/instance"
             },
+            // optimize: "uglify",
             optimize: 'none',
             name: 'fp'
         }))
@@ -143,7 +144,7 @@ gulp.task('uglify', [ ], function() {
   gulp.src( fpDistSrc )
     // .pipe( uglify( { outSourceMap: true }) )
     .pipe( uglify() )
-    .pipe( gulp.dest( fpDistCompiled ) );
+    .pipe( gulp.dest( fpDist ) );
 
 });
 
