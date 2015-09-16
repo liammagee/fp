@@ -43,7 +43,7 @@ gulp.task( 'default', [ 'watch' ] );
 /**
  * Builds the Fierce Planet distribution
  */
-gulp.task( 'dist', [ 'babel-shader', 'require' ] );
+gulp.task( 'dist', [ 'pandoc', 'babel', 'require', 'uglify' ] );
 
 
 /**
@@ -51,7 +51,7 @@ gulp.task( 'dist', [ 'babel-shader', 'require' ] );
  */
 gulp.task( 'watch', [ 'clean' ], function() {
 
-    return gulp.watch( pathsToWatch, [ 'pandoc-site', 'babel-shader' ] );
+    return gulp.watch( pathsToWatch, [ 'pandoc', 'babel' ] );
 
 } );
 
@@ -74,7 +74,7 @@ gulp.task( 'clean', function() {
 /**
  * Converts ES6 to ES5
  */
-gulp.task( 'babel-shader', [ 'clean' ], function() {
+gulp.task( 'babel', [ 'clean' ], function() {
 
     return gulp.src( fpShaderSrc )
         // .pipe( sourcemaps.init() )
@@ -153,7 +153,7 @@ gulp.task('uglify', [ ], function() {
 /**
  * Generates a complete HTML file with citations, MathJax and a bootstrap template.
  */
-gulp.task('pandoc-site', function() {
+gulp.task('pandoc', function() {
 
     // For the docs folder
   gulp.src( [ 'docs/*.md', 'README.md' ] )
