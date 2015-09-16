@@ -139,7 +139,7 @@ gulp.task('require', function () {
 /**
  * NOTE: source maps not working with both babel and uglify
  */
-gulp.task('uglify', [ ], function() {
+gulp.task('uglify', [ 'require' ], function() {
 
   gulp.src( fpDistSrc )
     // .pipe( uglify( { outSourceMap: true }) )
@@ -147,6 +147,7 @@ gulp.task('uglify', [ ], function() {
     .pipe( gulp.dest( fpDist ) );
 
 });
+
 
 
 
