@@ -605,18 +605,17 @@ define( [
                 var agentParticleSystemUniforms = {
 
                     texture: { type: "t", value: discTexture },
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )}
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size ) },
+                    sizeAttenuation: { type: "b", value: true }
 
                 };
 
                 // point cloud material
                 var agentShaderMaterial = new THREE.ShaderMaterial( {
 
-                    size: fp.appConfig.agentOptions.size,
                     uniforms: agentParticleSystemUniforms,
                     vertexShader: FiercePlanet.ShaderUtils.agentVertexShader(),
                     fragmentShader: FiercePlanet.ShaderUtils.agentFragmentShader(),
-                    sizeAttenuation: true,
                     fog: false,
                     blending: THREE.NormalBlending,
                     transparent: true,
@@ -624,23 +623,6 @@ define( [
 
                 } );
 
-                // agentShaderMaterial = new THREE.PointsMaterial( { size: fp.appConfig.agentOptions.size } );
-                /*
-                agentShaderMaterial = new THREE.PointsMaterial( {
-
-                    // uniforms: agentParticleSystemUniforms,
-                    // vertexShader: FiercePlanet.ShaderUtils.agentVertexShader(),
-                    // fragmentShader: FiercePlanet.ShaderUtils.agentFragmentShader(),
-                    size: fp.appConfig.agentOptions.size,
-                    sizeAttenuation: true,
-                    map: discTexture,
-                    blending: THREE.AdditiveBlending,
-                    depthTest: false,
-                    transparent: true,
-                    alphaTest: 0.5
-
-                } );
-                */
 
                 fp.scene.remove( this.particles );
 
