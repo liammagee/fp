@@ -65,8 +65,8 @@ define(
                     diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                     opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
                     // Phong settings
-                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
-                    shininess: { type: "f", value: 0.0 },
+                    // specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    // shininess: { type: "f", value: 0.0 },
 
                     //map: map,
                     //bumpMap: map,
@@ -192,14 +192,19 @@ define(
 
                 }
 
-                console.log("min height: " + minHeight)
-                console.log("max height: " + maxHeight)
 
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshLambertMaterial( {
 
+
+                    // Lambert settings
                     color: new THREE.Color( 0xffffff ),  // diffuse
                     emissive: new THREE.Color( 0x111111 ),
-                    specular: new THREE.Color( 0x111111 ),
+                    // emissive: { type: "c", value: new THREE.Color( 0.0, 0.0, 0.0 ) },
+                    // opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
+                    // Phong settings
+                    // diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                    // specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    // shininess: { type: "f", value: 0.0 },
 
                     //map: map,
                     //bumpMap: map,

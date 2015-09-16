@@ -107,7 +107,7 @@ define( [
                     wc = fp.buildColorVector( fp.appConfig.colorOptions.colorDayBuildingWindow );
                 }
                 else {
-                    
+
                     fc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingFill );
                     lc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingLine );
                     wc = fp.buildColorVector( fp.appConfig.colorOptions.colorNightBuildingWindow );
@@ -481,8 +481,8 @@ define( [
                             diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                             opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
                             // Phong settings
-                            specular: { type: "c", value: new THREE.Color( 0xbaba3a ) },
-                            shininess: { type: "f", value: 50 },
+                            // specular: { type: "c", value: new THREE.Color( 0xbaba3a ) },
+                            // shininess: { type: "f", value: 50 },
 
                             time: { type: "f", value: 1.0 },
                             location: { type: "v2", value: new THREE.Vector2( this.lod.position.x, this.lod.position.z ) },
@@ -544,7 +544,7 @@ define( [
                             b.castShadow = true;
                             b.receiveShadow = true;
                         } );
-                        
+
                         // this.mesh.rotation.set( this.rotation.x + -Math.PI / 2, this.rotation.z, this.rotation.y );
                         this.mesh.rotation.set( -Math.PI / 2, 0, 0 );
 
@@ -729,7 +729,7 @@ define( [
             };
 
             this.updateSimpleBuilding = function () {
-                
+
                 if ( this.levels > 1 ) {
 
                     if ( !this.destroying ) {
@@ -800,7 +800,7 @@ define( [
                     var topWindowTmp = jStat.normal.inv( Math.random(), this.topWindow, 0.1 );
                     var windowWidthTmp = jStat.normal.inv( Math.random(), this.windowWidth, 0.1 );
                     var windowPercentTmp = jStat.normal.inv( Math.random(), this.windowPercent, 0.1 );
-                
+
                     // Coerce value between a min and max
                     var coerceValue = function( num, min, max ) {
 
@@ -809,14 +809,14 @@ define( [
                         if ( num > max )
                             return max;
                         return num;
-                
+
                     };
-                
+
                     this.bottomWindow = coerceValue( bottomWindowTmp, 0, 100 );
                     this.topWindow = coerceValue( topWindowTmp, 0, 100 );
                     this.windowWidth = coerceValue( windowWidthTmp, 0, 100 );
                     this.windowPercent = coerceValue( windowPercentTmp, 0, 100 );
-                
+
                 }
 
                 if ( !_.isUndefined( form ) ) {
@@ -824,13 +824,13 @@ define( [
                     this.buildingForm = form;
 
                 }
-                
+
                 if ( !_.isUndefined( dimensions ) ) {
 
                     this.initDimensions( dimensions );
 
                 }
-                
+
                 if ( !_.isUndefined( position ) ) {
 
                     var posY = fp.getHeight( position.x, position.z ) + fp.appConfig.buildingOptions.levelHeight;
@@ -839,8 +839,8 @@ define( [
                     this.highResMeshContainer.position.set( position.x, posY, position.z );
                     this.lowResMeshContainer.position.set( position.x, posY, position.z );
                 }
-                
-                
+
+
                 if ( !_.isUndefined( rotation ) ) {
 
                     this.mesh.rotation.set( rotation.x, rotation.y, rotation.z );
@@ -849,7 +849,7 @@ define( [
                     this.lowResMeshContainer.rotation.set( rotation.x, rotation.y, rotation.z );
 
                 }
-                
+
                 // Add an initial floor so the building is visible.
                 this.mockMesh = this.shadedShapeMock();
                 // this.addFloor();

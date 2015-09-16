@@ -624,9 +624,27 @@ define( [
 
                 } );
 
+                // agentShaderMaterial = new THREE.PointsMaterial( { size: fp.appConfig.agentOptions.size } );
+                /*
+                agentShaderMaterial = new THREE.PointsMaterial( {
+
+                    // uniforms: agentParticleSystemUniforms,
+                    // vertexShader: FiercePlanet.ShaderUtils.agentVertexShader(),
+                    // fragmentShader: FiercePlanet.ShaderUtils.agentFragmentShader(),
+                    size: fp.appConfig.agentOptions.size,
+                    sizeAttenuation: true,
+                    map: discTexture,
+                    blending: THREE.AdditiveBlending,
+                    depthTest: false,
+                    transparent: true,
+                    alphaTest: 0.5
+
+                } );
+                */
+
                 fp.scene.remove( this.particles );
 
-                this.particles = new THREE.PointCloud( agentGeometry, agentShaderMaterial );
+                this.particles = new THREE.Points( agentGeometry, agentShaderMaterial );
                 this.particles.dynamic = true;
                 this.particles.sortParticles = true;
 
