@@ -54,9 +54,7 @@
 
                     getFoodYield: function() {
 
-                        return sim.annualConsumed
-                                 * fp.appConfig.globalSustainabilityOptions.foodEfficiency
-                                 * ( 1 / fp.timescale.framesToTick );
+                        return ( sim.annualConsumed / fp.agentNetwork.agents.length );
 
                     },
 
@@ -104,7 +102,6 @@
                         setupAltChart();
 
 
-
                         // Initialise the patch resources
 
                         // Override PatchNetwork methods
@@ -128,14 +125,14 @@
                                 var patch = fp.patchNetwork.patches[ i ];
                                 var change = 0;
 
-                                // if ( _.isUndefined( fp.patchNetwork.patches[i] ) && patch.value < patch.initialValue ) { // Recover
-                                if ( patch.value < patch.initialValue ) { // Recover
+                                // Recover
+                                if ( patch.value < patch.initialValue ) {
 
                                     change = fp.appConfig.globalSustainabilityOptions.rateOfRecovery;
 
                                 }
 
-                                // Check for non-zero - zero will remove
+                                // Check for non-zero
                                 patch.updatePatchValue( change );
                                 // For this model, always set isDirty = true
                                 patch.isDirty = true;
@@ -166,7 +163,6 @@
 
                         // Initialise the patches again
                         fp.patchNetwork.initialisePatches();
-
 
                     },
 
@@ -219,8 +215,8 @@
                     fp.appConfig.globalSustainabilityOptions.maxChildren = 10;
                     fp.appConfig.globalSustainabilityOptions.energyLoss = 0.1;
                     fp.appConfig.globalSustainabilityOptions.energyGain = 2;
-                    fp.appConfig.globalSustainabilityOptions.rateOfConsumption = 0.01;
-                    fp.appConfig.globalSustainabilityOptions.rateOfRecovery = 0.0;
+                    fp.appConfig.globalSustainabilityOptions.rateOfConsumption = 0.05;
+                    fp.appConfig.globalSustainabilityOptions.rateOfRecovery = 0.001;
 
                     // Specific to limits to growth
                     fp.appConfig.globalSustainabilityOptions.foodEfficiency = 0.3;

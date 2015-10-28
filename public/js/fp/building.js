@@ -200,11 +200,17 @@ define( [
                         this.geometry.verticesNeedUpdate = true;
                     }
 
-                    if ( fp.appConfig.buildingOptions.showFill )
+                    if ( fp.appConfig.buildingOptions.showFill ) {
+
                         this.generateExtrudedShape( points );
 
-                    if ( fp.appConfig.buildingOptions.showWindows )
+                    }
+
+                    if ( fp.appConfig.buildingOptions.showWindows ) {
+
                         this.generateWindows( points );
+
+                    }
 
                 }
                 else {
@@ -287,6 +293,13 @@ define( [
                 this.geometry.vertices[ offset + points.length * 2 - 1 ] = new THREE.Vector3( points[ 0 ].x, height, points[ 0 ].z );
             };
 
+
+            /**
+             * Generates building based on an extruded shape.
+             *
+             * @param  {[type]} points [description]
+             * @return {[type]}        [description]
+             */
             this.generateExtrudedShape = function ( points ) {
                 var base = points[ 0 ].y;
                 var height = base + fp.appConfig.buildingOptions.levelHeight;
@@ -313,8 +326,11 @@ define( [
                 shapeGeometry.faceVertexUvs[ 0 ][ 3 ][ 0 ].set( 0, 0 );
                 shapeGeometry.faceVertexUvs[ 0 ][ 3 ][ 1 ].set( 0, 0 );
                 shapeGeometry.faceVertexUvs[ 0 ][ 3 ][ 2 ].set( 0, 0 );
+
                 shapeGeometry.computeBoundingBox();
+
                 if ( shapeGeometry.boundingBox ) {
+
                     var fc = ( fp.appConfig.displayOptions.dayShow ) ? fp.appConfig.colorOptions.colorDayBuildingFill : fp.appConfig.colorOptions.colorNightBuildingFill;
                     var buildingMaterial = new THREE.MeshBasicMaterial( {color: fc } );
                     var box = new THREE.Mesh( shapeGeometry, buildingMaterial );
@@ -322,7 +338,9 @@ define( [
                     box.position.set( 0, height, 0 );
                     box.geometry.verticesNeedUpdate = true;
                     this.highResMeshContainer.add( box );
+
                 }
+
             };
 
             this.generateWindows = function ( points ) {

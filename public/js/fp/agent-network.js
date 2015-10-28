@@ -135,7 +135,7 @@ define( [
 
 
                 /**
-                 * Renders the agent network, creating an array of vertices and material and return a mesh of type THREE.Line.
+                 * Renders the agentsim network, creating an array of vertices and material and return a mesh of type THREE.Line.
                  *
                  * @return {THREE.Line}
                  */
@@ -605,8 +605,8 @@ define( [
                 var agentParticleSystemUniforms = {
 
                     texture: { type: "t", value: discTexture },
-                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size ) },
-                    sizeAttenuation: { type: "b", value: true }
+                    size: { type: "f", value: Math.floor( fp.appConfig.agentOptions.size )},
+                    sizeAttenuation: { type: "b", value: true },
 
                 };
 
@@ -622,7 +622,6 @@ define( [
                     alphaTest: 0.5
 
                 } );
-
 
                 fp.scene.remove( this.particles );
 

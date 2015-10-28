@@ -110,14 +110,29 @@ define( [
              */
             this.adjustGraphSize = function() {
 
+                var maxValue = 0;
+
                 for ( var i = 0; i < this.chart.seriesSet.length; i++ ) {
 
                     var series = this.chart.seriesSet[ i ];
+
                     if ( this.chart.options.maxValue <= series.timeSeries.maxValue ) {
 
                         this.chart.options.maxValue *= 2;
 
                     }
+
+                    if ( maxValue < series.timeSeries.maxValue ) {
+
+                        maxValue = series.timeSeries.maxValue;
+
+                    }
+
+                }
+
+                if ( this.chart.options.maxValue / 2 >= maxValue ) {
+
+                    this.chart.options.maxValue /= 2;
 
                 }
 

@@ -331,7 +331,7 @@ define(
                     // fp.scene.add( fp.lightHemisphere );
 
                 fp.lightDirectional = new THREE.DirectionalLight(
-                    
+
                     new THREE.Color( fp.appConfig.colorOptions.colorLightDirectional ),
                     fp.appConfig.colorOptions.colorLightDirectionalIntensity
 
@@ -339,7 +339,7 @@ define(
 
                 var extent = fp.terrain.gridExtent;
                 fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
-    
+
                 if ( fp.appConfig.displayOptions.lightDirectionalShadowShow ) {
 
                     fp.lightDirectional.castShadow = true;
@@ -837,8 +837,13 @@ define(
              * @memberof fp
              */
             fp.updateStats = function() {
-                if ( fp.appConfig.displayOptions.statsShow )
+
+                if ( fp.appConfig.displayOptions.statsShow ) {
+
                     fp.stats.update();
+
+                }
+
             };
 
             /**
@@ -1391,7 +1396,7 @@ define(
 
                 // Specific behaviour for flatting terrain
                 if ( eventInfo.which == 1 ) {
-                    
+
                     fp.terrain.flattenTerrain();
 
                 }
@@ -1403,9 +1408,9 @@ define(
              * Responds to mouse up events.
              * If the meta/alt key is pressed, either (a) creating the starting point of a road or
              * (b) marking the end point, and adding the road.
-             * 
+             *
              * Otherwise, simply prints the plane point, if any, to the console.
-             * 
+             *
              * @param   {Object} eventInfo
              * @memberof fp
              */
@@ -1419,7 +1424,7 @@ define(
                 if ( ! eventInfo.metaKey ) {
 
                     // Useful for debugging
-                    console.log( planePoint )
+                    // console.log( planePoint )
                     return;
 
                 }
@@ -1434,7 +1439,7 @@ define(
 
                     }
                     else if ( _.isUndefined( p2 )) {
-                        
+
                         p2 = planePoint;
                         fp.roadNetwork.addRoad( p1, p2, appConfig.roadOptions.roadWidth );
                         p1 = p2 = undefined;
@@ -1451,7 +1456,7 @@ define(
              * @memberof fp
              */
             fp.toggleAgentState = function() {
-                
+
                 if ( !fp.appConfig.displayOptions.agentsShow ) {
 
                     fp.scene.remove(  fp.agentNetwork.particles  );
