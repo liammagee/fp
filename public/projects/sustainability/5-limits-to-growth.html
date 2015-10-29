@@ -120,6 +120,8 @@
 
                             fp.patchNetwork.patchMeanValue = 0;
 
+                            var agentRatio = fp.agentNetwork.agents.length / 10;
+
                             for (var i = 0; i < fp.patchNetwork.patches.length; i++) {
 
                                 var patch = fp.patchNetwork.patches[ i ];
@@ -128,7 +130,8 @@
                                 // Recover
                                 if ( patch.value < patch.initialValue ) {
 
-                                    change = fp.appConfig.globalSustainabilityOptions.rateOfRecovery;
+                                    change = fp.appConfig.globalSustainabilityOptions.rateOfRecovery /
+                                        ( 1 + agentRatio );
 
                                 }
 
@@ -198,6 +201,7 @@
                         }
 
                         fp.patchNetwork.reviseValues();
+
                     }
 
                 };

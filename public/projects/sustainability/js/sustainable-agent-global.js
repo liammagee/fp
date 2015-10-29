@@ -61,9 +61,7 @@ var SustainableAgentGlobal = function( fp ) {
     this.consume = function() {
 
         var foodAvailable = fp.sim.getFoodYield();
-        var totalAgents = fp.agentNetwork.agents.length;
-        var availableYield = foodAvailable / totalAgents;
-        this.health += fp.appConfig.globalSustainabilityOptions.energyGain * availableYield;
+        this.health += fp.appConfig.globalSustainabilityOptions.energyGain * foodAvailable;
         this.health = (this.health > 100) ? 100 : this.health;
 
     };
@@ -97,7 +95,7 @@ var SustainableAgentGlobal = function( fp ) {
              Math.random() * this.health > 50 &&
              this.age > 15 && this.age < 50 &&
              this.health > 50 &&
-             fp.sim.getFoodYield() > 0.0001)  {
+             fp.sim.getFoodYield() > 0.02 )  {
 
             var agent = fp.agentNetwork.createAgent();
             agent.mother = this;

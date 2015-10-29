@@ -55,7 +55,8 @@
 
                     getFoodYield: function() {
 
-                        return ( sim.annualConsumed / fp.agentNetwork.agents.length );
+                        return ( 1 + sim.currentFoodEfficiency ) *
+                            ( sim.annualConsumed / fp.agentNetwork.agents.length );
 
                     },
 
@@ -122,16 +123,20 @@
 
                             fp.patchNetwork.patchMeanValue = 0;
 
+                            var agentRatio = Math.pow( fp.agentNetwork.agents.length / fp.appConfig.agentOptions.initialPopulation, 1 );
+
                             for (var i = 0; i < fp.patchNetwork.patches.length; i++) {
 
                                 var patch = fp.patchNetwork.patches[ i ];
                                 var change = 0;
 
                                 // Recover
-                                if ( patch.value < patch.initialValue ) {
+                                // if ( patch.value < patch.initialValue ) {
+                                if ( patch.value < 1.0 ) {
 
                                     change = fp.appConfig.globalSustainabilityOptions.rateOfRecovery *
-                                            ( 1 + sim.currentFoodEfficiency );
+                                            ( 1 + sim.currentFoodEfficiency ) *
+                                            agentRatio;
 
                                 }
 
@@ -200,7 +205,9 @@
 
                             if ( sim.currentFoodEfficiency < fp.appConfig.globalSustainabilityOptions.maxFoodEfficiency ) {
 
-                                sim.currentFoodEfficiency = sim.currentFoodEfficiency * ( 1 + fp.appConfig.globalSustainabilityOptions.growthInFoodEfficiency );
+                                newEfficiency = sim.currentFoodEfficiency * ( 1 + fp.appConfig.globalSustainabilityOptions.growthInFoodEfficiency );
+
+                                sim.currentFoodEfficiency = newEfficiency;
 
                             }
 
@@ -216,7 +223,8 @@
 
                         }
 
-                        //fp.patchNetwork.reviseValues();
+                        fp.patchNetwork.reviseValues();
+
                     }
 
                 }
@@ -240,7 +248,7 @@
                     // Specific to limits to growth
                     fp.appConfig.globalSustainabilityOptions.foodEfficiency = 0.3;
                     fp.appConfig.globalSustainabilityOptions.growthInFoodEfficiency = 0.025;
-                    fp.appConfig.globalSustainabilityOptions.maxFoodEfficiency = 0.7;
+                    fp.appConfig.globalSustainabilityOptions.maxFoodEfficiency = 2.0;
 
                     fp.appConfig.globalSustainabilityOptions.nonrenewableResources = 100;
                     fp.appConfig.globalSustainabilityOptions.food = 0.5;
