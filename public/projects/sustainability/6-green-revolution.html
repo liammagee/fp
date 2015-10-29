@@ -132,13 +132,11 @@
 
                                 // Recover
                                 // if ( patch.value < patch.initialValue ) {
-                                if ( patch.value < 1.0 ) {
-
                                     change = fp.appConfig.globalSustainabilityOptions.rateOfRecovery *
                                             ( 1 + sim.currentFoodEfficiency ) *
                                             agentRatio;
 
-                                }
+                                // }
 
                                 // Check for non-zero
                                 patch.updatePatchValue( change );

@@ -16,6 +16,7 @@ define(
                     "initialY": 30,
                     "initialPopulat,ion": 250,
                     "initialExtent": 25,
+                    "initialSpeed": 100,
                     "maxExtent": 100,
                     "size": 200
                 },
@@ -40,12 +41,16 @@ define(
                     "patchesShow": true,
                     "lightHemisphereShow": false,
                     "lightDirectionalShow": false,
+                    "lightDirectionalShow": true,
                     "hudShow": true,
+                    "statsShow": true,
+
+                    "coloriseAgentsByHealth": true,
 
                     "cameraOverride": true,
                     "cameraX": 0,
-                    "cameraY": 2500,
-                    "cameraZ": 0,
+                    "cameraY": 3000,
+                    "cameraZ": 400,
                     // "guiShowColorFolder": false
                 },
                 "6": {
@@ -63,7 +68,6 @@ define(
                     "colorLightDirectional": 0xffffff,
                     "colorLightDirectionalIntensity": 1.0,
 
-                    "coloriseAgentsByHealth": false,
                 },
 
             }
