@@ -14,7 +14,7 @@ var SustainableAgent = function( fp ) {
 
         if (this.health > 0) {
 
-            this.health -= fp.appConfig.globalSustainabilityOptions.energyLoss;
+            this.health -= fp.appConfig.malthusOptions.energyLoss;
 
         }
 
@@ -30,8 +30,8 @@ var SustainableAgent = function( fp ) {
             var numAgentsOnPatch = patch.length;
             var patchValue = fp.patchNetwork.patches[ index ];
             var availableYield = patchValue.value / numAgentsOnPatch;
-            patchValue.updatePatchValue( - fp.appConfig.globalSustainabilityOptions.rateOfConsumption );
-            this.health += fp.appConfig.globalSustainabilityOptions.energyGain * availableYield;
+            patchValue.updatePatchValue( - fp.appConfig.malthusOptions.rateOfConsumption );
+            this.health += fp.appConfig.malthusOptions.energyGain * availableYield;
             this.health = (this.health > 100) ? 100 : this.health;
 
         }
@@ -51,8 +51,8 @@ var SustainableAgent = function( fp ) {
         var current = fp.agentNetwork.agents.length;
         var initial = fp.appConfig.agentOptions.initialPopulation;
         var popCorrection = Math.pow( ( current / initial ), 2 );
-        if ( Math.random() * popCorrection <  fp.appConfig.globalSustainabilityOptions.reproductionChance &&
-             this.children.length < fp.appConfig.globalSustainabilityOptions.maxChildren &&
+        if ( Math.random() * popCorrection <  fp.appConfig.malthusOptions.reproductionChance &&
+             this.children.length < fp.appConfig.malthusOptions.maxChildren &&
              this.gender == "f" &&
              Math.random() * this.health > 50 &&
              this.age > 15 && this.age < 50 )  {

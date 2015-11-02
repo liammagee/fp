@@ -427,7 +427,7 @@ define(
                         filterparam: 1
                     };
 
-                    var waterNormals = new THREE.ImageUtils.loadTexture( "/textures/waternormals.jpg" );
+                    var waterNormals = new ( new THREE.TextureLoader() ).load( "/textures/waternormals.jpg" );
                     waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping;
 
                     fp.water = new THREE.Water( fp.renderer, fp.camera, fp.scene, {

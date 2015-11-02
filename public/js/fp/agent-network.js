@@ -591,11 +591,11 @@ define( [
                 agentGeometry.addAttribute( 'color', new THREE.BufferAttribute( colourValues, 3 ) );
                 agentGeometry.addAttribute( 'alpha', new THREE.BufferAttribute( alphaValues, 1 ) );
 
-                var discTexture = THREE.ImageUtils.loadTexture( "/images/sprites/stickman_180.png" );
+                var discTexture = ( new THREE.TextureLoader() ).load( "/images/sprites/stickman_180.png" );
 
                 if ( !fp.appConfig.agentOptions.useStickman ) {
 
-                    discTexture = THREE.ImageUtils.loadTexture( "/images/sprites/disc.png" );
+                    discTexture = ( new THREE.TextureLoader() ).load( "/images/sprites/disc.png" );
 
                 }
 

@@ -56,7 +56,7 @@ define(
              */
             this.createUniforms = function() {
 
-                //var map = new THREE.ImageUtils.loadTexture( "../assets/Sydney-local.png" );
+                //var map = new ( new THREE.TextureLoader() ).load( "../assets/Sydney-local.png" );
 
                 var uniforms = {
 
