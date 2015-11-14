@@ -229,7 +229,7 @@ define(
                     // opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
                     // diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                     specular: new THREE.Color( 0x3a3a3a ),
-                    shininess: 0.0
+                    shininess: 0.0,
                     // Phong settings
                     // diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                     // specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
@@ -331,8 +331,8 @@ define(
                     // Necessary? Maybe for Phong
                     // geometry.computeFaceNormals();
                     geometry.computeVertexNormals();
-                    // fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
-                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
+                    fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.richTerrainMaterial );
+                    // fp.terrain.plane = new THREE.Mesh( geometry, fp.terrain.simpleTerrainMaterial );
                  
                 }
                 else {

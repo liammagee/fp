@@ -361,14 +361,9 @@ define(
                     fp.lightDirectional.shadowCameraTop = d;
                     fp.lightDirectional.shadowCameraBottom = -d;
                     fp.lightDirectional.shadowBias = -0.0001;
-<<<<<<< HEAD
                     fp.lightDirectional.shadowBias = -0.05;
                     var helper = new THREE.CameraHelper( fp.camera );
                     fp.scene.add( helper );
-=======
-                    //fp.lightDirectional.shadowBias = -0.05;
-                    fp.scene.add( new THREE.CameraHelper( fp.camera ) );
->>>>>>> origin/physical
                     // fp.lightDirectional.shadowCameraVisible = true; // for debugging
 
                 }
