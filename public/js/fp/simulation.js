@@ -118,6 +118,8 @@ define(
 
                 if ( fp.appConfig.displayOptions.maximiseView ) {
 
+                    fp.renderer.setPixelRatio( window.devicePixelRatio );
+
                     fp.camera.aspect = window.innerWidth / window.innerHeight;
                     fp.camera.updateProjectionMatrix();
                     fp.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -338,7 +340,8 @@ define(
                 );
 
                 var extent = fp.terrain.gridExtent;
-                fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
+                fp.lightDirectional.position.set( -extent , extent , -extent  );
+                // fp.lightDirectional.position.set( 0,1,0 );
 
                 if ( fp.appConfig.displayOptions.lightDirectionalShadowShow ) {
 
@@ -358,7 +361,9 @@ define(
                     fp.lightDirectional.shadowCameraTop = d;
                     fp.lightDirectional.shadowCameraBottom = -d;
                     fp.lightDirectional.shadowBias = -0.0001;
-                    //fp.lightDirectional.shadowBias = -0.05;
+                    fp.lightDirectional.shadowBias = -0.05;
+                    var helper = new THREE.CameraHelper( fp.camera );
+                    fp.scene.add( helper );
                     // fp.lightDirectional.shadowCameraVisible = true; // for debugging
 
                 }
@@ -530,6 +535,8 @@ define(
                 ]; // Skies courtesy of http://reije081.home.xs4all.nl/skyboxes/
 
                 var skyI = Math.floor( Math.random() * skies.length );
+                // skyI = 1;
+
                 loader.load( skies[ skyI ][ 0 ], function ( image ) {
                     var getSide = function ( x, y ) {
                         var size = skies[ skyI ][ 1 ];
@@ -548,6 +555,7 @@ define(
                     cubeMap.images[ 4 ] = getSide( 1, 1 ); // pz
                     cubeMap.images[ 5 ] = getSide( 3, 1 ); // nz
                     cubeMap.needsUpdate = true;
+                    fp.cubeMap = cubeMap;
                 } );
 
                 var cubeShader = THREE.ShaderLib[ "cube" ];

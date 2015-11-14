@@ -496,6 +496,7 @@ define( [
                             "shininess": { type: "f", value: 30 }
                         }
                     ] );
+
                     return _.extend( uniforms, otherUniforms );
 
                 },

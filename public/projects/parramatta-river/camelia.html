@@ -8,8 +8,8 @@
         require.config({
 
           baseUrl: '/js',
-          // paths: {  'fp': 'fp' }
-          paths: {  'fp': 'dist/fp' }
+          paths: {  'fp': 'fp' }
+          // paths: {  'fp': 'dist/fp' }
 
         });
 
@@ -23,6 +23,7 @@
                 var multiplier = 3;
 
                 var config = {
+
                   "preset": "Default",
                   "remembered": {
                     "Default": {
@@ -57,13 +58,14 @@
                             "gridExtent": 6010,
                             "gridPoints": 601,
                             "multiplier": multiplier,
-                            "defaultHeight": 1,
+                            "defaultHeight": 0,
                             // 1arc source is downscaled by a factor of 4
                             // From 3601 to 900
                             // So heights are measured at 30m * 4 = 120m
                             // We are 'scaling' points over the griad at a factor of 10
                             // So a 'realistic' representation needs to divide
                             // heights by  120m / 8 = 15.
+                            // "maxTerrainHeight": 5,
                             "maxTerrainHeight": 1,
                             // "mapFile": "/assets/Sydney-local.bin",
                             "mapFile": "/assets/Camelia.bin"
@@ -216,8 +218,8 @@
 
                 fp.init( config, sim, function() {
 
-                    fp.appController.Setup();
-                    fp.appController.Run();
+                    // fp.appController.Setup();
+                    // fp.appController.Run();
 
                 } );
             }
