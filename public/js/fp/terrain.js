@@ -50,6 +50,15 @@ define(
              * Specifies whether the plane is being wrapped, unwrapped or neither.
              */
             this.wrappingState = 0;
+            
+            this.map = new ( new THREE.TextureLoader() ).load( "/assets/Camelia-1024.png" );
+            this.displacementMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia-1024_DISP.png" );
+            this.normalMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia-1024_NRM.png" );
+            this.specularMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia-1024_SPEC.png" );
+            this.aoMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia-1024_OCC.png" );
+            //this.normalMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia_NRM.png" );
+            //this.normalMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia_NRM.png" );
+            //this.normalMap = new ( new THREE.TextureLoader() ).load( "/assets/Camelia_NRM.png" );
 
 
             this.map = new ( new THREE.TextureLoader() ).load( "../../assets/Camelia-1024.png" );
@@ -70,10 +79,13 @@ define(
                     specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
                     shininess: { type: "f", value: 0.5 },
 
+                    specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    shininess: { type: "f", value: 0.5 },
+
                     map: { type: "t", value: this.map },
                     bumpMap: { type: "t", value: this.map },
                     bumpMapScale: { type: "f", value: 1.0 },
-                    normalMap: { type: "t", value: this.map },
+                    normalMap: { type: "t", value: this.normalMap },
                     lightMap: { type: "t", value: this.map },
                     lightMapIntensity: { type: "f", value: 1.0 },
                     aoMap: { type: "t", value: this.map },
@@ -81,6 +93,17 @@ define(
                     alphaMap: { type: "t", value: this.map },
                     // emissiveMap: { type: "t", value: this.map },
                     envMap: { type: "t", value: this.map },
+
+                    map: this.map,
+                    // bumpMap: this.displacementMap,
+                    // normalMap: this.normalMap,
+                    // emissiveMap: this.map,
+                    //lightMap: this.map,
+                    // aoMap: this.aoMap,
+                    // specularMap: this.specularMap,
+                    // alphaMap: this.map,
+                    // emissiveMap: { type: "t", value: this.map },
+                    // envMap: { type: "t", value: this.map },
 
                     groundLevelColor: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainGroundLevel ) },
                     lowland1Color: { type: "c", value: new THREE.Color( fp.appConfig.colorOptions.colorDayTerrainLowland1 ) },
@@ -197,9 +220,7 @@ define(
 
                 }
 
-                /*
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshPhongMaterial( {
-
 
                     // Lambert settings
                     color: new THREE.Color( 0x888888 ),  // diffuse
@@ -208,22 +229,24 @@ define(
                     // opacity: { type: "f", value: fp.appConfig.colorOptions.colorTerrainOpacity },
                     // diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
                     specular: new THREE.Color( 0x3a3a3a ),
-                    shininess: 0.0,
+                    shininess: 0.0
+                    // Phong settings
+                    // diffuse: { type: "c", value: new THREE.Color( 1.0, 1.0, 1.0 ) },
+                    // specular: { type: "c", value: new THREE.Color( 0x3a3a3a ) },
+                    // shininess: { type: "f", value: 0.0 },
 
                     map: this.map,
-                    bumpMap: this.map,
-                    bumpMapScale: 1.0,
-                    // normalMap: this.map,
-                    // emissiveMap: this.map,
-                    // lightMap: this.map,
-                    // aoMap: this.map,
-                    // specularMap: this.map,
-                    // alphaMap: this.map,
+                    //bumpMap: map,
+                    //bumpMapScale: 1.0,
+                    normalMap: this.normalMap,
+                    //emissiveMap: map,
+                    //lightMap: map,
+                    //aoMap: map,
+                    //specularMap: map,
+                    //alphaMap: map,
 
                     wireframe: fp.appConfig.displayOptions.wireframeShow
-
                 } );
-    */
 
                 fp.terrain.simpleTerrainMaterial = new THREE.MeshPhysicalMaterial( {
 

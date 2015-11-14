@@ -340,8 +340,8 @@ define(
                 );
 
                 var extent = fp.terrain.gridExtent;
-                fp.lightDirectional.position.set( -extent , extent , -extent  );
-                // fp.lightDirectional.position.set( 0,1,0 );
+                //fp.lightDirectional.position.set( -extent * 4, extent * 4, -extent * 4 );
+                fp.lightDirectional.position.set( 100, 100, 100 );
 
                 if ( fp.appConfig.displayOptions.lightDirectionalShadowShow ) {
 
@@ -361,9 +361,14 @@ define(
                     fp.lightDirectional.shadowCameraTop = d;
                     fp.lightDirectional.shadowCameraBottom = -d;
                     fp.lightDirectional.shadowBias = -0.0001;
+<<<<<<< HEAD
                     fp.lightDirectional.shadowBias = -0.05;
                     var helper = new THREE.CameraHelper( fp.camera );
                     fp.scene.add( helper );
+=======
+                    //fp.lightDirectional.shadowBias = -0.05;
+                    fp.scene.add( new THREE.CameraHelper( fp.camera ) );
+>>>>>>> origin/physical
                     // fp.lightDirectional.shadowCameraVisible = true; // for debugging
 
                 }

@@ -532,14 +532,14 @@ define( [
 
                         var shaderMaterial = new THREE.ShaderMaterial( {
 
-                            uniforms: FiercePlanet.ShaderUtils.lambertUniforms( this.uniforms ),
-                            vertexShader: FiercePlanet.ShaderUtils.lambertShaderVertex(
+                            uniforms: FiercePlanet.ShaderUtils.phongUniforms( this.uniforms ),
+                            vertexShader: FiercePlanet.ShaderUtils.phongShaderVertex(
 
                                 FiercePlanet.ShaderUtils.buildingVertexShaderParams(),
                                 FiercePlanet.ShaderUtils.buildingVertexShaderMain()
 
                             ),
-                            fragmentShader: FiercePlanet.ShaderUtils.lambertShaderFragment(
+                            fragmentShader: FiercePlanet.ShaderUtils.phongShaderFragment(
 
                                 FiercePlanet.ShaderUtils.buildingFragmentShaderParams(),
                                 FiercePlanet.ShaderUtils.buildingFragmentShaderMain()

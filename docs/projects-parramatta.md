@@ -28,8 +28,12 @@ Commands to generate the high-res geography:
 
 3.  Sample Camelia from the merged file:
 
-    gdal_translate -srcwin 3300 3000 601 601 Greater-Sydney.tif Camelia.tif
+    gdal_translate -srcwin 3300 3000 512 512 Greater-Sydney.tif Camelia.tif
 
 4.  Convert to headless heightmap:
 
-    gdal_translate -ot UInt16 -outsize 601 601 -of ENVI Camelia.tif Camelia.bin
+    gdal_translate -ot UInt16 -outsize 512 512 -of ENVI Camelia.tif Camelia.bin
+
+5.  Convert to PNG:
+
+    gdal_translate -ot UInt16 -outsize 512 512 -of PNG Camelia.tif Camelia.png
